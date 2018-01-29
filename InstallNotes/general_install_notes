@@ -1,0 +1,19 @@
+GRChombo has been compiled and tested with gcc-4.9 and higher and
+intel icc-16.0.3 and higher. For icc note that the gcc compatibility has to be set to gcc-4.9 or higher.
+
+GRChombo requires c++ standard 14 or higher so the compiler should be invoked with -std=c++14 (or higher)
+
+This folder also contains specific install notes for a collection of machines GRChombo has been run on.
+
+To compile Chombo:
+You should check out the adapted Chombo version from the git repository (currently GRChombo will not compile
+with the standard version of Chombo). The installation parameters can be set in Make.defs.local in the folder
+${CHOMBO_HOME}/mk/. This folder contains examples for Make.defs.local files for machines we have run GRChombo on.
+Once the Make.defs.local file has been set just run "make all DIM=3 (or 2,4,5... if you are thus inclined) -j 32
+(compiles in parallel on 32 ranks)" in the folder ${CHOMBO_HOME}. This will also compile the tests which is a good
+thing to do once but subsequently it is faster to only compile the library by invoking "make lib DIM=3 -j 32".
+
+To compile GRChombo:
+Export CHOMBO_HOME (the path to the Chombo installation) and compile whathever example or test you want to
+run by invoking make all DIM=3 (or 2,4,5... if you are thus inclined. This is the number of spatial dimensions) -j 32 (compiles in parallel on 32 ranks)
+in the relevant directory. In addition, follow any other specific instructions for your machine in this folder.
