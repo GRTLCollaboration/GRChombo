@@ -1,0 +1,1275 @@
+C GRChombo
+C Copyright 2012 The GRChombo collaboration.
+C Please refer to LICENSE in GRChombo's root directory.
+
+c     Vector indices
+#define _1  0
+#define _2  1
+#define _3  2
+c     Tensor indices
+#define _11 0
+#define _12 1
+#define _13 2
+#define _22 3
+#define _23 4
+#define _33 5
+
+c     Compute the BSSN evolution
+c     Reference: http://arxiv.org/abs/1111.2177v1
+
+      subroutine GETBSSNCRHSF(
+      !--- {{{1
+      !--- Function input and variable initialisation {{{2
+     &     CHF_FRA1[dchidt],
+     &     CHF_FRA[dhdt],
+     &     CHF_FRA1[dKdt],
+     &     CHF_FRA[dAdt],
+     &     CHF_FRA1[dThetadt],
+     &     CHF_FRA[dGamma1dt],
+     &     CHF_FRA1[dlapsedt],
+     &     CHF_FRA[dshiftdt],
+     &     CHF_FRA[dBdt],
+     &     CHF_CONST_FRA1[chi],
+     &     CHF_CONST_FRA[h],
+     &     CHF_CONST_FRA1[K],
+     &     CHF_CONST_FRA[A],
+     &     CHF_CONST_FRA1[Theta],
+     &     CHF_CONST_FRA[Gamma1],
+     &     CHF_CONST_FRA1[lapse],
+     &     CHF_CONST_FRA[shift],
+     &     CHF_CONST_FRA[B],
+     &     CHF_CONST_REAL[dx],
+     &     CHF_CONST_REAL[LapseAdvectionCoeff],
+     &     CHF_CONST_REAL[ShiftAdvectionCoeff],
+     &     CHF_CONST_REAL[ShiftGammaCoeff],
+     &     CHF_CONST_REAL[BetaDriver],
+     &     CHF_CONST_REAL[kappa1],
+     &     CHF_CONST_REAL[kappa2],
+     &     CHF_CONST_REAL[kappa3],
+     &     CHF_CONST_INT[covariantZ4],
+     &     CHF_CONST_REAL[sigma],
+     &     CHF_BOX[box])
+
+      integer CHF_AUTODECL[i], CHF_AUTODECL[ii], CHF_AUTODECL[jj]
+
+c     The standard fourth-order centered stencils are used for almost all
+c     derivative terms. Upwind stencils are used for the advection terms.
+c     Reference: http://arXiv.org/abs/gr-qc/0505055v2
+      ! Fundamental variables
+      REAL_T alph, beta(0:2), bb(0:2), Th, Zvec(0:2)
+      REAL_T ch, hh(0:2,0:2), hu(0:2,0:2), trk,
+     &       aa(0:2,0:2), atu(0:2,0:2), atm(0:2,0:2), ats(0:2,0:2), tra,
+     &       gamma(0:2), dethh, dotgamma(0:2), dottrk
+      REAL_T gg(0:2,0:2) , gu(0:2,0:2)
+
+      ! First derivatives
+      REAL_T d1_alph(0:2), d1_beta(0:2,0:2), d1_B(0:2,0:2)
+      REAL_T d1_ch(0:2), d1_hh(0:2,0:2,0:2), d1_trk(0:2), d1_aa(0:2,0:2,0:2),
+     &       d1_gamma(0:2,0:2), d1_Th(0:2)
+
+      ! Second derivatives
+      REAL_T d2_alph(0:2,0:2), d2_beta(0:2,0:2,0:2)
+      REAL_T d2_ch(0:2,0:2), d2_hh(0:2,0:2,0:2,0:2)
+      REAL_T d2_phi(0:2,0:2)
+
+      ! Advection derivatives
+      REAL_T ad1_alph, ad1_beta(0:2), ad1_B(0:2)
+      REAL_T ad1_ch, ad1_hh(0:2,0:2), ad1_trk, ad1_aa(0:2,0:2),
+     &       ad1_gamma(0:2), ad1_Th
+
+      ! Covaraint derivatives
+      REAL_T cd2_ch(0:2,0:2), cd2_alph(0:2,0:2)
+
+      ! Auxiliary variables
+      REAL_T cf1(0:2,0:2,0:2), cf2(0:2,0:2,0:2), cft2(0:2,0:2,0:2),
+     &       c_ri(0:2,0:2), c_ll(0:2,0:2)
+      REAL_T c_ri_ph(0:2,0:2), c_ri_hh(0:2,0:2), ri_1(0:2,0:2), ri_2(0:2,0:2), ri_3(0:2,0:2),
+     &       tr_ll, sq_aa, a2(0:2,0:2), trr,
+     &       tf_c_ll(0:2,0:2), tf_c_ri(0:2,0:2), gamcon(0:2)
+      REAL_T tr_cd2_ch, tr_dch_dch
+      REAL_T divbeta, dbeta(0:2,0:2)
+
+      ! Right hand sides
+      REAL_T rhs_ch, rhs_hh(0:2,0:2), rhs_trk, rhs_aa(0:2,0:2),
+     &       rhs_gamma(0:2), rhs_alph, rhs_beta(0:2), rhs_B(0:2)
+      REAL_T rhs_Theta, dotTheta
+
+      ! Misc variables
+      REAL_T odx12, odx60, odxsq12 , odxsq144, odxsq180, odxdy3600, odx2
+      REAL_T dx12, dxsq12, dxdy144
+      REAL_T dxinv, dxinv2
+
+      integer d0, d1, d2, d3, d4, d5 , d6
+      integer advec2
+      integer IDX(0:2, 0:2)
+      data IDX / _11, _12, _13, _12, _22, _23, _13, _23, _33  /
+      !--- End 2}}}
+
+c     note that this has not been extended to work for DIM > 3
+#if CH_SPACEDIM > 3
+      call MAYDAY_ERROR()
+#else
+
+
+      odx60     = one/(60 * dx)
+
+      odxsq180  = one / (180*dx**2)
+
+      odxdy3600 = one / (3600*dx**2)
+
+      odx2      = 1 / (2*dx)
+
+      dx12      = 12*dx
+      odx12     = one/(12*dx)
+      odxsq12   = one / (12*dx**2)
+      odxsq144  = one / (144*dx**2)
+
+      dxsq12    = 12*dx**2
+
+      dxdy144   = 144*dx**2
+
+      dxinv = one/dx
+      dxinv2 = one/(dx*dx)
+c     set to zero to use 4th order advection, 1 for 2nd order
+      advec2 = 0
+
+      !------------ Main loop starts here --------
+!$omp PARALLEL DO DEFAULT(FIRSTPRIVATE) COLLAPSE(2),
+!$omp& SCHEDULE(STATIC),
+!$omp& SHARED(dchidt,dhdt,dKdt,dAdt,dThetadt),
+!$omp& SHARED(dGamma1dt,dlapsedt,dshiftdt,dBdt),
+!$omp& SHARED(chi,h,K,A,Theta,Gamma1,lapse),
+!$omp& SHARED(shift,B)
+      CHF_AUTOMULTIDO[box;i]
+
+      !------------ Get local variables ----------
+      ch    = chi(CHF_AUTOIX[i])
+
+      trk   = K(CHF_AUTOIX[i])
+
+      alph  = lapse(CHF_AUTOIX[i])
+
+      Th    = Theta(CHF_AUTOIX[i])
+
+      do d0 = 0,2
+        gamma(d0) = Gamma1(CHF_AUTOIX[i], d0)
+        beta(d0)  = shift(CHF_AUTOIX[i], d0)
+        bb(d0)    = B(CHF_AUTOIX[i],d0)
+        do d1 = 0,2
+          hh(d0,d1) = h(CHF_AUTOIX[i], IDX(d0,d1))
+          aa(d0,d1) = A(CHF_AUTOIX[i], IDX(d0,d1))
+        enddo
+      enddo
+      !-------------------------------------------
+
+      !------------ Invert metric ----------------
+      ! NOTE: deth = 1 by construction, but that is not satisfied numerically
+      dethh =        hh(0,0) * hh(1,1) * hh(2,2)
+     &         + 2 * hh(0,1) * hh(0,2) * hh(1,2)
+     &         -     hh(0,0) * hh(1,2) ** 2
+     &         -     hh(1,1) * hh(0,2) ** 2
+     &         -     hh(2,2) * hh(0,1) ** 2
+      hu(0,0) = (hh(1,1) * hh(2,2) - hh(1,2) ** 2     ) / dethh
+      hu(1,1) = (hh(0,0) * hh(2,2) - hh(0,2) ** 2     ) / dethh
+      hu(2,2) = (hh(0,0) * hh(1,1) - hh(0,1) ** 2     ) / dethh
+      hu(0,1) = (hh(0,2) * hh(1,2) - hh(0,1) * hh(2,2)) / dethh
+      hu(0,2) = (hh(0,1) * hh(1,2) - hh(0,2) * hh(1,1)) / dethh
+      hu(1,2) = (hh(0,2) * hh(0,1) - hh(1,2) * hh(0,0)) / dethh
+      hu(1,0) = hu(0,1)
+      hu(2,0) = hu(0,2)
+      hu(2,1) = hu(1,2)
+
+      !------------ Physical metric --------------
+      gg = hh / ch
+      gu = ch * hu
+
+      !-------------------------------------------
+
+      !------------ Centered 1st derivatives ----- {{{2
+      !------------ derivative index is last -----
+
+      do d0 = 0,2
+        CHF_DTERM[
+          ii0 = CHF_ID(d0,0);
+          ii1 = CHF_ID(d0,1);
+          ii2 = CHF_ID(d0,2)]
+
+        d1_ch(d0) = odx12 * (
+     &         chi(CHF_OFFSETIX[i;-2*ii])
+     &     - 8*chi(CHF_OFFSETIX[i;-ii]  )
+     &     + 8*chi(CHF_OFFSETIX[i;+ii]  )
+     &     -   chi(CHF_OFFSETIX[i;+2*ii])
+     &       )
+
+        d1_trk(d0) = odx12 * (
+     &         K(CHF_OFFSETIX[i;-2*ii])
+     &     - 8*K(CHF_OFFSETIX[i;-ii]  )
+     &     + 8*K(CHF_OFFSETIX[i;+ii]  )
+     &     -   K(CHF_OFFSETIX[i;+2*ii])
+     &       )
+
+        d1_alph(d0) = odx12 * (
+     &         lapse(CHF_OFFSETIX[i;-2*ii])
+     &     - 8*lapse(CHF_OFFSETIX[i;-ii]  )
+     &     + 8*lapse(CHF_OFFSETIX[i;+ii]  )
+     &     -   lapse(CHF_OFFSETIX[i;+2*ii])
+     &       )
+
+        d1_Th(d0) = odx12 * (
+     &         Theta(CHF_OFFSETIX[i;-2*ii])
+     &     - 8*Theta(CHF_OFFSETIX[i;-ii]  )
+     &     + 8*Theta(CHF_OFFSETIX[i;+ii]  )
+     &     -   Theta(CHF_OFFSETIX[i;+2*ii])
+     &       )
+      enddo
+
+
+      do d0 = 0,2; do d1 = 0,CH_SPACEDIM-1
+        CHF_DTERM[
+            ii0 = CHF_ID(d1,0);
+            ii1 = CHF_ID(d1,1);
+            ii2 = CHF_ID(d1,2)]
+
+            d1_gamma(d0,d1) = odx12 * (
+     &         Gamma1(CHF_OFFSETIX[i;-2*ii],d0)
+     &     - 8*Gamma1(CHF_OFFSETIX[i;-ii]  ,d0)
+     &     + 8*Gamma1(CHF_OFFSETIX[i;+ii]  ,d0)
+     &     -   Gamma1(CHF_OFFSETIX[i;+2*ii],d0)
+     &       )
+
+            d1_beta(d0,d1) = odx12 * (
+     &         shift(CHF_OFFSETIX[i;-2*ii],d0)
+     &     - 8*shift(CHF_OFFSETIX[i;-ii]  ,d0)
+     &     + 8*shift(CHF_OFFSETIX[i;+ii]  ,d0)
+     &     -   shift(CHF_OFFSETIX[i;+2*ii],d0)
+     &       )
+
+            d1_B(d0,d1) = odx12 * (
+     &         B(CHF_OFFSETIX[i;-2*ii],d0)
+     &     - 8*B(CHF_OFFSETIX[i;-ii]  ,d0)
+     &     + 8*B(CHF_OFFSETIX[i;+ii]  ,d0)
+     &     -   B(CHF_OFFSETIX[i;+2*ii],d0)
+     &       )
+      enddo; enddo
+
+      do d0 = 0,2; do d1 = 0,2; do d2 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d2,0);
+             ii1 = CHF_ID(d2,1);
+             ii2 = CHF_ID(d2,2)]
+
+            d1_hh(d0,d1,d2) = odx12 * (
+     &         h(CHF_OFFSETIX[i;-2*ii],IDX(d0,d1))
+     &     - 8*h(CHF_OFFSETIX[i;-ii]  ,IDX(d0,d1))
+     &     + 8*h(CHF_OFFSETIX[i;+ii]  ,IDX(d0,d1))
+     &     -   h(CHF_OFFSETIX[i;+2*ii],IDX(d0,d1))
+     &       )
+
+            d1_aa(d0,d1,d2) = odx12 * (
+     &         A(CHF_OFFSETIX[i;-2*ii],IDX(d0,d1))
+     &     - 8*A(CHF_OFFSETIX[i;-ii]  ,IDX(d0,d1))
+     &     + 8*A(CHF_OFFSETIX[i;+ii]  ,IDX(d0,d1))
+     &     -   A(CHF_OFFSETIX[i;+2*ii],IDX(d0,d1))
+     &       )
+
+      enddo; enddo; enddo
+      !---------------------------------------------2}}}
+
+         !------------ Centered 2nd derivatives ---------- {{{2
+         !------------ derivative indices are last ---------
+         do d0 = 0,CH_SPACEDIM-1; do d1 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d0,0);
+             ii1 = CHF_ID(d0,1);
+             ii2 = CHF_ID(d0,2)]
+           CHF_DTERM[
+             jj0 = CHF_ID(d1,0);
+             jj1 = CHF_ID(d1,1);
+             jj2 = CHF_ID(d1,2)]
+           ! before we had: if (d0 .eq. d1) cycle
+           if (d0 .eq. d1) cycle
+
+           d2_ch(d0,d1) = odxsq144 * (
+     &         chi(CHF_IX[i0-2*ii0-2*jj0;i1-2*ii1-2*jj1;i2-2*ii2-2*jj2])
+     &     - 8*chi(CHF_IX[i0-ii0-2*jj0;i1-ii1-2*jj1;i2-ii2-2*jj2]      )
+     &     + 8*chi(CHF_IX[i0+ii0-2*jj0;i1+ii1-2*jj1;i2+ii2-2*jj2]      )
+     &     -   chi(CHF_IX[i0+2*ii0-2*jj0;i1+2*ii1-2*jj1;i2+2*ii2-2*jj2])
+     &     - 8*chi(CHF_IX[i0-2*ii0-jj0;i1-2*ii1-jj1;i2-2*ii2-jj2]      )
+     &     +64*chi(CHF_IX[i0-ii0-jj0;i1-ii1-jj1;i2-ii2-jj2]            )
+     &     -64*chi(CHF_IX[i0+ii0-jj0;i1+ii1-jj1;i2+ii2-jj2]            )
+     &     + 8*chi(CHF_IX[i0+2*ii0-jj0;i1+2*ii1-jj1;i2+2*ii2-jj2]      )
+     &     + 8*chi(CHF_IX[i0-2*ii0+jj0;i1-2*ii1+jj1;i2-2*ii2+jj2]      )
+     &     -64*chi(CHF_IX[i0-ii0+jj0;i1-ii1+jj1;i2-ii2+jj2]            )
+     &     +64*chi(CHF_IX[i0+ii0+jj0;i1+ii1+jj1;i2+ii2+jj2]            )
+     &     - 8*chi(CHF_IX[i0+2*ii0+jj0;i1+2*ii1+jj1;i2+2*ii2+jj2]      )
+     &     -   chi(CHF_IX[i0-2*ii0+2*jj0;i1-2*ii1+2*jj1;i2-2*ii2+2*jj2])
+     &     + 8*chi(CHF_IX[i0-ii0+2*jj0;i1-ii1+2*jj1;i2-ii2+2*jj2]      )
+     &     - 8*chi(CHF_IX[i0+ii0+2*jj0;i1+ii1+2*jj1;i2+ii2+2*jj2]      )
+     &     +   chi(CHF_IX[i0+2*ii0+2*jj0;i1+2*ii1+2*jj1;i2+2*ii2+2*jj2])
+     &       )
+
+           d2_alph(d0,d1) = odxsq144 * (
+     &         lapse(CHF_IX[i0-2*ii0-2*jj0;i1-2*ii1-2*jj1;i2-2*ii2-2*jj2])
+     &     - 8*lapse(CHF_IX[i0-ii0-2*jj0;i1-ii1-2*jj1;i2-ii2-2*jj2]      )
+     &     + 8*lapse(CHF_IX[i0+ii0-2*jj0;i1+ii1-2*jj1;i2+ii2-2*jj2]      )
+     &     -   lapse(CHF_IX[i0+2*ii0-2*jj0;i1+2*ii1-2*jj1;i2+2*ii2-2*jj2])
+     &     - 8*lapse(CHF_IX[i0-2*ii0-jj0;i1-2*ii1-jj1;i2-2*ii2-jj2]      )
+     &     +64*lapse(CHF_IX[i0-ii0-jj0;i1-ii1-jj1;i2-ii2-jj2]            )
+     &     -64*lapse(CHF_IX[i0+ii0-jj0;i1+ii1-jj1;i2+ii2-jj2]            )
+     &     + 8*lapse(CHF_IX[i0+2*ii0-jj0;i1+2*ii1-jj1;i2+2*ii2-jj2]      )
+     &     + 8*lapse(CHF_IX[i0-2*ii0+jj0;i1-2*ii1+jj1;i2-2*ii2+jj2]      )
+     &     -64*lapse(CHF_IX[i0-ii0+jj0;i1-ii1+jj1;i2-ii2+jj2]            )
+     &     +64*lapse(CHF_IX[i0+ii0+jj0;i1+ii1+jj1;i2+ii2+jj2]            )
+     &     - 8*lapse(CHF_IX[i0+2*ii0+jj0;i1+2*ii1+jj1;i2+2*ii2+jj2]      )
+     &     -   lapse(CHF_IX[i0-2*ii0+2*jj0;i1-2*ii1+2*jj1;i2-2*ii2+2*jj2])
+     &     + 8*lapse(CHF_IX[i0-ii0+2*jj0;i1-ii1+2*jj1;i2-ii2+2*jj2]      )
+     &     - 8*lapse(CHF_IX[i0+ii0+2*jj0;i1+ii1+2*jj1;i2+ii2+2*jj2]      )
+     &     +   lapse(CHF_IX[i0+2*ii0+2*jj0;i1+2*ii1+2*jj1;i2+2*ii2+2*jj2])
+     &       )
+
+         enddo; enddo
+
+         do d0 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d0,0);
+             ii1 = CHF_ID(d0,1);
+             ii2 = CHF_ID(d0,2)]
+
+           d2_ch(d0,d0) = odxsq12 * (
+     &         -chi(CHF_OFFSETIX[i;-2*ii])
+     &     + 16*chi(CHF_OFFSETIX[i;-ii]  )
+     &     - 30*chi(CHF_AUTOIX[i]        )
+     &     + 16*chi(CHF_OFFSETIX[i;+ii]  )
+     &     -    chi(CHF_OFFSETIX[i;+2*ii])
+     &       )
+
+           d2_alph(d0,d0) = odxsq12 * (
+     &         -lapse(CHF_OFFSETIX[i;-2*ii])
+     &     + 16*lapse(CHF_OFFSETIX[i;-ii]  )
+     &     - 30*lapse(CHF_AUTOIX[i]        )
+     &     + 16*lapse(CHF_OFFSETIX[i;+ii]  )
+     &     -    lapse(CHF_OFFSETIX[i;+2*ii])
+     &       )
+
+         enddo
+
+         do d0 = 0,2; do d1 = 0,2; do d2 = 0,CH_SPACEDIM-1; do d3 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d2,0);
+             ii1 = CHF_ID(d2,1);
+             ii2 = CHF_ID(d2,2)]
+           CHF_DTERM[
+             jj0 = CHF_ID(d3,0);
+             jj1 = CHF_ID(d3,1);
+             jj2 = CHF_ID(d3,2)]
+
+           if (d2 .eq. d3) cycle
+
+           d2_hh(d0,d1,d2,d3) = odxsq144 * (
+     &         h(CHF_IX[i0-2*ii0-2*jj0;i1-2*ii1-2*jj1;i2-2*ii2-2*jj2],IDX(d0,d1))
+     &     - 8*h(CHF_IX[i0-ii0-2*jj0;i1-ii1-2*jj1;i2-ii2-2*jj2]      ,IDX(d0,d1))
+     &     + 8*h(CHF_IX[i0+ii0-2*jj0;i1+ii1-2*jj1;i2+ii2-2*jj2]      ,IDX(d0,d1))
+     &     -   h(CHF_IX[i0+2*ii0-2*jj0;i1+2*ii1-2*jj1;i2+2*ii2-2*jj2],IDX(d0,d1))
+     &     - 8*h(CHF_IX[i0-2*ii0-jj0;i1-2*ii1-jj1;i2-2*ii2-jj2]      ,IDX(d0,d1))
+     &     +64*h(CHF_IX[i0-ii0-jj0;i1-ii1-jj1;i2-ii2-jj2]            ,IDX(d0,d1))
+     &     -64*h(CHF_IX[i0+ii0-jj0;i1+ii1-jj1;i2+ii2-jj2]            ,IDX(d0,d1))
+     &     + 8*h(CHF_IX[i0+2*ii0-jj0;i1+2*ii1-jj1;i2+2*ii2-jj2]      ,IDX(d0,d1))
+     &     + 8*h(CHF_IX[i0-2*ii0+jj0;i1-2*ii1+jj1;i2-2*ii2+jj2]      ,IDX(d0,d1))
+     &     -64*h(CHF_IX[i0-ii0+jj0;i1-ii1+jj1;i2-ii2+jj2]            ,IDX(d0,d1))
+     &     +64*h(CHF_IX[i0+ii0+jj0;i1+ii1+jj1;i2+ii2+jj2]            ,IDX(d0,d1))
+     &     - 8*h(CHF_IX[i0+2*ii0+jj0;i1+2*ii1+jj1;i2+2*ii2+jj2]      ,IDX(d0,d1))
+     &     -   h(CHF_IX[i0-2*ii0+2*jj0;i1-2*ii1+2*jj1;i2-2*ii2+2*jj2],IDX(d0,d1))
+     &     + 8*h(CHF_IX[i0-ii0+2*jj0;i1-ii1+2*jj1;i2-ii2+2*jj2]      ,IDX(d0,d1))
+     &     - 8*h(CHF_IX[i0+ii0+2*jj0;i1+ii1+2*jj1;i2+ii2+2*jj2]      ,IDX(d0,d1))
+     &     +   h(CHF_IX[i0+2*ii0+2*jj0;i1+2*ii1+2*jj1;i2+2*ii2+2*jj2],IDX(d0,d1))
+     &       )
+         enddo; enddo; enddo; enddo
+
+         do d0 = 0,2; do d1 = 0,2; do d2 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d2,0);
+             ii1 = CHF_ID(d2,1);
+             ii2 = CHF_ID(d2,2)]
+
+           d2_hh(d0,d1,d2,d2) = odxsq12 * (
+     &         -h(CHF_OFFSETIX[i;-2*ii],IDX(d0,d1))
+     &     + 16*h(CHF_OFFSETIX[i;-ii]  ,IDX(d0,d1))
+     &     - 30*h(CHF_AUTOIX[i]        ,IDX(d0,d1))
+     &     + 16*h(CHF_OFFSETIX[i;+ii]  ,IDX(d0,d1))
+     &     -    h(CHF_OFFSETIX[i;+2*ii],IDX(d0,d1))
+     &       )
+         enddo; enddo; enddo
+
+
+         do d0 = 0,2; do d1 = 0,CH_SPACEDIM-1; do d2 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d1,0);
+             ii1 = CHF_ID(d1,1);
+             ii2 = CHF_ID(d1,2)]
+           CHF_DTERM[
+             jj0 = CHF_ID(d2,0);
+             jj1 = CHF_ID(d2,1);
+             jj2 = CHF_ID(d2,2)]
+
+           if (d1 .eq. d2) cycle
+
+           d2_beta(d0,d1,d2) = odxsq144 * (
+     &         shift(CHF_IX[i0-2*ii0-2*jj0;i1-2*ii1-2*jj1;i2-2*ii2-2*jj2],d0)
+     &     - 8*shift(CHF_IX[i0-ii0-2*jj0;i1-ii1-2*jj1;i2-ii2-2*jj2]      ,d0)
+     &     + 8*shift(CHF_IX[i0+ii0-2*jj0;i1+ii1-2*jj1;i2+ii2-2*jj2]      ,d0)
+     &     -   shift(CHF_IX[i0+2*ii0-2*jj0;i1+2*ii1-2*jj1;i2+2*ii2-2*jj2],d0)
+     &     - 8*shift(CHF_IX[i0-2*ii0-jj0;i1-2*ii1-jj1;i2-2*ii2-jj2]      ,d0)
+     &     +64*shift(CHF_IX[i0-ii0-jj0;i1-ii1-jj1;i2-ii2-jj2]            ,d0)
+     &     -64*shift(CHF_IX[i0+ii0-jj0;i1+ii1-jj1;i2+ii2-jj2]            ,d0)
+     &     + 8*shift(CHF_IX[i0+2*ii0-jj0;i1+2*ii1-jj1;i2+2*ii2-jj2]      ,d0)
+     &     + 8*shift(CHF_IX[i0-2*ii0+jj0;i1-2*ii1+jj1;i2-2*ii2+jj2]      ,d0)
+     &     -64*shift(CHF_IX[i0-ii0+jj0;i1-ii1+jj1;i2-ii2+jj2]            ,d0)
+     &     +64*shift(CHF_IX[i0+ii0+jj0;i1+ii1+jj1;i2+ii2+jj2]            ,d0)
+     &     - 8*shift(CHF_IX[i0+2*ii0+jj0;i1+2*ii1+jj1;i2+2*ii2+jj2]      ,d0)
+     &     -   shift(CHF_IX[i0-2*ii0+2*jj0;i1-2*ii1+2*jj1;i2-2*ii2+2*jj2],d0)
+     &     + 8*shift(CHF_IX[i0-ii0+2*jj0;i1-ii1+2*jj1;i2-ii2+2*jj2]      ,d0)
+     &     - 8*shift(CHF_IX[i0+ii0+2*jj0;i1+ii1+2*jj1;i2+ii2+2*jj2]      ,d0)
+     &     +   shift(CHF_IX[i0+2*ii0+2*jj0;i1+2*ii1+2*jj1;i2+2*ii2+2*jj2],d0)
+     &       )
+         enddo; enddo; enddo
+
+         do d0 = 0,2; do d1 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d1,0);
+             ii1 = CHF_ID(d1,1);
+             ii2 = CHF_ID(d1,2)]
+
+           d2_beta(d0,d1,d1) = odxsq12 * (
+     &         -shift(CHF_OFFSETIX[i;-2*ii],d0)
+     &     + 16*shift(CHF_OFFSETIX[i;-ii]  ,d0)
+     &     - 30*shift(CHF_AUTOIX[i]        ,d0)
+     &     + 16*shift(CHF_OFFSETIX[i;+ii]  ,d0)
+     &     -    shift(CHF_OFFSETIX[i;+2*ii],d0)
+     &       )
+         enddo; enddo
+         !----------------------------------------2}}}
+
+         !------------ Advection derivatives ------ {{{2
+         ad1_ch    = 0
+         ad1_trk   = 0
+         ad1_alph  = 0
+
+         ad1_gamma = 0
+         ad1_beta  = 0
+         ad1_B     = 0
+
+         ad1_hh    = 0
+         ad1_aa    = 0
+
+         ad1_Th    = 0
+
+         do d0 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d0,0);
+             ii1 = CHF_ID(d0,1);
+             ii2 = CHF_ID(d0,2)]
+
+           if ((shift(CHF_AUTOIX[i],d0) .lt. 0) .and. (advec2 .eq. 1)) then
+           ad1_ch = ad1_ch
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d0)*(
+     &            + chi(CHF_OFFSETIX[i;-2*ii])
+     &            - 4*chi(CHF_OFFSETIX[i;-ii])
+     &            + 3*chi(CHF_AUTOIX[i]      )
+     &            )
+
+           ad1_trk = ad1_trk
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d0)*(
+     &            + K(CHF_OFFSETIX[i;-2*ii])
+     &            - 4*K(CHF_OFFSETIX[i;-ii])
+     &            + 3*K(CHF_AUTOIX[i]      )
+     &            )
+
+           ad1_alph = ad1_alph
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d0)*(
+     &            + lapse(CHF_OFFSETIX[i;-2*ii])
+     &            - 4*lapse(CHF_OFFSETIX[i;-ii])
+     &            + 3*lapse(CHF_AUTOIX[i]      )
+     &            )
+
+           ad1_Th = ad1_Th
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d0)*(
+     &            + Theta(CHF_OFFSETIX[i;-2*ii])
+     &            - 4*Theta(CHF_OFFSETIX[i;-ii])
+     &            + 3*Theta(CHF_AUTOIX[i]      )
+     &            )
+
+           elseif ((shift(CHF_AUTOIX[i],d0) .lt. 0) .and. (advec2 .eq. 0)) then
+           ad1_ch = ad1_ch
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d0)*(
+     &                -chi(CHF_OFFSETIX[i;-3*ii])
+     &            +  6*chi(CHF_OFFSETIX[i;-2*ii])
+     &            - 18*chi(CHF_OFFSETIX[i;-ii]  )
+     &            + 10*chi(CHF_AUTOIX[i]        )
+     &            +  3*chi(CHF_OFFSETIX[i;+ii]  )
+     &            )
+
+           ad1_trk = ad1_trk
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d0)*(
+     &                -K(CHF_OFFSETIX[i;-3*ii])
+     &            +  6*K(CHF_OFFSETIX[i;-2*ii])
+     &            - 18*K(CHF_OFFSETIX[i;-ii]  )
+     &            + 10*K(CHF_AUTOIX[i]        )
+     &            +  3*K(CHF_OFFSETIX[i;+ii]  )
+     &            )
+
+           ad1_alph = ad1_alph
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d0)*(
+     &                -lapse(CHF_OFFSETIX[i;-3*ii])
+     &            +  6*lapse(CHF_OFFSETIX[i;-2*ii])
+     &            - 18*lapse(CHF_OFFSETIX[i;-ii]  )
+     &            + 10*lapse(CHF_AUTOIX[i]        )
+     &            +  3*lapse(CHF_OFFSETIX[i;+ii]  )
+     &            )
+
+           ad1_Th = ad1_Th
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d0)*(
+     &                -Theta(CHF_OFFSETIX[i;-3*ii])
+     &            +  6*Theta(CHF_OFFSETIX[i;-2*ii])
+     &            - 18*Theta(CHF_OFFSETIX[i;-ii]  )
+     &            + 10*Theta(CHF_AUTOIX[i]        )
+     &            +  3*Theta(CHF_OFFSETIX[i;+ii]  )
+     &            )
+
+           elseif((shift(CHF_AUTOIX[i],d0) .ge. 0) .and. (advec2 .eq. 1)) then
+           ad1_ch = ad1_ch
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d0)*(
+     &            - chi(CHF_OFFSETIX[i;+2*ii])
+     &            + 4*chi(CHF_OFFSETIX[i;+ii])
+     &            - 3*chi(CHF_AUTOIX[i]      )
+     &            )
+
+           ad1_trk = ad1_trk
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d0)*(
+     &            - K(CHF_OFFSETIX[i;+2*ii])
+     &            + 4*K(CHF_OFFSETIX[i;+ii])
+     &            - 3*K(CHF_AUTOIX[i]      )
+     &            )
+
+           ad1_alph = ad1_alph
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d0)*(
+     &            - lapse(CHF_OFFSETIX[i;+2*ii])
+     &            + 4*lapse(CHF_OFFSETIX[i;+ii])
+     &            - 3*lapse(CHF_AUTOIX[i]      )
+     &            )
+
+           ad1_Th = ad1_Th
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d0)*(
+     &            - Theta(CHF_OFFSETIX[i;+2*ii])
+     &            + 4*Theta(CHF_OFFSETIX[i;+ii])
+     &            - 3*Theta(CHF_AUTOIX[i]      )
+     &            )
+
+           else
+           ad1_ch = ad1_ch
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d0)*(
+     &                 chi(CHF_OFFSETIX[i;+3*ii])
+     &            -  6*chi(CHF_OFFSETIX[i;+2*ii])
+     &            + 18*chi(CHF_OFFSETIX[i;+ii]  )
+     &            - 10*chi(CHF_AUTOIX[i]        )
+     &            -  3*chi(CHF_OFFSETIX[i;-ii]  )
+     &            )
+
+           ad1_trk = ad1_trk
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d0)*(
+     &                 K(CHF_OFFSETIX[i;+3*ii])
+     &            -  6*K(CHF_OFFSETIX[i;+2*ii])
+     &            + 18*K(CHF_OFFSETIX[i;+ii]  )
+     &            - 10*K(CHF_AUTOIX[i]        )
+     &            -  3*K(CHF_OFFSETIX[i;-ii]  )
+     &            )
+
+           ad1_alph = ad1_alph
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d0)*(
+     &                 lapse(CHF_OFFSETIX[i;+3*ii])
+     &            -  6*lapse(CHF_OFFSETIX[i;+2*ii])
+     &            + 18*lapse(CHF_OFFSETIX[i;+ii]  )
+     &            - 10*lapse(CHF_AUTOIX[i]        )
+     &            -  3*lapse(CHF_OFFSETIX[i;-ii]  )
+     &            )
+
+           ad1_Th = ad1_Th
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d0)*(
+     &                 Theta(CHF_OFFSETIX[i;+3*ii])
+     &            -  6*Theta(CHF_OFFSETIX[i;+2*ii])
+     &            + 18*Theta(CHF_OFFSETIX[i;+ii]  )
+     &            - 10*Theta(CHF_AUTOIX[i]        )
+     &            -  3*Theta(CHF_OFFSETIX[i;-ii]  )
+     &            )
+
+           endif
+         enddo
+
+
+         do d0 =0,2; do d1 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d1,0);
+             ii1 = CHF_ID(d1,1);
+             ii2 = CHF_ID(d1,2)]
+
+           if ((shift(CHF_AUTOIX[i],d1) .lt. 0) .and. (advec2 .eq. 1)) then
+           ad1_gamma(d0) = ad1_gamma(d0)
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d1)*(
+     &            + Gamma1(CHF_OFFSETIX[i;-2*ii],d0)
+     &            - 4*Gamma1(CHF_OFFSETIX[i;-ii],d0)
+     &            + 3*Gamma1(CHF_AUTOIX[i]      ,d0)
+     &            )
+
+           ad1_beta(d0) = ad1_beta(d0)
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d1)*(
+     &            + shift(CHF_OFFSETIX[i;-2*ii],d0)
+     &            - 4*shift(CHF_OFFSETIX[i;-ii],d0)
+     &            + 3*shift(CHF_AUTOIX[i]      ,d0)
+     &            )
+
+           ad1_B(d0) = ad1_B(d0)
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d1)*(
+     &            + B(CHF_OFFSETIX[i;-2*ii],d0)
+     &            - 4*B(CHF_OFFSETIX[i;-ii],d0)
+     &            + 3*B(CHF_AUTOIX[i]      ,d0)
+     &            )
+           elseif ((shift(CHF_AUTOIX[i],d1) .lt. 0) .and. (advec2 .eq. 0)) then
+           ad1_gamma(d0) = ad1_gamma(d0)
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d1)*(
+     &                -Gamma1(CHF_OFFSETIX[i;-3*ii],d0)
+     &            +  6*Gamma1(CHF_OFFSETIX[i;-2*ii],d0)
+     &            - 18*Gamma1(CHF_OFFSETIX[i;-ii]  ,d0)
+     &            + 10*Gamma1(CHF_AUTOIX[i]        ,d0)
+     &            +  3*Gamma1(CHF_OFFSETIX[i;+ii]  ,d0)
+     &            )
+
+           ad1_beta(d0) = ad1_beta(d0)
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d1)*(
+     &                -shift(CHF_OFFSETIX[i;-3*ii],d0)
+     &            +  6*shift(CHF_OFFSETIX[i;-2*ii],d0)
+     &            - 18*shift(CHF_OFFSETIX[i;-ii]  ,d0)
+     &            + 10*shift(CHF_AUTOIX[i]        ,d0)
+     &            +  3*shift(CHF_OFFSETIX[i;+ii]  ,d0)
+     &            )
+
+           ad1_B(d0) = ad1_B(d0)
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d1)*(
+     &                -B(CHF_OFFSETIX[i;-3*ii],d0)
+     &            +  6*B(CHF_OFFSETIX[i;-2*ii],d0)
+     &            - 18*B(CHF_OFFSETIX[i;-ii]  ,d0)
+     &            + 10*B(CHF_AUTOIX[i]        ,d0)
+     &            +  3*B(CHF_OFFSETIX[i;+ii]  ,d0)
+     &            )
+           elseif ((shift(CHF_AUTOIX[i],d1) .ge. 0) .and. (advec2 .eq. 1)) then
+           ad1_gamma(d0) = ad1_gamma(d0)
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d1)*(
+     &            - Gamma1(CHF_OFFSETIX[i;+2*ii],d0)
+     &            + 4*Gamma1(CHF_OFFSETIX[i;+ii],d0)
+     &            - 3*Gamma1(CHF_AUTOIX[i]      ,d0)
+     &            )
+
+           ad1_beta(d0) = ad1_beta(d0)
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d1)*(
+     &            - shift(CHF_OFFSETIX[i;+2*ii],d0)
+     &            + 4*shift(CHF_OFFSETIX[i;+ii],d0)
+     &            - 3*shift(CHF_AUTOIX[i]      ,d0)
+     &            )
+
+           ad1_B(d0) = ad1_B(d0)
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d1)*(
+     &            - B(CHF_OFFSETIX[i;+2*ii],d0)
+     &            + 4*B(CHF_OFFSETIX[i;+ii],d0)
+     &            - 3*B(CHF_AUTOIX[i]      ,d0)
+     &            )
+           else
+           ad1_gamma(d0) = ad1_gamma(d0)
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d1)*(
+     &                 Gamma1(CHF_OFFSETIX[i;+3*ii],d0)
+     &            -  6*Gamma1(CHF_OFFSETIX[i;+2*ii],d0)
+     &            + 18*Gamma1(CHF_OFFSETIX[i;+ii]  ,d0)
+     &            - 10*Gamma1(CHF_AUTOIX[i]        ,d0)
+     &            -  3*Gamma1(CHF_OFFSETIX[i;-ii]  ,d0)
+     &            )
+
+           ad1_beta(d0) = ad1_beta(d0)
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d1)*(
+     &                 shift(CHF_OFFSETIX[i;+3*ii],d0)
+     &            -  6*shift(CHF_OFFSETIX[i;+2*ii],d0)
+     &            + 18*shift(CHF_OFFSETIX[i;+ii]  ,d0)
+     &            - 10*shift(CHF_AUTOIX[i]        ,d0)
+     &            -  3*shift(CHF_OFFSETIX[i;-ii]  ,d0)
+     &            )
+
+           ad1_B(d0) = ad1_B(d0)
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d1)*(
+     &                 B(CHF_OFFSETIX[i;+3*ii],d0)
+     &            -  6*B(CHF_OFFSETIX[i;+2*ii],d0)
+     &            + 18*B(CHF_OFFSETIX[i;+ii]  ,d0)
+     &            - 10*B(CHF_AUTOIX[i]        ,d0)
+     &            -  3*B(CHF_OFFSETIX[i;-ii]  ,d0)
+     &            )
+           endif
+         enddo; enddo
+
+
+         do d0 =0,2; do d1 = 0,2; do d2 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d2,0);
+             ii1 = CHF_ID(d2,1);
+             ii2 = CHF_ID(d2,2)]
+
+           if ((shift(CHF_AUTOIX[i],d2) .lt. 0) .and. (advec2 .eq. 1)) then
+           ad1_hh(d0,d1) = ad1_hh(d0,d1)
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d2)*(
+     &            + h(CHF_OFFSETIX[i;-2*ii],IDX(d0,d1))
+     &            - 4*h(CHF_OFFSETIX[i;-ii],IDX(d0,d1))
+     &            + 3*h(CHF_AUTOIX[i]      ,IDX(d0,d1))
+     &            )
+
+           ad1_aa(d0,d1) = ad1_aa(d0,d1)
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d2)*(
+     &            + A(CHF_OFFSETIX[i;-2*ii],IDX(d0,d1))
+     &            - 4*A(CHF_OFFSETIX[i;-ii],IDX(d0,d1))
+     &            + 3*A(CHF_AUTOIX[i]      ,IDX(d0,d1))
+     &            )
+
+           elseif ((shift(CHF_AUTOIX[i],d2) .lt. 0) .and. (advec2 .eq. 0)) then
+           ad1_hh(d0,d1) = ad1_hh(d0,d1)
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d2)*(
+     &                -h(CHF_OFFSETIX[i;-3*ii],IDX(d0,d1))
+     &            +  6*h(CHF_OFFSETIX[i;-2*ii],IDX(d0,d1))
+     &            - 18*h(CHF_OFFSETIX[i;-ii]  ,IDX(d0,d1))
+     &            + 10*h(CHF_AUTOIX[i]        ,IDX(d0,d1))
+     &            +  3*h(CHF_OFFSETIX[i;+ii]  ,IDX(d0,d1))
+     &            )
+
+           ad1_aa(d0,d1) = ad1_aa(d0,d1)
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d2)*(
+     &                -A(CHF_OFFSETIX[i;-3*ii],IDX(d0,d1))
+     &            +  6*A(CHF_OFFSETIX[i;-2*ii],IDX(d0,d1))
+     &            - 18*A(CHF_OFFSETIX[i;-ii]  ,IDX(d0,d1))
+     &            + 10*A(CHF_AUTOIX[i]        ,IDX(d0,d1))
+     &            +  3*A(CHF_OFFSETIX[i;+ii]  ,IDX(d0,d1))
+     &            )
+           elseif ((shift(CHF_AUTOIX[i],d2) .ge. 0) .and. (advec2 .eq. 1)) then
+           ad1_hh(d0,d1) = ad1_hh(d0,d1)
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d2)*(
+     &            - h(CHF_OFFSETIX[i;+2*ii],IDX(d0,d1))
+     &            + 4*h(CHF_OFFSETIX[i;+ii],IDX(d0,d1))
+     &            - 3*h(CHF_AUTOIX[i]      ,IDX(d0,d1))
+     &            )
+
+           ad1_aa(d0,d1) = ad1_aa(d0,d1)
+     &            + dxinv/2*shift(CHF_AUTOIX[i],d2)*(
+     &            - A(CHF_OFFSETIX[i;+2*ii],IDX(d0,d1))
+     &            + 4*A(CHF_OFFSETIX[i;+ii],IDX(d0,d1))
+     &            - 3*A(CHF_AUTOIX[i]      ,IDX(d0,d1))
+     &            )
+           else
+           ad1_hh(d0,d1) = ad1_hh(d0,d1)
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d2)*(
+     &                 h(CHF_OFFSETIX[i;+3*ii],IDX(d0,d1))
+     &            -  6*h(CHF_OFFSETIX[i;+2*ii],IDX(d0,d1))
+     &            + 18*h(CHF_OFFSETIX[i;+ii]  ,IDX(d0,d1))
+     &            - 10*h(CHF_AUTOIX[i]        ,IDX(d0,d1))
+     &            -  3*h(CHF_OFFSETIX[i;-ii]  ,IDX(d0,d1))
+     &            )
+
+           ad1_aa(d0,d1) = ad1_aa(d0,d1)
+     &            + dxinv/12*shift(CHF_AUTOIX[i],d2)*(
+     &                 A(CHF_OFFSETIX[i;+3*ii],IDX(d0,d1))
+     &            -  6*A(CHF_OFFSETIX[i;+2*ii],IDX(d0,d1))
+     &            + 18*A(CHF_OFFSETIX[i;+ii]  ,IDX(d0,d1))
+     &            - 10*A(CHF_AUTOIX[i]        ,IDX(d0,d1))
+     &            -  3*A(CHF_OFFSETIX[i;-ii]  ,IDX(d0,d1))
+     &            )
+           endif
+         enddo; enddo; enddo
+         !--- Advection derivatives 2}}}
+
+      !-------- Computation of the rhs starts here {{{2
+
+      !------------ Christoffel symbols ----------
+      cf1 = 0
+      do d0 = 0, 2
+        do d1 = 0, 2
+          do d2 = d1, 2
+            cf1(d0,d1,d2) = 0.5d0 * (d1_hh(d0,d1,d2) + d1_hh(d0,d2,d1) - d1_hh(d1,d2,d0))
+          enddo
+        enddo
+      enddo
+      cf1(:,1,0) = cf1(:,0,1)
+      cf1(:,2,0) = cf1(:,0,2)
+      cf1(:,2,1) = cf1(:,1,2)
+
+      cf2  = 0
+      cft2 = 0
+      do d0 = 0, 2
+        do d1 = 0, 2
+          do d2 = 0, 2
+            do d3 = 0, 2
+              cf2(d0,d1,d2)  = cf2(d0,d1,d2)  + hu(d0,d3) * cf1(d3,d1,d2)
+              cft2(d1,d2,d0) = cft2(d1,d2,d0) + cf1(d1,d2,d3) * hu(d3,d0)
+            enddo
+          enddo
+        enddo
+      enddo
+      cf2(:,1,0) = cf2(:,0,1)
+      cf2(:,2,0) = cf2(:,0,2)
+      cf2(:,2,1) = cf2(:,1,2)
+
+      ! The conformal connection functions calculated from the conformal metric
+      ! used instead of gamma where no derivatives of gamma are taken
+      ! Zvec has index up
+      gamcon = 0
+     ! Zvec   = ch * gamma
+      do d0 = 0, 2
+        do d1 = 0, 2
+          do d2 = 0, 2
+            gamcon(d0) = gamcon(d0) + hu(d1,d2) * cf2(d0,d1,d2)
+     !       Zvec(d0)   = Zvec(d0)   + gu(d0,d1) * hh(d1,d2) * gamma(d2)
+            do d3 = 0, 2
+     !         gamcon(d0) = gamcon(d0) + hu(d0,d1) * hu(d2,d3) * d1_hh(d1,d3,d2)
+     !         Zvec(d0)   = Zvec(d0) - gu(d0,d1) * hu(d2,d3) * d1_hh(d1,d3,d2)
+     !         Zvec(d0)   = Zvec(d0) + gu(d0,d1) * ( - d1_hh(d1,d3,d2) * hu(d3,d2) )
+            enddo
+          enddo
+        enddo
+      enddo
+      !Zvec = Zvec / 2
+      Zvec = ch*(gamma-gamcon)/2.d0
+      !--------------------------------------------------
+
+      !------------- Ricci tensor -----------------------
+      ! For Z4C: Add Z term by changing gamma to gamcon
+      !--------------------------------------------------
+      c_ri_hh = 0
+      do d0 = 0, 2
+        do d1 = 0, 2
+          do d2 = 0, 2
+            c_ri_hh(d0,d1) = c_ri_hh(d0,d1) + hh(d2,d0) * d1_gamma(d2,d1) / 2
+     &                                      + hh(d2,d1) * d1_gamma(d2,d0) / 2
+     &                                      + gamcon(d2) * (cf1(d0,d1,d2) + cf1(d1,d0,d2)) / 2
+            do d3 = 0, 2
+              c_ri_hh(d0,d1) = c_ri_hh(d0,d1) - hu(d2,d3) * d2_hh(d0,d1,d2,d3) / 2
+     &                                        + cf2(d2,d0,d3) * cft2(d1,d2,d3)
+     &                                        + cf2(d2,d1,d3) * cft2(d0,d2,d3)
+     &                                        + cf2(d2,d0,d3) * cft2(d2,d1,d3)
+            enddo
+          enddo
+        enddo
+      enddo
+      c_ri_hh(1,0) = c_ri_hh(0,1)
+      c_ri_hh(2,0) = c_ri_hh(0,2)
+      c_ri_hh(2,1) = c_ri_hh(1,2)
+
+      !------------ Covariant derivatives --------
+      cd2_ch   = d2_ch
+      cd2_alph = d2_alph
+      do d0 = 0, 2
+        do d1 = d0, 2
+          do d2 = 0, 2
+            cd2_ch(d0,d1)   = cd2_ch(d0,d1)   - cf2(d2,d0,d1) * d1_ch(d2)
+            cd2_alph(d0,d1) = cd2_alph(d0,d1) - cf2(d2,d0,d1) * d1_alph(d2)
+          enddo
+        enddo
+      enddo
+      cd2_ch(1,0)   = cd2_ch(0,1)
+      cd2_ch(2,0)   = cd2_ch(0,2)
+      cd2_ch(2,1)   = cd2_ch(1,2)
+      cd2_alph(1,0) = cd2_alph(0,1)
+      cd2_alph(2,0) = cd2_alph(0,2)
+      cd2_alph(2,1) = cd2_alph(1,2)
+      !-------------------------------------------
+
+
+      !------------ Ricci Tensor -----------------
+      c_ri_ph = 0
+
+      tr_cd2_ch = 0
+      tr_dch_dch = 0
+
+      do d3 = 0, 2
+        do d4 = 0, 2
+          tr_cd2_ch  = tr_cd2_ch  + hu(d3,d4) * cd2_ch(d3,d4)
+          tr_dch_dch = tr_dch_dch + hu(d3,d4) * d1_ch(d3) * d1_ch(d4)
+        enddo
+      enddo
+
+      do d0 = 0, 2
+        do d1 = 0, 2
+          c_ri_ph(d0,d1) =   (cd2_ch(d0,d1) + hh(d0,d1) * tr_cd2_ch)
+     &                     - (d1_ch(d0) * d1_ch(d1) + 3 * hh(d0,d1) * tr_dch_dch) / (2 * ch)
+        enddo
+      enddo
+      c_ri_ph = c_ri_ph / (2 * ch)
+      c_ri_ph(1,0) = c_ri_ph(0,1)
+      c_ri_ph(2,0) = c_ri_ph(0,2)
+      c_ri_ph(2,1) = c_ri_ph(1,2)
+
+      c_ri = c_ri_ph + c_ri_hh
+
+      do d0 = 0, 2
+        do d1 = 0, 2
+          do d2 = 0, 2
+            c_ri(d0,d1) = c_ri(d0,d1) + (  gg(d0,d2) * Zvec(d2) * d1_ch(d1) + gg(d1,d2) * Zvec(d2) * d1_ch(d0)
+     &                                   - gg(d0,d1) * Zvec(d2) * d1_ch(d2) ) / ch
+     &                                + Zvec(d2) * d1_hh(d0,d1,d2) / ch
+          enddo
+        enddo
+      enddo
+      c_ri(1,0) = c_ri(0,1)
+      c_ri(2,0) = c_ri(0,2)
+      c_ri(2,1) = c_ri(1,2)
+      !-------------------------------------------
+
+      atm = 0
+      do d0 = 0, 2
+        do d1 = 0, 2
+          do d2 = 0, 2
+            atm(d0,d1) = atm(d0,d1) + hu(d0,d2) * aa(d2,d1)
+          enddo
+        enddo
+      enddo
+      atu = 0
+      do d0 = 0, 2
+        do d1 = 0, 2
+          do d2 = 0, 2
+            atu(d0,d1) = atu(d0,d1) + atm(d0,d2) * hu(d2,d1)
+          enddo
+        enddo
+      enddo
+      atu(1,0) = atu(0,1)
+      atu(2,0) = atu(0,2)
+      atu(2,1) = atu(1,2)
+
+      !------------ RHS terms --------------------
+      !-------------------------------------------
+
+      !------------ Advection and Twist terms ----
+      divbeta = 0
+      do d0 = 0, 2
+        divbeta = divbeta + d1_beta(d0,d0)
+      enddo
+
+
+      ! rhs_ch
+      rhs_ch = 2 * ch * ( alph * trk - divbeta ) / 3
+
+      ! rhs_hh
+      dbeta = 0
+      do d0 = 0, 2
+        do d1 = 0, 2
+          do d2 = 0, 2
+            dbeta(d0,d1) = dbeta(d0,d1) + hh(d0,d2) * d1_beta(d2,d1)
+          enddo
+        enddo
+      enddo
+
+      tra = 0
+      do d0 = 0, 2
+        do d1 = 0, 2
+          tra = tra + hu(d0,d1) * aa(d0,d1)
+        enddo
+      enddo
+
+      rhs_hh = - 2 * alph * (aa - hh * tra / 3)
+      do d0 = 0, 2
+        do d1 = 0, 2
+          rhs_hh(d0,d1) = rhs_hh(d0,d1) + dbeta(d0,d1) + dbeta(d1,d0)
+     &                    - 2 * hh(d0,d1) * divbeta / 3
+        enddo
+      enddo
+
+      ! rhs_gamma
+      dotgamma = 2 * gamcon * divbeta / 3
+     &           + 4 * kappa3 * Zvec * divbeta / (3 * ch)
+     &           - 4 * alph * Zvec * trk / (3 * ch)
+      if (covariantZ4 .eq. 1) then
+        dotgamma = dotgamma - 2 * kappa1 *        Zvec / ch
+      else
+        dotgamma = dotgamma - 2 * kappa1 * alph * Zvec / ch
+      endif
+
+      do d0 = 0, 2
+        do d1 = 0, 2
+          dotgamma(d0) = dotgamma(d0) - 4 * alph * hu(d0,d1) * d1_trk(d1) / 3
+     &                    + atu(d0,d1) * (-3 * alph * d1_ch(d1) / ch - 2 * d1_alph(d1))
+     &                    - gamcon(d1) * d1_beta(d0,d1)
+     &                    - 2 * kappa3 * Zvec(d1) * d1_beta(d0,d1) / ch
+     &                    + 2 * hu(d0,d1) * ( alph * d1_Th(d1) - Th * d1_alph(d1) )
+          do d2 = 0, 2
+            dotgamma(d0) = dotgamma(d0) + 2 * alph * cf2(d0,d1,d2) * atu(d1,d2)
+     &                      + hu(d0,d1) * d2_beta(d2,d2,d1) / 3
+     &                      + hu(d1,d2) * d2_beta(d0,d1,d2)
+          enddo
+        enddo
+      enddo
+      rhs_gamma = dotgamma
+
+
+      ! rhs_Theta
+      dotTheta = alph * ( trk * trk / 3 -  trk * Th )
+      if (covariantZ4 .eq. 1) then
+        dotTheta = dotTheta - kappa1 *        (2 + kappa2) * Th
+      else
+        dotTheta = dotTheta - kappa1 * alph * (2 + kappa2) * Th
+      endif
+
+      do d0 = 0, 2
+        dotTheta = dotTheta - Zvec(d0) * d1_alph(d0)
+        do d1 = 0, 2
+          dotTheta = dotTheta + alph * ( gu(d0,d1) * c_ri(d0,d1) - atm(d0,d1) * atm(d1,d0) ) / 2
+        enddo
+      enddo
+      rhs_Theta = dotTheta
+
+
+      ! rhs_trk
+      dottrk = alph * trk * trk / 3
+     &         + 2 * dotTheta
+      if (covariantZ4 .eq. 1) then
+        dottrk = dottrk + kappa1 *        (1-kappa2) * Th
+      else
+        dottrk = dottrk + kappa1 * alph * (1-kappa2) * Th
+      endif
+
+      do d0 = 0, 2
+        dottrk = dottrk 
+     &                  + ch * gamcon(d0) * d1_alph(d0)
+     &                  + 2 * Zvec(d0) * d1_alph(d0)
+        do d1 = 0, 2
+          dottrk = dottrk 
+     &                    - ch * hu(d0,d1) * ( d2_alph(d0,d1) - d1_ch(d0) * d1_alph(d1) / (2 * ch) )
+     &                    + alph * atm(d0,d1) * atm(d1,d0)
+        enddo
+      enddo
+      rhs_trk = dottrk
+
+      ! rhs_aa
+      ats = 0
+      do d0 = 0, 2
+        do d1 = 0, 2
+         ats(d0,d1) = ats(d0,d1) - cd2_alph(d0,d1)
+     &               - ( d1_alph(d0) * d1_ch(d1) + d1_alph(d1) * d1_ch(d0) )/(2*ch)
+     &               + alph * c_ri(d0,d1)
+        enddo
+      enddo
+
+      ! Note that tra here is different from the one above
+      tra = 0
+      do d0 = 0, 2
+        do d1 = 0, 2
+          tra = tra + gu(d0,d1) * ats(d0,d1)
+        enddo
+      enddo
+
+      ! rhs_aa
+      ! NB: This is a different dbeta from above. Use separate variable names!
+      dbeta = 0
+      do d0 = 0, 2
+        do d1 = 0, 2
+          do d2 = 0, 2
+            dbeta(d0,d1) = dbeta(d0,d1) + aa(d0,d2) * d1_beta(d2,d1)
+          enddo
+        enddo
+      enddo
+
+
+      rhs_aa = ch * ( ats - gg * tra / 3 )
+     &        + alph * (trk - 2 * Th) * aa
+      do d0 = 0, 2
+        do d1 = 0, 2
+          rhs_aa(d0,d1) = rhs_aa(d0,d1) + dbeta(d0,d1) + dbeta(d1,d0)
+     &                    - 2 * aa(d0,d1) * divbeta / 3
+          do d2 = 0, 2
+            rhs_aa(d0,d1) = rhs_aa(d0,d1) - 2 * alph * aa(d0,d2) * atm(d2,d1)
+          enddo
+        enddo
+      enddo
+
+      ! rhs for lapse and shift
+      rhs_alph = - 2 * alph * (trk - 2 * Th)
+      rhs_beta = ShiftGammaCoeff * bb
+      rhs_B    = dotgamma - BetaDriver * bb
+
+      !-------------------------------------------
+
+      !------------ Add advection ----------------
+      rhs_ch    = rhs_ch + ad1_ch
+
+      rhs_hh    = rhs_hh + ad1_hh
+
+      rhs_gamma = rhs_gamma + ad1_gamma
+
+      rhs_Theta = rhs_Theta + ad1_Th
+
+      rhs_trk   = rhs_trk + ad1_trk
+
+      rhs_aa    = rhs_aa + ad1_aa
+
+      rhs_alph  = rhs_alph + LapseAdvectionCoeff * ad1_alph
+
+      rhs_beta  = rhs_beta + ShiftAdvectionCoeff * ad1_beta
+
+      rhs_B = rhs_B + ShiftAdvectionCoeff * ad1_B + (1-ShiftAdvectionCoeff) * ad1_gamma
+
+      !------------ Write to grid functions ------
+      dchidt(CHF_AUTOIX[i])     = rhs_ch
+
+      dKdt(CHF_AUTOIX[i])       = rhs_trk
+
+      dThetadt(CHF_AUTOIX[i])   = rhs_Theta
+
+      dlapsedt(CHF_AUTOIX[i])   = rhs_alph
+
+      do d0=0,2
+        dGamma1dt(CHF_AUTOIX[i],d0) = rhs_gamma(d0)
+
+        dshiftdt(CHF_AUTOIX[i], d0) = rhs_beta(d0)
+
+        dBdt(CHF_AUTOIX[i],d0)      = rhs_B(d0)
+        do d1 = 0,2
+          dhdt(CHF_AUTOIX[i], IDX(d0,d1)) = rhs_hh(d0,d1)
+
+          dAdt(CHF_AUTOIX[i], IDX(d0,d1)) = rhs_aa(d0,d1)
+        enddo
+      enddo
+
+      !--- End RHS 2}}}
+
+      !--- Add dissipation {{{2
+c
+c       Add Kreiss-Oliger numerical dissipation
+c       (there may be a better way of doing this, see http://arxiv.org/abs/1205.5111v1)
+
+        do d0 = 0,CH_SPACEDIM-1
+          CHF_DTERM[
+            ii0 = CHF_ID(d0,0);
+            ii1 = CHF_ID(d0,1);
+            ii2 = CHF_ID(d0,2)]
+
+          dchidt(CHF_AUTOIX[i]) = dchidt(CHF_AUTOIX[i])
+     &    + sigma/(64*dx) * (
+     &         chi(CHF_OFFSETIX[i;-3*ii])
+     &    -  6*chi(CHF_OFFSETIX[i;-2*ii])
+     &    + 15*chi(CHF_OFFSETIX[i;-ii]  )
+     &    - 20*chi(CHF_AUTOIX[i]        )
+     &    + 15*chi(CHF_OFFSETIX[i;+ii]  )
+     &    -  6*chi(CHF_OFFSETIX[i;+2*ii])
+     &    +    chi(CHF_OFFSETIX[i;+3*ii])
+     &    )
+
+          dKdt(CHF_AUTOIX[i]) = dKdt(CHF_AUTOIX[i])
+     &    + sigma/(64*dx) * (
+     &         K(CHF_OFFSETIX[i;-3*ii])
+     &    -  6*K(CHF_OFFSETIX[i;-2*ii])
+     &    + 15*K(CHF_OFFSETIX[i;-ii]  )
+     &    - 20*K(CHF_AUTOIX[i]        )
+     &    + 15*K(CHF_OFFSETIX[i;+ii]  )
+     &    -  6*K(CHF_OFFSETIX[i;+2*ii])
+     &    +    K(CHF_OFFSETIX[i;+3*ii])
+     &    )
+
+          dlapsedt(CHF_AUTOIX[i]) = dlapsedt(CHF_AUTOIX[i])
+     &    + sigma/(64*dx) * (
+     &         lapse(CHF_OFFSETIX[i;-3*ii])
+     &    -  6*lapse(CHF_OFFSETIX[i;-2*ii])
+     &    + 15*lapse(CHF_OFFSETIX[i;-ii]  )
+     &    - 20*lapse(CHF_AUTOIX[i]        )
+     &    + 15*lapse(CHF_OFFSETIX[i;+ii]  )
+     &    -  6*lapse(CHF_OFFSETIX[i;+2*ii])
+     &    +    lapse(CHF_OFFSETIX[i;+3*ii])
+     &    )
+
+          dThetadt(CHF_AUTOIX[i]) = dThetadt(CHF_AUTOIX[i])
+     &    + sigma/(64*dx) * (
+     &         Theta(CHF_OFFSETIX[i;-3*ii])
+     &    -  6*Theta(CHF_OFFSETIX[i;-2*ii])
+     &    + 15*Theta(CHF_OFFSETIX[i;-ii]  )
+     &    - 20*Theta(CHF_AUTOIX[i]        )
+     &    + 15*Theta(CHF_OFFSETIX[i;+ii]  )
+     &    -  6*Theta(CHF_OFFSETIX[i;+2*ii])
+     &    +    Theta(CHF_OFFSETIX[i;+3*ii])
+     &    )
+        enddo
+
+        do d0 = 0,2; do d1 = 0,CH_SPACEDIM-1
+          CHF_DTERM[
+            ii0 = CHF_ID(d1,0);
+            ii1 = CHF_ID(d1,1);
+            ii2 = CHF_ID(d1,2)]
+
+          dGamma1dt(CHF_AUTOIX[i],d0) = dGamma1dt(CHF_AUTOIX[i],d0)
+     &    + sigma/(64*dx) * (
+     &         Gamma1(CHF_OFFSETIX[i;-3*ii],d0)
+     &    -  6*Gamma1(CHF_OFFSETIX[i;-2*ii],d0)
+     &    + 15*Gamma1(CHF_OFFSETIX[i;-ii]  ,d0)
+     &    - 20*Gamma1(CHF_AUTOIX[i]        ,d0)
+     &    + 15*Gamma1(CHF_OFFSETIX[i;+ii]  ,d0)
+     &    -  6*Gamma1(CHF_OFFSETIX[i;+2*ii],d0)
+     &    +    Gamma1(CHF_OFFSETIX[i;+3*ii],d0)
+     &    )
+
+          dshiftdt(CHF_AUTOIX[i],d0) = dshiftdt(CHF_AUTOIX[i],d0)
+     &    + sigma/(64*dx) * (
+     &         shift(CHF_OFFSETIX[i;-3*ii],d0)
+     &    -  6*shift(CHF_OFFSETIX[i;-2*ii],d0)
+     &    + 15*shift(CHF_OFFSETIX[i;-ii]  ,d0)
+     &    - 20*shift(CHF_AUTOIX[i]        ,d0)
+     &    + 15*shift(CHF_OFFSETIX[i;+ii]  ,d0)
+     &    -  6*shift(CHF_OFFSETIX[i;+2*ii],d0)
+     &    +    shift(CHF_OFFSETIX[i;+3*ii],d0)
+     &    )
+
+          dBdt(CHF_AUTOIX[i],d0) = dBdt(CHF_AUTOIX[i],d0)
+     &    + sigma/(64*dx) * (
+     &         B(CHF_OFFSETIX[i;-3*ii],d0)
+     &    -  6*B(CHF_OFFSETIX[i;-2*ii],d0)
+     &    + 15*B(CHF_OFFSETIX[i;-ii]  ,d0)
+     &    - 20*B(CHF_AUTOIX[i]        ,d0)
+     &    + 15*B(CHF_OFFSETIX[i;+ii]  ,d0)
+     &    -  6*B(CHF_OFFSETIX[i;+2*ii],d0)
+     &    +    B(CHF_OFFSETIX[i;+3*ii],d0)
+     &    )
+        enddo; enddo
+
+        do d0 = 0,2; do d1 = d0,2; do d2 = 0,CH_SPACEDIM-1
+          if (d0 .gt. d1) cycle
+          CHF_DTERM[
+            ii0 = CHF_ID(d2,0);
+            ii1 = CHF_ID(d2,1);
+            ii2 = CHF_ID(d2,2)]
+
+          dhdt(CHF_AUTOIX[i],IDX(d0,d1)) = dhdt(CHF_AUTOIX[i],IDX(d0,d1))
+     &    + sigma/(64*dx) * (
+     &         h(CHF_OFFSETIX[i;-3*ii],IDX(d0,d1))
+     &    -  6*h(CHF_OFFSETIX[i;-2*ii],IDX(d0,d1))
+     &    + 15*h(CHF_OFFSETIX[i;-ii]  ,IDX(d0,d1))
+     &    - 20*h(CHF_AUTOIX[i]        ,IDX(d0,d1))
+     &    + 15*h(CHF_OFFSETIX[i;+ii]  ,IDX(d0,d1))
+     &    -  6*h(CHF_OFFSETIX[i;+2*ii],IDX(d0,d1))
+     &    +    h(CHF_OFFSETIX[i;+3*ii],IDX(d0,d1))
+     &    )
+
+          dAdt(CHF_AUTOIX[i],IDX(d0,d1)) = dAdt(CHF_AUTOIX[i],IDX(d0,d1))
+     &    + sigma/(64*dx) * (
+     &         A(CHF_OFFSETIX[i;-3*ii],IDX(d0,d1))
+     &    -  6*A(CHF_OFFSETIX[i;-2*ii],IDX(d0,d1))
+     &    + 15*A(CHF_OFFSETIX[i;-ii]  ,IDX(d0,d1))
+     &    - 20*A(CHF_AUTOIX[i]        ,IDX(d0,d1))
+     &    + 15*A(CHF_OFFSETIX[i;+ii]  ,IDX(d0,d1))
+     &    -  6*A(CHF_OFFSETIX[i;+2*ii],IDX(d0,d1))
+     &    +    A(CHF_OFFSETIX[i;+3*ii],IDX(d0,d1))
+     &    )
+        enddo; enddo; enddo
+
+        !--- End add dissipation 2}}}
+
+      CHF_ENDDO
+!$omp END PARALLEL DO
+
+#endif
+
+      return
+      end
+      !--- 1}}}

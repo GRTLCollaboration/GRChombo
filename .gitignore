@@ -1,0 +1,17 @@
+pout.*
+*.pbs
+*.s
+d
+o
+p
+f
+*_F.H
+.DS_Store
+log*
+*.ex
+*.swp
+*.out
+*.hdf5
+*.dSYM
+
+Doxygen/html

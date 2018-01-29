@@ -1,0 +1,1 @@
+To create the doxygen documentation install doxygen and then execute doxygen doxygen_config in this directory.
