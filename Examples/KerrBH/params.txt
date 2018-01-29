@@ -1,0 +1,80 @@
+#Params for runtime inputs
+
+verbosity = 0
+chk_prefix = KerrBH_
+plot_prefix = KerrBHp_
+#restart_file = KerrBH_000060.3d.hdf5
+
+# Set up grid spacings and regrid params
+# NB - the N values need to be multiples of block_factor
+N1 = 64
+N2 = 64
+N3 = 64
+
+# Length of longest box side, dx_coarsest = L/N(max)
+# NB if non cubic, this determines dx for all sides
+L =  128
+
+# Params for Kerr BH
+kerr_mass = 1.0
+kerr_spin = 0.5
+# This is now defaulted to center of the grid so it does not need to be updated
+# when changing L (unless one wants to put the BH somewhere off center)
+#kerr_center = 64 64 64
+
+# Regridding
+# Thresholds on the change across a cell which prompts regrid
+regrid_threshold = 0.3
+
+# Level data
+# Maximum number of times you can regrid above coarsest level
+max_level = 6 # There are (max_level+1) grids, so min is zero
+# Frequency of regridding at each level
+# Need one for each level, ie max_level+1 items
+# Generally you do not need to regrid frequently on every level
+regrid_interval = 50 25 5 5 5 5 5
+# Ratio of dx_coarse/dx_fine at each level, usually best to stick to 2
+# Need one for each level, ie max_level+1 items
+ref_ratio = 2 2 2 2 2 2 2
+#Periodicity in each direction
+isPeriodic = 1 1 1
+# Max box sizes
+max_grid_size = 16
+# Min box size
+block_factor = 16
+# Determines how exactly regridding tries to fit the tagging
+fill_ratio = 0.75
+#number of ghost cells
+num_ghosts = 3
+
+# Set up time steps
+# dt will be dx*dt_multiplier on each grid level
+# HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
+checkpoint_interval = 50
+plot_interval = 10
+dt_multiplier = 0.25
+stop_time = 20.0
+max_steps = 10000000
+
+#Lapse evolution
+lapse_power = 1.0
+lapse_coeff = 2.0
+lapse_advec_coeff = 1 # 1 makes the lapse gauge 1+log slicing
+
+# Shift evolution coefficients
+shift_advec_coeff = 0 # Usually no advection for beta
+shift_Gamma_coeff = 0.75 # 
+eta = 1.0 # This is beta_driver, usually of order 1/M_ADM of spacetime
+SpatialBetaDriverRadius = 1e12
+
+# CCZ4 parameters
+# if using BSSN the kappa values should be zero
+formulation = 1  # 1 for BSSN, 0 for CCZ4
+kappa1 = 0
+kappa2 = 0
+kappa3 = 0
+covariantZ4 = 0 # 0: default. 1: dampk1 -> dampk1/lapse
+
+# coefficient for KO numerical dissipation
+# NB must be less than 0.5 for stability
+sigma = 0.3

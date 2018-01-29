@@ -1,0 +1,12 @@
+makefiles+=Make.defs.local
+
+DIM           = 3
+CXX           = CC -h -std=c++14
+FC            = ftn 
+MPI           = TRUE 
+OMP           = TRUE
+MPICXX        = CC -h -std=c++14
+HDFINCFLAGS   = -I/opt/cray/hdf5/1.8.13/INTEL/140/include
+HDFLIBFLAGS   = -L/opt/cray/hdf5/1.8.13/INTEL/140/lib -lhdf5 -lz
+HDFMPIINCFLAGS= -I/opt/cray/hdf5-parallel/1.8.13/INTEL/140/include
+HDFMPILIBFLAGS= -L/opt/cray/hdf5-parallel/1.8.13/INTEL/140/lib -lhdf5 -lz
