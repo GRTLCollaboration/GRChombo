@@ -1,0 +1,451 @@
+C GRChombo
+C Copyright 2012 The GRChombo collaboration.
+C Please refer to LICENSE in GRChombo's root directory.
+
+#include "CONSTANTS.H"
+
+c     Vector indices
+#define _1  0
+#define _2  1
+#define _3  2
+c     Tensor indices
+#define _11 0
+#define _12 1
+#define _13 2
+#define _22 3
+#define _23 4
+#define _33 5
+
+c     Compute the BSSN evolution
+c     Reference: http://arxiv.org/abs/1111.2177v1
+
+c     Calculate the Hamiltonian and momentum constraints
+      subroutine GETBSSNCONSTRF(
+      !--- {{{1
+      !--- {{{2 Function input and variable initialisation
+     &     CHF_FRA1[Ham],
+     &     CHF_FRA[Mom],
+     &     CHF_CONST_FRA1[chi],
+     &     CHF_CONST_FRA[h],
+     &     CHF_CONST_FRA1[K],
+     &     CHF_CONST_FRA[A],
+     &     CHF_CONST_FRA[Gamma1],
+     &     CHF_CONST_REAL[dx],
+     &     CHF_BOX[box])
+
+      ! Fundamental variables
+      REAL_T              ch, hh(0:2,0:2), hu(0:2,0:2), trk, aa(0:2,0:2), gamma(0:2),
+     &                    au(0:2,0:2), dethh
+      REAL_T              phi, pi
+
+      ! First derivatives
+      REAL_T              d1_ch(0:2), d1_hh(0:2,0:2,0:2), d1_trk(0:2), d1_aa(0:2,0:2,0:2),
+     &                    d1_gamma(0:2,0:2)
+
+      ! Second derivatives
+      REAL_T              d2_ch(0:2,0:2), d2_hh(0:2,0:2,0:2,0:2)
+
+      ! Covariant derivatives
+      REAL_T              cd2_ch(0:2,0:2), cd1_aa(0:2,0:2,0:2)
+
+      ! Constraints
+      REAL_T              hamC, momC(0:2)
+
+      ! Ricci Tensor
+      REAL_T              cf1(0:2,0:2,0:2), cf2(0:2,0:2,0:2), c_ri(0:2,0:2)
+      REAL_T              c_ri_ph(0:2,0:2), c_ri_hh(0:2,0:2), ri_1(0:2,0:2), ri_2(0:2,0:2),
+     &                    ri_3(0:2,0:2), sq_aa, a2(0:2,0:2), trr, gamcon(0:2)
+      REAL_T              tr_cd2_ch, tr_dch_dch
+
+      ! Misc variables
+      REAL_T              odx12, odxsq12, odxsq144
+      REAL_T              odx60, ody60, odz60, odxsq180, odysq180, odzsq180,
+     &                    odxdy3600, odxdz3600, odydz3600
+      REAL_T              dx12, dy12, dz12, dxsq12, dysq12, dzsq12,
+     &                    dxdy144, dxdz144, dydz144
+
+
+      integer CHF_AUTODECL[i], CHF_AUTODECL[ii], CHF_AUTODECL[jj]
+
+      integer d0, d1, d2, d3, d4, d5, d6
+      integer IDX(0:2, 0:2)
+      data IDX / _11, _12, _13, _12, _22, _23, _13, _23, _33  /
+      !2}}}
+
+c     note that this has not been extended to work for DIM > 3
+#if CH_SPACEDIM > 3
+      call MAYDAY_ERROR()
+#else
+
+      dx12      = 12*dx
+      odx12     = one/(12*dx)
+      odxsq12   = one / (12*dx**2)
+      odxsq144  = one / (144*dx**2)
+
+
+      !-------------------------------------------
+      !------------ Main loop starts here --------
+      CHF_AUTOMULTIDO[box;i]
+
+      !------------ Get local variables -----------
+      ch    = chi(CHF_AUTOIX[i])
+
+      trk   = K(CHF_AUTOIX[i])
+
+      do d0 = 0,2
+        gamma(d0) = Gamma1(CHF_AUTOIX[i], d0)
+        do d1 = 0,2
+          hh(d0,d1) = h(CHF_AUTOIX[i], IDX(d0,d1))
+          aa(d0,d1) = A(CHF_AUTOIX[i], IDX(d0,d1))
+        enddo
+      enddo
+      !-------------------------------------------
+
+      !------------ Invert metric ----------------
+      ! NOTE: deth = 1 by construction, but that is not satisfied numerically
+      dethh =        hh(0,0) * hh(1,1) * hh(2,2)
+     &         + 2 * hh(0,1) * hh(0,2) * hh(1,2)
+     &         -     hh(0,0) * hh(1,2) ** 2
+     &         -     hh(1,1) * hh(0,2) ** 2
+     &         -     hh(2,2) * hh(0,1) ** 2
+      hu(0,0) = (hh(1,1) * hh(2,2) - hh(1,2) ** 2     ) / dethh
+      hu(1,1) = (hh(0,0) * hh(2,2) - hh(0,2) ** 2     ) / dethh
+      hu(2,2) = (hh(0,0) * hh(1,1) - hh(0,1) ** 2     ) / dethh
+      hu(0,1) = (hh(0,2) * hh(1,2) - hh(0,1) * hh(2,2)) / dethh
+      hu(0,2) = (hh(0,1) * hh(1,2) - hh(0,2) * hh(1,1)) / dethh
+      hu(1,2) = (hh(0,2) * hh(0,1) - hh(1,2) * hh(0,0)) / dethh
+      hu(1,0) = hu(0,1)
+      hu(2,0) = hu(0,2)
+      hu(2,1) = hu(1,2)
+      !-------------------------------------------
+
+
+      !------------ Centered 1st derivatives -----{{{2
+      !------------ derivative index is last -----
+      do d0 = 0,2
+        CHF_DTERM[
+          ii0 = CHF_ID(d0,0);
+          ii1 = CHF_ID(d0,1);
+          ii2 = CHF_ID(d0,2)]
+
+        d1_ch(d0) = odx12 * (
+     &         chi(CHF_OFFSETIX[i;-2*ii])
+     &     - 8*chi(CHF_OFFSETIX[i;-ii]  )
+     &     + 8*chi(CHF_OFFSETIX[i;+ii]  )
+     &     -   chi(CHF_OFFSETIX[i;+2*ii])
+     &       )
+
+        d1_trk(d0) = odx12 * (
+     &         K(CHF_OFFSETIX[i;-2*ii])
+     &     - 8*K(CHF_OFFSETIX[i;-ii]  )
+     &     + 8*K(CHF_OFFSETIX[i;+ii]  )
+     &     -   K(CHF_OFFSETIX[i;+2*ii])
+     &       )
+      enddo
+
+
+      do d0 = 0,2; do d1 = 0,CH_SPACEDIM-1
+        CHF_DTERM[
+            ii0 = CHF_ID(d1,0);
+            ii1 = CHF_ID(d1,1);
+            ii2 = CHF_ID(d1,2)]
+
+            d1_gamma(d0,d1) = odx12 * (
+     &         Gamma1(CHF_OFFSETIX[i;-2*ii],d0)
+     &     - 8*Gamma1(CHF_OFFSETIX[i;-ii]  ,d0)
+     &     + 8*Gamma1(CHF_OFFSETIX[i;+ii]  ,d0)
+     &     -   Gamma1(CHF_OFFSETIX[i;+2*ii],d0)
+     &       )
+      enddo; enddo
+
+      do d0 = 0,2; do d1 = 0,2; do d2 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d2,0);
+             ii1 = CHF_ID(d2,1);
+             ii2 = CHF_ID(d2,2)]
+
+            d1_hh(d0,d1,d2) = odx12 * (
+     &         h(CHF_OFFSETIX[i;-2*ii],IDX(d0,d1))
+     &     - 8*h(CHF_OFFSETIX[i;-ii]  ,IDX(d0,d1))
+     &     + 8*h(CHF_OFFSETIX[i;+ii]  ,IDX(d0,d1))
+     &     -   h(CHF_OFFSETIX[i;+2*ii],IDX(d0,d1))
+     &       )
+
+            d1_aa(d0,d1,d2) = odx12 * (
+     &         A(CHF_OFFSETIX[i;-2*ii],IDX(d0,d1))
+     &     - 8*A(CHF_OFFSETIX[i;-ii]  ,IDX(d0,d1))
+     &     + 8*A(CHF_OFFSETIX[i;+ii]  ,IDX(d0,d1))
+     &     -   A(CHF_OFFSETIX[i;+2*ii],IDX(d0,d1))
+     &       )
+      enddo; enddo; enddo
+      !--------------------------------------------------2}}}
+
+      !------------ Centered 2nd derivatives ------------{{{2
+      !------------ derivative indices are last ---------
+      do d0 = 0,CH_SPACEDIM-1; do d1 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d0,0);
+             ii1 = CHF_ID(d0,1);
+             ii2 = CHF_ID(d0,2)]
+           CHF_DTERM[
+             jj0 = CHF_ID(d1,0);
+             jj1 = CHF_ID(d1,1);
+             jj2 = CHF_ID(d1,2)]
+           ! before we had: if (d0 .eq. d1) cycle
+           if (d0 .eq. d1) cycle
+
+           d2_ch(d0,d1) = odxsq144 * (
+     &         chi(CHF_IX[i0-2*ii0-2*jj0;i1-2*ii1-2*jj1;i2-2*ii2-2*jj2])
+     &     - 8*chi(CHF_IX[i0-ii0-2*jj0;i1-ii1-2*jj1;i2-ii2-2*jj2]      )
+     &     + 8*chi(CHF_IX[i0+ii0-2*jj0;i1+ii1-2*jj1;i2+ii2-2*jj2]      )
+     &     -   chi(CHF_IX[i0+2*ii0-2*jj0;i1+2*ii1-2*jj1;i2+2*ii2-2*jj2])
+     &     - 8*chi(CHF_IX[i0-2*ii0-jj0;i1-2*ii1-jj1;i2-2*ii2-jj2]      )
+     &     +64*chi(CHF_IX[i0-ii0-jj0;i1-ii1-jj1;i2-ii2-jj2]            )
+     &     -64*chi(CHF_IX[i0+ii0-jj0;i1+ii1-jj1;i2+ii2-jj2]            )
+     &     + 8*chi(CHF_IX[i0+2*ii0-jj0;i1+2*ii1-jj1;i2+2*ii2-jj2]      )
+     &     + 8*chi(CHF_IX[i0-2*ii0+jj0;i1-2*ii1+jj1;i2-2*ii2+jj2]      )
+     &     -64*chi(CHF_IX[i0-ii0+jj0;i1-ii1+jj1;i2-ii2+jj2]            )
+     &     +64*chi(CHF_IX[i0+ii0+jj0;i1+ii1+jj1;i2+ii2+jj2]            )
+     &     - 8*chi(CHF_IX[i0+2*ii0+jj0;i1+2*ii1+jj1;i2+2*ii2+jj2]      )
+     &     -   chi(CHF_IX[i0-2*ii0+2*jj0;i1-2*ii1+2*jj1;i2-2*ii2+2*jj2])
+     &     + 8*chi(CHF_IX[i0-ii0+2*jj0;i1-ii1+2*jj1;i2-ii2+2*jj2]      )
+     &     - 8*chi(CHF_IX[i0+ii0+2*jj0;i1+ii1+2*jj1;i2+ii2+2*jj2]      )
+     &     +   chi(CHF_IX[i0+2*ii0+2*jj0;i1+2*ii1+2*jj1;i2+2*ii2+2*jj2])
+     &       )
+         enddo; enddo
+
+         do d0 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d0,0);
+             ii1 = CHF_ID(d0,1);
+             ii2 = CHF_ID(d0,2)]
+
+           d2_ch(d0,d0) = odxsq12 * (
+     &         -chi(CHF_OFFSETIX[i;-2*ii])
+     &     + 16*chi(CHF_OFFSETIX[i;-ii]  )
+     &     - 30*chi(CHF_AUTOIX[i]        )
+     &     + 16*chi(CHF_OFFSETIX[i;+ii]  )
+     &     -    chi(CHF_OFFSETIX[i;+2*ii])
+     &       )
+         enddo
+
+         do d0 = 0,2; do d1 = 0,2; do d2 = 0,CH_SPACEDIM-1; do d3 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d2,0);
+             ii1 = CHF_ID(d2,1);
+             ii2 = CHF_ID(d2,2)]
+           CHF_DTERM[
+             jj0 = CHF_ID(d3,0);
+             jj1 = CHF_ID(d3,1);
+             jj2 = CHF_ID(d3,2)]
+
+           if (d2 .eq. d3) cycle
+
+           d2_hh(d0,d1,d2,d3) = odxsq144 * (
+     &         h(CHF_IX[i0-2*ii0-2*jj0;i1-2*ii1-2*jj1;i2-2*ii2-2*jj2],IDX(d0,d1))
+     &     - 8*h(CHF_IX[i0-ii0-2*jj0;i1-ii1-2*jj1;i2-ii2-2*jj2]      ,IDX(d0,d1))
+     &     + 8*h(CHF_IX[i0+ii0-2*jj0;i1+ii1-2*jj1;i2+ii2-2*jj2]      ,IDX(d0,d1))
+     &     -   h(CHF_IX[i0+2*ii0-2*jj0;i1+2*ii1-2*jj1;i2+2*ii2-2*jj2],IDX(d0,d1))
+     &     - 8*h(CHF_IX[i0-2*ii0-jj0;i1-2*ii1-jj1;i2-2*ii2-jj2]      ,IDX(d0,d1))
+     &     +64*h(CHF_IX[i0-ii0-jj0;i1-ii1-jj1;i2-ii2-jj2]            ,IDX(d0,d1))
+     &     -64*h(CHF_IX[i0+ii0-jj0;i1+ii1-jj1;i2+ii2-jj2]            ,IDX(d0,d1))
+     &     + 8*h(CHF_IX[i0+2*ii0-jj0;i1+2*ii1-jj1;i2+2*ii2-jj2]      ,IDX(d0,d1))
+     &     + 8*h(CHF_IX[i0-2*ii0+jj0;i1-2*ii1+jj1;i2-2*ii2+jj2]      ,IDX(d0,d1))
+     &     -64*h(CHF_IX[i0-ii0+jj0;i1-ii1+jj1;i2-ii2+jj2]            ,IDX(d0,d1))
+     &     +64*h(CHF_IX[i0+ii0+jj0;i1+ii1+jj1;i2+ii2+jj2]            ,IDX(d0,d1))
+     &     - 8*h(CHF_IX[i0+2*ii0+jj0;i1+2*ii1+jj1;i2+2*ii2+jj2]      ,IDX(d0,d1))
+     &     -   h(CHF_IX[i0-2*ii0+2*jj0;i1-2*ii1+2*jj1;i2-2*ii2+2*jj2],IDX(d0,d1))
+     &     + 8*h(CHF_IX[i0-ii0+2*jj0;i1-ii1+2*jj1;i2-ii2+2*jj2]      ,IDX(d0,d1))
+     &     - 8*h(CHF_IX[i0+ii0+2*jj0;i1+ii1+2*jj1;i2+ii2+2*jj2]      ,IDX(d0,d1))
+     &     +   h(CHF_IX[i0+2*ii0+2*jj0;i1+2*ii1+2*jj1;i2+2*ii2+2*jj2],IDX(d0,d1))
+     &       )
+         enddo; enddo; enddo; enddo
+
+         do d0 = 0,2; do d1 = 0,2; do d2 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d2,0);
+             ii1 = CHF_ID(d2,1);
+             ii2 = CHF_ID(d2,2)]
+
+           d2_hh(d0,d1,d2,d2) = odxsq12 * (
+     &         -h(CHF_OFFSETIX[i;-2*ii],IDX(d0,d1))
+     &     + 16*h(CHF_OFFSETIX[i;-ii]  ,IDX(d0,d1))
+     &     - 30*h(CHF_AUTOIX[i]        ,IDX(d0,d1))
+     &     + 16*h(CHF_OFFSETIX[i;+ii]  ,IDX(d0,d1))
+     &     -    h(CHF_OFFSETIX[i;+2*ii],IDX(d0,d1))
+     &       )
+         enddo; enddo; enddo
+         !--------------------------------------------------2}}}
+
+
+      !------------ Christoffel symbols ----------{{{2
+      cf1 = 0
+      do d0 = 0, 2
+        do d1 = 0, 2
+          do d2 = d1, 2
+            cf1(d0,d1,d2) = 0.5d0 * (d1_hh(d0,d1,d2) + d1_hh(d0,d2,d1) - d1_hh(d1,d2,d0))
+          enddo
+        enddo
+      enddo
+      cf1(:,1,0) = cf1(:,0,1)
+      cf1(:,2,0) = cf1(:,0,2)
+      cf1(:,2,1) = cf1(:,1,2)
+
+      cf2 = 0
+      do d0 = 0, 2
+        do d1 = 0, 2
+          do d2 = d1, 2
+            do d3 = 0, 2
+              cf2(d0,d1,d2) = cf2(d0,d1,d2) + hu(d0,d3) * cf1(d3,d1,d2)
+            enddo
+          enddo
+        enddo
+      enddo
+      cf2(:,1,0) = cf2(:,0,1)
+      cf2(:,2,0) = cf2(:,0,2)
+      cf2(:,2,1) = cf2(:,1,2)
+      !-------------------------------------------2}}}
+
+      !------------ Covariant derivatives --------{{{2
+      cd2_ch   = d2_ch
+      cd1_aa   = d1_aa
+      do d0 = 0, 2
+        do d1 = d0, 2
+          do d3 = 0, 2
+            cd2_ch(d0,d1)   = cd2_ch(d0,d1)   - cf2(d3,d0,d1) * d1_ch(d3)
+          enddo
+          do d2 = 0, 2
+            do d3 = 0, 2
+              !do d4 = 0, 2
+                cd1_aa(d0,d1,d2) = cd1_aa(d0,d1,d2) - cf2(d3,d0,d2) * aa(d3,d1)
+     &                             - cf2(d3,d1,d2) * aa(d0,d3)
+              !end do
+            enddo
+          enddo
+        enddo
+      enddo
+      cd2_ch(1,0)   = cd2_ch(0,1)
+      cd2_ch(2,0)   = cd2_ch(0,2)
+      cd2_ch(2,1)   = cd2_ch(1,2)
+      cd1_aa(1,0,:) = cd1_aa(0,1,:)
+      cd1_aa(2,0,:) = cd1_aa(0,2,:)
+      cd1_aa(2,1,:) = cd1_aa(1,2,:)
+      !-------------------------------------------2}}}
+
+
+      !------------ Ricci Tensor -----------------{{{2
+      ri_1 = 0
+      ri_2 = 0
+      ri_3 = 0
+      c_ri_ph = 0
+      c_ri_hh = 0
+
+      tr_cd2_ch = 0
+      tr_dch_dch = 0
+
+      do d3 = 0, 2
+        do d4 = 0, 2
+          tr_cd2_ch  = tr_cd2_ch  + hu(d3,d4) * cd2_ch(d3,d4)
+          tr_dch_dch = tr_dch_dch + hu(d3,d4) * d1_ch(d3) * d1_ch(d4)
+        enddo
+      enddo
+
+      do d0 = 0, 2
+        do d1 = d0, 2
+          c_ri_ph(d0,d1) = (cd2_ch(d0,d1) + hh(d0,d1) * tr_cd2_ch
+     &                     - (d1_ch(d0) * d1_ch(d1) + 3 * hh(d0,d1) * tr_dch_dch)
+     &                     / (2 * ch)) / 2
+        enddo
+      enddo
+
+      do d0 = 0, 2
+        do d1 = d0, 2
+          do d2 = 0, 2
+            ri_1(d0,d1) = ri_1(d0,d1) + hh(d2,d0) * d1_gamma(d2,d1) / 2
+     &                                + hh(d2,d1) * d1_gamma(d2,d0) / 2
+     &                                + gamma(d2) * (cf1(d0,d1,d2) + cf1(d1,d0,d2)) / 2
+            do d3 = 0, 2
+              ri_2(d0,d1) = ri_2(d0,d1) - hu(d2,d3) * d2_hh(d0,d1,d2,d3) / 2
+              do d4 = 0, 2
+                ri_3(d0,d1) = ri_3(d0,d1) + hu(d2,d3)
+     &                                * ( cf2(d4,d2,d0) * cf1(d1,d4,d3)
+     &                                + cf2(d4,d2,d1) * (cf1(d0,d4,d3) + cf1(d4,d3,d0)) )
+                ! is the same as:
+                !ri_3(d0,d1) = ri_3(d0,d1) + hu(d2,d3)                              &
+                !                      * ( cf2(d4,d2,d0) * cf1(d1,d4,d3)            &
+                !                          + cf2(d4,d2,d1) * cf1(d0,d4,d3)          &
+                !                          + cf2(d4,d3,d0) * cf1(d4,d2,d1) )
+              enddo
+            enddo
+          enddo
+        enddo
+      enddo
+      c_ri_hh = ch * (ri_1 + ri_2 + ri_3)
+
+      c_ri = c_ri_ph + c_ri_hh
+
+      c_ri(1,0) = c_ri(0,1)
+      c_ri(2,0) = c_ri(0,2)
+      c_ri(2,1) = c_ri(1,2)
+
+      !trr = sq_aa - 2 * trk*trk / 3
+      ! The first version of trr assumes validity of the vacuum
+      ! Hamiltonian constraint which we cannot assume in D >= 5.
+      ! Instead, we can calculate the Ricci scalar directly from
+      ! the Ricci Tensor which is defined unambiguously in terms
+      ! of the metric, vacuum or not.
+      trr = 0
+      do d0 = 0, 2
+        do d1 = 0, 2
+          trr = trr + hu(d0,d1) * c_ri(d0,d1)
+        enddo
+      enddo
+      !-------------------------------------------2}}}
+
+
+      !------------ Source terms -----------------
+      sq_aa = 0
+      a2    = 0
+      do d0 = 0, 2
+        do d1 = 0, 2
+          do d2 = 0, 2
+            do d3 = 0, 2
+              a2(d0,d1) = a2(d0,d1) + hu(d2,d3) * aa(d0,d2) * aa(d1,d3)
+            enddo
+          enddo
+          sq_aa = sq_aa + hu(d0,d1) * a2(d0,d1)
+        enddo
+      enddo
+      !-------------------------------------------
+
+
+      !------------ Constraints ------------------
+      hamC = trr + 2 * trk**2 / 3 - sq_aa
+
+      momC = -2 * d1_trk / 3
+      do d0 = 0, 2
+        do d1 = 0, 2
+          do d2 = 0, 2
+            momC(d0) = momC(d0) + hu(d1,d2) * (cd1_aa(d1,d0,d2)
+     &                - 3 * aa(d1,d0) * d1_ch(d2) / (2 * ch))
+          enddo
+        enddo
+      enddo
+      !-------------------------------------------
+
+
+      !------------ Write to grid functions ------
+      Ham(CHF_AUTOIX[i])  = hamC
+
+      do d0 = 0,2
+        Mom(CHF_AUTOIX[i],d0) = momC(d0)
+      enddo
+      !-------------------------------------------
+
+      CHF_ENDDO
+
+#endif
+
+      return
+      end
+      !--- 1}}}
