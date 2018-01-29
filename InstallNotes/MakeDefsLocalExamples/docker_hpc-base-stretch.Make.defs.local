@@ -1,0 +1,26 @@
+# This is the Chombo Make.defs.local (to go to ${CHOMBO_HOME}/lib/mk) for containers based
+# on the "hpc-base-stretch" docker image. The image contains Debian stretch image and basic
+# HPC libraries, like openmpi, openblas, and gcc v6.
+DIM              = 3
+DEBUG            = TRUE
+OPT              = TRUE
+PRECISION        = DOUBLE
+CXX              = g++
+FC               = gfortran
+MPI              = TRUE
+MPICXX           = mpicxx
+USE_64           = TRUE
+USE_HDF          = TRUE
+HDFINCFLAGS      = -I/usr/include/hdf5/openmpi/
+HDFLIBFLAGS      = -L/usr/lib/x86_64-linux-gnu/hdf5/openmpi -lhdf5 -lz
+HDFMPIINCFLAGS   = -I/usr/include/hdf5/openmpi/
+HDFMPILIBFLAGS   = -L/usr/lib/x86_64-linux-gnu/hdf5/openmpi -lhdf5 -lz
+USE_MT           = FALSE				    # disables Chombo's internal memory tracking as it seems to disagree with Allinea MAP
+OPENMPCC         = FALSE
+cxxdbgflags      = -g -Wl,--eh-frame-hdr -std=c++14
+cxxoptflags      = -Ofast -std=c++14
+fdbgflags        = -g -Wl,--eh-frame-hdr
+foptflags        = -Ofast
+syslibflags	 = -lgfortran
+cxxcppflags	 = -ftemplate-depth=150 -DDISABLE_AHFINDER -UCH_USE_MEMORY_TRACKING -DUSE_PAPI
+XTRALIBFLAGS	 = -L/usr/lib/openblas-base/ -lopenblas

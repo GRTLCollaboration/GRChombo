@@ -1,0 +1,23 @@
+# REQUIRED: module load intel/compiler intel/mpi gcc hdf5/parallel intel/mkl
+
+DIM              = 3
+DEBUG            = TRUE
+OPT              = TRUE
+PRECISION        = DOUBLE
+CXX              = icpc -std=c++14 -openmp -mkl=sequential
+FC               = ifort -openmp -mkl=sequential
+MPI              = TRUE
+MPICXX           = mpiicpc -std=c++14 -openmp -mkl=sequential
+USE_64           = TRUE
+USE_HDF          = TRUE
+HDFINCFLAGS      = -I/cm/shared/apps/hdf5/current/include
+HDFLIBFLAGS      = -L/cm/shared/apps/hdf5/current/lib -lhdf5 -lz
+HDFMPIINCFLAGS   = -I/usr/product/applsw/hdf5-1.8.15-patch1/include
+HDFMPILIBFLAGS   = -L/usr/product/applsw/hdf5-1.8.15-patch1/lib -lhdf5 -lz
+USE_MT           = FALSE	# disables Chombo's internal memory tracking as it seems to disagree with Allinea MAP
+OPENMPCC         = TRUE
+cxxdbgflags      = -g -Wl,--eh-frame-hdr
+cxxoptflags      = -O3 -override-limits -xSSE4.2 -axAVX
+fdbgflags        = -g -Wl,--eh-frame-hdr
+foptflags        = -O3 -override-limits -xSSE4.2 -axAVX
+cxxcppflags      = -DDISABLE_AHFINDER 
