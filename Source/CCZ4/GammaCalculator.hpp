@@ -3,12 +3,9 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-// Last update K Clough 23.02.2017
-
 #ifndef GAMMACALCULATOR_HPP_
 #define GAMMACALCULATOR_HPP_
 
-#include "CCZ4.hpp"
 #include "Cell.hpp"
 #include "Coordinates.hpp"
 #include "GRInterval.hpp"
@@ -19,8 +16,18 @@
 
 class GammaCalculator
 {
-    // Use the variable definition in CCZ4
-    template <class data_t> using Vars = CCZ4::Vars<data_t>;
+    // Only variables needed are metric
+    template <class data_t> struct Vars
+    {
+        Tensor<2, data_t> h;
+
+        template <typename mapping_function_t>
+        void enum_mapping(mapping_function_t mapping_function)
+        {
+            VarsTools::define_symmetric_enum_mapping(
+                mapping_function, GRInterval<c_h11, c_h33>(), h);
+        }
+    };
 
   protected:
     const FourthOrderDerivatives

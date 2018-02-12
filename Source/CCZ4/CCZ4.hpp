@@ -7,6 +7,7 @@
 #define CCZ4_HPP_
 
 #include "CCZ4Geometry.hpp"
+#include "CCZ4Vars.hpp"
 #include "Cell.hpp"
 #include "FourthOrderDerivatives.hpp"
 #include "Tensor.hpp"
@@ -35,47 +36,11 @@ class CCZ4
     };
 
     /// CCZ4 variables
-    /** This struct collects all the CCZ4 variables. It's main use is to make a
-     *local, nicely laid-out, copy of the CCZ4 variables for the current grid
-     *cell (Otherwise, this data would only exist on the grid in the huge,
-     *flattened Chombo array). To this end, CCZ4::Vars inherits from VarsBase
-     *which contains functionality to connect the local copy of the variables
-     *with values in the Chombo grid.
-     **/
-    template <class data_t> struct Vars
-    {
-        data_t chi;              //!< Conformal factor
-        Tensor<2, data_t> h;     //!< Conformal metric
-        data_t K;                //!< Trace of the extrinsic curvature
-        Tensor<2, data_t> A;     //!< trace-free part of the rescale extrinsic
-                                 //! curvature, i.e. \f$\chi
-                                 //!(K_{ij})^{\mathrm{TF}}\f$
-        Tensor<1, data_t> Gamma; //!< Conformal connection functions
-        data_t Theta; //!< CCZ4 quantity associated to hamiltonian constraint
-        data_t lapse;
-        Tensor<1, data_t> shift;
-        Tensor<1, data_t> B; //!< \f$B^i = \partial_t \beta^i\f$, this is used
-                             //! for second order shift conditions
+    template <class data_t> using Vars = CCZ4Vars::VarsWithGauge<data_t>;
 
-        /// Defines the mapping between members of Vars and Chombo grid
-        /// variables (enum in User_Variables)
-        template <typename mapping_function_t>
-        void enum_mapping(mapping_function_t mapping_function);
-    };
-
-    /// 2nd derivatives are only calculated for a small subset defined by
-    /// Deriv2Vars
-    /** Making this split speeds up the code significantly */
-    template <class data_t> struct Diff2Vars
-    {
-        data_t chi; //!< Conformal factor
-        data_t lapse;
-        Tensor<2, data_t> h; //!< Conformal metric
-        Tensor<1, data_t> shift;
-
-        template <typename mapping_function_t>
-        void enum_mapping(mapping_function_t mapping_function);
-    };
+    /// CCZ4 variables
+    template <class data_t>
+    using Diff2Vars = CCZ4Vars::Diff2VarsWithGauge<data_t>;
 
     /// Parameters for CCZ4
     /** This struct collects all parameters that are necessary for CCZ4 such as
@@ -113,7 +78,7 @@ class CCZ4
          double sigma,               //!< Kreiss-Oliger dissipation coefficient
          int formulation = USE_CCZ4, //!< Switches between CCZ4, BSSN,...
          double cosmological_constant = 0 //!< Value of the cosmological const.
-         );
+    );
 
     /// Compute function
     /** This function orchestrates the calculation of the rhs for one specific

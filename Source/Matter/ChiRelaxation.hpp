@@ -67,7 +67,7 @@ template <class matter_t> class ChiRelaxation
     //! \sa compute()
     template <class data_t>
     void rhs_equation(
-        Vars<data_t> &rhs, //!<the RHS data for each variable at that point.
+        Vars<data_t> &rhs, //!< the RHS data for each variable at that point.
         const Vars<data_t> &vars, //!< the value of the variables at the point.
         const Vars<Tensor<1, data_t>>
             &d1, //!< the value of the first derivatives of the variables.

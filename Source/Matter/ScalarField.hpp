@@ -3,8 +3,6 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-// Developed by K Clough 2017
-
 #ifndef SCALARFIELD_HPP_
 #define SCALARFIELD_HPP_
 

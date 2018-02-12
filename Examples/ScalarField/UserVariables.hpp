@@ -3,8 +3,6 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-// Last edited K Clough 16.10.16
-
 #ifndef USERVARIABLES_HPP
 #define USERVARIABLES_HPP
 
