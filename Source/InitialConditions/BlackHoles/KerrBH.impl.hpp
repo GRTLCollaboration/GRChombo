@@ -3,8 +3,6 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-// Last update K Clough 23.04.2017
-
 #if !defined(KERRBH_HPP_)
 #error "This file should only be included through KerrBH.hpp"
 #endif

@@ -86,15 +86,15 @@ template <class matter_t> class MatterCCZ4 : public CCZ4
     template <class data_t>
     void add_emtensor_rhs(
         Vars<data_t>
-            &matter_rhs, //!<the RHS data for each variable at that point.
-        const Vars<data_t> &vars, //!<the value of the variables at the point.
+            &matter_rhs, //!< the RHS data for each variable at that point.
+        const Vars<data_t> &vars, //!< the value of the variables at the point.
         const Vars<Tensor<1, data_t>>
-            &d1 //!<the value of the first derivatives of the variables.
+            &d1 //!< the value of the first derivatives of the variables.
         ) const;
 
     // Class members
     matter_t my_matter;      //!< The matter object, e.g. a scalar field.
-    const double m_G_Newton; //!<Newton's constant, set to one by default.
+    const double m_G_Newton; //!< Newton's constant, set to one by default.
 };
 
 #include "MatterCCZ4.impl.hpp"

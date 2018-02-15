@@ -25,7 +25,7 @@ void Constraints::compute(Cell<data_t> current_cell) const
 {
     const auto vars = current_cell.template load_vars<Vars>();
     const auto d1 = m_deriv.template diff1<Vars>(current_cell);
-    const auto d2 = m_deriv.template diff2<Vars>(current_cell);
+    const auto d2 = m_deriv.template diff2<Diff2Vars>(current_cell);
 
     constraints_t<data_t> out = constraint_equations(vars, d1, d2);
 
@@ -76,22 +76,6 @@ Constraints::constraints_t<data_t> Constraints::constraint_equations(
     }
 
     return out;
-}
-
-template <class data_t>
-template <typename mapping_function_t>
-void Constraints::Vars<data_t>::enum_mapping(
-    mapping_function_t mapping_function)
-{
-    using namespace VarsTools; // define_enum_mapping is part of VarsTools
-    define_enum_mapping(mapping_function, c_chi, chi);
-    define_enum_mapping(mapping_function, c_K, K);
-    define_enum_mapping(mapping_function, GRInterval<c_Gamma1, c_Gamma3>(),
-                        Gamma);
-    define_symmetric_enum_mapping(mapping_function, GRInterval<c_h11, c_h33>(),
-                                  h);
-    define_symmetric_enum_mapping(mapping_function, GRInterval<c_A11, c_A33>(),
-                                  A);
 }
 
 #endif /* CONSTRAINTS_IMPL_HPP_ */

@@ -10,14 +10,14 @@
 #ifndef BINARYBH_IMPL_HPP_
 #define BINARYBH_IMPL_HPP_
 
+#include "BSSNVars.hpp"
 #include "BinaryBH.hpp"
-#include "CCZ4.hpp"
 #include "VarsTools.hpp"
 #include "simd.hpp"
 
 template <class data_t> void BinaryBH::compute(Cell<data_t> current_cell) const
 {
-    CCZ4::Vars<data_t> vars;
+    BSSNVars::VarsWithGauge<data_t> vars;
     VarsTools::assign(vars,
                       0.); // Set only the non-zero components explicitly below
     Coordinates<data_t> coords(current_cell, m_dx);

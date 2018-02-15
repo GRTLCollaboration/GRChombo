@@ -12,9 +12,9 @@
 
 template <class data_t> struct chris_t
 {
-    Tensor<3, data_t> ULL;        //!<standard christoffel symbols
-    Tensor<3, data_t> LLL;        //!<3 lower indices
-    Tensor<1, data_t> contracted; //!<contracted christoffel
+    Tensor<3, data_t> ULL;        //!< standard christoffel symbols
+    Tensor<3, data_t> LLL;        //!< 3 lower indices
+    Tensor<1, data_t> contracted; //!< contracted christoffel
 };
 
 namespace TensorAlgebra

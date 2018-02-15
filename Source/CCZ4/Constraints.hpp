@@ -8,6 +8,7 @@
 #ifndef CONSTRAINTS_HPP_
 #define CONSTRAINTS_HPP_
 
+#include "BSSNVars.hpp"
 #include "Cell.hpp"
 #include "FArrayBox.H"
 #include "FourthOrderDerivatives.hpp"
@@ -21,19 +22,12 @@
 class Constraints
 {
   public:
-    template <class data_t> struct Vars
-    {
-        data_t chi;
-        Tensor<2, data_t> h;
-        data_t K;
-        Tensor<2, data_t> A;
-        Tensor<1, data_t> Gamma;
+    /// CCZ4 variables
+    template <class data_t> using Vars = BSSNVars::VarsNoGauge<data_t>;
 
-        /// Defines the mapping between members of Vars and Chombo grid
-        /// variables (enum in User_Variables)
-        template <typename mapping_function_t>
-        void enum_mapping(mapping_function_t mapping_function);
-    };
+    /// CCZ4 variables
+    template <class data_t>
+    using Diff2Vars = BSSNVars::Diff2VarsNoGauge<data_t>;
 
     template <class data_t> struct constraints_t
     {

@@ -10,8 +10,8 @@
 
 #include "parstream.H" //Gives us pout()
 #include <iostream>
-using std::endl;
 using std::cerr;
+using std::endl;
 #include "AMRLevelFactory.H"
 #include "GRAMR.hpp"
 #include "ParmParse.H"

@@ -231,46 +231,4 @@ void CCZ4::rhs_equation(vars_t<data_t> &rhs, const vars_t<data_t> &vars,
     }
 }
 
-template <class data_t>
-template <typename mapping_function_t>
-void CCZ4::Vars<data_t>::enum_mapping(mapping_function_t mapping_function)
-{
-    // Define the mapping from components of chombo grid to elements in Vars.
-    // This allows to read/write data from the chombo grid into local
-    // variables in Vars (which only exist for the current cell).
-
-    using namespace VarsTools; // define_enum_mapping is part of VarsTools
-    // Scalars
-    define_enum_mapping(mapping_function, c_chi, chi);
-    define_enum_mapping(mapping_function, c_K, K);
-    define_enum_mapping(mapping_function, c_Theta, Theta);
-    define_enum_mapping(mapping_function, c_lapse, lapse);
-
-    // Vectors
-    define_enum_mapping(mapping_function, GRInterval<c_Gamma1, c_Gamma3>(),
-                        Gamma);
-    define_enum_mapping(mapping_function, GRInterval<c_shift1, c_shift3>(),
-                        shift);
-    define_enum_mapping(mapping_function, GRInterval<c_B1, c_B3>(), B);
-
-    // Symmetric 2-tensors
-    define_symmetric_enum_mapping(mapping_function, GRInterval<c_h11, c_h33>(),
-                                  h);
-    define_symmetric_enum_mapping(mapping_function, GRInterval<c_A11, c_A33>(),
-                                  A);
-}
-
-template <class data_t>
-template <typename mapping_function_t>
-void CCZ4::Diff2Vars<data_t>::enum_mapping(mapping_function_t mapping_function)
-{
-    using namespace VarsTools; // define_enum_mapping is part of VarsTools
-    define_enum_mapping(mapping_function, c_chi, chi);
-    define_enum_mapping(mapping_function, c_lapse, lapse);
-    define_enum_mapping(mapping_function, GRInterval<c_shift1, c_shift3>(),
-                        shift);
-    define_symmetric_enum_mapping(mapping_function, GRInterval<c_h11, c_h33>(),
-                                  h);
-}
-
 #endif /* CCZ4_IMPL_HPP_ */

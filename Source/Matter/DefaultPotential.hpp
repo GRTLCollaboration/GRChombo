@@ -3,8 +3,6 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-// Last edited K Clough 13.05.17
-
 #ifndef DEFAULTPOTENTIAL_HPP_
 #define DEFAULTPOTENTIAL_HPP_
 
