@@ -56,6 +56,9 @@ template <typename... compute_ts> class ComputePack
     template <class data_t>
     void call_compute(const Cell<data_t> &current_cell) const
     {
+#ifdef EQUATION_DEBUG_MODE
+        EquationDebugging::set_global_cell_coordinates(current_cell);
+#endif
         call_compute_helper(current_cell);
     }
 };
