@@ -7,7 +7,9 @@
 #define COORDINATES_HPP_
 
 #include "DimensionDefinitions.hpp"
+#include "IntVect.H"
 #include "simd.hpp"
+#include <array>
 
 template <class data_t> class Coordinates
 {
