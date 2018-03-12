@@ -7,6 +7,7 @@
 #define GRPARMPARSE_HPP_
 
 #include "ParmParse.H"
+#include "parstream.H" //Gives us pout()
 #include <algorithm>
 #include <memory>
 
