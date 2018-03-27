@@ -1,4 +1,4 @@
-verbosity = 1
+verbosity = 0
 chk_prefix = BinaryBH_
 #restart_file = BinaryBH_000360.3d.hdf5
 

@@ -16,6 +16,7 @@
 #include "LevelRK4.H"
 #include "SimulationParameters.hpp"
 #include "UserVariables.hpp" // need NUM_VARS
+#include <sys/time.h>
 
 class GRAMRLevel : public AMRLevel, public InterpSource
 {
@@ -162,6 +163,7 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     GRLevelData m_state_old; //!< the solution at the old time
     GRLevelData m_state_new; //!< the solution at the new time
     Real m_dx;               //!< grid spacing
+    double m_restart_time;
 
     GRAMR &m_gr_amr; //!< The GRAMR object containing this GRAMRLevel
 
