@@ -203,7 +203,6 @@ void GRAMRLevel::tagCells(IntVectSet &a_tags)
                 for (int ix = xmin; ix <= xmax; ++ix)
                 {
                     IntVect iv(ix, iy, iz);
-                    // At the moment only base on gradient chi/chi^2
                     if (tagging_criterion(iv, 0) >= m_p.regrid_threshold)
                     {
 // local_tags |= is not thread safe.
