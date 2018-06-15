@@ -4,6 +4,7 @@
  */
 
 #include "parstream.H" //Gives us pout()
+#include <chrono>
 #include <iostream>
 
 #include "DefaultLevelFactory.hpp"
@@ -35,9 +36,20 @@ int runGRChombo(int argc, char *argv[])
     int max_steps;
     pp.get("max_steps", max_steps);
 
+    using Clock = std::chrono::steady_clock;
+    using Minutes = std::chrono::duration<double, std::ratio<60, 1>>;
+
+    std::chrono::time_point<Clock> start_time = Clock::now();
+
     gr_amr.run(stop_time, max_steps);
 
+    auto now = Clock::now();
+    auto duration = std::chrono::duration_cast<Minutes>(now - start_time);
+    pout() << "Total simulation time (mins): " << duration.count() << ".\n";
+
     gr_amr.conclude();
+
+    CH_TIMER_REPORT(); // Report results when running with Chombo timers.
 
     return 0;
 }
