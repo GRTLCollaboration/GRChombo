@@ -36,8 +36,8 @@ void ScalarFieldLevel::specificAdvance()
 
     // Check for nan's
     if (m_p.nan_check)
-        BoxLoops::loop(NanCheck(), m_state_new, m_state_new, EXCLUDE_GHOST_CELLS,
-                       disable_simd());
+        BoxLoops::loop(NanCheck(), m_state_new, m_state_new,
+                       EXCLUDE_GHOST_CELLS, disable_simd());
 }
 
 // Initial data for field and metric variables
