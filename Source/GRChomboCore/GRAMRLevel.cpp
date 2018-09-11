@@ -157,6 +157,8 @@ void GRAMRLevel::postTimeStep()
         GRAMRLevel *finer_gr_amr_level_ptr = gr_cast(m_finer_level_ptr);
         finer_gr_amr_level_ptr->m_coarse_average.averageToCoarse(
             m_state_new, finer_gr_amr_level_ptr->m_state_new);
+        // Synchronise times to avoid floating point errors for finer levels
+        finer_gr_amr_level_ptr->time(m_time);
     }
 
     specificPostTimeStep();
@@ -726,23 +728,28 @@ void GRAMRLevel::evalRHS(GRLevelData &rhs, GRLevelData &soln,
 
     if (oldCrseSoln.isDefined())
     {
-        // Fraction "a_time" falls between the old and the new coarse times
+        // "time" falls between the old and the new coarse times
         Real alpha = (time - oldCrseTime) / (newCrseTime - oldCrseTime);
 
-        // Truncate the fraction to the range [0,1] to remove floating-point
-        // subtraction roundoff effects
-        Real eps = 0.04 * m_dt / m_ref_ratio;
-        if (Abs(alpha) < eps)
+        // Assuming RK4, we know that there can only be 5 different alpha so fix
+        // them with tolerance to prevent floating point problems
+        Real eps = 0.01;
+        if (abs(alpha) < eps)
             alpha = 0.0;
-        else if (Abs(1.0 - alpha) < eps)
+        else if (abs(alpha - 0.25) < eps)
+            alpha = 0.25;
+        else if (abs(alpha - 0.5) < eps)
+            alpha = 0.5;
+        else if (abs(alpha - 0.75) < eps)
+            alpha = 0.75;
+        else if (abs(alpha - 1.) < eps)
             alpha = 1.0;
-
-        // Current time before old coarse time
-        if (alpha < 0.0)
-            MayDay::Error("GRAMRLevel::evalRHS: alpha < 0.0");
-        // Current time after new coarse time
-        if (alpha > 1.0)
-            MayDay::Error("GRAMRLevel::evalRHS: alpha > 1.0");
+        else
+        {
+            pout() << "alpha: " << alpha << endl;
+            MayDay::Error(
+                "Time interpolation coefficient is incompatible with RK4.");
+        }
 
         // Interpolate ghost cells from next coarser level in space and time
         m_patcher.fillInterp(soln, alpha, 0, 0, NUM_VARS);
