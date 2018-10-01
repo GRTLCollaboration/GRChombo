@@ -108,6 +108,9 @@ class Derivative : public std::array<int, CH_SPACEDIM>
     static const Derivative dydz;
 };
 
+/* Moved to DerivativeSetup.hpp as otherwise multiply
+ * defined in the various translaion units
+
 const Derivative Derivative::LOCAL;
 
 const Derivative Derivative::dx(0);
@@ -121,5 +124,5 @@ const Derivative Derivative::dzdz(2, 2);
 const Derivative Derivative::dxdy(0, 1);
 const Derivative Derivative::dxdz(0, 2);
 const Derivative Derivative::dydz(1, 2);
-
+*/
 #endif /* DERIVATIVE_HPP_ */
