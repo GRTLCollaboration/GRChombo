@@ -31,7 +31,7 @@ class SimulationParameters : public SimulationParametersBase
 
         // Fill in the Matter Parameters
         initial_params.amplitudeSF = amplitudeSF;
-        initial_params.centerSF = center;
+        initial_params.centerSF = centerSF;
         initial_params.widthSF = widthSF;
         initial_params.r_zero = r_zero;
 

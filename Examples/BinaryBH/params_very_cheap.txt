@@ -23,8 +23,6 @@ momentumB = 0. 0.14025 0.0
 regrid_threshold = 0.3
 max_level = 1
 regrid_interval = 1 1 1 1 0 0 0 0 0
-ref_ratio = 2 2 2 2 2 2 2 2 2
-isPeriodic = 1 1 1
 
 #Max and min box sizes
 max_grid_size = 32
@@ -38,7 +36,6 @@ tag_buffer_size = 3
 checkpoint_interval = 1
 dt_multiplier = 0.25
 stop_time = 10.0
-max_steps = 10000000
 
 nan_check = 1
 

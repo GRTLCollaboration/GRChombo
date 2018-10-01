@@ -22,7 +22,7 @@ regrid_threshold_phi = 0.1
 
 # Level data
 # Maximum number of times you can regrid above coarsest level
-max_level = 1 # There are (max_level+1) grids, so min is zero
+max_level = 6 # There are (max_level+1) grids, so min is zero
 # Frequency of regridding at each level
 # Need one for each level, ie max_level+1 items
 # Generally you do not need to regrid frequently on every level
@@ -74,7 +74,7 @@ r_zero = 5.0
 scalar_mass = 0.001
 # parameter for bubble centre - defaulted to center of grid
 # so only uncomment if you want to place it off center
-#center = 32 32 32
+#centerSF = 32 32 32
 
 # Relaxation paramters
 # how long and how fast to relax

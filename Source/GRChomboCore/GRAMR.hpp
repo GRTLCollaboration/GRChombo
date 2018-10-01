@@ -20,6 +20,11 @@
  */
 class GRAMR : public AMR
 {
+  private:
+    using Clock = std::chrono::steady_clock;
+    using Hours = std::chrono::duration<double, std::ratio<3600, 1>>;
+    std::chrono::time_point<Clock> start_time = Clock::now();
+
   public:
     AMRInterpolator<Lagrange<4>> *m_interpolator; //!< The interpolator pointer
 
@@ -38,11 +43,6 @@ class GRAMR : public AMR
     {
         m_interpolator = a_interpolator;
     }
-
-  private:
-    using Clock = std::chrono::steady_clock;
-    using Hours = std::chrono::duration<double, std::ratio<3600, 1>>;
-    std::chrono::time_point<Clock> start_time = Clock::now();
 };
 
 #endif /* GRAMR_HPP_ */
