@@ -4,6 +4,9 @@ N2 = 32
 N3 = 32
 L = 16
 
+chk_prefix = TestChk_
+plot_prefix = TestPlt_
+
 num_points = 3
 
 num_ghosts = 3
