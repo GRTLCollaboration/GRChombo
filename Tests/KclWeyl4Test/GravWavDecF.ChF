@@ -162,8 +162,6 @@ c ----- IDX - maps indices from matrix to vector
       REAL_T er(0:2),ephi(0:2),etheta(0:2)
       REAL_T normr, normphi, normtheta
       REAL_T projrphi, projrtheta, projphitheta
-c      REAL_T thomassmells(0:3,0:3)
-c      REAL_T thomas2dead
       REAL_T epsilon_tensor(0:2,0:2,0:2)
       REAL_T v1(0:2),v2(0:2),v3(0:2)
       REAL_T omega11,omega12,omega22,omega13,omega23,omega33
