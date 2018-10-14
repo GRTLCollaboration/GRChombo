@@ -97,7 +97,7 @@ class SimulationParametersBase
             int N;
             pp.load(dir_str, N);
             ivN[dir] = N - 1;
-            max_N = max(ivN[dir], max_N);
+            max_N = max(N, max_N);
         }
 
         // the reference ratio is hard coded to 2
