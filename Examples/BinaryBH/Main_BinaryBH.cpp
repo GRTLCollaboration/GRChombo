@@ -31,17 +31,18 @@ int runGRChombo(int argc, char *argv[])
     DefaultLevelFactory<BinaryBHLevel> binary_bh_level_fact(gr_amr, sim_params);
     setupAMRObject(gr_amr, binary_bh_level_fact);
 
-    double stop_time;
-    pp.get("stop_time", stop_time);
-    int max_steps;
-    pp.get("max_steps", max_steps);
+    // call this after amr object setup so grids known
+    // and need it to stay in scope throughout run
+    AMRInterpolator<Lagrange<4>> interpolator(
+        gr_amr, sim_params.origin, sim_params.dx, sim_params.verbosity);
+    gr_amr.set_interpolator(&interpolator);
 
     using Clock = std::chrono::steady_clock;
     using Minutes = std::chrono::duration<double, std::ratio<60, 1>>;
 
     std::chrono::time_point<Clock> start_time = Clock::now();
 
-    gr_amr.run(stop_time, max_steps);
+    gr_amr.run(sim_params.stop_time, sim_params.max_steps);
 
     auto now = Clock::now();
     auto duration = std::chrono::duration_cast<Minutes>(now - start_time);

@@ -8,21 +8,25 @@
 
 // General includes
 #include "GRParmParse.hpp"
+#include "SimulationParametersBase.hpp"
 
 // Problem specific includes:
 #include "CCZ4.hpp"
 #include "Potential.hpp"
 #include "ScalarBubble.hpp"
 
-class SimulationParameters
+class SimulationParameters : public SimulationParametersBase
 {
   public:
-    SimulationParameters(GRParmParse &pp) { readParams(pp); }
+    SimulationParameters(GRParmParse &pp) : SimulationParametersBase(pp)
+    {
+        // read the problem specific params
+        readParams(pp);
+    }
 
     void readParams(GRParmParse &pp)
     {
-        // The automatically generated read parameters code defined in
-        // SimulationParameters.inc
+        // Reads the problem specific params
         auto_read_params(pp);
 
         // Fill in the Matter Parameters
@@ -33,25 +37,35 @@ class SimulationParameters
 
         // Fill in the potential parameters
         potential_params.scalar_mass = scalar_mass;
-
-        // Fill in the ccz4Parameters
-        ccz4_params.kappa1 = kappa1;
-        ccz4_params.kappa2 = kappa2;
-        ccz4_params.kappa3 = kappa3;
-        ccz4_params.shift_Gamma_coeff = shift_Gamma_coeff;
-        ccz4_params.shift_advec_coeff = shift_advec_coeff;
-        ccz4_params.eta = eta;
-        ccz4_params.lapse_power = lapse_power;
-        ccz4_params.lapse_coeff = lapse_coeff;
-        ccz4_params.lapse_advec_coeff = lapse_advec_coeff;
     }
 
-// SimulationParameters.inc declares all variables and defines
-// auto_read_params(GRParmParse& pp)
-#include "SimulationParameters.inc"
+    void auto_read_params(GRParmParse &pp)
+    {
+        pp.load("regrid_threshold_K", regrid_threshold_K);
+        pp.load("regrid_threshold_phi", regrid_threshold_phi);
 
-    // Collection of parameters necessary for the CCZ4 RHS
-    CCZ4::params_t ccz4_params;
+        // Initial and SF data
+        pp.load("G_Newton", G_Newton, 1.0);
+        pp.load("amplitudeSF", amplitudeSF);
+        pp.load("widthSF", widthSF);
+        pp.load("r_zero", r_zero);
+        pp.load("scalar_mass", scalar_mass);
+
+        // Relaxation params
+        pp.load("relaxtime", relaxtime);
+        pp.load("relaxspeed", relaxspeed);
+    }
+
+    // Problem specific parameters
+    Real regrid_threshold_K, regrid_threshold_phi;
+    // Initial data for matter and potential
+    double G_Newton;
+    Real amplitudeSF, widthSF, r_zero, scalar_mass;
+    std::array<double, CH_SPACEDIM> centerSF;
+    // Relaxation params
+    Real relaxtime, relaxspeed;
+
+    // Collection of parameters necessary for the problem
     ScalarBubble::params_t initial_params;
     Potential::params_t potential_params;
 };

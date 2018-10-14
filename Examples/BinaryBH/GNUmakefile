@@ -10,6 +10,7 @@ ifndef GRCHOMBO_SOURCE
     $(error Please define GRCHOMBO_SOURCE - see installation instructions.)
 endif
 
+
 ebase := Main_BinaryBH
 
 LibNames := AMRTimeDependent AMRTools BoxTools
@@ -19,8 +20,8 @@ src_dirs := $(GRCHOMBO_SOURCE)/utils \
             $(GRCHOMBO_SOURCE)/CCZ4  \
             $(GRCHOMBO_SOURCE)/BoxUtils  \
             $(GRCHOMBO_SOURCE)/GRChomboCore  \
-            $(GRCHOMBO_SOURCE)/TaggingCriteria  \
             $(GRCHOMBO_SOURCE)/AMRInterpolator  \
+            $(GRCHOMBO_SOURCE)/TaggingCriteria  \
             $(GRCHOMBO_SOURCE)/InitialConditions/BlackHoles
 
 include $(CHOMBO_HOME)/mk/Make.test

@@ -9,8 +9,7 @@
 // assigns number to each variable
 enum
 {
-
-    c_phi, // matter field added
+    c_phi,
 
     NUM_VARS
 };
@@ -18,7 +17,6 @@ enum
 namespace UserVariables
 {
 static constexpr char const *variable_names[NUM_VARS] = {
-
     "phi"};
 }
 

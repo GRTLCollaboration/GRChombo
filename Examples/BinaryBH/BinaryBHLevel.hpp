@@ -38,6 +38,15 @@ class BinaryBHLevel : public GRAMRLevel
     virtual void
     computeTaggingCriterion(FArrayBox &tagging_criterion,
                             const FArrayBox &current_state) override;
+
+    // to do post each time step on every level
+    virtual void specificPostTimeStep() override;
+
+    /// Any actions that should happen just before plot files output
+    virtual void prePlotLevel() override;
+
+    //! Specify which variables to write at plot intervals
+    virtual void specificWritePlotHeader(std::vector<int> &plot_states) const;
 };
 
 #endif /* BINARYBHLEVEL_HPP_ */
