@@ -9,6 +9,7 @@
 #include "AlwaysInline.hpp"
 #include "DimensionDefinitions.hpp"
 #include "Tensor.hpp"
+#include <array>
 
 template <class data_t> struct chris_t
 {
@@ -233,6 +234,57 @@ inline Tensor<3, double> epsilon()
     return epsilon;
 }
 
+/// Computes the levi-civita symbol (4D, NB, symbol, not the Tensor)
+
+inline std::array<std::array<std::array<std::array<int, 4>, 4>, 4>, 4>
+epsilon4D()
+{
+    std::array<std::array<std::array<std::array<int, 4>, 4>, 4>, 4> epsilon4D;
+    // Definition of levi civita 4 - antisymmetric Tensor
+    for (int i = 0; i < 4; ++i)
+    {
+        for (int j = 0; j < 4; ++j)
+        {
+            for (int k = 0; k < 4; ++k)
+            {
+                for (int l = 0; l < 4; ++l)
+                {
+                    epsilon4D[i][j][k][l] = 0;
+                }
+            }
+        }
+    }
+    epsilon4D[0][1][2][3] = 1;
+    epsilon4D[0][1][3][2] = -1;
+    epsilon4D[0][3][1][2] = 1;
+    epsilon4D[0][3][2][1] = -1;
+    epsilon4D[0][2][1][3] = -1;
+    epsilon4D[0][2][3][1] = 1;
+
+    epsilon4D[1][0][2][3] = -1;
+    epsilon4D[1][2][0][3] = 1;
+    epsilon4D[1][2][3][0] = -1;
+    epsilon4D[1][3][2][0] = 1;
+    epsilon4D[1][3][0][2] = -1;
+    epsilon4D[1][0][3][2] = 1;
+
+    epsilon4D[2][0][1][3] = 1;
+    epsilon4D[2][0][3][1] = -1;
+    epsilon4D[2][3][0][1] = 1;
+    epsilon4D[2][3][1][0] = -1;
+    epsilon4D[2][1][3][0] = 1;
+    epsilon4D[2][1][0][3] = -1;
+
+    epsilon4D[3][0][1][2] = -1;
+    epsilon4D[3][1][0][2] = 1;
+    epsilon4D[3][1][2][0] = -1;
+    epsilon4D[3][2][1][0] = 1;
+    epsilon4D[3][2][0][1] = -1;
+    epsilon4D[3][0][2][1] = 1;
+
+    return epsilon4D;
+}
+
 /// Computes the conformal christoffel symbol
 template <class data_t>
 chris_t<data_t>
@@ -258,6 +310,29 @@ compute_christoffel(const Tensor<2, Tensor<1, data_t>> &d1_metric,
     }
 
     return out;
+}
+
+template <class data_t>
+Tensor<3, data_t> compute_phys_chris(const Tensor<1, data_t> &d1_chi,
+                                     const data_t &vars_chi,
+                                     const Tensor<2, data_t> &vars_h,
+                                     const Tensor<2, data_t> &h_UU,
+                                     const Tensor<3, data_t> &chris_ULL)
+{
+    Tensor<3, data_t> chris_phys;
+    FOR3(i, j, k)
+    {
+        chris_phys[i][j][k] =
+            chris_ULL[i][j][k] -
+            0.5 / vars_chi *
+                (delta(i, k) * d1_chi[j] + delta(i, j) * d1_chi[k]);
+        FOR1(m)
+        {
+            chris_phys[i][j][k] +=
+                0.5 / vars_chi * vars_h[j][k] * h_UU[i][m] * d1_chi[m];
+        }
+    }
+    return chris_phys;
 }
 }
 

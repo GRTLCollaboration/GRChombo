@@ -6,7 +6,7 @@
 #ifndef MPICONTEXT_IMPL_HPP_
 #define MPICONTEXT_IMPL_HPP_
 
-MPIContext::MPIContext()
+inline MPIContext::MPIContext()
     : m_num_process(comm_size()), m_rank(comm_rank()), m_query(m_num_process),
       m_answer(m_num_process), m_async_active(false)
 {
@@ -42,7 +42,7 @@ inline void MPIContext::clearQueryCounts()
     m_query.clearCounts();
 }
 
-void MPIContext::exchangeLayout()
+inline void MPIContext::exchangeLayout()
 {
     CH_assert(!m_async_active);
 #ifdef CH_MPI
@@ -55,14 +55,14 @@ void MPIContext::exchangeLayout()
 }
 
 #ifdef CH_MPI
-void MPIContext::asyncBegin()
+inline void MPIContext::asyncBegin()
 {
     CH_assert(!m_async_active);
     m_async_active = true;
 }
 
-void MPIContext::asyncExchangeQuery(void *sendbuf, void *recvbuf,
-                                    MPI_Datatype type)
+inline void MPIContext::asyncExchangeQuery(void *sendbuf, void *recvbuf,
+                                           MPI_Datatype type)
 {
     CH_assert(m_async_active);
     MPI_Request req;
@@ -79,8 +79,8 @@ void MPIContext::asyncExchangeQuery(void *sendbuf, void *recvbuf,
 #endif
 }
 
-void MPIContext::asyncExchangeAnswer(void *sendbuf, void *recvbuf,
-                                     MPI_Datatype type)
+inline void MPIContext::asyncExchangeAnswer(void *sendbuf, void *recvbuf,
+                                            MPI_Datatype type)
 {
     CH_assert(m_async_active);
     MPI_Request req;
@@ -97,7 +97,7 @@ void MPIContext::asyncExchangeAnswer(void *sendbuf, void *recvbuf,
 #endif
 }
 
-void MPIContext::asyncEnd()
+inline void MPIContext::asyncEnd()
 {
     CH_assert(m_async_active);
     m_async_active = false;

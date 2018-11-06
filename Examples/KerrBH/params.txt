@@ -33,9 +33,6 @@ max_level = 6 # There are (max_level+1) grids, so min is zero
 # Need one for each level, ie max_level+1 items
 # Generally you do not need to regrid frequently on every level
 regrid_interval = 50 25 5 5 5 5 5
-# Ratio of dx_coarse/dx_fine at each level, usually best to stick to 2
-# Need one for each level, ie max_level+1 items
-ref_ratio = 2 2 2 2 2 2 2
 #Periodicity in each direction
 isPeriodic = 1 1 1
 # Max box sizes
@@ -44,8 +41,6 @@ max_grid_size = 16
 block_factor = 16
 # Determines how exactly regridding tries to fit the tagging
 fill_ratio = 0.75
-#number of ghost cells
-num_ghosts = 3
 
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
@@ -65,7 +60,6 @@ lapse_advec_coeff = 1 # 1 makes the lapse gauge 1+log slicing
 shift_advec_coeff = 0 # Usually no advection for beta
 shift_Gamma_coeff = 0.75 # 
 eta = 1.0 # This is beta_driver, usually of order 1/M_ADM of spacetime
-SpatialBetaDriverRadius = 1e12
 
 # CCZ4 parameters
 # if using BSSN the kappa values should be zero

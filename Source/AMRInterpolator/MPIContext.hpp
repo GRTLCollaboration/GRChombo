@@ -55,7 +55,7 @@ class MPIContext
 #endif
 };
 
-int MPIContext::comm_size()
+inline int MPIContext::comm_size()
 {
     int out = 1;
 #ifdef CH_MPI
@@ -64,7 +64,7 @@ int MPIContext::comm_size()
     return out;
 }
 
-int MPIContext::comm_rank()
+inline int MPIContext::comm_rank()
 {
     int out = 0;
 #ifdef CH_MPI

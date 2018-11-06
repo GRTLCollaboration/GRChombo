@@ -6,19 +6,18 @@
 #ifndef USERVARIABLES_HPP_
 #define USERVARIABLES_HPP_
 
+// assigns number to each variable
 enum
 {
-    c_var,
-    c_sym_var,
+    c_phi,
+
     NUM_VARS
 };
 
 namespace UserVariables
 {
 static constexpr char const *variable_names[NUM_VARS] = {
-    "var",
-    "sym_var",
-};
+    "phi"};
 }
 
 #endif /* USERVARIABLES_HPP_ */

@@ -498,7 +498,7 @@ void AMRInterpolator<InterpAlgo>::prepareMPI(InterpolationQuery &query,
     for (int comp = 0; comp < query.numComps(); ++comp)
         m_answer_data[comp].resize(num_answers);
 
-    if (m_verbosity)
+    if (m_verbosity >= 2)
     {
         _pout << "    Number of points that needs to be answered back:" << endl;
         for (int rank = 0; rank < m_mpi.m_num_process; ++rank)

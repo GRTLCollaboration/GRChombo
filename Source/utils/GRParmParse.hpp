@@ -88,7 +88,7 @@ class GRParmParse : public ParmParse
         else
         {
             parameter = default_value;
-            pout() << "Parameter: " << name << "not found in parameter file. "
+            pout() << "Parameter: " << name << " not found in parameter file. "
                    << "It has been set to its default value." << std::endl;
         }
     }
