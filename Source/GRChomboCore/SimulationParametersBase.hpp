@@ -141,10 +141,10 @@ class SimulationParametersBase
         origin.fill(dx_scalar / 2.0);
 
         // Extraction params
-        pp.load("extraction_level", extraction_level, 3);
-        pp.load("extraction_radius", extraction_radius, 120.0);
-        pp.load("num_points_phi", num_points_phi, 8);
-        pp.load("num_points_theta", num_points_theta, 16);
+        pp.load("extraction_level", extraction_level, 0);
+        pp.load("extraction_radius", extraction_radius, 0.1);
+        pp.load("num_points_phi", num_points_phi, 2);
+        pp.load("num_points_theta", num_points_theta, 4);
         pp.load("extraction_center", extraction_center,
                 {0.5 * L, 0.5 * L, 0.5 * L});
     }
