@@ -145,7 +145,7 @@ inline void WeylExtraction::write_integral(std::array<double, 2> integral,
     // only rank 0 does the write out
     if (rank == 0)
     {
-        int char_length = 60;
+        constexpr int char_length = 60;
         // Header data at first timestep
         if (m_time == m_dt)
         {
