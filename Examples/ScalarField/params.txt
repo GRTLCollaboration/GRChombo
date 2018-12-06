@@ -74,7 +74,7 @@ r_zero = 5.0
 scalar_mass = 0.001
 # parameter for bubble centre - defaulted to center of grid
 # so only uncomment if you want to place it off center
-#centerSF = 32 32 32
+#center = 32 32 32
 
 # Relaxation paramters
 # how long and how fast to relax
