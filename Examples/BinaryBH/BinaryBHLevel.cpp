@@ -83,7 +83,8 @@ void BinaryBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
 
 void BinaryBHLevel::specificPostTimeStep()
 {
-    if ((m_level == m_p.extraction_level) && (m_p.activate_extraction == 1))
+    if ((m_p.activate_extraction == 1) &&
+        (m_level == m_p.extraction_params.extraction_level))
     {
         // Populate the Weyl Scalar values on the grid
         fillAllGhosts();

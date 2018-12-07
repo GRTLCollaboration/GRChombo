@@ -8,45 +8,29 @@
 
 // General includes
 #include "GRParmParse.hpp"
+#include "SimulationParametersBase.hpp"
 
 // Problem specific includes:
 #include "CCZ4.hpp"
 #include "KerrBH.hpp"
 
-class SimulationParameters
+class SimulationParameters : public SimulationParametersBase
 {
   public:
-    SimulationParameters(GRParmParse &pp) { readParams(pp); }
-
-    void readParams(GRParmParse &pp)
+    SimulationParameters(GRParmParse &pp) : SimulationParametersBase(pp)
     {
-        // The automatically generated read parameters code defined in
-        // SimulationParameters.inc
-        auto_read_params(pp);
-
-        // Fill in KerrBH Parameters
-        kerr_params.mass = kerr_mass;
-        kerr_params.center = kerr_center;
-        kerr_params.spin = kerr_spin;
-
-        // Fill in the ccz4Parameters
-        ccz4_params.kappa1 = kappa1;
-        ccz4_params.kappa2 = kappa2;
-        ccz4_params.kappa3 = kappa3;
-        ccz4_params.shift_Gamma_coeff = shift_Gamma_coeff;
-        ccz4_params.shift_advec_coeff = shift_advec_coeff;
-        ccz4_params.eta = eta;
-        ccz4_params.lapse_power = lapse_power;
-        ccz4_params.lapse_coeff = lapse_coeff;
-        ccz4_params.lapse_advec_coeff = lapse_advec_coeff;
+        readParams(pp);
     }
 
-// SimulationParameters.inc declares all variables and defines
-// auto_read_params(GRParmParse& pp)
-#include "SimulationParameters.inc"
+    /// Read parameters from the parameter file
+    void readParams(GRParmParse &pp)
+    {
+        //Initial Kerr data
+        pp.load("kerr_mass", kerr_params.mass);
+        pp.load("kerr_spin", kerr_params.spin);
+        pp.load("kerr_center", kerr_params.center, {0.5*L, 0.5*L, 0.5*L});
+    }
 
-    // Collection of parameters necessary for the CCZ4 RHS
-    CCZ4::params_t ccz4_params;
     KerrBH::params_t kerr_params;
 };
 
