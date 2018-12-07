@@ -31,7 +31,7 @@ class SimulationParameters : public SimulationParametersBase
 
         // Fill in the Matter Parameters
         initial_params.amplitudeSF = amplitudeSF;
-        initial_params.centerSF = centerSF;
+        initial_params.centerSF = center; //already read in SimulationParametersBase
         initial_params.widthSF = widthSF;
         initial_params.r_zero = r_zero;
 
@@ -61,7 +61,6 @@ class SimulationParameters : public SimulationParametersBase
     // Initial data for matter and potential
     double G_Newton;
     Real amplitudeSF, widthSF, r_zero, scalar_mass;
-    std::array<double, CH_SPACEDIM> centerSF;
     // Relaxation params
     Real relaxtime, relaxspeed;
 
