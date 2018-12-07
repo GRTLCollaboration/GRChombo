@@ -78,7 +78,7 @@ class CCZ4
          double sigma,               //!< Kreiss-Oliger dissipation coefficient
          int formulation = USE_CCZ4, //!< Switches between CCZ4, BSSN,...
          double cosmological_constant = 0 //!< Value of the cosmological const.
-    );
+         );
 
     /// Compute function
     /** This function orchestrates the calculation of the rhs for one specific

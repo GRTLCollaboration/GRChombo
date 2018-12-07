@@ -70,7 +70,7 @@ class Weyl4
 
   protected:
     const std::array<double, CH_SPACEDIM> m_center; //!< The grid center
-    const double m_dx;                    //!< the grid spacing
+    const double m_dx;                              //!< the grid spacing
     const FourthOrderDerivatives m_deriv; //!< for calculating derivs of vars
 
     //! Calculation of Weyl_4 scalar

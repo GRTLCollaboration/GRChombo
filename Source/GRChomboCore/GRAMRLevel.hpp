@@ -100,7 +100,7 @@ class GRAMRLevel : public AMRLevel, public InterpSource
                  Real newCrseTime,               //!< new crse time
                  Real time,      //!< current time centering of soln
                  Real fluxWeight //!< weight to apply to fluxRegister updates
-    );
+                 );
 
     /// implements soln += dt*rhs
     void updateODE(GRLevelData &soln, const GRLevelData &rhs, Real dt);
