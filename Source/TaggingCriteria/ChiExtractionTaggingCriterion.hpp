@@ -17,8 +17,8 @@ class ChiExtractionTaggingCriterion
   protected:
     const double m_dx;
     const FourthOrderDerivatives m_deriv;
-    const int m_level;
     const extraction_params_t m_params;
+    const int m_level;
 
     template <class data_t> struct Vars
     {

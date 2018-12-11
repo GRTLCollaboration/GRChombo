@@ -16,7 +16,7 @@ using std::endl;
 #include "DerivativeSetup.hpp"
 #include "GRAMR.hpp"
 #include "GRParmParse.hpp"
-#include "SimulationParametersBase.hpp"
+#include "ChomboParameters.hpp"
 
 #include "simd.hpp"
 
@@ -97,20 +97,20 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     // Note that we could have passed these through the function
     // but this way preserves backwards compatibility
     GRParmParse pp;
-    SimulationParametersBase base_params(pp);
+    ChomboParameters chombo_params(pp);
 
     // set size of box
-    Box problem_domain(IntVect::Zero, base_params.ivN);
+    Box problem_domain(IntVect::Zero, chombo_params.ivN);
     ProblemDomain physdomain(problem_domain);
 
     // set periodicity
     for (int dir = 0; dir < SpaceDim; dir++)
     {
-        physdomain.setPeriodic(dir, base_params.isPeriodic[dir]);
+        physdomain.setPeriodic(dir, chombo_params.isPeriodic[dir]);
     }
 
     // Define the AMR object
-    gr_amr.define(base_params.max_level, base_params.ref_ratios, physdomain,
+    gr_amr.define(chombo_params.max_level, chombo_params.ref_ratios, physdomain,
                   &a_factory);
 
     // To preserve proper nesting we need to know the maximum ref_ratio, this
@@ -121,26 +121,26 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     const int max_ref_ratio = 2;
     const int additional_grid_buffer = 3;
     int grid_buffer_size =
-        std::ceil(((double)base_params.num_ghosts) / (double)max_ref_ratio) +
+        std::ceil(((double)chombo_params.num_ghosts) / (double)max_ref_ratio) +
         additional_grid_buffer;
     gr_amr.gridBufferSize(grid_buffer_size);
 
     // set checkpoint and plot intervals and prefixes
-    gr_amr.checkpointInterval(base_params.checkpoint_interval);
-    gr_amr.checkpointPrefix(base_params.checkpoint_prefix);
-    gr_amr.plotInterval(base_params.plot_interval);
-    gr_amr.plotPrefix(base_params.plot_prefix);
+    gr_amr.checkpointInterval(chombo_params.checkpoint_interval);
+    gr_amr.checkpointPrefix(chombo_params.checkpoint_prefix);
+    gr_amr.plotInterval(chombo_params.plot_interval);
+    gr_amr.plotPrefix(chombo_params.plot_prefix);
 
     // Number of coarse time steps from one regridding to the next
-    gr_amr.regridIntervals(base_params.regrid_interval);
+    gr_amr.regridIntervals(chombo_params.regrid_interval);
 
     // max and min box sizes, fill ratio determining accuracy of regrid
-    gr_amr.maxGridSize(base_params.max_grid_size);
-    gr_amr.blockFactor(base_params.block_factor);
-    gr_amr.fillRatio(base_params.fill_ratio);
+    gr_amr.maxGridSize(chombo_params.max_grid_size);
+    gr_amr.blockFactor(chombo_params.block_factor);
+    gr_amr.fillRatio(chombo_params.fill_ratio);
 
     // Set verbosity
-    gr_amr.verbosity(base_params.verbosity);
+    gr_amr.verbosity(chombo_params.verbosity);
 
     // Set up input files
     if (!pp.contains("restart_file"))

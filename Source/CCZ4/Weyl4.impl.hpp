@@ -43,12 +43,6 @@ Weyl4::compute_EB_fields(const Vars<data_t> &vars,
 {
     EBFields_t<data_t> out;
 
-    // compute position on grid relative to center
-    const data_t x = coords.x;
-    const double y = coords.y;
-    const double z = coords.z;
-    const data_t r = coords.get_radius();
-
     // raised normal vector, NB index 3 is time
     data_t n_U[4];
     n_U[3] = 1. / vars.lapse;
@@ -193,7 +187,6 @@ Weyl4::compute_null_tetrad(const Vars<data_t> &vars,
     const data_t x = coords.x;
     const double y = coords.y;
     const double z = coords.z;
-    const data_t r = coords.get_radius();
 
     // the inverse metric and alternating levi civita symbol
     const auto h_UU = TensorAlgebra::compute_inverse_sym(vars.h);

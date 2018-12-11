@@ -92,11 +92,11 @@ WeylExtraction::integrate_surface(int es, int el, int em,
     // only rank 0 does the integral, but use OMP threads if available
     if (rank == 0)
     {
-    // integrate the values over the sphere (normalised by r^2)
-    // assumes spacings constant, uses trapezium rule for phi and rectangles for
-    // theta  note we don't have to fudge the end points for phi because the
-    // function is periodic  and so the last point (implied but not part of
-    // vector) is equal to the first point
+// integrate the values over the sphere (normalised by r^2)
+// assumes spacings constant, uses trapezium rule for phi and rectangles for
+// theta  note we don't have to fudge the end points for phi because the
+// function is periodic  and so the last point (implied but not part of
+// vector) is equal to the first point
 #pragma omp parallel for
         for (int iphi = 0; iphi < m_params.num_points_phi; ++iphi)
         {
@@ -145,7 +145,7 @@ inline void WeylExtraction::write_integral(std::array<double, 2> integral,
     // only rank 0 does the write out
     if (rank == 0)
     {
-        int char_length = 60;
+        constexpr int char_length = 60;
         // Header data at first timestep
         if (m_time == m_dt)
         {

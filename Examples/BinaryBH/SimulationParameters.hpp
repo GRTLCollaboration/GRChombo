@@ -24,37 +24,14 @@ class SimulationParameters : public SimulationParametersBase
     /// Read parameters from the parameter file
     void readParams(GRParmParse &pp)
     {
-        // The automatically generated read parameters code defined in
-        // SimulationParameters.inc
-        auto_read_params(pp);
-
-        // Fill in BinaryBHParameters
-        bh1_params.mass = massA;
-        bh1_params.center = centerA;
-        bh1_params.momentum = momentumA;
-        bh2_params.mass = massB;
-        bh2_params.center = centerB;
-        bh2_params.momentum = momentumB;
-    }
-
-    void auto_read_params(GRParmParse &pp)
-    {
         // Initial data
-        pp.load("massA", massA);
-        pp.load("centerA", centerA);
-        pp.load("momentumA", momentumA);
-        pp.load("massB", massB);
-        pp.load("centerB", centerB);
-        pp.load("momentumB", momentumB);
+        pp.load("massA", bh1_params.mass);
+        pp.load("centerA", bh1_params.center);
+        pp.load("momentumA", bh1_params.momentum);
+        pp.load("massB", bh2_params.mass);
+        pp.load("centerB", bh2_params.center);
+        pp.load("momentumB", bh1_params.momentum);
         pp.load("activate_extraction", activate_extraction, 0);
-
-        // Fill in BinaryBHParameters
-        bh1_params.mass = massA;
-        bh1_params.center = centerA;
-        bh1_params.momentum = momentumA;
-        bh2_params.mass = massB;
-        bh2_params.center = centerB;
-        bh2_params.momentum = momentumB;
     }
 
     // Initial data
