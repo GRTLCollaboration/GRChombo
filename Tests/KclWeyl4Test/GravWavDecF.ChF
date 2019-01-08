@@ -559,8 +559,8 @@ c      Rfull = R + Rchi
 c -----------------------------------------------------------------
 
          do d0 = 0,2; do d1 = 0,2
-	          Rfull(d0,d1) = R(d0,d1) + Rchi(d0,d1)
-	       enddo; enddo
+                  Rfull(d0,d1) = R(d0,d1) + Rchi(d0,d1)
+               enddo; enddo
 
 c -----------------------------------------------------------------
 c      Get K, and calcuate K_ij
@@ -661,8 +661,8 @@ c        time index here is 3 (not zero).
            T(3,d0) = T(d0,3)
          enddo
 
-c ----	 Svec = S_i = n^a T_ai, where a loops over space and time, since nu is already upper
-c ---- 	 we do not need gammas
+c ----   Svec = S_i = n^a T_ai, where a loops over space and time, since nu is already upper
+c ----   we do not need gammas
 
          do d0 = 0,2
            Svec(d0) = 0
@@ -720,7 +720,7 @@ c ---- Levi
          levi44d(3,2,1,0) = 1
          levi44d(3,2,0,1) = -1
          levi44d(3,0,2,1) = 1
-	
+        
 c ---- Projection of levi civita on hypersurface (8.3.17) Alcubierre 
 
          do d0=0,2; do d1=0,2; do d2=0,2
@@ -731,52 +731,52 @@ c ---- Projection of levi civita on hypersurface (8.3.17) Alcubierre
           levi34d(d0,d1,d2) = levi34d(d0,d1,d2) + nu(d3)*levi44d(d0,d1,d2,d3)*lapse/chi2**1.5
          enddo; enddo; enddo; enddo
 
-	 
+         
 c ---- raising levi cevita
 
          do d0=0,2; do d1=0,2; do d2=0,2
           levi(d0,d1,d2) = 0
          enddo; enddo; enddo 
 
-	 do d0=0,2; do d1=0,2; do d2=0,2; do d3=0,2; do d4=0,2 
+         do d0=0,2; do d1=0,2; do d2=0,2; do d3=0,2; do d4=0,2 
           levi(d0,d1,d2) = levi(d0,d1,d2) + levi34d(d0,d3,d4)
      &                *gu(d3,d1)*chi2*gu(d4,d2)*chi2
          enddo; enddo; enddo; enddo; enddo
 
 c ---- Convariant derivative K_ij
-	
-	do d0=0,2; do d1 =0,2;do d2=0,2
-	  CovKtsr(d0,d1,d2) = dKtsrdx(d0,d1,d2)
-	enddo;enddo;enddo 
-	
-	do d0=0,2; do d1=0,2; do d2=0,2 ; do d3=0,2
-	  CovKtsr(d0,d1,d2) = CovKtsr(d0,d1,d2) - chriss(d3,d2,d0)*Ktsr(d3,d1)
-     & 		- chriss(d3,d2,d1)*Ktsr(d0,d3)
-	enddo;enddo;enddo; enddo  
+        
+        do d0=0,2; do d1 =0,2;do d2=0,2
+          CovKtsr(d0,d1,d2) = dKtsrdx(d0,d1,d2)
+        enddo;enddo;enddo 
+        
+        do d0=0,2; do d1=0,2; do d2=0,2 ; do d3=0,2
+          CovKtsr(d0,d1,d2) = CovKtsr(d0,d1,d2) - chriss(d3,d2,d0)*Ktsr(d3,d1)
+     &          - chriss(d3,d2,d1)*Ktsr(d0,d3)
+        enddo;enddo;enddo; enddo  
 
 c ---- Calculation of electric and magnetic fields
  
-	do d0=0,2; do d1 =0,2
-	  E(d0,d1) = 0
-	  B(d0,d1) = 0 
-	enddo;enddo 
+        do d0=0,2; do d1 =0,2
+          E(d0,d1) = 0
+          B(d0,d1) = 0 
+        enddo;enddo 
 
 
-	do d0=0,2; do d1 =0,2; do d2 =0,2; do d3 = 0,2
-	  B(d0,d1) = B(d0,d1)+levi(d0,d2,d3)*(CovKtsr(d3,d1,d2)
-     &                - 4.*Pi*g(d1,d2)/chi2*Svec(d3))			 
-	enddo;enddo;enddo;enddo 
+        do d0=0,2; do d1 =0,2; do d2 =0,2; do d3 = 0,2
+          B(d0,d1) = B(d0,d1)+levi(d0,d2,d3)*(CovKtsr(d3,d1,d2)
+     &                - 4.*Pi*g(d1,d2)/chi2*Svec(d3))                    
+        enddo;enddo;enddo;enddo 
 
-	do d0=0,2; do d1 =0,2
-	  E(d0,d1) = E(d0,d1)+Rfull(d0,d1) + K(CHF_AUTOIX[i])
+        do d0=0,2; do d1 =0,2
+          E(d0,d1) = E(d0,d1)+Rfull(d0,d1) + K(CHF_AUTOIX[i])
      &               *Ktsr(d0,d1) - 4.*Pi*(Sten(d0,d1)+1./3.*g(d0,d1)/chi2
      &                *(4.*rho(CHF_AUTOIX[i])-trSten))
-	enddo;enddo
-	
-	do d0=0,2; do d1=0,2; do d2=0,2 ; do d3=0,2
-	  E(d0,d1) = E(d0,d1) - Ktsr(d0,d2)*Ktsr(d3,d1)
+        enddo;enddo
+        
+        do d0=0,2; do d1=0,2; do d2=0,2 ; do d3=0,2
+          E(d0,d1) = E(d0,d1) - Ktsr(d0,d2)*Ktsr(d3,d1)
      &               *gu(d2,d3)*chi2
-	enddo; enddo; enddo; enddo 
+        enddo; enddo; enddo; enddo 
 
 c -----------------------------------------------------------
 c ---- Calculating Weyl tensor 
@@ -802,23 +802,23 @@ c ----- tetrat calculation
         sinph2 = sinph*sinph
 
  
-	do d0 = 0,2 
-	  er(d0) = 0
-	  ephi(d0) = 0
+        do d0 = 0,2 
+          er(d0) = 0
+          ephi(d0) = 0
           etheta(d0) = 0 
         enddo
  
-  	er(0) = cosph*sinth  
-	er(1) = sinph*sinth
-	er(2) =  costh
+        er(0) = cosph*sinth  
+        er(1) = sinph*sinth
+        er(2) =  costh
 
-	ephi(0)= cosph*costh
-	ephi(1)= sinph*costh
-	ephi(2)= -sinth
-	
-	etheta(0)= -sinph
-	etheta(1)= cosph
-	etheta(2)= 0 
+        ephi(0)= cosph*costh
+        ephi(1)= sinph*costh
+        ephi(2)= -sinth
+        
+        etheta(0)= -sinph
+        etheta(1)= cosph
+        etheta(2)= 0 
 
 c ------Alternative tetrats-------
         x = (dx*(i0+0.5) - centerx)
@@ -842,17 +842,17 @@ c        v1 = (/ -y, x, null /);
 c        v2 = (/  x, y, z /);
 c        v3 = null;
 
-	v1(0) = -y
-	v1(1) = x
-	v1(2) = 0
+        v1(0) = -y
+        v1(1) = x
+        v1(2) = 0
 
-	v2(0) = x
-	v2(1) = y
-	v2(2) = z
+        v2(0) = x
+        v2(1) = y
+        v2(2) = z
 
-	v3(0) = 0
-	v3(1) = 0
-	v3(2) = 0
+        v3(0) = 0
+        v3(1) = 0
+        v3(2) = 0
 
         do d0=0,2; do d1=0,2; do d2=0,2; do d3 = 0,2 
           v3(d3) = v3(d3) + chi1**(-1.)*gu(d3,d0)*epsilon_tensor(d0,d1,d2)*v1(d1)*v2(d2)
@@ -891,14 +891,14 @@ c        !gram-schmidt
         enddo; enddo
         v3 = v3/sqrt(omega33)
 
-	do d0 = 0,2
-	   ephi(d0) = v1(d0)
-	   er(d0) = v2(d0)
-	   etheta(d0) = v3(d0) 
+        do d0 = 0,2
+           ephi(d0) = v1(d0)
+           er(d0) = v2(d0)
+           etheta(d0) = v3(d0) 
         enddo 
-	
+        
 
-	weyl1(CHF_AUTOIX[i]) = 0 
+        weyl1(CHF_AUTOIX[i]) = 0 
         weyl2(CHF_AUTOIX[i]) = 0 
 
 
