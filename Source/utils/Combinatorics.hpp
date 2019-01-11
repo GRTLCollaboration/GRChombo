@@ -9,7 +9,7 @@
 namespace Combinatorics
 {
 // Calculate factorials
-double factorial(int n)
+inline double factorial(int n)
 {
     double out = 1.0;
     for (int i = 1; i <= n; i++)
@@ -20,7 +20,7 @@ double factorial(int n)
 }
 
 // Calculate combinatorics
-double n_choose_r(int n, int r)
+inline double n_choose_r(int n, int r)
 {
     CH_assert((r >= 0) && (n >= r)); // sense check values
 

@@ -1,0 +1,84 @@
+/* GRChombo
+ * Copyright 2012 The GRChombo collaboration.
+ * Please refer to LICENSE in GRChombo's root directory.
+ */
+
+#ifndef SIMULATIONPARAMETERSBASE_HPP_
+#define SIMULATIONPARAMETERSBASE_HPP_
+
+// General includes
+#include "CCZ4.hpp"
+#include "ChomboParameters.hpp"
+#include "GRParmParse.hpp"
+
+struct extraction_params_t
+{
+    double extraction_radius;
+    std::array<double, CH_SPACEDIM> extraction_center;
+    int num_points_phi;
+    int num_points_theta;
+    int extraction_level;
+};
+
+class SimulationParametersBase : public ChomboParameters
+{
+  public:
+    SimulationParametersBase(GRParmParse &pp) : ChomboParameters(pp)
+    {
+        read_params(pp);
+    }
+
+  private:
+    void read_params(GRParmParse &pp)
+    {
+        // Lapse evolution
+        pp.load("lapse_advec_coeff", ccz4_params.lapse_advec_coeff, 1.0);
+        pp.load("lapse_coeff", ccz4_params.lapse_coeff, 2.0);
+        pp.load("lapse_power", ccz4_params.lapse_power, 1.0);
+
+        // Shift Evolution
+        pp.load("shift_advec_coeff", ccz4_params.shift_advec_coeff, 0.0);
+        pp.load("shift_Gamma_coeff", ccz4_params.shift_Gamma_coeff, 0.75);
+        pp.load("eta", ccz4_params.eta, 1.0);
+
+        // CCZ4 parameters
+        pp.load("formulation", formulation, 0);
+        pp.load("kappa1", ccz4_params.kappa1, 0.1);
+        pp.load("kappa2", ccz4_params.kappa2, 0.0);
+        pp.load("kappa3", ccz4_params.kappa3, 1.0);
+
+        // Dissipation
+        pp.load("sigma", sigma, 0.1);
+
+        // Nan Check
+        pp.load("nan_check", nan_check, 1);
+
+        // extraction params
+        dx.fill(coarsest_dx);
+        origin.fill(coarsest_dx / 2.0);
+
+        // Extraction params
+        pp.load("extraction_level", extraction_params.extraction_level, 0);
+        pp.load("extraction_radius", extraction_params.extraction_radius, 0.1);
+        pp.load("num_points_phi", extraction_params.num_points_phi, 2);
+        pp.load("num_points_theta", extraction_params.num_points_theta, 4);
+        pp.load("extraction_center", extraction_params.extraction_center,
+                {0.5 * L, 0.5 * L, 0.5 * L});
+    }
+
+  public:
+    double sigma; // Kreiss-Oliger dissipation parameter
+
+    int nan_check;
+
+    int formulation; // Whether to use BSSN or CCZ4
+
+    std::array<double, CH_SPACEDIM> origin,
+        dx; // location of coarsest origin and dx
+
+    // Collection of parameters necessary for the CCZ4 RHS and extraction
+    CCZ4::params_t ccz4_params;
+    extraction_params_t extraction_params;
+};
+
+#endif /* SIMULATIONPARAMETERSBASE_HPP_ */

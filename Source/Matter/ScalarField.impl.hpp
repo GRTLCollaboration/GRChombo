@@ -65,7 +65,7 @@ void ScalarField<potential_t>::emtensor_excl_potential(
     // S = Tr_S_ij
     out.S = vars.chi * TensorAlgebra::compute_trace(out.Sij, h_UU);
 
-    // S_i (note lower index) = n^a T_a0
+    // S_i (note lower index) = - n^a T_ai
     FOR1(i) { out.Si[i] = -d1_phi[i] * vars_sf.Pi; }
 
     // rho = n^a n^b T_ab

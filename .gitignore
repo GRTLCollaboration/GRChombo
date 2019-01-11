@@ -1,4 +1,5 @@
 pout.*
+.bashrc
 *.pbs
 *.s
 d

@@ -8,52 +8,51 @@
 
 // General includes
 #include "GRParmParse.hpp"
+#include "SimulationParametersBase.hpp"
 
 // Problem specific includes:
 #include "CCZ4.hpp"
 #include "Potential.hpp"
 #include "ScalarBubble.hpp"
 
-class SimulationParameters
+class SimulationParameters : public SimulationParametersBase
 {
   public:
-    SimulationParameters(GRParmParse &pp) { readParams(pp); }
+    SimulationParameters(GRParmParse &pp) : SimulationParametersBase(pp)
+    {
+        // read the problem specific params
+        readParams(pp);
+    }
 
     void readParams(GRParmParse &pp)
     {
-        // The automatically generated read parameters code defined in
-        // SimulationParameters.inc
-        auto_read_params(pp);
+        // for regridding
+        pp.load("regrid_threshold_K", regrid_threshold_K);
+        pp.load("regrid_threshold_phi", regrid_threshold_phi);
 
-        // Fill in the Matter Parameters
-        initial_params.amplitudeSF = amplitudeSF;
-        initial_params.centerSF = centerSF;
-        initial_params.widthSF = widthSF;
-        initial_params.r_zero = r_zero;
+        // Initial and SF data
+        initial_params.centerSF =
+            center; // already read in SimulationParametersBase
+        pp.load("G_Newton", G_Newton, 1.0);
+        pp.load("amplitudeSF", initial_params.amplitudeSF);
+        pp.load("widthSF", initial_params.widthSF);
+        pp.load("r_zero", initial_params.r_zero);
+        pp.load("scalar_mass", potential_params.scalar_mass);
 
-        // Fill in the potential parameters
-        potential_params.scalar_mass = scalar_mass;
-
-        // Fill in the ccz4Parameters
-        ccz4_params.kappa1 = kappa1;
-        ccz4_params.kappa2 = kappa2;
-        ccz4_params.kappa3 = kappa3;
-        ccz4_params.shift_Gamma_coeff = shift_Gamma_coeff;
-        ccz4_params.shift_advec_coeff = shift_advec_coeff;
-        ccz4_params.eta = eta;
-        ccz4_params.lapse_power = lapse_power;
-        ccz4_params.lapse_coeff = lapse_coeff;
-        ccz4_params.lapse_advec_coeff = lapse_advec_coeff;
+        // Relaxation params
+        pp.load("relaxtime", relaxtime);
+        pp.load("relaxspeed", relaxspeed);
     }
 
-// SimulationParameters.inc declares all variables and defines
-// auto_read_params(GRParmParse& pp)
-#include "SimulationParameters.inc"
-
-    // Collection of parameters necessary for the CCZ4 RHS
-    CCZ4::params_t ccz4_params;
+    // Regrid parameters
+    Real regrid_threshold_K, regrid_threshold_phi;
+    // Initial data for matter and potential
+    double G_Newton;
     ScalarBubble::params_t initial_params;
     Potential::params_t potential_params;
+    // Relaxation params
+    Real relaxtime, relaxspeed;
+
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */

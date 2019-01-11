@@ -13,8 +13,12 @@
 using std::cerr;
 using std::endl;
 #include "AMRLevelFactory.H"
+#include "DerivativeSetup.hpp"
 #include "GRAMR.hpp"
-#include "ParmParse.H"
+#include "GRParmParse.hpp"
+#include "ChomboParameters.hpp"
+
+#include "simd.hpp"
 
 #ifdef EQUATION_DEBUG_MODE
 #include "DebuggingTools.hpp"
@@ -66,6 +70,8 @@ void mainSetup(int argc, char *argv[])
 #ifdef _OPENMP
         pout() << " threads = " << omp_get_max_threads() << endl;
 #endif
+        pout() << " simd width (doubles) = " << simd_traits<double>::simd_len
+               << endl;
     }
 
     const int required_argc = 2;
@@ -87,127 +93,54 @@ void mainFinalize()
 
 void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
 {
-    // Some hard-coded parameters:
-    // The buffer is width of ghost cells + additional_grid_buffer
-    // and defines the minimum number of level l cells there have to be
-    // between level l+1 and level l-1
-    const int additional_grid_buffer = 3;
+    // Reread the params - just the base ones
+    // Note that we could have passed these through the function
+    // but this way preserves backwards compatibility
+    GRParmParse pp;
+    ChomboParameters chombo_params(pp);
 
-    ParmParse pp;
-
-    IntVect ivN = IntVect::Unit;
-    // Setup the grid size
-    for (int dir = 0; dir < SpaceDim; ++dir)
-    {
-        char dir_str[20];
-        sprintf(dir_str, "N%d", dir + 1);
-        int N;
-        pp.get(dir_str, N);
-        ivN[dir] = N - 1;
-    }
-
-    Box problem_domain(IntVect::Zero, ivN);
+    // set size of box
+    Box problem_domain(IntVect::Zero, chombo_params.ivN);
     ProblemDomain physdomain(problem_domain);
 
     // set periodicity
-    std::vector<bool> isPeriodic;
-    pp.getarr("isPeriodic", isPeriodic, 0, SpaceDim);
     for (int dir = 0; dir < SpaceDim; dir++)
     {
-        physdomain.setPeriodic(dir, isPeriodic[dir]);
+        physdomain.setPeriodic(dir, chombo_params.isPeriodic[dir]);
     }
-
-    int max_level;
-    pp.get("max_level", max_level);
-
-    Vector<int> ref_ratios;
-    pp.getarr("ref_ratio", ref_ratios, 0, max_level + 1);
 
     // Define the AMR object
-    gr_amr.define(max_level, ref_ratios, physdomain, &a_factory);
+    gr_amr.define(chombo_params.max_level, chombo_params.ref_ratios, physdomain,
+                  &a_factory);
 
-    // To preserve proper nesting we need to know the maximum ref_ratio.
-    int max_ref_ratio = ref_ratios[0];
-    for (int i = 1; i < max_level + 1; ++i)
-    {
-        max_ref_ratio = std::max(max_ref_ratio, ref_ratios[i]);
-    }
-
-    int num_ghosts;
-    pp.get("num_ghosts", num_ghosts);
+    // To preserve proper nesting we need to know the maximum ref_ratio, this
+    // is now hard coded to 2 in the base params
+    // The buffer is width of ghost cells + additional_grid_buffer
+    // and defines the minimum number of level l cells there have to be
+    // between level l+1 and level l-1
+    const int max_ref_ratio = 2;
+    const int additional_grid_buffer = 3;
     int grid_buffer_size =
-        std::ceil(((double)num_ghosts) / (double)max_ref_ratio) +
+        std::ceil(((double)chombo_params.num_ghosts) / (double)max_ref_ratio) +
         additional_grid_buffer;
     gr_amr.gridBufferSize(grid_buffer_size);
 
-    int checkpoint_interval;
-    pp.get("checkpoint_interval", checkpoint_interval);
-    gr_amr.checkpointInterval(checkpoint_interval);
+    // set checkpoint and plot intervals and prefixes
+    gr_amr.checkpointInterval(chombo_params.checkpoint_interval);
+    gr_amr.checkpointPrefix(chombo_params.checkpoint_prefix);
+    gr_amr.plotInterval(chombo_params.plot_interval);
+    gr_amr.plotPrefix(chombo_params.plot_prefix);
 
     // Number of coarse time steps from one regridding to the next
-    Vector<int> regrid_intervals;
-    pp.getarr("regrid_interval", regrid_intervals, 0, max_level + 1);
-    gr_amr.regridIntervals(regrid_intervals);
+    gr_amr.regridIntervals(chombo_params.regrid_interval);
 
-    if (pp.contains("max_grid_size"))
-    {
-        int max_grid_size;
-        pp.query("max_grid_size", max_grid_size);
-        gr_amr.maxGridSize(max_grid_size);
-    }
+    // max and min box sizes, fill ratio determining accuracy of regrid
+    gr_amr.maxGridSize(chombo_params.max_grid_size);
+    gr_amr.blockFactor(chombo_params.block_factor);
+    gr_amr.fillRatio(chombo_params.fill_ratio);
 
-    if (pp.contains("block_factor"))
-    {
-        int block_factor;
-        pp.query("block_factor", block_factor);
-        gr_amr.blockFactor(block_factor);
-    }
-
-    if (pp.contains("fill_ratio"))
-    {
-        Real fill_ratio;
-        pp.query("fill_ratio", fill_ratio);
-        gr_amr.fillRatio(fill_ratio);
-    }
-
-    if (pp.contains("max_dt_grow"))
-    {
-        Real max_dt_grow;
-        pp.query("max_dt_grow", max_dt_grow);
-        gr_amr.maxDtGrow(max_dt_grow);
-    }
-
-    if (pp.contains("dt_tolerance_factor"))
-    {
-        Real dt_tolerance_factor;
-        pp.query("dt_tolerance_factor", dt_tolerance_factor);
-        gr_amr.dtToleranceFactor(dt_tolerance_factor);
-    }
-
-    if (pp.contains("chk_prefix"))
-    {
-        std::string prefix;
-        pp.query("chk_prefix", prefix);
-        gr_amr.checkpointPrefix(prefix);
-    }
-
-    if (pp.contains("plot_interval"))
-    {
-        int plot_interval;
-        pp.get("plot_interval", plot_interval);
-        gr_amr.plotInterval(plot_interval);
-    }
-
-    if (pp.contains("plot_prefix"))
-    {
-        std::string prefix;
-        pp.query("plot_prefix", prefix);
-        gr_amr.plotPrefix(prefix);
-    }
-
-    int verbosity;
-    pp.get("verbosity", verbosity);
-    gr_amr.verbosity(verbosity);
+    // Set verbosity
+    gr_amr.verbosity(chombo_params.verbosity);
 
     // Set up input files
     if (!pp.contains("restart_file"))

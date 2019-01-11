@@ -1,0 +1,927 @@
+C      ____
+C     / ___/ /  ___  __ _  / /  ___
+C    / /__/ _ \/ _ \/  V \/ _ \/ _ \
+C    \___/_//_/\___/_/_/_/_.__/\___/
+C    Please refer to Copyright.txt, in Chombo's root directory.
+
+c    GravWaveDec.ChF ----------------------------
+c    File containing the Gravitational Wave Detector
+c    --- written by Thomas Helfer and James Cook --- 
+
+#include "CONSTANTS.H"
+
+c     Vector indices
+#define _1  0
+#define _2  1
+#define _3  2
+c     Tensor indices
+#define _11 0
+#define _12 1
+#define _13 2
+#define _22 3
+#define _23 4
+#define _33 5
+
+c     -------------------------------------------------------------
+c       Compute the potential
+c     -------------------------------------------------------------
+        subroutine GETV(
+     &    CHF_REAL[V],
+     &    CHF_CONST_REAL[phi],
+     &    CHF_CONST_REAL[phi0],
+     &    CHF_CONST_REAL[alp],
+     &    CHF_CONST_REAL[s],
+     &    CHF_CONST_REAL[eps],
+     &  )
+
+        V = 0
+
+        return
+        end
+
+
+      subroutine GRAVWAVDEC(
+     &     CHF_FRA1[weyl1],
+     &     CHF_FRA1[weyl2],
+     &     CHF_CONST_FRA[gamma],
+     &     CHF_CONST_FRA[Gamma1],
+     &     CHF_CONST_FRA1[chi],
+     &     CHF_CONST_FRA1[K],
+     &     CHF_CONST_FRA[A],
+     &     CHF_CONST_FRA[beta],
+     &     CHF_CONST_FRA1[phi],
+     &     CHF_CONST_FRA1[phiM],
+     &     CHF_CONST_FRA1[alpha],
+     &     CHF_CONST_FRA1[rho],
+     &     CHF_CONST_REAL[phi0],
+     &     CHF_CONST_REAL[mass],
+     &     CHF_CONST_REAL[dx],
+     &     CHF_CONST_REAL[centerx],
+     &     CHF_CONST_REAL[centery],
+     &     CHF_CONST_REAL[centerz],
+     &     CHF_BOX[box])
+
+c ----------------------------------------------------------------
+c       Definitions
+c ----------------------------------------------------------------
+
+c ----- i, ii, jj - index for boxes
+
+c ----- xx, yy, zz cartesian coords 
+c ----- rho2, rho ecc - spherical stuff
+c ----- dxinv - 1/dx where dx is grid spacing
+c ----- dxinv2 - 1/dx^2
+c ----- g - conformal metric
+c ----- gu - inverse of conformal metric
+c ----- detg - determinante of conformal metric
+c ----- d2gammadxdy -- 2nd derivative of conformal metric
+c ----- dgammadx -- 1st derivative of conformal metric
+c ----- chris - conformal christoffel symbols
+c ----- chriss - christoffel symbols (non-conformal)
+c ----- chris1st - confrmal christoffel symbols, all lowered
+c ----- R - Ricci tensor on the slice from conformal metric
+c ----- Rchi - (Rfull - R)
+c ----- Rfull - Ricci tensor on the slice from full metric
+c ----- Gamma1d - BSSN evolution variable, conformal
+c                 christoffelsymbol, 2nd and 3rd index contracted
+c ----- dGamma1dx - derivative of Gamma1d
+c ----- d2chidxdy - 2nd derivative of the conformal factor chi
+c ----- dchidx - 1st derivative of the conformal factor chi
+c ----- chi1 - conformal factor
+c ----- chi2 - conformal factor squared
+c ----- Kscalar - Extrinsic Curvature Scalar
+c ----- Ktsr - Extrinsic Curvature Tensor
+c ----- CovKstr - covariant derivative of Extrinsic Curvature
+c ----- dKtsrdx - Spatial Derivative of Extrinsic Curvature
+c ----- dKscalardx - dKdx
+c ----- dKdx - spacial derivate of trace of extrinsic curvate 
+c ----- Vphi - Value of Potential
+c ----- Vt - Lagrangian
+c ----- dphidx - Derivative of the Scalar Field
+c ----- betaidiphi - Better Derivative
+c ----- dphidt2 - Time Deriavtive of phi squared
+c ----- lapse - lapse
+c ----- beta2 - beta^i beta_i
+c ----- n - Normal vector
+c ----- nu - Raised Normal Vector
+c ----- T - Stress Energy Tensor
+c ----- Sten - Spatial Stress Energy Tensor
+c ----- trSten - trSten
+c ----- Svec - S_i = n^a T_ai
+c ----- dAdx - spacial derivative of decomposed extrinsic curvature
+c ----- levi - Projected levi civita on hypersurfarce (lowered,raised,raised)
+c ----- levi44d - 4d levi tensor 
+c ----- levi34d - Projected levi civita on hypersurfarce (lowered,lowered,lowered)
+c ----- E - Electroic field 
+c ----- B - Magnetic field
+c ----- er - normal vector in r direction (renormalised for metric)
+c ----- ephi - normal vector in phi direction (renormalised for metric)
+c ----- etheta - normal vector in theta direction (renormalised for metric) 
+c ----- norm? - norm of vector
+
+c ----- d% - Integers for loops
+c ----- IDX - maps indices from matrix to vector
+
+      integer CHF_AUTODECL[i], CHF_AUTODECL[ii], CHF_AUTODECL[jj]
+
+      REAL_T xx, yy, zz
+      REAL_T rhoc2, rhoc, r2, rr, costh, cosph, sinth, sinph, costh2, sinth2, cosph2, sinph2
+      REAL_T dxinv, dxinv2
+      REAL_T g(0:CH_SPACEDIM-1,0:CH_SPACEDIM-1), gu(0:CH_SPACEDIM-1,0:CH_SPACEDIM-1)
+      REAL_T detg
+      REAL_T d2gammadxdy(0:2,0:2,0:CH_SPACEDIM-1,0:CH_SPACEDIM-1)
+      REAL_T dgammadx(0:2,0:2,0:CH_SPACEDIM-1)
+      REAL_T chris(0:2,0:2,0:2), chriss(0:2,0:2,0:2), chris1st(0:2,0:2,0:2)
+      REAL_T R(0:CH_SPACEDIM-1,0:CH_SPACEDIM-1)
+      REAL_T Rchi(0:CH_SPACEDIM-1,0:CH_SPACEDIM-1)
+      REAL_T Rfull(0:CH_SPACEDIM-1,0:CH_SPACEDIM-1)
+      REAL_T Gamma1d(0:2), dGamma1dx(0:2,0:CH_SPACEDIM-1)
+      REAL_T d2chidxdy(0:CH_SPACEDIM-1,0:CH_SPACEDIM-1)
+      REAL_T dchidx(0:CH_SPACEDIM-1)
+      REAL_T chi2, chi1
+      REAL_T Kscalar, Ktsr(0:2,0:2)
+      REAL_T dKdx(0:CH_SPACEDIM-1)
+      REAL_T CovKtsr(0:2,0:2,0:CH_SPACEDIM-1)
+      REAL_T dKtsrdx(0:2,0:2,0:CH_SPACEDIM-1)
+      REAL_T dKscalardx(0:CH_SPACEDIM-1)
+      REAL_T Vphi, Vt
+      REAL_T dphidx(0:2)
+      REAL_T betaidiphi
+      REAL_T dphidt2
+      REAL_T lapse
+      REAL_T beta2
+      REAL_T n(0:3), nu(0:3)
+      REAL_T T(0:3,0:3)
+      REAL_T Sten(0:2,0:2), trSten, Svec(0:2)
+      REAL_T dAdx(0:2,0:2,0:CH_SPACEDIM-1)
+      REAL_T levi(0:2,0:2,0:2)
+      REAL_T levi44d(0:3,0:3,0:3,0:3)
+      REAL_T levi34d(0:3,0:3,0:3)
+      REAL_T E(0:2,0:2)
+      REAL_T B(0:2,0:2)
+      REAL_T er(0:2),ephi(0:2),etheta(0:2)
+      REAL_T normr, normphi, normtheta
+      REAL_T projrphi, projrtheta, projphitheta
+      REAL_T epsilon_tensor(0:2,0:2,0:2)
+      REAL_T v1(0:2),v2(0:2),v3(0:2)
+      REAL_T omega11,omega12,omega22,omega13,omega23,omega33
+      REAL_T x,y,z
+      REAL_T null
+
+
+      integer d0, d1, d2, d3, d4, d5
+
+      integer IDX(0:2, 0:2)
+      data IDX / _11, _12, _13, _12, _22, _23, _13, _23, _33  /
+
+c ----------------------------------------------------------------
+c        Pre loop shorthand definitions
+c ----------------------------------------------------------------
+
+      dxinv  = one/dx
+      dxinv2 = one/(dx*dx)
+      null = 0 
+
+c ----------------------------------------------------------------
+c        Start of loop over box
+c ----------------------------------------------------------------
+
+      CHF_AUTOMULTIDO[box;i]
+
+c ----------------------------------------------------------------
+c        Loop shorthand defintions
+c ----------------------------------------------------------------
+
+         chi1 = chi(CHF_AUTOIX[i])
+         chi2 = chi1**2
+         lapse = alpha(CHF_AUTOIX[i])
+
+c ------ Read in conformal metric in g
+
+         do d0 = 0,2; do d1 = 0,2
+           g(d0,d1) = gamma(CHF_AUTOIX[i], IDX(d0,d1))
+         enddo; enddo
+
+c ------ Invert the spatial metric, see:
+c ------ http://en.wikipedia.org/wiki/Invertible_matrix
+c ------ Calculating determinant of conformal metric
+
+         detg = g(0,0)*(g(1,1)*g(2,2)-g(1,2)*g(2,1))-
+     &          g(0,1)*(g(2,2)*g(1,0)-g(1,2)*g(2,0))+
+     &          g(0,2)*(g(1,0)*g(2,1)-g(1,1)*g(2,0))
+
+c ---- Calculating inverse of conformal metric
+
+         gu(0,0) = (g(1,1)*g(2,2)-g(1,2)*g(2,1))/detg
+         gu(0,1) = (g(2,0)*g(1,2)-g(1,0)*g(2,2))/detg
+         gu(0,2) = (g(1,0)*g(2,1)-g(2,0)*g(1,1))/detg
+
+         gu(1,0) = (g(2,1)*g(0,2)-g(0,1)*g(2,2))/detg
+         gu(1,1) = (g(0,0)*g(2,2)-g(0,2)*g(2,0))/detg
+         gu(1,2) = (g(2,0)*g(0,1)-g(0,0)*g(2,1))/detg
+
+         gu(2,0) = (g(0,1)*g(1,2)-g(1,1)*g(0,2))/detg
+         gu(2,1) = (g(0,2)*g(1,0)-g(0,0)*g(1,2))/detg
+         gu(2,2) = (g(0,0)*g(1,1)-g(0,1)*g(1,0))/detg
+
+c ----------------------------------------------------------------
+c        Calculating derivatives
+c ----------------------------------------------------------------
+c ---- 1st deriavtive of gamma
+
+         do d0 = 0,2; do d1 = 0,2; do d2 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d2,0);
+             ii1 = CHF_ID(d2,1);
+             ii2 = CHF_ID(d2,2)]
+
+           dgammadx(d0,d1,d2) = dxinv/12 * (
+     &         gamma(CHF_OFFSETIX[i;-2*ii],IDX(d0,d1))
+     &     - 8*gamma(CHF_OFFSETIX[i;-ii]  ,IDX(d0,d1))
+     &     + 8*gamma(CHF_OFFSETIX[i;+ii]  ,IDX(d0,d1))
+     &     -   gamma(CHF_OFFSETIX[i;+2*ii],IDX(d0,d1))
+     &       )
+         enddo; enddo; enddo
+
+
+c ---- 2nd derivative of gamma
+
+         do d0 = 0,2; do d1 = 0,2; do d2 = 0,CH_SPACEDIM-1; do d3 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d2,0);
+             ii1 = CHF_ID(d2,1);
+             ii2 = CHF_ID(d2,2)]
+           CHF_DTERM[
+             jj0 = CHF_ID(d3,0);
+             jj1 = CHF_ID(d3,1);
+             jj2 = CHF_ID(d3,2)]
+
+           if (d2 .eq. d3) cycle
+
+           d2gammadxdy(d0,d1,d2,d3) = dxinv2/144 * (
+     &         gamma(CHF_IX[i0-2*ii0-2*jj0;i1-2*ii1-2*jj1;i2-2*ii2-2*jj2],IDX(d0,d1))
+     &     - 8*gamma(CHF_IX[i0-ii0-2*jj0;i1-ii1-2*jj1;i2-ii2-2*jj2]      ,IDX(d0,d1))
+     &     + 8*gamma(CHF_IX[i0+ii0-2*jj0;i1+ii1-2*jj1;i2+ii2-2*jj2]      ,IDX(d0,d1))
+     &     -   gamma(CHF_IX[i0+2*ii0-2*jj0;i1+2*ii1-2*jj1;i2+2*ii2-2*jj2],IDX(d0,d1))
+     &     - 8*gamma(CHF_IX[i0-2*ii0-jj0;i1-2*ii1-jj1;i2-2*ii2-jj2]      ,IDX(d0,d1))
+     &     +64*gamma(CHF_IX[i0-ii0-jj0;i1-ii1-jj1;i2-ii2-jj2]            ,IDX(d0,d1))
+     &     -64*gamma(CHF_IX[i0+ii0-jj0;i1+ii1-jj1;i2+ii2-jj2]            ,IDX(d0,d1))
+     &     + 8*gamma(CHF_IX[i0+2*ii0-jj0;i1+2*ii1-jj1;i2+2*ii2-jj2]      ,IDX(d0,d1))
+     &     + 8*gamma(CHF_IX[i0-2*ii0+jj0;i1-2*ii1+jj1;i2-2*ii2+jj2]      ,IDX(d0,d1))
+     &     -64*gamma(CHF_IX[i0-ii0+jj0;i1-ii1+jj1;i2-ii2+jj2]            ,IDX(d0,d1))
+     &     +64*gamma(CHF_IX[i0+ii0+jj0;i1+ii1+jj1;i2+ii2+jj2]            ,IDX(d0,d1))
+     &     - 8*gamma(CHF_IX[i0+2*ii0+jj0;i1+2*ii1+jj1;i2+2*ii2+jj2]      ,IDX(d0,d1))
+     &     -   gamma(CHF_IX[i0-2*ii0+2*jj0;i1-2*ii1+2*jj1;i2-2*ii2+2*jj2],IDX(d0,d1))
+     &     + 8*gamma(CHF_IX[i0-ii0+2*jj0;i1-ii1+2*jj1;i2-ii2+2*jj2]      ,IDX(d0,d1))
+     &     - 8*gamma(CHF_IX[i0+ii0+2*jj0;i1+ii1+2*jj1;i2+ii2+2*jj2]      ,IDX(d0,d1))
+     &     +   gamma(CHF_IX[i0+2*ii0+2*jj0;i1+2*ii1+2*jj1;i2+2*ii2+2*jj2],IDX(d0,d1))
+     &       )
+         enddo; enddo; enddo; enddo
+
+         do d0 = 0,2; do d1 = 0,2; do d2 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d2,0);
+             ii1 = CHF_ID(d2,1);
+             ii2 = CHF_ID(d2,2)]
+
+           d2gammadxdy(d0,d1,d2,d2) = dxinv2/12 * (
+     &         -gamma(CHF_OFFSETIX[i;-2*ii],IDX(d0,d1))
+     &     + 16*gamma(CHF_OFFSETIX[i;-ii]  ,IDX(d0,d1))
+     &     - 30*gamma(CHF_AUTOIX[i]        ,IDX(d0,d1))
+     &     + 16*gamma(CHF_OFFSETIX[i;+ii]  ,IDX(d0,d1))
+     &     -    gamma(CHF_OFFSETIX[i;+2*ii],IDX(d0,d1))
+     &       )
+         enddo; enddo; enddo
+
+c ---- 1st derivative of Gamma
+
+         do d0 = 0,2; do d1 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d1,0);
+             ii1 = CHF_ID(d1,1);
+             ii2 = CHF_ID(d1,2)]
+
+           dGamma1dx(d0,d1) = dxinv/12 * (
+     &         Gamma1(CHF_OFFSETIX[i;-2*ii],d0)
+     &     - 8*Gamma1(CHF_OFFSETIX[i;-ii]  ,d0)
+     &     + 8*Gamma1(CHF_OFFSETIX[i;+ii]  ,d0)
+     &     -   Gamma1(CHF_OFFSETIX[i;+2*ii],d0)
+     &       )
+         enddo; enddo
+
+c ---- 1st derivative of chi
+
+         do d0 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d0,0);
+             ii1 = CHF_ID(d0,1);
+             ii2 = CHF_ID(d0,2)]
+
+           dchidx(d0) = dxinv/12 * (
+     &         chi(CHF_OFFSETIX[i;-2*ii])
+     &     - 8*chi(CHF_OFFSETIX[i;-ii]  )
+     &     + 8*chi(CHF_OFFSETIX[i;+ii]  )
+     &     -   chi(CHF_OFFSETIX[i;+2*ii])
+     &       )
+
+           enddo
+
+c ----- 2nd derivative of chi
+
+         do d0 = 0,CH_SPACEDIM-1; do d1 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d0,0);
+             ii1 = CHF_ID(d0,1);
+             ii2 = CHF_ID(d0,2)]
+           CHF_DTERM[
+             jj0 = CHF_ID(d1,0);
+             jj1 = CHF_ID(d1,1);
+             jj2 = CHF_ID(d1,2)]
+
+           if (d0 .eq. d1) cycle
+
+           d2chidxdy(d0,d1) = dxinv2/144 * (
+     &         chi(CHF_IX[i0-2*ii0-2*jj0;i1-2*ii1-2*jj1;i2-2*ii2-2*jj2])
+     &     - 8*chi(CHF_IX[i0-ii0-2*jj0;i1-ii1-2*jj1;i2-ii2-2*jj2]      )
+     &     + 8*chi(CHF_IX[i0+ii0-2*jj0;i1+ii1-2*jj1;i2+ii2-2*jj2]      )
+     &     -   chi(CHF_IX[i0+2*ii0-2*jj0;i1+2*ii1-2*jj1;i2+2*ii2-2*jj2])
+     &     - 8*chi(CHF_IX[i0-2*ii0-jj0;i1-2*ii1-jj1;i2-2*ii2-jj2]      )
+     &     +64*chi(CHF_IX[i0-ii0-jj0;i1-ii1-jj1;i2-ii2-jj2]            )
+     &     -64*chi(CHF_IX[i0+ii0-jj0;i1+ii1-jj1;i2+ii2-jj2]            )
+     &     + 8*chi(CHF_IX[i0+2*ii0-jj0;i1+2*ii1-jj1;i2+2*ii2-jj2]      )
+     &     + 8*chi(CHF_IX[i0-2*ii0+jj0;i1-2*ii1+jj1;i2-2*ii2+jj2]      )
+     &     -64*chi(CHF_IX[i0-ii0+jj0;i1-ii1+jj1;i2-ii2+jj2]            )
+     &     +64*chi(CHF_IX[i0+ii0+jj0;i1+ii1+jj1;i2+ii2+jj2]            )
+     &     - 8*chi(CHF_IX[i0+2*ii0+jj0;i1+2*ii1+jj1;i2+2*ii2+jj2]      )
+     &     -   chi(CHF_IX[i0-2*ii0+2*jj0;i1-2*ii1+2*jj1;i2-2*ii2+2*jj2])
+     &     + 8*chi(CHF_IX[i0-ii0+2*jj0;i1-ii1+2*jj1;i2-ii2+2*jj2]      )
+     &     - 8*chi(CHF_IX[i0+ii0+2*jj0;i1+ii1+2*jj1;i2+ii2+2*jj2]      )
+     &     +   chi(CHF_IX[i0+2*ii0+2*jj0;i1+2*ii1+2*jj1;i2+2*ii2+2*jj2])
+     &       )
+         enddo; enddo
+
+         do d0 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d0,0);
+             ii1 = CHF_ID(d0,1);
+             ii2 = CHF_ID(d0,2)]
+
+           d2chidxdy(d0,d0) = dxinv2/12 * (
+     &         -chi(CHF_OFFSETIX[i;-2*ii])
+     &     + 16*chi(CHF_OFFSETIX[i;-ii]  )
+     &     - 30*chi(CHF_AUTOIX[i]        )
+     &     + 16*chi(CHF_OFFSETIX[i;+ii]  )
+     &     -    chi(CHF_OFFSETIX[i;+2*ii])
+     &       )
+         enddo
+
+
+c ---- 1st derivative of Potential
+
+         do d0 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d0,0);
+             ii1 = CHF_ID(d0,1);
+             ii2 = CHF_ID(d0,2)]
+
+           dphidx(d0) = dxinv/12 * (
+     &         phi(CHF_OFFSETIX[i;-2*ii])
+     &     - 8*phi(CHF_OFFSETIX[i;-ii]  )
+     &     + 8*phi(CHF_OFFSETIX[i;+ii]  )
+     &     -   phi(CHF_OFFSETIX[i;+2*ii])
+     &       )
+         enddo
+
+c ----- 1st derivative of Tr(Extrinsic Curvature)
+
+         do d0 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d0,0);
+             ii1 = CHF_ID(d0,1);
+             ii2 = CHF_ID(d0,2)]
+
+           dKdx(d0) = dxinv/12 * (
+     &         K(CHF_OFFSETIX[i;-2*ii])
+     &     - 8*K(CHF_OFFSETIX[i;-ii]  )
+     &     + 8*K(CHF_OFFSETIX[i;+ii]  )
+     &     -   K(CHF_OFFSETIX[i;+2*ii])
+     &       )
+         enddo
+
+c ----- 1st Derivative of A
+
+         do d0 = 0,2; do d1 = 0,2; do d2 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d2,0);
+             ii1 = CHF_ID(d2,1);
+             ii2 = CHF_ID(d2,2)]
+
+           dAdx(d0,d1,d2) = dxinv/12 * (
+     &         A(CHF_OFFSETIX[i;-2*ii],IDX(d0,d1))
+     &     - 8*A(CHF_OFFSETIX[i;-ii]  ,IDX(d0,d1))
+     &     + 8*A(CHF_OFFSETIX[i;+ii]  ,IDX(d0,d1))
+     &     -   A(CHF_OFFSETIX[i;+2*ii],IDX(d0,d1))
+     &       )
+         enddo; enddo; enddo
+
+
+c -----------------------------------------------------------------
+c       Calculating Christoffel symbols
+c -----------------------------------------------------------------
+
+c ---- Christoffel symbols of conformal and spacial metric
+
+         do d0 = 0,2; do d1 = 0,2; do d2 = 0,2
+           chris(d0,d1,d2) = 0; chriss(d0,d1,d2) = 0
+           do d3 = 0,2
+             if (d2 .lt. CH_SPACEDIM) then
+               chris(d0,d1,d2) = chris(d0,d1,d2) +
+     &           half*gu(d0,d3)*dgammadx(d3,d1,d2)
+               chriss(d0,d1,d2) = chriss(d0,d1,d2) +
+     &           gu(d0,d3)*(half*dgammadx(d3,d1,d2)*chi1
+     &              - g(d3,d1)*dchidx(d2))/chi1
+             endif
+             if (d1 .lt. CH_SPACEDIM) then
+               chris(d0,d1,d2) = chris(d0,d1,d2) +
+     &           half*gu(d0,d3)*dgammadx(d3,d2,d1)
+               chriss(d0,d1,d2) = chriss(d0,d1,d2) +
+     &           gu(d0,d3)*(half*dgammadx(d3,d2,d1)*chi1
+     &              - g(d3,d2)*dchidx(d1))/chi1
+             endif
+             if (d3 .lt. CH_SPACEDIM) then
+               chris(d0,d1,d2) = chris(d0,d1,d2) -
+     &           half*gu(d0,d3)*dgammadx(d1,d2,d3)
+               chriss(d0,d1,d2) = chriss(d0,d1,d2) -
+     &           gu(d0,d3)*(half*dgammadx(d1,d2,d3)*chi1
+     &              - g(d1,d2)*dchidx(d3))/chi1
+             endif
+           enddo
+         enddo; enddo; enddo
+
+c ---- Christoffel symbols of conformal metric with all indices lowered
+
+         do d0 = 0,2; do d1 = 0,2; do d2 = 0,2
+           chris1st(d0,d1,d2) = 0
+           do d3 = 0,2
+             chris1st(d0,d1,d2) = chris1st(d0,d1,d2) + g(d0,d3)*chris(d3,d1,d2)
+           enddo
+         enddo; enddo; enddo
+
+c --- Contracted Christoffel symbol, part of BSSN evolution variables
+
+         do d0 = 0,2
+           Gamma1d(d0) = 0
+           do d1 = 0,2; do d2 = 0,2
+             Gamma1d(d0) = Gamma1d(d0) + chris(d0,d1,d2)*gu(d1,d2)
+           enddo; enddo
+         enddo
+
+         do d0 = 0,2
+           Gamma1d(d0) = Gamma1(CHF_AUTOIX[i],d0)
+         enddo
+
+
+
+c -----------------------------------------------------------------
+c        R is the Riemann tensor corresponding to the confromal metric
+c -----------------------------------------------------------------
+
+
+         do d0 = 0,2; do d1 = 0,2
+           R(d0,d1) = 0
+           do d2 = 0,CH_SPACEDIM-1; do d3 = 0,CH_SPACEDIM-1
+             R(d0,d1) = R(d0,d1) - half*gu(d2,d3)*d2gammadxdy(d0,d1,d2,d3)
+           enddo; enddo
+
+           do d2 = 0,2
+             if (d1 .lt. CH_SPACEDIM) then
+               R(d0,d1) = R(d0,d1) + half*g(d2,d0)*dGamma1dx(d2,d1)
+             endif
+
+             if (d0 .lt. CH_SPACEDIM) then
+               R(d0,d1) = R(d0,d1) + half*g(d2,d1)*dGamma1dx(d2,d0)
+             endif
+           enddo
+
+           do d2 = 0,2
+             R(d0,d1) = R(d0,d1)
+     &       + half*Gamma1d(d2)*chris1st(d0,d1,d2)
+     &       + half*Gamma1d(d2)*chris1st(d1,d0,d2)
+             do d3 = 0,2; do d4 = 0,2
+               R(d0,d1) = R(d0,d1)
+     &         + gu(d3,d4)*chris(d2,d3,d0)*chris1st(d1,d2,d4)
+     &         + gu(d3,d4)*chris(d2,d3,d1)*chris1st(d0,d2,d4)
+     &         + gu(d3,d4)*chris(d2,d0,d4)*chris1st(d2,d3,d1)
+             enddo; enddo
+           enddo
+
+         enddo; enddo
+
+c -----------------------------------------------------------------
+c      Here we are calculating Rchi, the difference between the full
+c      Ricci tensor on the slice and the conformal Ricci tensor.
+c -----------------------------------------------------------------
+
+         do d0 = 0,2; do d1 = 0,2
+           Rchi(d0,d1) = 0
+           do d2 = 0,2; do d3 = 0,2
+             Rchi(d0,d1) = Rchi(d0,d1) - g(d0,d1)*gu(d2,d3)*dchidx(d2)*dchidx(d3)
+           enddo; enddo
+           Rchi(d0,d1) = 2*Rchi(d0,d1)/chi1
+
+c          Next is the Laplace-Beltrami operator
+
+           do d2 = 0,CH_SPACEDIM-1; do d3 = 0,CH_SPACEDIM-1
+             Rchi(d0,d1) = Rchi(d0,d1)
+     &       + (
+     &           g(d0,d1)*gu(d2,d3)*d2chidxdy(d2,d3)
+     &         )
+           enddo; enddo
+
+           do d2 = 0,2; do d3 = 0,2; do d4 = 0,CH_SPACEDIM-1
+             Rchi(d0,d1) = Rchi(d0,d1)
+     &       - (
+     &           g(d0,d1)*gu(d2,d3)*chris(d4,d2,d3)*dchidx(d4)
+     &         )
+           enddo; enddo; enddo
+
+           Rchi(d0,d1) = Rchi(d0,d1) + d2chidxdy(d0,d1)
+
+           do d2 = 0,2;
+             Rchi(d0,d1) = Rchi(d0,d1) - chris(d2,d0,d1)*dchidx(d2)
+           enddo
+           Rchi(d0,d1) = Rchi(d0,d1)/chi1
+         enddo; enddo
+
+c -----------------------------------------------------------------
+c      Full Ricci tensor on the slice Rfull
+c      Rfull = R + Rchi
+c -----------------------------------------------------------------
+
+         do d0 = 0,2; do d1 = 0,2
+                  Rfull(d0,d1) = R(d0,d1) + Rchi(d0,d1)
+               enddo; enddo
+
+c -----------------------------------------------------------------
+c      Get K, and calcuate K_ij
+c -----------------------------------------------------------------
+
+         Kscalar = K(CHF_AUTOIX[i])
+
+         do d0 = 0,CH_SPACEDIM-1
+           dKscalardx(d0) = dKdx(d0)
+         enddo
+
+         do d0 = 0,2; do d1 = 0,2
+           Ktsr(d0,d1) = A(CHF_AUTOIX[i],IDX(d0,d1))/chi2
+     &       + third*g(d0,d1)*Kscalar/chi2
+           do d2 = 0,CH_SPACEDIM-1
+             dKtsrdx(d0,d1,d2) =
+     &           dAdx(d0,d1,d2)
+     &         - 2*dchidx(d2)*(A(CHF_AUTOIX[i],IDX(d0,d1))
+     &         + third*g(d0,d1)*K(CHF_AUTOIX[i]))/chi1
+     &         + third*dgammadx(d0,d1,d2)*Kscalar
+     &         + third*g(d0,d1)*dKscalardx(d2)
+             dKtsrdx(d0,d1,d2) = dKtsrdx(d0,d1,d2)/chi2
+           enddo
+         enddo; enddo
+
+c -----------------------------------------------------------------
+c      Calculate the Stess Energy Tensor T_ij
+c -----------------------------------------------------------------
+
+         call GETV(Vphi, phi(CHF_AUTOIX[i]), phi0, mass)
+
+         Vt = -phiM(CHF_AUTOIX[i])**2 + 2*Vphi
+         do d0 = 0,CH_SPACEDIM-1; do d1 = 0,CH_SPACEDIM-1
+           Vt = Vt + gu(d0,d1)*chi2*dphidx(d0)*dphidx(d1)
+         enddo; enddo
+
+         betaidiphi = 0
+         do d0 = 0,CH_SPACEDIM-1
+           CHF_DTERM[
+             ii0 = CHF_ID(d0,0);
+             ii1 = CHF_ID(d0,1);
+             ii2 = CHF_ID(d0,2)]
+
+           if (beta(CHF_AUTOIX[i],d0) .lt. 0) then
+           betaidiphi =
+     &            betaidiphi
+     &          + dxinv/12*beta(CHF_AUTOIX[i],d0)*(
+     &                -phi(CHF_OFFSETIX[i;-3*ii])
+     &            +  6*phi(CHF_OFFSETIX[i;-2*ii])
+     &            - 18*phi(CHF_OFFSETIX[i;-ii]  )
+     &            + 10*phi(CHF_AUTOIX[i]        )
+     &            +  3*phi(CHF_OFFSETIX[i;+ii]  )
+     &            )
+           else
+           betaidiphi =
+     &            betaidiphi
+     &          + dxinv/12*beta(CHF_AUTOIX[i],d0)*(
+     &                 phi(CHF_OFFSETIX[i;+3*ii])
+     &            -  6*phi(CHF_OFFSETIX[i;+2*ii])
+     &            + 18*phi(CHF_OFFSETIX[i;+ii]  )
+     &            - 10*phi(CHF_AUTOIX[i]        )
+     &            -  3*phi(CHF_OFFSETIX[i;-ii]  )
+     &            )
+           endif
+         enddo
+
+         dphidt2 = lapse*phiM(CHF_AUTOIX[i]) + betaidiphi
+         dphidt2 = dphidt2**2
+
+         beta2 = 0
+         do d0 = 0,2; do d1 = 0,2
+           beta2 = beta2 + g(d0,d1)/chi2*
+     &       beta(CHF_AUTOIX[i],d0)*beta(CHF_AUTOIX[i],d1)
+         enddo; enddo
+
+c        Note that, for consistency with the spatial-only quantities, the
+c        time index here is 3 (not zero).
+         n(0) = 0; n(1) = 0; n(2) = 0; n(3) = -lapse
+         do d0 = 0,2
+           nu(d0) = -beta(CHF_AUTOIX[i],d0)/lapse
+         enddo
+         nu(3) = 1./lapse
+
+         T(3,3) = dphidt2 + half*(lapse**2 - beta2)*Vt
+
+         do d0 = 0,2; do d1 = 0,2
+           T(d0, d1) = -half*g(d0,d1)*Vt/chi2
+           if (d0 .lt. CH_SPACEDIM .and. d1 .lt. CH_SPACEDIM) then
+             T(d0, d1) = T(d0, d1) + dphidx(d0)*dphidx(d1)
+           endif
+         enddo; enddo
+
+         do d0 = 0,2
+           T(d0,3) = dphidx(d0)*lapse*phiM(CHF_AUTOIX[i]) + dphidx(d0)*betaidiphi
+             do d1 = 0,CH_SPACEDIM-1
+               T(d0,3) = T(d0,3) - half*g(d0,d1)*beta(CHF_AUTOIX[i],d1)*Vt/chi2
+             enddo
+           T(3,d0) = T(d0,3)
+         enddo
+
+c ----   Svec = S_i = n^a T_ai, where a loops over space and time, since nu is already upper
+c ----   we do not need gammas
+
+         do d0 = 0,2
+           Svec(d0) = 0
+           do d1 = 0,3
+             Svec(d0) = Svec(d0)
+     &         - nu(d1)*T(d1,d0)
+           enddo
+         enddo
+
+         do d0 = 0,2; do d1 = 0,2
+             Sten(d0,d1) = T(d0,d1)
+         enddo; enddo
+
+c ---- trSten
+
+         trSten = 0
+         do d0 = 0,2; do d1 = 0,2
+           trSten = trSten + gu(d0,d1)*chi2*T(d0,d1)
+         enddo; enddo
+
+c -----------------------------------------------------------------
+c       Calculate Bij and Eij
+c -----------------------------------------------------------------
+
+c ---- Levi
+
+         do d0=0,3; do d1=0,3; do d2=0,3; do d3=0,3;
+          levi44d(d0,d1,d2,d3) = 0
+         enddo; enddo; enddo; enddo;
+
+         levi44d(0,1,2,3) = 1
+         levi44d(0,1,3,2) = -1
+         levi44d(0,3,1,2) = 1
+         levi44d(0,3,2,1) = -1
+         levi44d(0,2,1,3) = -1
+         levi44d(0,2,3,1) = 1
+
+         levi44d(1,0,2,3) = -1
+         levi44d(1,2,0,3) = 1
+         levi44d(1,2,3,0) = -1
+         levi44d(1,3,2,0) = 1
+         levi44d(1,3,0,2) = -1
+         levi44d(1,0,3,2) = 1
+
+         levi44d(2,0,1,3) = 1
+         levi44d(2,0,3,1) = -1
+         levi44d(2,3,0,1) = 1
+         levi44d(2,3,1,0) = -1
+         levi44d(2,1,3,0) = 1
+         levi44d(2,1,0,3) = -1
+
+         levi44d(3,0,1,2) = -1
+         levi44d(3,1,0,2) = 1
+         levi44d(3,1,2,0) = -1
+         levi44d(3,2,1,0) = 1
+         levi44d(3,2,0,1) = -1
+         levi44d(3,0,2,1) = 1
+        
+c ---- Projection of levi civita on hypersurface (8.3.17) Alcubierre 
+
+         do d0=0,2; do d1=0,2; do d2=0,2
+          levi34d(d0,d1,d2) = 0
+         enddo; enddo; enddo 
+
+         do d0=0,2; do d1=0,2; do d2=0,2; do d3=0,3
+          levi34d(d0,d1,d2) = levi34d(d0,d1,d2) + nu(d3)*levi44d(d0,d1,d2,d3)*lapse/chi2**1.5
+         enddo; enddo; enddo; enddo
+
+         
+c ---- raising levi cevita
+
+         do d0=0,2; do d1=0,2; do d2=0,2
+          levi(d0,d1,d2) = 0
+         enddo; enddo; enddo 
+
+         do d0=0,2; do d1=0,2; do d2=0,2; do d3=0,2; do d4=0,2 
+          levi(d0,d1,d2) = levi(d0,d1,d2) + levi34d(d0,d3,d4)
+     &                *gu(d3,d1)*chi2*gu(d4,d2)*chi2
+         enddo; enddo; enddo; enddo; enddo
+
+c ---- Convariant derivative K_ij
+        
+        do d0=0,2; do d1 =0,2;do d2=0,2
+          CovKtsr(d0,d1,d2) = dKtsrdx(d0,d1,d2)
+        enddo;enddo;enddo 
+        
+        do d0=0,2; do d1=0,2; do d2=0,2 ; do d3=0,2
+          CovKtsr(d0,d1,d2) = CovKtsr(d0,d1,d2) - chriss(d3,d2,d0)*Ktsr(d3,d1)
+     &          - chriss(d3,d2,d1)*Ktsr(d0,d3)
+        enddo;enddo;enddo; enddo  
+
+c ---- Calculation of electric and magnetic fields
+ 
+        do d0=0,2; do d1 =0,2
+          E(d0,d1) = 0
+          B(d0,d1) = 0 
+        enddo;enddo 
+
+
+        do d0=0,2; do d1 =0,2; do d2 =0,2; do d3 = 0,2
+          B(d0,d1) = B(d0,d1)+levi(d0,d2,d3)*(CovKtsr(d3,d1,d2)
+     &                - 4.*Pi*g(d1,d2)/chi2*Svec(d3))                    
+        enddo;enddo;enddo;enddo 
+
+        do d0=0,2; do d1 =0,2
+          E(d0,d1) = E(d0,d1)+Rfull(d0,d1) + K(CHF_AUTOIX[i])
+     &               *Ktsr(d0,d1) - 4.*Pi*(Sten(d0,d1)+1./3.*g(d0,d1)/chi2
+     &                *(4.*rho(CHF_AUTOIX[i])-trSten))
+        enddo;enddo
+        
+        do d0=0,2; do d1=0,2; do d2=0,2 ; do d3=0,2
+          E(d0,d1) = E(d0,d1) - Ktsr(d0,d2)*Ktsr(d3,d1)
+     &               *gu(d2,d3)*chi2
+        enddo; enddo; enddo; enddo 
+
+c -----------------------------------------------------------
+c ---- Calculating Weyl tensor 
+c ---- Weyl1 - ReWeyl , Weyl2 - ImWeyl
+c -----------------------------------------------------------
+c ----- tetrat calculation 
+
+        xx = dx*(i0+0.5) - centerx
+        yy = dx*(i1+0.5) - centery
+        zz = dx*(i2+0.5) - centerz
+
+        rhoc2 = xx*xx + yy*yy
+        rhoc = sqrt(rhoc2)
+        r2 = xx*xx + yy*yy + zz*zz
+        rr = sqrt(r2)
+        costh = zz/rr
+        sinth = rhoc/rr
+        costh2 = costh*costh
+        sinth2 = sinth*sinth
+        cosph = xx/rhoc
+        sinph = yy/rhoc
+        cosph2 = cosph*cosph
+        sinph2 = sinph*sinph
+
+ 
+        do d0 = 0,2 
+          er(d0) = 0
+          ephi(d0) = 0
+          etheta(d0) = 0 
+        enddo
+ 
+        er(0) = cosph*sinth  
+        er(1) = sinph*sinth
+        er(2) =  costh
+
+        ephi(0)= cosph*costh
+        ephi(1)= sinph*costh
+        ephi(2)= -sinth
+        
+        etheta(0)= -sinph
+        etheta(1)= cosph
+        etheta(2)= 0 
+
+c ------Alternative tetrats-------
+        x = (dx*(i0+0.5) - centerx)
+        y = (dx*(i1+0.5) - centery)
+        z = (dx*(i2+0.5) - centerz)
+
+        do d0=0,2; do d1=0,2; do d2=0,2 
+           epsilon_tensor(d0,d1,d2) = 0 
+        enddo; enddo; enddo 
+
+
+        epsilon_tensor(0,1,2) = 1
+        epsilon_tensor(1,2,0) = 1
+        epsilon_tensor(2,0,1) = 1
+        epsilon_tensor(0,2,1) = -1
+        epsilon_tensor(1,0,2) = -1
+        epsilon_tensor(2,1,0) = -1
+
+c        !non-orthogonal basis
+c        v1 = (/ -y, x, null /);
+c        v2 = (/  x, y, z /);
+c        v3 = null;
+
+        v1(0) = -y
+        v1(1) = x
+        v1(2) = 0
+
+        v2(0) = x
+        v2(1) = y
+        v2(2) = z
+
+        v3(0) = 0
+        v3(1) = 0
+        v3(2) = 0
+
+        do d0=0,2; do d1=0,2; do d2=0,2; do d3 = 0,2 
+          v3(d3) = v3(d3) + chi1**(-1.)*gu(d3,d0)*epsilon_tensor(d0,d1,d2)*v1(d1)*v2(d2)
+        enddo; enddo; enddo; enddo 
+
+c        !gram-schmidt
+        omega11 = 0
+        do d0=0,2; do d1=0,2
+           omega11 = omega11 + v1(d0)*v1(d1)*g(d0,d1)/chi2
+        enddo; enddo
+        v1 = v1/sqrt(omega11)
+
+        omega12 = 0
+        do d0=0,2; do d1=0,2
+           omega12 = omega12 + v1(d0)*v2(d1)*g(d0,d1)/chi2
+        enddo; enddo
+        v2 = v2 - omega12*v1
+
+        omega22 = 0
+        do d0=0,2; do d1=0,2
+           omega22 = omega22 + v2(d0)*v2(d1)*g(d0,d1)/chi2
+        enddo; enddo
+        v2 = v2/sqrt(omega22)
+
+        omega13 = 0
+        omega23 = 0
+        do d0=0,2; do d1=0,2
+           omega13 = omega13 + v1(d0)*v3(d1)*g(d0,d1)/chi2
+           omega23 = omega23 + v2(d0)*v3(d1)*g(d0,d1)/chi2
+        enddo; enddo
+        v3 = v3 - (omega13*v1 + omega23*v2)
+
+        omega33 = 0
+        do d0=0,2; do d1=0,2
+           omega33 = omega33 + v3(d0)*v3(d1)*g(d0,d1)/chi2
+        enddo; enddo
+        v3 = v3/sqrt(omega33)
+
+        do d0 = 0,2
+           ephi(d0) = v1(d0)
+           er(d0) = v2(d0)
+           etheta(d0) = v3(d0) 
+        enddo 
+        
+
+        weyl1(CHF_AUTOIX[i]) = 0 
+        weyl2(CHF_AUTOIX[i]) = 0 
+
+
+
+        do d0 = 0,CH_SPACEDIM-1; do d1 = 0,CH_SPACEDIM-1
+
+           weyl1(CHF_AUTOIX[i]) = weyl1(CHF_AUTOIX[i]) 
+     &                            + 0.5*(E(d0,d1)*(etheta(d0)*etheta(d1) 
+     &                            - ephi(d0)*ephi(d1)) -
+     &                            2.*B(d0,d1)*etheta(d0)*ephi(d1))
+     
+
+           weyl2(CHF_AUTOIX[i]) = weyl2(CHF_AUTOIX[i]) 
+     &                            + 0.5*(B(d0,d1)*(- etheta(d0)*etheta(d1) 
+     &                            + ephi(d0)*ephi(d1)) -
+     &                            2.*E(d0,d1)*etheta(d0)*ephi(d1))
+
+        enddo; enddo
+
+
+
+      CHF_ENDDO
+
+
+      return
+      end

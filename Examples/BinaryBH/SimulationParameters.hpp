@@ -8,49 +8,39 @@
 
 // General includes
 #include "GRParmParse.hpp"
+#include "SimulationParametersBase.hpp"
 
 // Problem specific includes:
 #include "BoostedBH.hpp"
-#include "CCZ4.hpp"
 
-class SimulationParameters
+class SimulationParameters : public SimulationParametersBase
 {
   public:
-    SimulationParameters(GRParmParse &pp) { readParams(pp); }
+    SimulationParameters(GRParmParse &pp) : SimulationParametersBase(pp)
+    {
+        readParams(pp);
+    }
 
     /// Read parameters from the parameter file
     void readParams(GRParmParse &pp)
     {
-        // The automatically generated read parameters code defined in
-        // SimulationParameters.inc
-        auto_read_params(pp);
-
-        // Fill in BinaryBHParameters
-        bh1_params.mass = massA;
-        bh1_params.center = centerA;
-        bh1_params.momentum = momentumA;
-        bh2_params.mass = massB;
-        bh2_params.center = centerB;
-        bh2_params.momentum = momentumB;
-
-        // Fill in he ccz4Parameters
-        ccz4_params.kappa1 = kappa1;
-        ccz4_params.kappa2 = kappa2;
-        ccz4_params.kappa3 = kappa3;
-        ccz4_params.shift_Gamma_coeff = shift_Gamma_coeff;
-        ccz4_params.shift_advec_coeff = shift_advec_coeff;
-        ccz4_params.eta = eta;
-        ccz4_params.lapse_advec_coeff = lapse_advec_coeff;
-        ccz4_params.lapse_power = lapse_power;
-        ccz4_params.lapse_coeff = lapse_coeff;
+        // Initial data
+        pp.load("massA", bh1_params.mass);
+        pp.load("centerA", bh1_params.center);
+        pp.load("momentumA", bh1_params.momentum);
+        pp.load("massB", bh2_params.mass);
+        pp.load("centerB", bh2_params.center);
+        pp.load("momentumB", bh1_params.momentum);
+        pp.load("activate_extraction", activate_extraction, 0);
     }
 
-// SimulationParameters.inc declares all variables and defines
-// auto_read_params(GRParmParse& pp)
-#include "SimulationParameters.inc"
+    // Initial data
+    int activate_extraction;
+    Real massA, massB;
+    std::array<double, CH_SPACEDIM> centerA, centerB;
+    std::array<double, CH_SPACEDIM> momentumA, momentumB;
 
-    // Collection of parameters necessary for the CCZ4 RHS
-    CCZ4::params_t ccz4_params;
+    // Collection of parameters necessary for initial conditions
     BoostedBH::params_t bh2_params;
     BoostedBH::params_t bh1_params;
 };

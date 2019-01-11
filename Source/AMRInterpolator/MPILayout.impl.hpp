@@ -6,7 +6,7 @@
 #ifndef MPILAYOUT_IMPL_HPP_
 #define MPILAYOUT_IMPL_HPP_
 
-MPILayout::MPILayout(int num_process)
+inline MPILayout::MPILayout(int num_process)
     : m_num_process(num_process), m_counts(m_num_process, 0),
       m_displs(m_num_process, 0), m_dirty(false)
 {
