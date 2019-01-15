@@ -33,13 +33,13 @@ $(ExampleDirs):
 	$(MAKE) -C $@ all
 
 $(CleanTestDirs):
-	$(MAKE) -C $(@:clean-%=%) clean
+	$(MAKE) -C $(@:clean-%=%) clean NODEPENDS=TRUE
 
 $(CleanExampleDirs):
-	$(MAKE) -C $(@:clean-%=%) clean
+	$(MAKE) -C $(@:clean-%=%) clean NODEPENDS=TRUE
 
 $(RealCleanTestDirs):
-	$(MAKE) -C $(@:realclean-%=%) clean
+	$(MAKE) -C $(@:realclean-%=%) clean NODEPENDS=TRUE
 
 $(RealCleanExampleDirs):
-	$(MAKE) -C $(@:realclean-%=%) clean
+	$(MAKE) -C $(@:realclean-%=%) clean NODEPENDS=TRUE
