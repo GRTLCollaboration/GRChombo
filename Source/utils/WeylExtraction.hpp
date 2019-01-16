@@ -59,10 +59,10 @@ class WeylExtraction
 
     //! Write out calculated value of integral
     void write_integral(std::array<double, 2> integral,
-                        const char *filename) const;
+                        std::string filename) const;
 
     //! Write out the result of the extraction in phi and theta at each timestep
-    void write_extraction(char *file_prefix, const double *m_state_ptr_re,
+    void write_extraction(std::string file_prefix, const double *m_state_ptr_re,
                           const double *m_state_ptr_im) const;
 };
 
