@@ -46,7 +46,7 @@ int runInterpolatorTest(int argc, char *argv[])
     std::string in_string = argv[argc - 1];
     pout() << in_string << std::endl;
     char const *in_file = argv[argc - 1];
-    ParmParse pp(0, argv + argc, NULL, in_file);
+    GRParmParse pp(0, argv + argc, NULL, in_file);
     SimulationParameters sim_params(pp);
 
     GRAMR gr_amr;

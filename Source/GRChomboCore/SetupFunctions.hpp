@@ -13,10 +13,10 @@
 using std::cerr;
 using std::endl;
 #include "AMRLevelFactory.H"
+#include "ChomboParameters.hpp"
 #include "DerivativeSetup.hpp"
 #include "GRAMR.hpp"
 #include "GRParmParse.hpp"
-#include "ChomboParameters.hpp"
 
 #include "simd.hpp"
 

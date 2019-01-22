@@ -13,33 +13,62 @@ N3 = 32
 
 # Length of longest box side, dx_coarsest = L/N(max)
 # NB if non cubic, this determines dx for all sides
-L =  64
+L =  16
 
 # Regridding
 # Thresholds on the change across a cell which prompts regrid
-regrid_threshold_K = 0.2
-regrid_threshold_phi = 0.1
+regrid_threshold_chi = 0.6
+regrid_threshold_phi = 1.2
 
 # Level data
 # Maximum number of times you can regrid above coarsest level
-max_level = 4 # There are (max_level+1) grids, so min is zero
+max_level = 3 # There are (max_level+1) grids, so min is zero
 # Frequency of regridding at each level
 # Need one for each level, ie max_level+1 items
 # Generally you do not need to regrid frequently on every level
-regrid_interval = 50 50 5 5 5 5 5
+regrid_interval = 16 8 4 2
 # Max and min box size - for load balancing
-max_box_size = 16
-min_box_size = 16
-#Periodicity
-isPeriodic = 1 1 1
+max_box_size = 32
+min_box_size = 8
+
+#boundaries and periodicity of grid
+#Periodic directions - 0 = false, 1 = true
+isPeriodic = 0 0 0
+# if not periodic, then specify the boundary type
+# 0 = static, 1 = sommerfeld, 2 = reflective
+# (see BoundaryConditions.hpp for details)
+hi_boundary = 1 1 1
+lo_boundary = 1 1 1
+center = 8.0 8.0 8.0
+
+# if sommerfeld boundaries selected, must select 
+# asymptotic values (in order given by UserVariables.hpp)
+# 0 = even
+# 1,2,3 = odd x, y, z
+# 4,5,6 = odd xy, yz, xz
+vars_parity            = 0 0 4 6 0 5 0    #chi and hij
+                         0 0 4 6 0 5 0    #K and Aij
+                         0 1 2 3          #Theta and Gamma
+                         0 1 2 3 1 2 3    #lapse shift and B
+                         0 0              #phi and Pi
+                         0 1 2 3          #Ham and Mom
+
+# if reflective boundaries selected, must set
+# parity of all vars (in order given by UserVariables.hpp)
+vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
+                         0.0 0.0 0.0 0.0 0.0 0.0 0.0 #K and Aij
+                         0.0 0.0 0.0 0.0             #Theta and Gamma
+                         1.0 0.0 0.0 0.0 0.0 0.0 0.0 #lapse shift and B
+                         0.0 0.0                     #phi and Pi
+                         0.0 0.0 0.0 0.0             #Ham and Mom
 
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 20
-plot_interval = 5
+plot_interval = 2
 dt_multiplier = 0.25
-stop_time = 50.0
+stop_time = 10.0
 
 #Lapse evolution
 lapse_power = 1.0
@@ -68,15 +97,12 @@ sigma = 0.3
 # G_Newton = 1.0
 
 # SF Initial data
-amplitudeSF = 0.01
+amplitudeSF = 0.001
 widthSF = 1.0
 r_zero = 5.0
 scalar_mass = 0.001
-# parameter for bubble centre - defaulted to center of grid
-# so only uncomment if you want to place it off center
-#center = 32 32 32
 
 # Relaxation paramters
 # how long and how fast to relax
-relaxtime = 20.0
+relaxtime = 0.0
 relaxspeed = 0.01

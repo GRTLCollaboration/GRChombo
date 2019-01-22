@@ -69,6 +69,6 @@ template <class data_t>
 struct Diff2VarsWithGauge : public ADMConformalVars::Diff2VarsWithGauge<data_t>
 {
 };
-}
+} // namespace BSSNVars
 
 #endif /* BSSNVARS_HPP_ */

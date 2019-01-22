@@ -7,15 +7,19 @@
 #define SIMULATIONPARAMETERS_HPP_
 
 // General includes
-#include "ParmParse.H"
+#include "GRParmParse.hpp"
+#include "SimulationParametersBase.hpp"
 
-class SimulationParameters
+class SimulationParameters : public SimulationParametersBase
 {
   public:
     // For the Interpolator test we don't need any parameters
-    SimulationParameters(ParmParse &pp) { readParams(pp); }
+    SimulationParameters(GRParmParse &pp) : SimulationParametersBase(pp)
+    {
+        readParams(pp);
+    }
 
-    void readParams(ParmParse &pp)
+    void readParams(GRParmParse &pp)
     {
         pp.get("verbosity", verbosity);
         // Grid setup
