@@ -33,12 +33,10 @@ class MPIContext
 
 #ifdef CH_MPI
     // MPI asynchronous comms
-    inline void asyncBegin();
-    inline void asyncExchangeQuery(void *sendbuf, void *recvbuf,
-                                   MPI_Datatype type);
-    inline void asyncExchangeAnswer(void *sendbuf, void *recvbuf,
-                                    MPI_Datatype type);
-    inline void asyncEnd();
+    void asyncBegin();
+    void asyncExchangeQuery(void *sendbuf, void *recvbuf, MPI_Datatype type);
+    void asyncExchangeAnswer(void *sendbuf, void *recvbuf, MPI_Datatype type);
+    void asyncEnd();
 #endif
 
     // MPI utils

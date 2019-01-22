@@ -16,8 +16,7 @@ enum
 namespace UserVariables
 {
 static constexpr char const *variable_names[NUM_VARS] = {
-    "var",
-    "sym_var",
+    "var", "sym_var",
 };
 }
 

@@ -661,8 +661,8 @@ c        time index here is 3 (not zero).
            T(3,d0) = T(d0,3)
          enddo
 
-c ----	 Svec = S_i = n^a T_ai, where a loops over space and time, since nu is already upper
-c ---- 	 we do not need gammas
+c ----   Svec = S_i = n^a T_ai, where a loops over space and time, since nu is already upper
+c ----   we do not need gammas
 
          do d0 = 0,2
            Svec(d0) = 0
@@ -744,175 +744,181 @@ c ---- raising levi cevita
          enddo; enddo; enddo; enddo; enddo
 
 c ---- Convariant derivative K_ij
-
-         do d0=0,2; do d1 =0,2;do d2=0,2
-           CovKtsr(d0,d1,d2) = dKtsrdx(d0,d1,d2)
-         enddo;enddo;enddo 
-
-         do d0=0,2; do d1=0,2; do d2=0,2 ; do d3=0,2
-           CovKtsr(d0,d1,d2) = CovKtsr(d0,d1,d2) - chriss(d3,d2,d0)*Ktsr(d3,d1)
-     &         - chriss(d3,d2,d1)*Ktsr(d0,d3)
-         enddo;enddo;enddo; enddo  
+        
+        do d0=0,2; do d1 =0,2;do d2=0,2
+          CovKtsr(d0,d1,d2) = dKtsrdx(d0,d1,d2)
+        enddo;enddo;enddo 
+        
+        do d0=0,2; do d1=0,2; do d2=0,2 ; do d3=0,2
+          CovKtsr(d0,d1,d2) = CovKtsr(d0,d1,d2) - chriss(d3,d2,d0)*Ktsr(d3,d1)
+     &          - chriss(d3,d2,d1)*Ktsr(d0,d3)
+        enddo;enddo;enddo; enddo  
 
 c ---- Calculation of electric and magnetic fields
  
-         do d0=0,2; do d1 =0,2
-           E(d0,d1) = 0
-           B(d0,d1) = 0 
-         enddo;enddo 
+        do d0=0,2; do d1 =0,2
+          E(d0,d1) = 0
+          B(d0,d1) = 0 
+        enddo;enddo 
 
 
-         do d0=0,2; do d1 =0,2; do d2 =0,2; do d3 = 0,2
-           B(d0,d1) = B(d0,d1)+levi(d0,d2,d3)*(CovKtsr(d3,d1,d2)
-     &                - 4.*Pi*g(d1,d2)/chi2*Svec(d3))			 
-         enddo;enddo;enddo;enddo 
+        do d0=0,2; do d1 =0,2; do d2 =0,2; do d3 = 0,2
+          B(d0,d1) = B(d0,d1)+levi(d0,d2,d3)*(CovKtsr(d3,d1,d2)
+     &                - 4.*Pi*g(d1,d2)/chi2*Svec(d3))                    
+        enddo;enddo;enddo;enddo 
 
-         do d0=0,2; do d1 =0,2
-           E(d0,d1) = E(d0,d1)+Rfull(d0,d1) + K(CHF_AUTOIX[i])
+        do d0=0,2; do d1 =0,2
+          E(d0,d1) = E(d0,d1)+Rfull(d0,d1) + K(CHF_AUTOIX[i])
      &               *Ktsr(d0,d1) - 4.*Pi*(Sten(d0,d1)+1./3.*g(d0,d1)/chi2
      &                *(4.*rho(CHF_AUTOIX[i])-trSten))
-         enddo;enddo
-
-         do d0=0,2; do d1=0,2; do d2=0,2 ; do d3=0,2
-           E(d0,d1) = E(d0,d1) - Ktsr(d0,d2)*Ktsr(d3,d1)
+        enddo;enddo
+        
+        do d0=0,2; do d1=0,2; do d2=0,2 ; do d3=0,2
+          E(d0,d1) = E(d0,d1) - Ktsr(d0,d2)*Ktsr(d3,d1)
      &               *gu(d2,d3)*chi2
-         enddo; enddo; enddo; enddo 
+        enddo; enddo; enddo; enddo 
 
 c -----------------------------------------------------------
 c ---- Calculating Weyl tensor 
 c ---- Weyl1 - ReWeyl , Weyl2 - ImWeyl
 c -----------------------------------------------------------
-c ----- tetrad calculation 
+c ----- tetrat calculation 
 
-         xx = dx*(i0+0.5) - centerx
-         yy = dx*(i1+0.5) - centery
-         zz = dx*(i2+0.5) - centerz
+        xx = dx*(i0+0.5) - centerx
+        yy = dx*(i1+0.5) - centery
+        zz = dx*(i2+0.5) - centerz
 
-         rhoc2 = xx*xx + yy*yy
-         rhoc = sqrt(rhoc2)
-         r2 = xx*xx + yy*yy + zz*zz
-         rr = sqrt(r2)
-         costh = zz/rr
-         sinth = rhoc/rr
-         costh2 = costh*costh
-         sinth2 = sinth*sinth
-         cosph = xx/rhoc
-         sinph = yy/rhoc
-         cosph2 = cosph*cosph
-         sinph2 = sinph*sinph
+        rhoc2 = xx*xx + yy*yy
+        rhoc = sqrt(rhoc2)
+        r2 = xx*xx + yy*yy + zz*zz
+        rr = sqrt(r2)
+        costh = zz/rr
+        sinth = rhoc/rr
+        costh2 = costh*costh
+        sinth2 = sinth*sinth
+        cosph = xx/rhoc
+        sinph = yy/rhoc
+        cosph2 = cosph*cosph
+        sinph2 = sinph*sinph
 
  
-         do d0 = 0,2 
-           er(d0) = 0
-           ephi(d0) = 0
-           etheta(d0) = 0 
-         enddo
+        do d0 = 0,2 
+          er(d0) = 0
+          ephi(d0) = 0
+          etheta(d0) = 0 
+        enddo
  
-         er(0) = cosph*sinth  
-         er(1) = sinph*sinth
-         er(2) =  costh
+        er(0) = cosph*sinth  
+        er(1) = sinph*sinth
+        er(2) =  costh
 
-         ephi(0)= cosph*costh
-         ephi(1)= sinph*costh
-         ephi(2)= -sinth
-
-         etheta(0)= -sinph
-         etheta(1)= cosph
-         etheta(2)= 0 
+        ephi(0)= cosph*costh
+        ephi(1)= sinph*costh
+        ephi(2)= -sinth
+        
+        etheta(0)= -sinph
+        etheta(1)= cosph
+        etheta(2)= 0 
 
 c ------Alternative tetrats-------
-         x = (dx*(i0+0.5) - centerx)
-         y = (dx*(i1+0.5) - centery)
-         z = (dx*(i2+0.5) - centerz)
+        x = (dx*(i0+0.5) - centerx)
+        y = (dx*(i1+0.5) - centery)
+        z = (dx*(i2+0.5) - centerz)
 
-         do d0=0,2; do d1=0,2; do d2=0,2 
-            epsilon_tensor(d0,d1,d2) = 0 
-         enddo; enddo; enddo 
+        do d0=0,2; do d1=0,2; do d2=0,2 
+           epsilon_tensor(d0,d1,d2) = 0 
+        enddo; enddo; enddo 
 
-         epsilon_tensor(0,1,2) = 1
-         epsilon_tensor(1,2,0) = 1
-         epsilon_tensor(2,0,1) = 1
-         epsilon_tensor(0,2,1) = -1
-         epsilon_tensor(1,0,2) = -1
-         epsilon_tensor(2,1,0) = -1
+
+        epsilon_tensor(0,1,2) = 1
+        epsilon_tensor(1,2,0) = 1
+        epsilon_tensor(2,0,1) = 1
+        epsilon_tensor(0,2,1) = -1
+        epsilon_tensor(1,0,2) = -1
+        epsilon_tensor(2,1,0) = -1
 
 c        !non-orthogonal basis
 c        v1 = (/ -y, x, null /);
 c        v2 = (/  x, y, z /);
 c        v3 = null;
 
-         v1(0) = -y
-         v1(1) = x
-         v1(2) = 0
+        v1(0) = -y
+        v1(1) = x
+        v1(2) = 0
 
-         v2(0) = x
-         v2(1) = y
-         v2(2) = z
+        v2(0) = x
+        v2(1) = y
+        v2(2) = z
 
-         v3(0) = 0
-         v3(1) = 0
-         v3(2) = 0
+        v3(0) = 0
+        v3(1) = 0
+        v3(2) = 0
 
-         do d0=0,2; do d1=0,2; do d2=0,2; do d3 = 0,2 
-           v3(d3) = v3(d3) + chi1**(-1.)*gu(d3,d0)*epsilon_tensor(d0,d1,d2)*v1(d1)*v2(d2)
-         enddo; enddo; enddo; enddo 
+        do d0=0,2; do d1=0,2; do d2=0,2; do d3 = 0,2 
+          v3(d3) = v3(d3) + chi1**(-1.)*gu(d3,d0)*epsilon_tensor(d0,d1,d2)*v1(d1)*v2(d2)
+        enddo; enddo; enddo; enddo 
 
 c        !gram-schmidt
-         omega11 = 0
-         do d0=0,2; do d1=0,2
+        omega11 = 0
+        do d0=0,2; do d1=0,2
            omega11 = omega11 + v1(d0)*v1(d1)*g(d0,d1)/chi2
-         enddo; enddo
-         v1 = v1/sqrt(omega11)
+        enddo; enddo
+        v1 = v1/sqrt(omega11)
 
-         omega12 = 0
-         do d0=0,2; do d1=0,2
+        omega12 = 0
+        do d0=0,2; do d1=0,2
            omega12 = omega12 + v1(d0)*v2(d1)*g(d0,d1)/chi2
-         enddo; enddo
-         v2 = v2 - omega12*v1
- 
-         omega22 = 0
-         do d0=0,2; do d1=0,2
-            omega22 = omega22 + v2(d0)*v2(d1)*g(d0,d1)/chi2
-         enddo; enddo
-         v2 = v2/sqrt(omega22)
+        enddo; enddo
+        v2 = v2 - omega12*v1
 
-         omega13 = 0
-         omega23 = 0
-         do d0=0,2; do d1=0,2
-            omega13 = omega13 + v1(d0)*v3(d1)*g(d0,d1)/chi2
-            omega23 = omega23 + v2(d0)*v3(d1)*g(d0,d1)/chi2
-         enddo; enddo
-         v3 = v3 - (omega13*v1 + omega23*v2)
- 
-         omega33 = 0
-         do d0=0,2; do d1=0,2
-            omega33 = omega33 + v3(d0)*v3(d1)*g(d0,d1)/chi2
-         enddo; enddo
-         v3 = v3/sqrt(omega33)
- 
-         do d0 = 0,2
-            ephi(d0) = v1(d0)
-            er(d0) = v2(d0)
-            etheta(d0) = v3(d0) 
-         enddo 
+        omega22 = 0
+        do d0=0,2; do d1=0,2
+           omega22 = omega22 + v2(d0)*v2(d1)*g(d0,d1)/chi2
+        enddo; enddo
+        v2 = v2/sqrt(omega22)
 
-         weyl1(CHF_AUTOIX[i]) = 0 
-         weyl2(CHF_AUTOIX[i]) = 0 
+        omega13 = 0
+        omega23 = 0
+        do d0=0,2; do d1=0,2
+           omega13 = omega13 + v1(d0)*v3(d1)*g(d0,d1)/chi2
+           omega23 = omega23 + v2(d0)*v3(d1)*g(d0,d1)/chi2
+        enddo; enddo
+        v3 = v3 - (omega13*v1 + omega23*v2)
 
-         do d0 = 0,CH_SPACEDIM-1; do d1 = 0,CH_SPACEDIM-1
- 
-            weyl1(CHF_AUTOIX[i]) = weyl1(CHF_AUTOIX[i]) 
+        omega33 = 0
+        do d0=0,2; do d1=0,2
+           omega33 = omega33 + v3(d0)*v3(d1)*g(d0,d1)/chi2
+        enddo; enddo
+        v3 = v3/sqrt(omega33)
+
+        do d0 = 0,2
+           ephi(d0) = v1(d0)
+           er(d0) = v2(d0)
+           etheta(d0) = v3(d0) 
+        enddo 
+        
+
+        weyl1(CHF_AUTOIX[i]) = 0 
+        weyl2(CHF_AUTOIX[i]) = 0 
+
+
+
+        do d0 = 0,CH_SPACEDIM-1; do d1 = 0,CH_SPACEDIM-1
+
+           weyl1(CHF_AUTOIX[i]) = weyl1(CHF_AUTOIX[i]) 
      &                            + 0.5*(E(d0,d1)*(etheta(d0)*etheta(d1) 
      &                            - ephi(d0)*ephi(d1)) -
      &                            2.*B(d0,d1)*etheta(d0)*ephi(d1))
- 
+     
 
-            weyl2(CHF_AUTOIX[i]) = weyl2(CHF_AUTOIX[i]) 
+           weyl2(CHF_AUTOIX[i]) = weyl2(CHF_AUTOIX[i]) 
      &                            + 0.5*(B(d0,d1)*(- etheta(d0)*etheta(d1) 
      &                            + ephi(d0)*ephi(d1)) -
      &                            2.*E(d0,d1)*etheta(d0)*ephi(d1))
 
-         enddo; enddo
+        enddo; enddo
+
+
 
       CHF_ENDDO
 

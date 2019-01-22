@@ -7,19 +7,15 @@
 #define SIMULATIONPARAMETERS_HPP_
 
 // General includes
-#include "GRParmParse.hpp"
-#include "SimulationParametersBase.hpp"
+#include "ParmParse.H"
 
-class SimulationParameters : public SimulationParametersBase
+class SimulationParameters
 {
   public:
     // For the Interpolator test we don't need any parameters
-    SimulationParameters(GRParmParse &pp) : SimulationParametersBase(pp)
-    {
-        readParams(pp);
-    }
+    SimulationParameters(ParmParse &pp) { readParams(pp); }
 
-    void readParams(GRParmParse &pp)
+    void readParams(ParmParse &pp)
     {
         pp.get("verbosity", verbosity);
         // Grid setup
@@ -35,6 +31,10 @@ class SimulationParameters : public SimulationParametersBase
     int tag_buffer_size = 0;
     bool ignore_checkpoint_name_mismatch = false;
     double dt_multiplier = 0.2; // Doesn't matter for this test
+    bool nonperiodic_boundaries_exist = 0;
+    bool symmetric_boundaries_exist = 0;
+    std::array<double, GR_SPACEDIM> center = {0,0,0};
+    BoundaryConditions::params_t boundary_params;
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */
