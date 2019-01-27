@@ -55,7 +55,7 @@ eta = 1.82
 kappa1 = 0.1
 kappa2 = 0
 kappa3 = 1.
-covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse  
+covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
 
 #coefficient for KO numerical dissipation
 sigma = 0.3
@@ -64,7 +64,8 @@ sigma = 0.3
 #default center to grid center, uncomment to change
 #extraction_center = 64 64 64
 activate_extraction = 1
-extraction_radius = 100
-extraction_level = 1
+num_extraction_radii = 3
+extraction_radii = 40. 60. 80.
+extraction_levels = 2 1 1
 num_points_phi = 16
 num_points_theta = 24

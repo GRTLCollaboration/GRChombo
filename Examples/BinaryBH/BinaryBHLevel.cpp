@@ -83,18 +83,32 @@ void BinaryBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
 
 void BinaryBHLevel::specificPostTimeStep()
 {
-    if ((m_p.activate_extraction == 1) &&
-        (m_level == m_p.extraction_params.extraction_level))
+    if (m_p.activate_extraction == 1)
     {
-        // Populate the Weyl Scalar values on the grid
-        fillAllGhosts();
-        BoxLoops::loop(Weyl4(m_p.extraction_params.extraction_center, m_dx),
-                       m_state_new, m_state_new, EXCLUDE_GHOST_CELLS);
+        // Only calculate Weyl Scalar on grid if m_level is between min and max
+        // extraction level
+        auto minmax_extraction_level_it = std::minmax_element(
+            m_p.extraction_params.extraction_levels.begin(),
+            m_p.extraction_params.extraction_levels.end());
+        int min_extraction_level = *(minmax_extraction_level_it.first);
+        int max_extraction_level = *(minmax_extraction_level_it.second);
+        if ((m_level <= max_extraction_level) &&
+            (m_level >= min_extraction_level))
+        {
+            // Populate the Weyl Scalar values on the grid
+            fillAllGhosts();
+            BoxLoops::loop(Weyl4(m_p.extraction_params.extraction_center, m_dx),
+                           m_state_new, m_state_new, EXCLUDE_GHOST_CELLS);
+        }
 
-        // Now refresh the interpolator and do the interpolation
-        m_gr_amr.m_interpolator->refresh();
-        WeylExtraction my_extraction(m_p.extraction_params, m_dt, m_time);
-        my_extraction.execute_query(m_gr_amr.m_interpolator);
+        // Do the extraction on the min extraction level
+        if (m_level == min_extraction_level)
+        {
+            // Now refresh the interpolator and do the interpolation
+            m_gr_amr.m_interpolator->refresh();
+            WeylExtraction my_extraction(m_p.extraction_params, m_dt, m_time);
+            my_extraction.execute_query(m_gr_amr.m_interpolator);
+        }
     }
 }
 

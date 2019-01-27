@@ -13,11 +13,12 @@
 
 struct extraction_params_t
 {
-    double extraction_radius;
+    int num_extraction_radii;
+    std::vector<double> extraction_radii;
     std::array<double, CH_SPACEDIM> extraction_center;
     int num_points_phi;
     int num_points_theta;
-    int extraction_level;
+    std::vector<int> extraction_levels;
 };
 
 class SimulationParametersBase : public ChomboParameters
@@ -58,8 +59,12 @@ class SimulationParametersBase : public ChomboParameters
         origin.fill(coarsest_dx / 2.0);
 
         // Extraction params
-        pp.load("extraction_level", extraction_params.extraction_level, 0);
-        pp.load("extraction_radius", extraction_params.extraction_radius, 0.1);
+        pp.load("num_extraction_radii", extraction_params.num_extraction_radii,
+                1);
+        pp.load("extraction_levels", extraction_params.extraction_levels,
+                extraction_params.num_extraction_radii, 0);
+        pp.load("extraction_radii", extraction_params.extraction_radii,
+                extraction_params.num_extraction_radii, 0.1);
         pp.load("num_points_phi", extraction_params.num_points_phi, 2);
         pp.load("num_points_theta", extraction_params.num_points_theta, 4);
         pp.load("extraction_center", extraction_params.extraction_center,

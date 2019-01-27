@@ -52,16 +52,18 @@ class WeylExtraction
     void execute_query(AMRInterpolator<Lagrange<4>> *m_interpolator) const;
 
   private:
-    //! integrate over a spherical shell with given harmonics
-    std::array<double, 2> integrate_surface(int es, int el, int em,
+    //! integrate over a spherical shell with given harmonics for each
+    //! extraction radius
+    std::vector<double> integrate_surface(int es, int el, int em,
                                             const double *m_state_ptr_re,
                                             const double *m_state_ptr_im) const;
 
-    //! Write out calculated value of integral
-    void write_integral(std::array<double, 2> integral,
+    //! Write out calculated values of integral for each extraction radius
+    void write_integral(std::vector<double> integral,
                         std::string filename) const;
 
     //! Write out the result of the extraction in phi and theta at each timestep
+    //! for each extraction radius
     void write_extraction(std::string file_prefix, const double *m_state_ptr_re,
                           const double *m_state_ptr_im) const;
 };
