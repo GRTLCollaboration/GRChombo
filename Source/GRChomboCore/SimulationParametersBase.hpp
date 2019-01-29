@@ -61,10 +61,28 @@ class SimulationParametersBase : public ChomboParameters
         // Extraction params
         pp.load("num_extraction_radii", extraction_params.num_extraction_radii,
                 1);
-        pp.load("extraction_levels", extraction_params.extraction_levels,
-                extraction_params.num_extraction_radii, 0);
-        pp.load("extraction_radii", extraction_params.extraction_radii,
-                extraction_params.num_extraction_radii, 0.1);
+        // Check for multiple extraction radii, otherwise load single
+        // radius/level (for backwards compatibility).
+        if (pp.contains("extraction_levels"))
+        {
+            pp.load("extraction_levels", extraction_params.extraction_levels,
+                    extraction_params.num_extraction_radii);
+        }
+        else
+        {
+            pp.load("extraction_level", extraction_params.extraction_levels, 1,
+                    0);
+        }
+        if (pp.contains("extraction_radii"))
+        {
+            pp.load("extraction_radii", extraction_params.extraction_radii,
+                    extraction_params.num_extraction_radii);
+        }
+        else
+        {
+            pp.load("extraction_radius", extraction_params.extraction_radii, 1,
+                    0.1);
+        }
         pp.load("num_points_phi", extraction_params.num_points_phi, 2);
         pp.load("num_points_theta", extraction_params.num_points_theta, 4);
         pp.load("extraction_center", extraction_params.extraction_center,
