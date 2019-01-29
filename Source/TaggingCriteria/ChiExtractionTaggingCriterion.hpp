@@ -53,7 +53,8 @@ class ChiExtractionTaggingCriterion
 
         data_t criterion = m_dx * sqrt(mod_d2_chi);
 
-        for(int iradius = 0; iradius < m_params.num_extraction_radii; ++iradius)
+        for (int iradius = 0; iradius < m_params.num_extraction_radii;
+             ++iradius)
         {
             // regrid if within extraction level and not at required refinement
             if (m_level < m_params.extraction_levels[iradius])
@@ -61,8 +62,10 @@ class ChiExtractionTaggingCriterion
                 const Coordinates<data_t> coords(current_cell, m_dx,
                                                  m_params.extraction_center);
                 const data_t r = coords.get_radius();
-                // add a 20% buffer to extraction zone so not too near to boundary
-                auto regrid = simd_compare_lt(r, 1.2 * m_params.extraction_radii[iradius]);
+                // add a 20% buffer to extraction zone so not too near to
+                // boundary
+                auto regrid = simd_compare_lt(
+                    r, 1.2 * m_params.extraction_radii[iradius]);
                 criterion = simd_conditional(regrid, 100.0, criterion);
             }
         }

@@ -88,9 +88,9 @@ void BinaryBHLevel::specificPostTimeStep()
     {
         // Only calculate Weyl Scalar on grid if m_level is between min and max
         // extraction level
-        auto minmax_extraction_level_it = std::minmax_element(
-            m_p.extraction_params.extraction_levels.begin(),
-            m_p.extraction_params.extraction_levels.end());
+        auto minmax_extraction_level_it =
+            std::minmax_element(m_p.extraction_params.extraction_levels.begin(),
+                                m_p.extraction_params.extraction_levels.end());
         int min_extraction_level = *(minmax_extraction_level_it.first);
         int max_extraction_level = *(minmax_extraction_level_it.second);
         if ((m_level <= max_extraction_level) &&

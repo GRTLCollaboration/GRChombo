@@ -16,11 +16,11 @@
 #include <iostream>
 
 //!  The class allows extraction of the values of the Weyl scalar components on
-//!  a spherical shell, and integration over that shell
+//!  spherical shells at specified radii, and integration over those shells
 /*!
    The class allows the user to extract data from the grid for thr Weyl
-   components over a spherical shell. The values may then be written to an
-   output file, or integrated across the surface.
+   components over spherical shells at specified radii. The values may then be
+   written to an output file, or integrated across the surfaces.
 */
 class WeylExtraction
 {
@@ -55,8 +55,8 @@ class WeylExtraction
     //! integrate over a spherical shell with given harmonics for each
     //! extraction radius
     std::vector<double> integrate_surface(int es, int el, int em,
-                                            const double *m_state_ptr_re,
-                                            const double *m_state_ptr_im) const;
+                                          const double *m_state_ptr_re,
+                                          const double *m_state_ptr_im) const;
 
     //! Write out calculated values of integral for each extraction radius
     void write_integral(std::vector<double> integral,

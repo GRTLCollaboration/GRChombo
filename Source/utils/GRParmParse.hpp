@@ -99,7 +99,7 @@ class GRParmParse : public ParmParse
     void load(const char *name, std::vector<data_t> &vector, const int num_comp,
               const data_t default_value) const
     {
-        if(contains(name))
+        if (contains(name))
         {
             load(name, vector, num_comp);
         }
