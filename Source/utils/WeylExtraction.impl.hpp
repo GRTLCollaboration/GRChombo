@@ -10,10 +10,11 @@
 #ifndef WEYLEXTRACTION_IMPL_HPP_
 #define WEYLEXTRACTION_IMPL_HPP_
 
-//! Set up tnd execute the interpolation query
+//! Set up and execute the interpolation query
 inline void WeylExtraction::execute_query(
     AMRInterpolator<Lagrange<4>> *m_interpolator) const
 {
+    CH_TIME("WeylExtraction::execute_query");
     if (m_interpolator == nullptr)
     {
         MayDay::Error("Interpolator has not been initialised in GRAMR class.");
@@ -96,6 +97,7 @@ WeylExtraction::integrate_surface(int es, int el, int em,
                                   const double *m_state_ptr_re,
                                   const double *m_state_ptr_im) const
 {
+    CH_TIME("WeylExtraction::integrate_surface");
     int rank;
 #ifdef CH_MPI
     MPI_Comm_rank(Chombo_MPI::comm, &rank);
@@ -156,6 +158,7 @@ WeylExtraction::integrate_surface(int es, int el, int em,
 inline void WeylExtraction::write_integral(std::vector<double> integral,
                                            std::string filename) const
 {
+    CH_TIME("WeylExtraction::write_integral");
     int rank;
 #ifdef CH_MPI
     MPI_Comm_rank(Chombo_MPI::comm, &rank);
@@ -220,6 +223,7 @@ inline void WeylExtraction::write_extraction(std::string file_prefix,
                                              const double *m_state_ptr_re,
                                              const double *m_state_ptr_im) const
 {
+    CH_TIME("WeylExtraction::write_extraction");
     int rank;
 #ifdef CH_MPI
     MPI_Comm_rank(Chombo_MPI::comm, &rank);

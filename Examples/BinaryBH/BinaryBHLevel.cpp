@@ -83,6 +83,7 @@ void BinaryBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
 
 void BinaryBHLevel::specificPostTimeStep()
 {
+    CH_TIME("BinaryBHLevel::specificPostTimeStep");
     if (m_p.activate_extraction == 1)
     {
         // Only calculate Weyl Scalar on grid if m_level is between min and max
