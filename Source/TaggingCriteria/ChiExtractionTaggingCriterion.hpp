@@ -40,15 +40,12 @@ class ChiExtractionTaggingCriterion
 
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {
-
-        const auto d1 = m_deriv.template diff1<Vars>(current_cell);
         const auto d2 = m_deriv.template diff2<Vars>(current_cell);
 
         data_t mod_d2_chi = 0;
         FOR2(idir, jdir)
         {
-            mod_d2_chi += d2.chi[idir][jdir] * d2.chi[idir][jdir] /
-                          (1e-2 + abs(d1.chi[idir] * d1.chi[jdir]));
+            mod_d2_chi += d2.chi[idir][jdir] * d2.chi[idir][jdir];
         }
 
         data_t criterion = m_dx * sqrt(mod_d2_chi);
