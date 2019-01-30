@@ -115,10 +115,13 @@ WeylExtraction::integrate_surface(int es, int el, int em,
         // for theta  note we don't have to fudge the end points for phi because
         // the function is periodic  and so the last point (implied but not part
         // of vector) is equal to the first point
+#ifdef _OPENMP
+    #pragma omp parallel for collapse(2) default(none) \
+            shared(es, el, em, m_state_ptr_re, m_state_ptr_im, integral)
+#endif
         for (int iradius = 0; iradius < m_params.num_extraction_radii;
              ++iradius)
         {
-#pragma omp parallel for
             for (int iphi = 0; iphi < m_params.num_points_phi; ++iphi)
             {
                 double phi = iphi * 2 * M_PI / m_params.num_points_phi;
@@ -146,7 +149,13 @@ WeylExtraction::integrate_surface(int es, int el, int em,
                     inner_integral_re += m_dtheta * f_theta_phi_re;
                     inner_integral_im += m_dtheta * f_theta_phi_im;
                 }
+#ifdef _OPENMP
+    #pragma omp atomic
+#endif
                 integral[2 * iradius] += m_dphi * inner_integral_re;
+#ifdef _OPENMP
+    #pragma omp atomic
+#endif
                 integral[2 * iradius + 1] += m_dphi * inner_integral_im;
             }
         }
