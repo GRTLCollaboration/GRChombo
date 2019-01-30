@@ -41,8 +41,8 @@ hi_boundary = 1 1 1
 lo_boundary = 2 2 2
 center = 0.0 0.0 0.0
 
-# if sommerfeld boundaries selected, must select 
-# asymptotic values (in order given by UserVariables.hpp)
+# if reflective boundaries selected, must set
+# parity of all vars (in order given by UserVariables.hpp)
 # 0 = even
 # 1,2,3 = odd x, y, z
 # 4,5,6 = odd xy, yz, xz
@@ -53,8 +53,8 @@ vars_parity            = 0 0 4 6 0 5 0    #chi and hij
                          0 0              #phi and Pi
                          0 1 2 3          #Ham and Mom
 
-# if reflective boundaries selected, must set
-# parity of all vars (in order given by UserVariables.hpp)
+# if sommerfeld boundaries selected, must select 
+# asymptotic values (in order given by UserVariables.hpp)
 vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
                          0.0 0.0 0.0 0.0 0.0 0.0 0.0 #K and Aij
                          0.0 0.0 0.0 0.0             #Theta and Gamma
