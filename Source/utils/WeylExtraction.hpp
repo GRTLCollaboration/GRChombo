@@ -18,7 +18,7 @@
 //!  The class allows extraction of the values of the Weyl scalar components on
 //!  spherical shells at specified radii, and integration over those shells
 /*!
-   The class allows the user to extract data from the grid for thr Weyl
+   The class allows the user to extract data from the grid for the Weyl
    components over spherical shells at specified radii. The values may then be
    written to an output file, or integrated across the surfaces.
 */
@@ -31,7 +31,7 @@ class WeylExtraction
     const int m_im_comp = c_Weyl4_Im;
     const double m_dt;
     const double m_time;
-    const int m_num_points;
+    const int m_num_points; // number of points per extraction radius
     const double m_dphi;
     const double m_dtheta;
 
