@@ -60,13 +60,13 @@ class WeylExtraction
                       const std::vector<double> a_im_part) const;
 
     //! Write out calculated values of integral for each extraction radius
-    void write_integral(const std::vector<double> integral_re,
-                        const std::vector<double> integral_im,
-                        std::string filename) const;
+    void write_integral(const std::vector<double> a_integral_re,
+                        const std::vector<double> a_integral_im,
+                        std::string a_filename) const;
 
     //! Write out the result of the extraction in phi and theta at each timestep
     //! for each extraction radius
-    void write_extraction(std::string file_prefix,
+    void write_extraction(std::string a_file_prefix,
                           const std::vector<double> a_re_part,
                           const std::vector<double> a_im_part) const;
 };
