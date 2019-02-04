@@ -12,24 +12,21 @@
 
 //! Set up and execute the interpolation query
 inline void WeylExtraction::execute_query(
-    AMRInterpolator<Lagrange<4>> *m_interpolator) const
+    AMRInterpolator<Lagrange<4>> *a_interpolator) const
 {
     CH_TIME("WeylExtraction::execute_query");
-    if (m_interpolator == nullptr)
+    if (a_interpolator == nullptr)
     {
         MayDay::Error("Interpolator has not been initialised in GRAMR class.");
     }
 
-    std::unique_ptr<double[]> m_state_ptr_re{
-        new double[m_num_points * m_params.num_extraction_radii]};
-    std::unique_ptr<double[]> m_state_ptr_im{
-        new double[m_num_points * m_params.num_extraction_radii]};
-    std::unique_ptr<double[]> m_interp_x{
-        new double[m_num_points * m_params.num_extraction_radii]};
-    std::unique_ptr<double[]> m_interp_y{
-        new double[m_num_points * m_params.num_extraction_radii]};
-    std::unique_ptr<double[]> m_interp_z{
-        new double[m_num_points * m_params.num_extraction_radii]};
+    std::vector<double> interp_re_part(m_num_points *
+                                       m_params.num_extraction_radii);
+    std::vector<double> interp_im_part(m_num_points *
+                                       m_params.num_extraction_radii);
+    std::vector<double> interp_x(m_num_points * m_params.num_extraction_radii);
+    std::vector<double> interp_y(m_num_points * m_params.num_extraction_radii);
+    std::vector<double> interp_z(m_num_points * m_params.num_extraction_radii);
 
     // Work out the coordinates
     for (int iradius = 0; iradius < m_params.num_extraction_radii; ++iradius)
@@ -41,61 +38,54 @@ inline void WeylExtraction::execute_query(
             // don't put a point at z = 0
             double theta = (itheta + 0.5) * m_dtheta;
             double phi = iphi * m_dphi;
-            m_interp_x[iradius * m_num_points + idx] =
+            interp_x[iradius * m_num_points + idx] =
                 m_params.extraction_center[0] +
                 m_params.extraction_radii[iradius] * sin(theta) * cos(phi);
-            m_interp_y[iradius * m_num_points + idx] =
+            interp_y[iradius * m_num_points + idx] =
                 m_params.extraction_center[1] +
                 m_params.extraction_radii[iradius] * sin(theta) * sin(phi);
-            m_interp_z[iradius * m_num_points + idx] =
+            interp_z[iradius * m_num_points + idx] =
                 m_params.extraction_center[2] +
                 m_params.extraction_radii[iradius] * cos(theta);
         }
     }
     // set up the query
     InterpolationQuery query(m_num_points * m_params.num_extraction_radii);
-    query.setCoords(0, m_interp_x.get())
-        .setCoords(1, m_interp_y.get())
-        .setCoords(2, m_interp_z.get())
-        .addComp(m_re_comp, m_state_ptr_re.get())
-        .addComp(m_im_comp, m_state_ptr_im.get());
+    query.setCoords(0, interp_x.data())
+        .setCoords(1, interp_y.data())
+        .setCoords(2, interp_z.data())
+        .addComp(m_re_comp, interp_re_part.data())
+        .addComp(m_im_comp, interp_im_part.data());
 
     // submit the query
-    m_interpolator->interp(query);
-
-    // clear the memory for the coordinates
-    m_interp_x.reset();
-    m_interp_y.reset();
-    m_interp_z.reset();
+    a_interpolator->interp(query);
 
     // calculate the integral over the surface -currently only 20, 21 and 22
     // modes implemented here, but easily extended if more required
-    std::vector<double> integral20(2 * m_params.num_extraction_radii, 0.);
-    std::vector<double> integral21(2 * m_params.num_extraction_radii, 0.);
-    std::vector<double> integral22(2 * m_params.num_extraction_radii, 0.);
-    integral20 =
-        integrate_surface(-2, 2, 0, m_state_ptr_re.get(), m_state_ptr_im.get());
-    integral21 =
-        integrate_surface(-2, 2, 1, m_state_ptr_re.get(), m_state_ptr_im.get());
-    integral22 =
-        integrate_surface(-2, 2, 2, m_state_ptr_re.get(), m_state_ptr_im.get());
+    auto integrals20 =
+        integrate_surface(-2, 2, 0, interp_re_part, interp_im_part);
+    auto integrals21 =
+        integrate_surface(-2, 2, 1, interp_re_part, interp_im_part);
+    auto integrals22 =
+        integrate_surface(-2, 2, 2, interp_re_part, interp_im_part);
 
     // Output the result to a single file over the whole run
-    write_integral(integral20, "Weyl_integral_20");
-    write_integral(integral21, "Weyl_integral_21");
-    write_integral(integral22, "Weyl_integral_22");
+    write_integral(integrals20.first, integrals20.second, "Weyl_integral_20");
+    write_integral(integrals21.first, integrals21.second, "Weyl_integral_21");
+    write_integral(integrals22.first, integrals22.second, "Weyl_integral_22");
 
     // This generates a lot of output, and it is usually better to output plot
     // files so for now it is commented out
-    // write_extraction("ExtractionOut_", m_state_ptr_re.get(),
-    //                  m_state_ptr_im.get());
+    // write_extraction("ExtractionOut_", interp_re_part,
+    //                  interp_im_part);
 }
 
-//! integrate over a spherical shell with given harmonics
-inline std::vector<double>
+//! integrate over a spherical shell with given harmonics for each extraction
+//! radius and normalise by multiplying by radius
+inline std::pair<std::vector<double>, std::vector<double>>
 WeylExtraction::integrate_surface(int es, int el, int em,
-                                  const double *m_state_ptr_re,
-                                  const double *m_state_ptr_im) const
+                                  const std::vector<double> a_re_part,
+                                  const std::vector<double> a_im_part) const
 {
     CH_TIME("WeylExtraction::integrate_surface");
     int rank;
@@ -104,7 +94,8 @@ WeylExtraction::integrate_surface(int es, int el, int em,
 #else
     rank = 0;
 #endif
-    std::vector<double> integral(2 * m_params.num_extraction_radii, 0.);
+    std::vector<double> integral_re(m_params.num_extraction_radii, 0.);
+    std::vector<double> integral_im(m_params.num_extraction_radii, 0.);
 
     // only rank 0 does the integral, but use OMP threads if available
     if (rank == 0)
@@ -116,8 +107,8 @@ WeylExtraction::integrate_surface(int es, int el, int em,
         // the function is periodic  and so the last point (implied but not part
         // of vector) is equal to the first point
 #ifdef _OPENMP
-    #pragma omp parallel for collapse(2) default(none) \
-            shared(es, el, em, m_state_ptr_re, m_state_ptr_im, integral)
+#pragma omp parallel for collapse(2) default(none)                             \
+    shared(es, el, em, integral_re, integral_im)
 #endif
         for (int iradius = 0; iradius < m_params.num_extraction_radii;
              ++iradius)
@@ -140,32 +131,37 @@ WeylExtraction::integrate_surface(int es, int el, int em,
                                sin(phi);
                     double z = m_params.extraction_radii[iradius] * cos(theta);
                     Y_lm_t<double> Y_lm = spin_Y_lm(x, y, z, es, el, em);
-                    double integrand_re = m_state_ptr_re[idx] * Y_lm.Real +
-                                          m_state_ptr_im[idx] * Y_lm.Im;
-                    double integrand_im = m_state_ptr_im[idx] * Y_lm.Real -
-                                          m_state_ptr_re[idx] * Y_lm.Im;
-                    double f_theta_phi_re = integrand_re * sin(theta);
-                    double f_theta_phi_im = integrand_im * sin(theta);
+                    double integrand_re =
+                        a_re_part[idx] * Y_lm.Real + a_im_part[idx] * Y_lm.Im;
+                    double integrand_im =
+                        a_im_part[idx] * Y_lm.Real - a_re_part[idx] * Y_lm.Im;
+                    // note the multiplication by radius here
+                    double f_theta_phi_re = m_params.extraction_radii[iradius] *
+                                            integrand_re * sin(theta);
+                    double f_theta_phi_im = m_params.extraction_radii[iradius] *
+                                            integrand_im * sin(theta);
                     inner_integral_re += m_dtheta * f_theta_phi_re;
                     inner_integral_im += m_dtheta * f_theta_phi_im;
                 }
 #ifdef _OPENMP
-    #pragma omp atomic
+#pragma omp atomic
 #endif
-                integral[2 * iradius] += m_dphi * inner_integral_re;
+                integral_re[iradius] += m_dphi * inner_integral_re;
 #ifdef _OPENMP
-    #pragma omp atomic
+#pragma omp atomic
 #endif
-                integral[2 * iradius + 1] += m_dphi * inner_integral_im;
+                integral_im[iradius] += m_dphi * inner_integral_im;
             }
         }
     }
-    return integral;
+    return std::make_pair(integral_re, integral_im);
 }
 
-//! Write out calculated value of integral
-inline void WeylExtraction::write_integral(std::vector<double> integral,
-                                           std::string filename) const
+//! Write out calculated value of integral for each extraction radius
+inline void
+WeylExtraction::write_integral(const std::vector<double> a_integral_re,
+                               const std::vector<double> a_integral_im,
+                               std::string a_filename) const
 {
     CH_TIME("WeylExtraction::write_integral");
     int rank;
@@ -181,11 +177,11 @@ inline void WeylExtraction::write_integral(std::vector<double> integral,
         // overwrite file if this is the first timestep, otherwise append.
         if (m_time == m_dt)
         {
-            outfile.open(filename);
+            outfile.open(a_filename);
         }
         else
         {
-            outfile.open(filename, std::ios_base::app);
+            outfile.open(a_filename, std::ios_base::app);
         }
         if (!outfile)
         {
@@ -217,20 +213,23 @@ inline void WeylExtraction::write_integral(std::vector<double> integral,
         // Now the data
         outfile << std::fixed << std::setw(10) << m_time;
         outfile << std::scientific << std::setprecision(10);
-        for (int iintegral = 0; iintegral < 2 * m_params.num_extraction_radii;
-             ++iintegral)
+        for (int iradius = 0; iradius < m_params.num_extraction_radii;
+             ++iradius)
         {
-            outfile << std::setw(20) << integral[iintegral];
+            outfile << std::setw(20) << a_integral_re[iradius];
+            outfile << std::setw(20) << a_integral_im[iradius];
         }
         outfile << std::endl;
         outfile.close();
     }
 }
 
-//! Write out the result of the extraction in phi and theta at each timestep
-inline void WeylExtraction::write_extraction(std::string file_prefix,
-                                             const double *m_state_ptr_re,
-                                             const double *m_state_ptr_im) const
+//! Write out the result of the extraction in phi and theta at each timestep for
+//! each extraction radius
+inline void
+WeylExtraction::write_extraction(std::string a_file_prefix,
+                                 const std::vector<double> a_re_part,
+                                 const std::vector<double> a_im_part) const
 {
     CH_TIME("WeylExtraction::write_extraction");
     int rank;
@@ -244,7 +243,7 @@ inline void WeylExtraction::write_extraction(std::string file_prefix,
     {
         // set up file names and component names
         int step = std::round(m_time / m_dt);
-        std::string file_str = file_prefix + std::to_string(step);
+        std::string file_str = a_file_prefix + std::to_string(step);
         std::string comp_str_re = UserVariables::variable_names[m_re_comp];
         std::string comp_str_im = UserVariables::variable_names[m_im_comp];
 
@@ -282,8 +281,8 @@ inline void WeylExtraction::write_extraction(std::string file_prefix,
                 outfile << std::setw(12) << theta;
                 outfile << std::setw(12) << phi;
                 outfile << std::scientific << std::setprecision(10);
-                outfile << std::setw(20) << m_state_ptr_re[idx];
-                outfile << std::setw(20) << m_state_ptr_im[idx] << "\n";
+                outfile << std::setw(20) << a_re_part[idx];
+                outfile << std::setw(20) << a_im_part[idx] << "\n";
             }
             outfile << "\n\n";
         }
