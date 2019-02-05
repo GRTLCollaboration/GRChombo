@@ -19,6 +19,7 @@ struct extraction_params_t
     int num_points_phi;
     int num_points_theta;
     std::vector<int> extraction_levels;
+    int min_extraction_level;
 };
 
 class SimulationParametersBase : public ChomboParameters
@@ -87,6 +88,12 @@ class SimulationParametersBase : public ChomboParameters
         pp.load("num_points_theta", extraction_params.num_points_theta, 4);
         pp.load("extraction_center", extraction_params.extraction_center,
                 {0.5 * L, 0.5 * L, 0.5 * L});
+
+        // Work out the minimum extraction level
+        auto min_extraction_level_it =
+            std::min_element(extraction_params.extraction_levels.begin(),
+                             extraction_params.extraction_levels.end());
+        extraction_params.min_extraction_level = *(min_extraction_level_it);
     }
 
   public:

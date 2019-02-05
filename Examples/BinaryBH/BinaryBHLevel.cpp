@@ -92,11 +92,7 @@ void BinaryBHLevel::specificPostTimeStep()
                        m_state_new, m_state_new, EXCLUDE_GHOST_CELLS);
 
         // Do the extraction on the min extraction level
-        auto min_extraction_level_it =
-            std::min_element(m_p.extraction_params.extraction_levels.begin(),
-                             m_p.extraction_params.extraction_levels.end());
-        int min_extraction_level = *(min_extraction_level_it);
-        if (m_level == min_extraction_level)
+        if (m_level == m_p.extraction_params.min_extraction_level)
         {
             // Now refresh the interpolator and do the interpolation
             m_gr_amr.m_interpolator->refresh();
