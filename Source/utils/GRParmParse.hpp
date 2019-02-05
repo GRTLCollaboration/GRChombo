@@ -55,7 +55,7 @@ class GRParmParse : public ParmParse
         getarr(name, vector, 0, num_comp);
     }
 
-    /// Loads a value from the paramter file
+    /// Loads a value from the parameter file
     template <class data_t>
     typename std::enable_if<
         !std::is_enum<data_t>::value>::type // Can't use for enum types
@@ -64,7 +64,7 @@ class GRParmParse : public ParmParse
         get(name, parameter);
     }
 
-    /// Loads an enum value from the paramter file
+    /// Loads an enum value from the parameter file
     template <typename enum_type>
     typename std::enable_if<
         std::is_enum<enum_type>::value>::type // Only enabled for enum types
@@ -75,8 +75,8 @@ class GRParmParse : public ParmParse
         parameter = static_cast<enum_type>(iparam);
     }
 
-    /// Loads a value from the paramter file, if the value isn't defined it sets
-    /// to the supplied default
+    /// Loads a value from the parameter file, if the value isn't defined it
+    /// sets to the supplied default
     template <class data_t>
     void load(const char *name, data_t &parameter,
               const data_t default_value) const
@@ -88,6 +88,25 @@ class GRParmParse : public ParmParse
         else
         {
             parameter = default_value;
+            pout() << "Parameter: " << name << " not found in parameter file. "
+                   << "It has been set to its default value." << std::endl;
+        }
+    }
+
+    /// Loads a vector with num_comp components from the parameter file, if the
+    /// vector isn't defined it sets all components to the supplied default
+    template <class data_t>
+    void load(const char *name, std::vector<data_t> &vector, const int num_comp,
+              const data_t default_value) const
+    {
+        if (contains(name))
+        {
+            load(name, vector, num_comp);
+        }
+        else
+        {
+            vector.resize(num_comp);
+            vector.assign(num_comp, default_value);
             pout() << "Parameter: " << name << " not found in parameter file. "
                    << "It has been set to its default value." << std::endl;
         }
