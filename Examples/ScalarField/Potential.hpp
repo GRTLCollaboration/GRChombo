@@ -48,7 +48,6 @@ class Potential
                   exp(- sqrt(2.0/3.0)* fabs(vars.phi) / Mp ) *
                   (1 - exp(- sqrt(2.0/3.0)* fabs(vars.phi) /Mp)) / Mp; // CJ
 
-        return out_phi;
     }
 };
 

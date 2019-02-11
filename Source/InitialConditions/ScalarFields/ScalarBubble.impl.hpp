@@ -48,6 +48,8 @@ data_t ScalarBubble::compute_phi(Coordinates<data_t> coords) const
                      exp(-pow(rr - m_params.r_zero / m_params.widthSF, 2.0));
                       // CJ: Bug?, should.be (rr - m_params.r_zero )/ m_params.widthSF
                       // CJ: why rr2?
+
+    return out_phi;
 }
 
 #endif /* SCALARBUBBLE_IMPL_HPP_ */
