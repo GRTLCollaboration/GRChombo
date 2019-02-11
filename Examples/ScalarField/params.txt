@@ -48,7 +48,7 @@ lapse_advec_coeff = 1 # 1 makes the lapse gauge 1+log slicing
 
 # Shift evolution coefficients
 shift_advec_coeff = 0 # Usually no advection for beta
-shift_Gamma_coeff = 0.75 # 
+shift_Gamma_coeff = 0.75 #
 eta = 1.0 # This is beta_driver, usually of order 1/M_ADM of spacetime
 
 # CCZ4 parameters
@@ -71,7 +71,7 @@ sigma = 0.3
 amplitudeSF = 0.01
 widthSF = 1.0
 r_zero = 5.0
-scalar_mass = 0.001
+scalar_mass =  0.25 * 1e-11 # 0.001
 # parameter for bubble centre - defaulted to center of grid
 # so only uncomment if you want to place it off center
 #center = 32 32 32
