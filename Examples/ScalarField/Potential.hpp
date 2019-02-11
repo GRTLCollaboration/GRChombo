@@ -42,11 +42,11 @@ class Potential
         dVdphi = pow(m_params.scalar_mass, 2.0) * vars.phi;
 
         // Starobinsky Higgs  // CJ
-        V_of_phi =  (0.25 * 1e-11) * pow(1.0*Mp, 4) *
-                   pow(1.0 - exp(-sqrt(2.0/3.0) * fabs(vars.phi)/Mp), 2); // CJ
-        dVdphi =  2 * m_params.scalar_mass * pow(1.0*Mp,4) * sqrt(2.0/3.0) *
-                  exp(- sqrt(2.0/3.0)* fabs(vars.phi) / Mp ) *
-                  (1 - exp(- sqrt(2.0/3.0)* fabs(vars.phi) /Mp)) / Mp; // CJ
+        V_of_phi =  (0.25 * 1e-11) * pow(1.0*Mp, 4.0) *
+                   pow(1.0 - exp(-sqrt(2.0/3.0) * abs(vars.phi)/Mp), 2.0); // CJ
+        dVdphi =  2.0 * m_params.scalar_mass * pow(1.0*Mp,4.0) * sqrt(2.0/3.0) *
+                  exp(- sqrt(2.0/3.0)* abs(vars.phi) / Mp ) *
+                  (1.0 - exp(- sqrt(2.0/3.0)* abs(vars.phi) /Mp)) / Mp; // CJ
 
     }
 };
