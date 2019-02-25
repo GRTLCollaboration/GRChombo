@@ -3,6 +3,11 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
+ /* Modifications from base_lab (example with Gauss)
+
+
+ */
+
 #include "parstream.H" //Gives us pout()
 #include <iostream>
 
@@ -28,8 +33,18 @@ int runGRChombo(int argc, char *argv[])
     // and an associated LevelFactory)
     GRAMR gr_amr;
     DefaultLevelFactory<ScalarFieldLevel> scalar_field_level_fact(gr_amr,
-                                                                  sim_params);     // CJ See DefaultLevelFactory.hpp
-    setupAMRObject(gr_amr, scalar_field_level_fact);                               // CJ See SetupFunctions.hpp
+                                                                  sim_params);
+    setupAMRObject(gr_amr, scalar_field_level_fact);
+
+
+    // // CJ try to print something
+    // pout() << "CJ: max_steps  " << sim_params.max_steps << std::endl;
+    // double mymaxsteps = 10000000;
+    // if (sim_params.max_steps < 100000) mymaxsteps = 7777777777;
+    // if (sim_params.max_steps >= 100000) mymaxsteps = sim_params.max_steps;
+    // pout() << "CJ:  mymaxsteps  " << mymaxsteps
+    //           <<  " , max_steps  "sim_params.max_steps << std::endl;
+    // pout() << "CJ:  stop_time  " << sim_params.stop_time << std::endl;
 
 
     // Engage! Run the evolution
