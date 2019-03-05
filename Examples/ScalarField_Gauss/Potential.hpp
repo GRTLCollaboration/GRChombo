@@ -14,14 +14,12 @@ class Potential
     struct params_t
     {
         double scalar_mass;
-    };
-
-    double MATH_PI = 3.14159265359; // CJ
-    double Mp= 1.0/sqrt(8.0*MATH_PI);  // CJ
+    }; 
 
 
   private:
     params_t m_params;
+    double Mp= 1.0/sqrt(8.0*M_PI);  // CJ
 
   public:
     //! The constructor
