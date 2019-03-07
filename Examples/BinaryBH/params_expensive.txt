@@ -39,7 +39,7 @@ dt_multiplier = 0.25
 stop_time = 1.0
 max_steps = 2
 
-nan_check = 0
+nan_check = 1
 
 #Lapse evolution
 lapse_advec_coeff = 0.0
