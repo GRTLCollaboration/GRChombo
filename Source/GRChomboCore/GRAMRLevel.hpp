@@ -143,6 +143,9 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     /// Specify which variables to write at plot intervals
     virtual void
     specificWritePlotHeader(std::vector<int> &plot_states) const {};
+
+    /// Things to do immediately after restart from checkpoint
+    virtual void postRestart() {}
 #endif
 
     virtual void specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
