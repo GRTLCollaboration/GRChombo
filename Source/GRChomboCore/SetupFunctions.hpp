@@ -128,8 +128,11 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     // set checkpoint and plot intervals and prefixes
     gr_amr.checkpointInterval(chombo_params.checkpoint_interval);
     gr_amr.checkpointPrefix(chombo_params.checkpoint_prefix);
-    gr_amr.plotInterval(chombo_params.plot_interval);
-    gr_amr.plotPrefix(chombo_params.plot_prefix);
+    if(chombo_params.plot_interval != 0)
+    {
+        gr_amr.plotInterval(chombo_params.plot_interval);
+        gr_amr.plotPrefix(chombo_params.plot_prefix);
+    }
 
     // Number of coarse time steps from one regridding to the next
     gr_amr.regridIntervals(chombo_params.regrid_interval);
