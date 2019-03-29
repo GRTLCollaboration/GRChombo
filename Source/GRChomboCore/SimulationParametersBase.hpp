@@ -14,11 +14,13 @@
 
 struct extraction_params_t
 {
-    double extraction_radius;
+    int num_extraction_radii;
+    std::vector<double> extraction_radii;
     std::array<double, CH_SPACEDIM> extraction_center;
     int num_points_phi;
     int num_points_theta;
-    int extraction_level;
+    std::vector<int> extraction_levels;
+    int min_extraction_level;
 };
 
 class SimulationParametersBase : public ChomboParameters
@@ -59,12 +61,40 @@ class SimulationParametersBase : public ChomboParameters
         origin.fill(coarsest_dx / 2.0);
 
         // Extraction params
-        pp.load("extraction_level", extraction_params.extraction_level, 0);
-        pp.load("extraction_radius", extraction_params.extraction_radius, 0.1);
+        pp.load("num_extraction_radii", extraction_params.num_extraction_radii,
+                1);
+        // Check for multiple extraction radii, otherwise load single
+        // radius/level (for backwards compatibility).
+        if (pp.contains("extraction_levels"))
+        {
+            pp.load("extraction_levels", extraction_params.extraction_levels,
+                    extraction_params.num_extraction_radii);
+        }
+        else
+        {
+            pp.load("extraction_level", extraction_params.extraction_levels, 1,
+                    0);
+        }
+        if (pp.contains("extraction_radii"))
+        {
+            pp.load("extraction_radii", extraction_params.extraction_radii,
+                    extraction_params.num_extraction_radii);
+        }
+        else
+        {
+            pp.load("extraction_radius", extraction_params.extraction_radii, 1,
+                    0.1);
+        }
         pp.load("num_points_phi", extraction_params.num_points_phi, 2);
         pp.load("num_points_theta", extraction_params.num_points_theta, 4);
         pp.load("extraction_center", extraction_params.extraction_center,
                 {0.5 * L, 0.5 * L, 0.5 * L});
+
+        // Work out the minimum extraction level
+        auto min_extraction_level_it =
+            std::min_element(extraction_params.extraction_levels.begin(),
+                             extraction_params.extraction_levels.end());
+        extraction_params.min_extraction_level = *(min_extraction_level_it);
     }
 
   public:
