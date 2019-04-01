@@ -86,19 +86,20 @@ class BoundaryConditions
     /// UserVariables.hpp The parity should be defined in the params file, and
     /// will be output to the pout files for checking at start/restart of
     /// simulation (It is only required for reflective boundary conditions.)
-    int get_vars_parity(int a_comp, int a_dir);
+    int get_vars_parity(int a_comp, int a_dir) const;
 
     /// static version used for initial output of boundary values
     static int get_vars_parity(int a_comp, int a_dir, params_t a_params);
 
     /// Fill the rhs boundary values appropriately based on the params set
-    void fill_boundary_rhs(const Side::LoHiSide a_side, GRLevelData &a_soln,
-                           GRLevelData &a_rhs);
+    void fill_boundary_rhs(const Side::LoHiSide a_side,
+                           const GRLevelData &a_soln, GRLevelData &a_rhs);
 
     /// Fill the boundary values appropriately based on the params set
     /// in the direction dir
-    void fill_boundary_rhs_dir(const Side::LoHiSide a_side, GRLevelData &a_soln,
-                               GRLevelData &a_rhs, const int dir);
+    void fill_boundary_rhs_dir(const Side::LoHiSide a_side,
+                               const GRLevelData &a_soln, GRLevelData &a_rhs,
+                               const int dir);
 
     /// Copy the boundary values from src to dest
     /// NB assumes same box layout of input and output data
@@ -139,6 +140,11 @@ class BoundaryConditions
 
     /// write out sommerfeld conditions
     static void write_sommerfeld_conditions(int idir, params_t a_params);
+
+    void fill_sommerfeld_cell(FArrayBox &rhs_box, const FArrayBox &soln_box,
+                              const IntVect iv) const;
+    void fill_reflective_cell(FArrayBox &rhs_box, const IntVect iv,
+                              const Side::LoHiSide a_side, const int dir) const;
 };
 
 /// This derived class is used by expand_grids_to_boundaries to grow the
