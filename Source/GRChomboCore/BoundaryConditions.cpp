@@ -28,101 +28,76 @@ void BoundaryConditions::set_vars_asymptotic_values(
     m_params.vars_asymptotic_values = vars_asymptotic_values;
 }
 
+void BoundaryConditions::write_reflective_conditions(int idir,
+                                                     params_t a_params)
+{
+    pout() << "The variables that are parity odd in this direction are : "
+           << endl;
+    for (int icomp = 0; icomp < NUM_VARS; icomp++)
+    {
+        int parity = get_vars_parity(icomp, idir, a_params);
+        if (parity == -1)
+        {
+            pout() << UserVariables::variable_names[icomp] << "    ";
+        }
+    }
+}
+
+void BoundaryConditions::write_sommerfeld_conditions(int idir,
+                                                     params_t a_params)
+{
+    pout() << "The non zero asymptotic values of the variables "
+              "in this direction are : "
+           << endl;
+    for (int icomp = 0; icomp < NUM_VARS; icomp++)
+    {
+        if (a_params.vars_asymptotic_values[icomp] != 0)
+        {
+            pout() << UserVariables::variable_names[icomp] << " = "
+                   << a_params.vars_asymptotic_values[icomp] << "    ";
+        }
+    }
+}
+
 /// write out boundary params (used during setup for debugging)
 void BoundaryConditions::write_boundary_conditions(params_t a_params)
 {
     pout() << "You are using non periodic boundary conditions." << endl;
     pout() << "The boundary params chosen are:  " << endl;
     pout() << "---------------------------------" << endl;
+
+    std::map<int, std::string> bc_names = {{STATIC_BC, "Static"},
+                                           {SOMMERFELD_BC, "Sommerfeld"},
+                                           {REFLECTIVE_BC, "Reflective"}};
     FOR1(idir)
     {
         if (!a_params.is_periodic[idir])
         {
+            pout() << "- " << bc_names[a_params.hi_boundary[idir]]
+                   << " boundaries in direction high " << idir << endl;
             // high directions
-            if (a_params.hi_boundary[idir] == STATIC_BC)
+            if (a_params.hi_boundary[idir] == REFLECTIVE_BC)
             {
-                pout() << "- Static boundaries in direction high " << idir
-                       << endl;
-            }
-            else if (a_params.hi_boundary[idir] == REFLECTIVE_BC)
-            {
-                pout() << "- Reflective boundaries in direction high " << idir
-                       << endl;
-                pout() << "The variables that are parity odd in this "
-                          "direction are : "
-                       << endl;
-                for (int icomp = 0; icomp < NUM_VARS; icomp++)
-                {
-                    int parity = get_vars_parity(icomp, idir, a_params);
-                    if (parity == -1)
-                    {
-                        pout()
-                            << UserVariables::variable_names[icomp] << "    ";
-                    }
-                }
-                pout() << endl;
+                write_reflective_conditions(idir, a_params);
             }
             else if (a_params.hi_boundary[idir] == SOMMERFELD_BC)
             {
-                pout() << "- Sommerfeld boundaries in direction high " << idir
-                       << endl;
-                pout() << "The non zero asymptotic values of the variables "
-                          "in this direction are : "
-                       << endl;
-                for (int icomp = 0; icomp < NUM_VARS; icomp++)
-                {
-                    if (a_params.vars_asymptotic_values[icomp] != 0)
-                    {
-                        pout()
-                            << UserVariables::variable_names[icomp] << " = "
-                            << a_params.vars_asymptotic_values[icomp] << "    ";
-                    }
-                }
-                pout() << endl;
+                write_sommerfeld_conditions(idir, a_params);
             }
+            pout() << endl;
 
             // low directions
-            if (a_params.lo_boundary[idir] == STATIC_BC)
+            pout() << "- " << bc_names[a_params.lo_boundary[idir]]
+                   << " boundaries in direction low " << idir << endl;
+            if (a_params.lo_boundary[idir] == REFLECTIVE_BC)
             {
-                pout() << "- Static boundaries in direction low " << idir
-                       << endl;
-            }
-            else if (a_params.lo_boundary[idir] == REFLECTIVE_BC)
-            {
-                pout() << "- Reflective boundaries in direction low " << idir
-                       << endl;
-                pout() << "The variables that are parity odd in this "
-                          "direction are : "
-                       << endl;
-                for (int icomp = 0; icomp < NUM_VARS; icomp++)
-                {
-                    int parity = get_vars_parity(icomp, idir, a_params);
-                    if (parity == -1)
-                    {
-                        pout()
-                            << UserVariables::variable_names[icomp] << "    ";
-                    }
-                }
-                pout() << endl;
+                write_reflective_conditions(idir, a_params);
             }
             else if (a_params.lo_boundary[idir] == SOMMERFELD_BC)
             {
-                pout() << "- Sommerfeld boundaries in direction low " << idir
-                       << endl;
-                pout() << "The non zero asymptotic values of the variables "
-                          "in this direction are : "
-                       << endl;
-                for (int icomp = 0; icomp < NUM_VARS; icomp++)
-                {
-                    if (a_params.vars_asymptotic_values[icomp] != 0)
-                    {
-                        pout()
-                            << UserVariables::variable_names[icomp] << " = "
-                            << a_params.vars_asymptotic_values[icomp] << "    ";
-                    }
-                }
-                pout() << endl;
+                write_sommerfeld_conditions(idir, a_params);
             }
+            pout() << endl;
         }
     }
     pout() << "---------------------------------" << endl;

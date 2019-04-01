@@ -132,6 +132,13 @@ class BoundaryConditions
                                     const DisjointBoxLayout &a_in_grids);
 
     friend class ExpandGridsToBoundaries;
+
+  private:
+    /// write out reflective conditions
+    static void write_reflective_conditions(int idir, params_t a_params);
+
+    /// write out sommerfeld conditions
+    static void write_sommerfeld_conditions(int idir, params_t a_params);
 };
 
 /// This derived class is used by expand_grids_to_boundaries to grow the
