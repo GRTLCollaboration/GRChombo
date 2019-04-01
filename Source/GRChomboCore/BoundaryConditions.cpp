@@ -3,6 +3,13 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
+#include <array>
+#include <map>
+#include <string>
+#include "FArrayBox.H"
+#include "IntVect.H"
+#include "RealVect.H"
+#include "ProblemDomain.H"
 #include "BoundaryConditions.hpp"
 
 /// define function sets members and is_defined set to true

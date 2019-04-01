@@ -9,6 +9,7 @@
 #include "GRInterval.hpp"
 #include "Tensor.hpp"
 #include "parstream.H" //Gives us pout()
+#include "UserVariables.hpp"
 
 namespace VarsTools
 {

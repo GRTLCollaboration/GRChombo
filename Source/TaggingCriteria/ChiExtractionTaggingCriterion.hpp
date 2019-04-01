@@ -7,6 +7,7 @@
 #define CHIEXTRACTIONTAGGINGCRITERION_HPP_
 
 #include "Cell.hpp"
+#include "Coordinates.hpp"
 #include "DimensionDefinitions.hpp"
 #include "FourthOrderDerivatives.hpp"
 #include "SimulationParametersBase.hpp"

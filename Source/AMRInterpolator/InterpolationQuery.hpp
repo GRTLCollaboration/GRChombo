@@ -6,14 +6,17 @@
 #ifndef INTERPOLATIONQUERY_HPP_
 #define INTERPOLATIONQUERY_HPP_
 
+#include <utility>
+#include <map>
+#include <vector>
 #include "Derivative.hpp"
 
 class InterpolationQuery
 {
   public:
-    typedef pair<int, double *> out_t;
-    typedef map<Derivative, std::vector<out_t>> comp_map_t;
-    typedef typename map<Derivative, std::vector<out_t>>::iterator iterator;
+    typedef std::pair<int, double *> out_t;
+    typedef std::map<Derivative, std::vector<out_t>> comp_map_t;
+    typedef typename std::map<Derivative, std::vector<out_t>>::iterator iterator;
 
     const int m_num_points;
 
@@ -45,7 +48,7 @@ class InterpolationQuery
         if (result == m_comps.end())
         {
             result = m_comps
-                         .insert(pair<Derivative, std::vector<out_t>>(
+                         .insert(std::pair<Derivative, std::vector<out_t>>(
                              deriv, std::vector<out_t>()))
                          .first;
         }
