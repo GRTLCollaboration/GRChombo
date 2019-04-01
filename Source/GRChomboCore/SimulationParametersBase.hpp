@@ -7,6 +7,7 @@
 #define SIMULATIONPARAMETERSBASE_HPP_
 
 // General includes
+#include "BoundaryConditions.hpp"
 #include "CCZ4.hpp"
 #include "ChomboParameters.hpp"
 #include "GRParmParse.hpp"
@@ -106,7 +107,6 @@ class SimulationParametersBase : public ChomboParameters
     std::array<double, CH_SPACEDIM> origin,
         dx; // location of coarsest origin and dx
 
-    // Collection of parameters necessary for the CCZ4 RHS and extraction
     CCZ4::params_t ccz4_params;
     extraction_params_t extraction_params;
 };

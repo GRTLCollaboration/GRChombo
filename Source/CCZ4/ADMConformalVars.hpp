@@ -100,6 +100,6 @@ struct Diff2VarsWithGauge : public Diff2VarsNoGauge<data_t>
                             shift);
     }
 };
-}
+} // namespace ADMConformalVars
 
 #endif /* ADMCONFORMALVARS_HPP_ */

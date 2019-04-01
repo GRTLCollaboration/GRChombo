@@ -59,6 +59,6 @@ Y_lm_t<data_t> spin_Y_lm(const data_t x, const double y, const double z,
 
     return Y_lm;
 }
-}
+} // namespace SphericalHarmonics
 
 #endif /* SPHERICALHARMONICS_HPP_ */
