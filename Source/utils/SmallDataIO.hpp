@@ -6,12 +6,12 @@
 #ifndef SMALLDATAIO_HPP_
 #define SMALLDATAIO_HPP_
 
-#include <iostream>
-#include <fstream>
-#include <string>
 #include <cstdio> // (MR): if it were up to me, I'd be using the C++17
-                  // filesystems library but I'm sure someone would tell me off
-                  // for not maintaining backwards compatability.
+#include <fstream>
+#include <iostream>
+#include <string>
+// filesystems library but I'm sure someone would tell me off
+// for not maintaining backwards compatability.
 
 //! A class for writing small data to a file in ASCII format.
 /*!
@@ -22,17 +22,16 @@
 */
 class SmallDataIO
 {
-public:
+  public:
     //! Choose between appending data to the same file or writing to a new file
     //! at each timestep
     enum Mode
     {
         APPEND, // data is APPENDed to the same file at each timestep
-        NEW // data is written to a NEW file at each timestep
+        NEW     // data is written to a NEW file at each timestep
     };
 
-
-protected:
+  protected:
     std::string m_filename; // this is the filename prefix in the NEW Mode
     const double m_dt;
     const double m_time;
@@ -42,13 +41,12 @@ protected:
     std::fstream m_file;
     int m_rank; // only rank 0 does the write out
 
-public:
+  public:
     //! Constructor (opens file)
     SmallDataIO(std::string a_filename, double a_dt, double a_time,
-                double a_restart_time, Mode a_mode) :
-                m_filename(a_filename), m_dt(a_dt), m_time(a_time),
-                m_restart_time(a_restart_time),
-                m_mode(a_mode)
+                double a_restart_time, Mode a_mode)
+        : m_filename(a_filename), m_dt(a_dt), m_time(a_time),
+          m_restart_time(a_restart_time), m_mode(a_mode)
     {
 #ifdef CH_MPI
         MPI_Comm_rank(Chombo_MPI::comm, &m_rank);
@@ -79,8 +77,7 @@ public:
             m_file.open(m_filename, file_openmode);
             if (!m_file)
             {
-                MayDay::Error(
-                    "SmallDataIO::error opening file for writing");
+                MayDay::Error("SmallDataIO::error opening file for writing");
             }
         }
     }
@@ -98,31 +95,31 @@ public:
     //! Use this for 0D or 1D data, where the first column is either the time
     //! or another coordinate whose name should be provided in
     //! a_pre_header_string.
-    void write_header_line(const std::vector<std::string>& a_header_strings,
-                           const std::string& a_pre_header_string = "time");
+    void write_header_line(const std::vector<std::string> &a_header_strings,
+                           const std::string &a_pre_header_string = "time");
 
     //! Writes a header line
     //! Use this for 1D or 2D data when the first two or more columns are
     //! coordinates whose names should be provided in the vector of strings
     //! a_pre_header_strings
-    void write_header_line(
-        const std::vector<std::string>& a_header_strings,
-        const std::vector<std::string>& a_pre_header_strings);
+    void
+    write_header_line(const std::vector<std::string> &a_header_strings,
+                      const std::vector<std::string> &a_pre_header_strings);
 
     //! Writes a data line
     //! Use this for 0D or 1D data, where the first column is either the time or
     //! another coordinate.
-    void write_data_line(const std::vector<double>& a_data,
+    void write_data_line(const std::vector<double> &a_data,
                          const double a_coord);
 
     //! Writes a data line for a specific time.
-    void write_time_data_line(const std::vector<double>& a_data);
+    void write_time_data_line(const std::vector<double> &a_data);
 
     //! Writes a data line
     //! Use this for 1D or 2D data when the first two or more columns are
     //! coordinates.
-    void write_data_line(const std::vector<double>& a_data,
-                         const std::vector<double>& a_coords);
+    void write_data_line(const std::vector<double> &a_data,
+                         const std::vector<double> &a_coords);
 
     //! This just adds a double line break to the file.
     void line_break();
@@ -130,7 +127,6 @@ public:
     //! if restarting from an earlier checkpoint file, this function removes
     //! any time data that will be replaced.
     void remove_duplicate_time_data();
-
 };
 
 #include "SmallDataIO.impl.hpp"

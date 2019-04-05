@@ -75,7 +75,7 @@ inline void WeylExtraction::execute_query(
     write_integral(integrals22.first, integrals22.second, "Weyl_integral_22");
 
     // This generates a lot of output so should usually be commented out
-    write_extraction("ExtractionOut_", interp_re_part, interp_im_part);
+    // write_extraction("ExtractionOut_", interp_re_part, interp_im_part);
 }
 
 //! integrate over a spherical shell with given harmonics for each extraction
@@ -163,7 +163,7 @@ WeylExtraction::write_integral(const std::vector<double> a_integral_re,
 {
     CH_TIME("WeylExtraction::write_integral");
     SmallDataIO integral_file(a_filename, m_dt, m_time, m_restart_time,
-                SmallDataIO::APPEND);
+                              SmallDataIO::APPEND);
 
     // remove any duplicate data if this is a restart
     integral_file.remove_duplicate_time_data();
@@ -178,10 +178,10 @@ WeylExtraction::write_integral(const std::vector<double> a_integral_re,
         int iintegral1 = iintegral + 1;
         int iradius = iintegral / 2;
         int iradius1 = iintegral1 / 2;
-        header1_strings[iintegral]  = "integral Re";
+        header1_strings[iintegral] = "integral Re";
         header1_strings[iintegral1] = "integral Im";
-        header2_strings[iintegral1] = header2_strings[iintegral]
-            = std::to_string(m_params.extraction_radii[iradius]);
+        header2_strings[iintegral1] = header2_strings[iintegral] =
+            std::to_string(m_params.extraction_radii[iradius]);
         data_for_writing[iintegral] = a_integral_re[iradius];
         data_for_writing[iintegral1] = a_integral_im[iradius1];
     }
@@ -203,20 +203,19 @@ WeylExtraction::write_extraction(std::string a_file_prefix,
 {
     CH_TIME("WeylExtraction::write_extraction");
     SmallDataIO extraction_file(a_file_prefix, m_dt, m_time, m_restart_time,
-                SmallDataIO::NEW);
+                                SmallDataIO::NEW);
 
-    for (int iradius = 0; iradius < m_params.num_extraction_radii;
-                     ++iradius)
+    for (int iradius = 0; iradius < m_params.num_extraction_radii; ++iradius)
     {
         // Write headers
         std::vector<std::string> header1_strings = {
             "time : " + std::to_string(m_time) + ",",
             "r = " + std::to_string(m_params.extraction_radii[iradius])};
         extraction_file.write_header_line(header1_strings, "");
-        std::vector<std::string> components =
-                {UserVariables::variable_names[m_re_comp],
-                UserVariables::variable_names[m_im_comp]};
-        std::vector<std::string> coords = {"theta","phi"};
+        std::vector<std::string> components = {
+            UserVariables::variable_names[m_re_comp],
+            UserVariables::variable_names[m_im_comp]};
+        std::vector<std::string> coords = {"theta", "phi"};
         extraction_file.write_header_line(components, coords);
 
         // Now the data

@@ -10,9 +10,9 @@
 #include "InterpolationQuery.hpp"
 #include "Lagrange.hpp"
 #include "SimulationParametersBase.hpp"
+#include "SmallDataIO.hpp" // for writing data
 #include "SphericalHarmonics.hpp"
 #include "UserVariables.hpp" // Needs c_Weyl_Re etc
-#include "SmallDataIO.hpp" // for writing data
 //!  The class allows extraction of the values of the Weyl scalar components on
 //!  spherical shells at specified radii, and integration over those shells
 /*!
