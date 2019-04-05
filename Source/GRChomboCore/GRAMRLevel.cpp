@@ -717,9 +717,16 @@ void GRAMRLevel::writePlotLevel(HDF5Handle &a_handle) const
 
         plot_data.exchange(plot_data.interval());
 
+        // only need to write ghosts when non periodic BCs exist
+        IntVect ghost_vector = IntVect::Zero;
+        if (m_p.nonperiodic_boundaries_exist)
+        {
+            ghost_vector = m_num_ghosts * IntVect::Unit;
+        }
+
         // Write the data for this level
         write(a_handle, levelGrids);
-        write(a_handle, plot_data, "data");
+        write(a_handle, plot_data, "data", ghost_vector);
     }
 }
 
