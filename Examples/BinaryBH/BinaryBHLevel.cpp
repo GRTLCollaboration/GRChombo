@@ -96,7 +96,8 @@ void BinaryBHLevel::specificPostTimeStep()
         {
             // Now refresh the interpolator and do the interpolation
             m_gr_amr.m_interpolator->refresh();
-            WeylExtraction my_extraction(m_p.extraction_params, m_dt, m_time);
+            WeylExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
+                                         m_restart_time);
             my_extraction.execute_query(m_gr_amr.m_interpolator);
         }
     }

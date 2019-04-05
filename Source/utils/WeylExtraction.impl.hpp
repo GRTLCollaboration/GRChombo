@@ -74,10 +74,8 @@ inline void WeylExtraction::execute_query(
     write_integral(integrals21.first, integrals21.second, "Weyl_integral_21");
     write_integral(integrals22.first, integrals22.second, "Weyl_integral_22");
 
-    // This generates a lot of output, and it is usually better to output plot
-    // files so for now it is commented out
-    // write_extraction("ExtractionOut_", interp_re_part,
-    //                  interp_im_part);
+    // This generates a lot of output so should usually be commented out
+    write_extraction("ExtractionOut_", interp_re_part, interp_im_part);
 }
 
 //! integrate over a spherical shell with given harmonics for each extraction
@@ -164,64 +162,36 @@ WeylExtraction::write_integral(const std::vector<double> a_integral_re,
                                std::string a_filename) const
 {
     CH_TIME("WeylExtraction::write_integral");
-    int rank;
-#ifdef CH_MPI
-    MPI_Comm_rank(Chombo_MPI::comm, &rank);
-#else
-    rank = 0;
-#endif
-    // only rank 0 does the write out
-    if (rank == 0)
+    SmallDataIO integral_file(a_filename, m_dt, m_time, m_restart_time,
+                SmallDataIO::APPEND);
+
+    // remove any duplicate data if this is a restart
+    integral_file.remove_duplicate_time_data();
+
+    // Make header strings and vector of data for writing
+    std::vector<std::string> header1_strings(2 * m_params.num_extraction_radii);
+    std::vector<std::string> header2_strings(2 * m_params.num_extraction_radii);
+    std::vector<double> data_for_writing(2 * m_params.num_extraction_radii);
+    for (int iintegral = 0; iintegral < 2 * m_params.num_extraction_radii;
+         iintegral += 2)
     {
-        std::ofstream outfile;
-        // overwrite file if this is the first timestep, otherwise append.
-        if (m_time == m_dt)
-        {
-            outfile.open(a_filename);
-        }
-        else
-        {
-            outfile.open(a_filename, std::ios_base::app);
-        }
-        if (!outfile)
-        {
-            MayDay::Error(
-                "WeylExtraction::write_integral: error opening output file");
-        }
-
-        // Header data at first timestep
-        if (m_time == m_dt)
-        {
-            outfile << "#" << std::setw(9) << "time";
-            for (int iradius = 0; iradius < m_params.num_extraction_radii;
-                 ++iradius)
-            {
-                outfile << std::setw(20) << "integral Re";
-                outfile << std::setw(20) << "integral Im";
-            }
-            outfile << "\n";
-            outfile << "#" << std::setw(9) << "r =";
-            for (int iintegral = 0;
-                 iintegral < 2 * m_params.num_extraction_radii; ++iintegral)
-            {
-                outfile << std::setw(20)
-                        << m_params.extraction_radii[iintegral / 2];
-            }
-            outfile << "\n";
-        }
-
-        // Now the data
-        outfile << std::fixed << std::setw(10) << m_time;
-        outfile << std::scientific << std::setprecision(10);
-        for (int iradius = 0; iradius < m_params.num_extraction_radii;
-             ++iradius)
-        {
-            outfile << std::setw(20) << a_integral_re[iradius];
-            outfile << std::setw(20) << a_integral_im[iradius];
-        }
-        outfile << std::endl;
-        outfile.close();
+        int iintegral1 = iintegral + 1;
+        int iradius = iintegral / 2;
+        int iradius1 = iintegral1 / 2;
+        header1_strings[iintegral]  = "integral Re";
+        header1_strings[iintegral1] = "integral Im";
+        header2_strings[iintegral1] = header2_strings[iintegral]
+            = std::to_string(m_params.extraction_radii[iradius]);
+        data_for_writing[iintegral] = a_integral_re[iradius];
+        data_for_writing[iintegral1] = a_integral_im[iradius1];
     }
+
+    // write headers (note this only does something on the first timestep)
+    integral_file.write_header_line(header1_strings);
+    integral_file.write_header_line(header2_strings, "r = ");
+
+    // write data
+    integral_file.write_time_data_line(data_for_writing);
 }
 
 //! Write out the result of the extraction in phi and theta at each timestep for
@@ -232,61 +202,38 @@ WeylExtraction::write_extraction(std::string a_file_prefix,
                                  const std::vector<double> a_im_part) const
 {
     CH_TIME("WeylExtraction::write_extraction");
-    int rank;
-#ifdef CH_MPI
-    MPI_Comm_rank(Chombo_MPI::comm, &rank);
-#else
-    rank = 0;
-#endif
-    // only rank 0 does the write out
-    if (rank == 0)
+    SmallDataIO extraction_file(a_file_prefix, m_dt, m_time, m_restart_time,
+                SmallDataIO::NEW);
+
+    for (int iradius = 0; iradius < m_params.num_extraction_radii;
+                     ++iradius)
     {
-        // set up file names and component names
-        int step = std::round(m_time / m_dt);
-        std::string file_str = a_file_prefix + std::to_string(step);
-        std::string comp_str_re = UserVariables::variable_names[m_re_comp];
-        std::string comp_str_im = UserVariables::variable_names[m_im_comp];
+        // Write headers
+        std::vector<std::string> header1_strings = {
+            "time : " + std::to_string(m_time) + ",",
+            "r = " + std::to_string(m_params.extraction_radii[iradius])};
+        extraction_file.write_header_line(header1_strings, "");
+        std::vector<std::string> components =
+                {UserVariables::variable_names[m_re_comp],
+                UserVariables::variable_names[m_im_comp]};
+        std::vector<std::string> coords = {"theta","phi"};
+        extraction_file.write_header_line(components, coords);
 
-        // write out extraction data to a separate file at each step
-        std::ofstream outfile;
-        outfile.open(file_str);
-        if (!outfile)
+        // Now the data
+        for (int idx = iradius * m_num_points;
+             idx < (iradius + 1) * m_num_points; ++idx)
         {
-            MayDay::Error(
-                "WeylExtraction::write_extraction: error opening output file");
-        }
+            int itheta =
+                (idx - iradius * m_num_points) / m_params.num_points_phi;
+            int iphi = idx % m_params.num_points_phi;
+            // don't put a point at z = 0
+            double theta = (itheta + 0.5) * m_dtheta;
+            double phi = iphi * m_dphi;
 
-        // header data
-        for (int iradius = 0; iradius < m_params.num_extraction_radii;
-             ++iradius)
-        {
-            outfile << "# time : " << m_time << ", r = ";
-            outfile << m_params.extraction_radii[iradius] << "\n";
-            outfile << "#" << std::setw(11) << "theta";
-            outfile << std::setw(12) << "phi";
-            outfile << std::setw(20) << comp_str_re;
-            outfile << std::setw(20) << comp_str_im << "\n";
-
-            // Now the data
-            for (int idx = iradius * m_num_points;
-                 idx < (iradius + 1) * m_num_points; ++idx)
-            {
-                int itheta =
-                    (idx - iradius * m_num_points) / m_params.num_points_phi;
-                int iphi = idx % m_params.num_points_phi;
-                // don't put a point at z = 0
-                double theta = (itheta + 0.5) * m_dtheta;
-                double phi = iphi * m_dphi;
-                outfile << std::fixed << std::setprecision(7);
-                outfile << std::setw(12) << theta;
-                outfile << std::setw(12) << phi;
-                outfile << std::scientific << std::setprecision(10);
-                outfile << std::setw(20) << a_re_part[idx];
-                outfile << std::setw(20) << a_im_part[idx] << "\n";
-            }
-            outfile << "\n\n";
+            extraction_file.write_data_line({a_re_part[idx], a_im_part[idx]},
+                                            {theta, phi});
         }
-        outfile.close();
+        extraction_file.line_break();
     }
 }
 
