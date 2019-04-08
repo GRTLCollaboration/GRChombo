@@ -36,12 +36,12 @@ void SmallDataIO::write_header_line(
             if (istr == 0)
             {
                 m_file << std::setw(m_coords_width - 1)
-                << a_pre_header_strings[istr];
+                       << a_pre_header_strings[istr];
             }
             else
             {
                 m_file << std::setw(m_coords_width)
-                << a_pre_header_strings[istr];
+                       << a_pre_header_strings[istr];
             }
         }
         for (std::string header_item : a_header_strings)
@@ -107,8 +107,8 @@ void SmallDataIO::remove_duplicate_time_data()
             {
                 temp_file << line << "\n";
             }
-            else if (std::stod(line.substr(0, m_coords_width))
-                    <= m_restart_time + epsilon)
+            else if (std::stod(line.substr(0, m_coords_width)) <=
+                     m_restart_time + epsilon)
             {
                 temp_file << line << "\n";
             }

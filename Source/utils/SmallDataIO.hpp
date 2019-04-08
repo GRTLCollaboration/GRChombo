@@ -76,8 +76,8 @@ class SmallDataIO
                     // overwrite any existing file if starting from time 0
                     file_openmode = std::ios::out;
                 }
-                else if (m_restart_time > 0.
-                         && m_time < m_restart_time + m_dt + epsilon)
+                else if (m_restart_time > 0. &&
+                         m_time < m_restart_time + m_dt + epsilon)
                 {
                     // allow reading in thie restart case so that duplicate time
                     // data may be removed
@@ -114,9 +114,8 @@ class SmallDataIO
     }
 
     // disable default copy constructor and assignment operator
-    SmallDataIO(const SmallDataIO&) = delete;
-    SmallDataIO& operator=(const SmallDataIO&) = delete;
-
+    SmallDataIO(const SmallDataIO &) = delete;
+    SmallDataIO &operator=(const SmallDataIO &) = delete;
 
     //! Writes a header_line
     //! Use this for 0D or 1D data, where the first column is either the time

@@ -175,8 +175,10 @@ WeylExtraction::write_integral(const std::vector<double> a_integral_re,
     if (m_time == m_dt)
     {
         // make header strings
-        std::vector<std::string> header1_strings(2 * m_params.num_extraction_radii);
-        std::vector<std::string> header2_strings(2 * m_params.num_extraction_radii);
+        std::vector<std::string> header1_strings(2 *
+                                                 m_params.num_extraction_radii);
+        std::vector<std::string> header2_strings(2 *
+                                                 m_params.num_extraction_radii);
         for (int iintegral = 0; iintegral < 2 * m_params.num_extraction_radii;
              iintegral += 2)
         {
