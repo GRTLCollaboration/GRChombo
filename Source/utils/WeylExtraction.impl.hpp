@@ -74,7 +74,7 @@ inline void WeylExtraction::execute_query(
     write_integral(integrals21.first, integrals21.second, "Weyl_integral_21");
     write_integral(integrals22.first, integrals22.second, "Weyl_integral_22");
 
-    // This generates a lot of output so should usually be commented out
+    // This generates a lot of output so is commented out
     // write_extraction("ExtractionOut_", interp_re_part, interp_im_part);
 }
 
@@ -162,33 +162,40 @@ WeylExtraction::write_integral(const std::vector<double> a_integral_re,
                                std::string a_filename) const
 {
     CH_TIME("WeylExtraction::write_integral");
+    // open file for writing
     SmallDataIO integral_file(a_filename, m_dt, m_time, m_restart_time,
                               SmallDataIO::APPEND);
 
     // remove any duplicate data if this is a restart
+    // note that this only does something if this is the first timestep after
+    // a restart
     integral_file.remove_duplicate_time_data();
 
-    // Make header strings and vector of data for writing
-    std::vector<std::string> header1_strings(2 * m_params.num_extraction_radii);
-    std::vector<std::string> header2_strings(2 * m_params.num_extraction_radii);
-    std::vector<double> data_for_writing(2 * m_params.num_extraction_radii);
-    for (int iintegral = 0; iintegral < 2 * m_params.num_extraction_radii;
-         iintegral += 2)
+    // need to write headers if this is the first timestep
+    if (m_time == m_dt)
     {
-        int iintegral1 = iintegral + 1;
-        int iradius = iintegral / 2;
-        int iradius1 = iintegral1 / 2;
-        header1_strings[iintegral] = "integral Re";
-        header1_strings[iintegral1] = "integral Im";
-        header2_strings[iintegral1] = header2_strings[iintegral] =
-            std::to_string(m_params.extraction_radii[iradius]);
-        data_for_writing[iintegral] = a_integral_re[iradius];
-        data_for_writing[iintegral1] = a_integral_im[iradius1];
-    }
+        // make header strings and vector of data for writing
+        std::vector<std::string> header1_strings(2 * m_params.num_extraction_radii);
+        std::vector<std::string> header2_strings(2 * m_params.num_extraction_radii);
+        std::vector<double> data_for_writing(2 * m_params.num_extraction_radii);
+        for (int iintegral = 0; iintegral < 2 * m_params.num_extraction_radii;
+             iintegral += 2)
+        {
+            int iintegral1 = iintegral + 1;
+            int iradius = iintegral / 2;
+            int iradius1 = iintegral1 / 2;
+            header1_strings[iintegral] = "integral Re";
+            header1_strings[iintegral1] = "integral Im";
+            header2_strings[iintegral1] = header2_strings[iintegral] =
+                std::to_string(m_params.extraction_radii[iradius]);
+            data_for_writing[iintegral] = a_integral_re[iradius];
+            data_for_writing[iintegral1] = a_integral_im[iradius1];
+        }
 
-    // write headers (note this only does something on the first timestep)
-    integral_file.write_header_line(header1_strings);
-    integral_file.write_header_line(header2_strings, "r = ");
+        // write headers
+        integral_file.write_header_line(header1_strings);
+        integral_file.write_header_line(header2_strings, "r = ");
+    }
 
     // write data
     integral_file.write_time_data_line(data_for_writing);

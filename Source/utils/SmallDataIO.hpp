@@ -6,12 +6,13 @@
 #ifndef SMALLDATAIO_HPP_
 #define SMALLDATAIO_HPP_
 
-#include <cstdio> // (MR): if it were up to me, I'd be using the C++17
+// (MR): if it were up to me, I'd be using the C++17 filesystems library
+// instead of cstdio but I'm sure someone would tell me off for not maintaining
+// backwards compatability.
+#include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <string>
-// filesystems library but I'm sure someone would tell me off
-// for not maintaining backwards compatability.
 
 //! A class for writing small data to a file in ASCII format.
 /*!
@@ -38,15 +39,26 @@ class SmallDataIO
     const double m_restart_time;
     int m_step;
     const Mode m_mode;
+    const int m_data_precision;
+    const int m_data_width;
+    const int m_coords_precision;
+    const int m_coords_width;
     std::fstream m_file;
     int m_rank; // only rank 0 does the write out
 
   public:
     //! Constructor (opens file)
     SmallDataIO(std::string a_filename, double a_dt, double a_time,
-                double a_restart_time, Mode a_mode)
+                double a_restart_time, Mode a_mode, int a_data_precision = 10,
+                int a_coords_precision = 7)
         : m_filename(a_filename), m_dt(a_dt), m_time(a_time),
-          m_restart_time(a_restart_time), m_mode(a_mode)
+          m_restart_time(a_restart_time), m_mode(a_mode),
+          m_data_precision(a_data_precision),
+          // data columns need extra space for scientific notation
+          // compared to coords columns
+          m_data_width(m_data_precision + 10),
+          m_coords_precision(a_coords_precision),
+          m_coords_width(m_coords_precision + 5)
     {
 #ifdef CH_MPI
         MPI_Comm_rank(Chombo_MPI::comm, &m_rank);
@@ -60,11 +72,20 @@ class SmallDataIO
             {
                 if (m_time == m_dt)
                 {
+                    // overwrite any existing file if starting from time 0
                     file_openmode = std::ios::out;
+                }
+                else if (m_restart_time > 0.
+                         && m_time < m_restart_time + m_dt + epsilon)
+                {
+                    // allow reading in thie restart case so that duplicate time
+                    // data may be removed
+                    file_openmode = std::ios::app | std::ios::in;
                 }
                 else
                 {
-                    file_openmode = std::ios::app | std::ios::in;
+                    // default mode is just appending to existing file
+                    file_openmode = std::ios::app;
                 }
             }
             else

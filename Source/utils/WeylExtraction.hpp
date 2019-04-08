@@ -37,7 +37,7 @@ class WeylExtraction
   public:
     //! The constructor
     WeylExtraction(extraction_params_t a_params, double a_dt, double a_time,
-                   double a_restart_time)
+                   double a_restart_time = 0.0)
         : m_params(a_params), m_dt(a_dt), m_time(a_time),
           m_restart_time(a_restart_time),
           m_num_points(m_params.num_points_phi * m_params.num_points_theta),
