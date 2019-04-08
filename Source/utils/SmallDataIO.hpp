@@ -60,6 +60,7 @@ class SmallDataIO
           m_coords_precision(a_coords_precision),
           m_coords_width(m_coords_precision + 5)
     {
+        constexpr double epsilon = 1.0e-8;
 #ifdef CH_MPI
         MPI_Comm_rank(Chombo_MPI::comm, &m_rank);
 #else
@@ -111,6 +112,11 @@ class SmallDataIO
             m_file.close();
         }
     }
+
+    // disable default copy constructor and assignment operator
+    SmallDataIO(const SmallDataIO&) = delete;
+    SmallDataIO& operator=(const SmallDataIO&) = delete;
+
 
     //! Writes a header_line
     //! Use this for 0D or 1D data, where the first column is either the time

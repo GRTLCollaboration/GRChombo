@@ -174,27 +174,34 @@ WeylExtraction::write_integral(const std::vector<double> a_integral_re,
     // need to write headers if this is the first timestep
     if (m_time == m_dt)
     {
-        // make header strings and vector of data for writing
+        // make header strings
         std::vector<std::string> header1_strings(2 * m_params.num_extraction_radii);
         std::vector<std::string> header2_strings(2 * m_params.num_extraction_radii);
-        std::vector<double> data_for_writing(2 * m_params.num_extraction_radii);
         for (int iintegral = 0; iintegral < 2 * m_params.num_extraction_radii;
              iintegral += 2)
         {
             int iintegral1 = iintegral + 1;
             int iradius = iintegral / 2;
-            int iradius1 = iintegral1 / 2;
             header1_strings[iintegral] = "integral Re";
             header1_strings[iintegral1] = "integral Im";
             header2_strings[iintegral1] = header2_strings[iintegral] =
                 std::to_string(m_params.extraction_radii[iradius]);
-            data_for_writing[iintegral] = a_integral_re[iradius];
-            data_for_writing[iintegral1] = a_integral_im[iradius1];
         }
 
         // write headers
         integral_file.write_header_line(header1_strings);
         integral_file.write_header_line(header2_strings, "r = ");
+    }
+
+    // make vector of data for writing
+    std::vector<double> data_for_writing(2 * m_params.num_extraction_radii);
+    for (int iintegral = 0; iintegral < 2 * m_params.num_extraction_radii;
+         iintegral += 2)
+    {
+        int iintegral1 = iintegral + 1;
+        int iradius = iintegral / 2;
+        data_for_writing[iintegral] = a_integral_re[iradius];
+        data_for_writing[iintegral1] = a_integral_im[iradius];
     }
 
     // write data
@@ -216,7 +223,7 @@ WeylExtraction::write_extraction(std::string a_file_prefix,
     {
         // Write headers
         std::vector<std::string> header1_strings = {
-            "time : " + std::to_string(m_time) + ",",
+            "time = " + std::to_string(m_time) + ",",
             "r = " + std::to_string(m_params.extraction_radii[iradius])};
         extraction_file.write_header_line(header1_strings, "");
         std::vector<std::string> components = {
