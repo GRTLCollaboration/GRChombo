@@ -108,6 +108,8 @@ class ChomboParameters
         pp.load("plot_prefix", plot_prefix);
         pp.load("stop_time", stop_time, 1.0);
         pp.load("max_steps", max_steps, 1000000);
+        pp.load("write_plot_ghosts", write_plot_ghosts,
+                nonperiodic_boundaries_exist);
 
         // alias the weird chombo names to something more descriptive
         // for these box params, and default to some reasonable values
@@ -148,6 +150,7 @@ class ChomboParameters
     int max_grid_size, block_factor;        // max and min box sizes
     double fill_ratio; // determines how fussy the regridding is about tags
     std::string checkpoint_prefix, plot_prefix; // naming of files
+    bool write_plot_ghosts;
 
     // Boundary conditions
     std::array<bool, CH_SPACEDIM> isPeriodic;     // periodicity

@@ -719,7 +719,7 @@ void GRAMRLevel::writePlotLevel(HDF5Handle &a_handle) const
 
         // only need to write ghosts when non periodic BCs exist
         IntVect ghost_vector = IntVect::Zero;
-        if (m_p.nonperiodic_boundaries_exist)
+        if (m_p.write_plot_ghosts)
         {
             ghost_vector = m_num_ghosts * IntVect::Unit;
         }
