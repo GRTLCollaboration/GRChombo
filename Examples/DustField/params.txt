@@ -1,0 +1,83 @@
+#Params for runtime inputs
+
+verbosity = 0
+chk_prefix = ScalarField_
+plot_prefix = ScalarFieldp_
+#restart_file = ScalarField_000060.3d.hdf5
+
+# Set up grid spacings and regrid params
+# NB - the N values need to be multiples of block_factor
+N1 = 32
+N2 = 32
+N3 = 32
+
+# Length of longest box side, dx_coarsest = L/N(max)
+# NB if non cubic, this determines dx for all sides
+L =  64
+
+# Regridding
+# Thresholds on the change across a cell which prompts regrid
+regrid_threshold_K = 0.2
+regrid_threshold_phi = 0.1
+
+# Level data
+# Maximum number of times you can regrid above coarsest level
+max_level = 4 # There are (max_level+1) grids, so min is zero
+# Frequency of regridding at each level
+# Need one for each level, ie max_level+1 items
+# Generally you do not need to regrid frequently on every level
+regrid_interval = 50 50 5 5 5 5 5
+# Max and min box size - for load balancing
+max_box_size = 16
+min_box_size = 16
+#Periodicity
+isPeriodic = 1 1 1
+
+# Set up time steps
+# dt will be dx*dt_multiplier on each grid level
+# HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
+checkpoint_interval = 20
+plot_interval = 5
+dt_multiplier = 0.25
+stop_time = 50.0
+
+#Lapse evolution    # For DUST keep all zero for now (synch gauge)
+lapse_power = 0.0
+lapse_coeff = 0.0
+lapse_advec_coeff = 0.0 # 1 makes the lapse gauge 1+log slicing
+
+# Shift evolution coefficients
+shift_advec_coeff = 0 # Usually no advection for beta
+shift_Gamma_coeff = 0 #
+eta = 0.0 # This is beta_driver, usually of order 1/M_ADM of spacetime
+
+# CCZ4 parameters
+# if using BSSN the kappa values should be zero
+formulation = 1  # 1 for BSSN, 0 for CCZ4
+kappa1 = 0
+kappa2 = 0
+kappa3 = 0
+covariantZ4 = 0 # 0: default. 1: dampk1 -> dampk1/lapse
+
+# coefficient for KO numerical dissipation
+# NB must be less than 0.5 for stability
+sigma = 0.3
+
+# Change the gravitational constant of the Universe!
+# Default is 1.0, for standard geometric units
+# G_Newton = 1.0
+
+# SF Initial data
+amplitudeSF = 0.01
+bkgSF = 4.0
+widthSF = 5.0
+r_zero =  0.0
+# scalar_mass =  0.25 * 1e-11 # 0.001
+# parameter for bubble centre - defaulted to center of grid
+# so only uncomment if you want to place it off center
+#center = 32 32 32
+
+# Relaxation paramters
+# how long and how fast to relax
+relaxtime = 20.0
+relaxspeed = 0.01
