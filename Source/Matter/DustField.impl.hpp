@@ -132,7 +132,7 @@ void DustField<potential_t>::matter_rhs_excl_potential(
     const auto chris = compute_christoffel(d1.h, h_UU);
 
     // evolution equations for dust field and (minus) its conjugate momentum
-    rhs_sf.phi = vars.K * vars_sf.rho + advec_sf.phi;
+    rhs_sf.phi = vars.K * vars.phi + advec_sf.phi;
     // rhs_sf.Pi = vars.lapse * vars.K * vars_sf.Pi + advec_sf.Pi;  // CJ Delete
 
     // FOR2(i, j)
