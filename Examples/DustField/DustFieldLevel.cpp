@@ -23,7 +23,7 @@
 #include "ChiRelaxation.hpp"
 #include "ComputePack.hpp"
 #include "Potential.hpp"
-// #include "ScalarGauss.hpp" // CJ this does not exist, but I don't want to create the I.C. in the FieldLevel
+#include "ScalarGauss.hpp" // CJ this does not exist, but I don't want to create the I.C. in the FieldLevel
 #include "DustField.hpp"
 #include "SetValue.hpp"
 

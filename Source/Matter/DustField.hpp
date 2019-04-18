@@ -42,14 +42,14 @@ template <class potential_t = DefaultPotential> class DustField
     template <class data_t> struct SFObject
     {
         data_t phi;
-        // data_t Pi;   // CJ Delete
+        data_t Pi;   // CJ Delete
     };
 
     //! Structure containing the rhs variables for the matter fields
     template <class data_t> struct Vars
     {
         data_t phi;
-        // data_t Pi;   // CJ Delete
+        data_t Pi;   // CJ Delete
 
         /// Defines the mapping between members of Vars and Chombo grid
         /// variables (enum in User_Variables)
@@ -57,7 +57,7 @@ template <class potential_t = DefaultPotential> class DustField
         void enum_mapping(mapping_function_t mapping_function)
         {
             VarsTools::define_enum_mapping(mapping_function, c_phi, phi);
-            // VarsTools::define_enum_mapping(mapping_function, c_Pi, Pi); // CJ Delete
+            VarsTools::define_enum_mapping(mapping_function, c_Pi, Pi); // CJ Delete
         }
     };
 

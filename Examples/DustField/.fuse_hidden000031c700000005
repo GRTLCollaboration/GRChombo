@@ -38,8 +38,6 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("widthSF", initial_params.widthSF);
         pp.load("r_zero", initial_params.r_zero);
         pp.load("bkgSF", initial_params.bkgSF); // CJ background SF
-        pp.load("kfactor", initial_params.kfactor, 0.0); // CJ background SF
-        // pp.load("kfactor", initial_params.kfactor, 0.08683215054); // CJ background SF
         // pp.load("scalar_mass", potential_params.scalar_mass);  // CJ not appliclable
 
         // Relaxation params

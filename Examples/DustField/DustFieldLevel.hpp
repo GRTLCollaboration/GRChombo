@@ -10,7 +10,7 @@
 #include "GRAMRLevel.hpp"
 // Problem specific includes
 #include "Potential.hpp"
-#include "ScalarField.hpp"
+#include "DustField.hpp"
 
 //!  A class for the evolution of a scalar field, minimally coupled to gravity
 /*!
@@ -19,16 +19,16 @@
    initial period of relaxation for the conformal factor chi, for non analytic
    initial conditions (for example, a general field configuration at a moment of
    time symmetry assuming conformal flatness). \sa MatterCCZ4(),
-   ConstraintsMatter(), ScalarField(), RelaxationChi()
+   ConstraintsMatter(), DustField(), RelaxationChi()
 */
-class ScalarFieldLevel : public GRAMRLevel
+class DustFieldLevel : public GRAMRLevel
 {
-    friend class DefaultLevelFactory<ScalarFieldLevel>;
+    friend class DefaultLevelFactory<DustFieldLevel>;
     // Inherit the contructors from GRAMRLevel
     using GRAMRLevel::GRAMRLevel;
 
     // Typedef for scalar field
-    typedef ScalarField<Potential> ScalarFieldWithPotential;
+    typedef DustField<Potential> DustFieldWithPotential;
 
     //! Things to do at the end of the advance step, after RK4 calculation
     virtual void specificAdvance();

@@ -30,6 +30,7 @@ class ScalarGauss
         double widthSF; //!< Width of bump in initial SF bubble
         double r_zero;  //!< Position of bump relative to centre
   	    double bkgSF;  // CJ:  mean homogeneous SF (background)
+        double kfactor = 0.0;  // CJ:  mean homogeneous SF (background)
     };
 
     //! The constructor
@@ -45,6 +46,10 @@ class ScalarGauss
     //! Function to compute the value of phi at each point
     template <class data_t>
     data_t compute_phi(Coordinates<data_t> coords) const;
+
+    //! Function to compute the value of K at each point (constant for now)
+    template <class data_t>
+    data_t compute_K(Coordinates<data_t> coords) const;  // CJ New
 };
 
 #include "ScalarGauss.impl.hpp"

@@ -34,6 +34,9 @@ void ScalarGauss::compute(Cell<data_t> current_cell) const
     // conformal metric is flat
     FOR1(i) vars.h[i][i] = 1.;
 
+    // set the K var
+    vars.K = compute_K(coords);
+
     // Store the initial values of the variables
     current_cell.store_vars(vars);
 }
@@ -50,6 +53,19 @@ data_t ScalarGauss::compute_phi(Coordinates<data_t> coords) const
 
 
     return out_phi;
+}
+
+
+// Compute the value of phi at the current point
+template <class data_t>
+data_t ScalarGauss::compute_K(Coordinates<data_t> coords) const
+{
+    // data_t rr = coords.get_radius();
+    // data_t rr2 = rr * rr;
+    data_t out_K =  m_params.kfactor;
+
+
+    return out_K;
 }
 
 #endif /* SCALARGAUSS_IMPL_HPP_ */
