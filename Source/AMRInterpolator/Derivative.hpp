@@ -6,6 +6,8 @@
 #ifndef DERIVATIVE_HPP_
 #define DERIVATIVE_HPP_
 
+#include <array>
+
 class Derivative : public std::array<int, CH_SPACEDIM>
 {
   private:

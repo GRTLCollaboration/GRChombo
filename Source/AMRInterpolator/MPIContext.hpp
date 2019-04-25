@@ -7,6 +7,7 @@
 #define MPICONTEXT_HPP_
 
 #include "MPILayout.hpp"
+#include <vector>
 
 class MPIContext
 {
