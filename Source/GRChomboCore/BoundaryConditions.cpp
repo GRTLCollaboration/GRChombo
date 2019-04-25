@@ -3,14 +3,13 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
+#include "BoundaryConditions.hpp"
+#include "FArrayBox.H"
+#include "ProblemDomain.H"
+#include "RealVect.H"
 #include <array>
 #include <map>
 #include <string>
-#include "FArrayBox.H"
-#include "IntVect.H"
-#include "RealVect.H"
-#include "ProblemDomain.H"
-#include "BoundaryConditions.hpp"
 
 /// define function sets members and is_defined set to true
 void BoundaryConditions::define(double a_dx,

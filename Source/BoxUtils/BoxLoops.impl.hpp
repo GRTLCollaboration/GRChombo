@@ -27,9 +27,9 @@ BoxLoops::innermost_loop(const ComputePack<compute_ts...> &compute_pack,
         simd_width * (((loop_hi_x - loop_lo_x + 1) / simd_width) - 1);
 // SIMD LOOP
 #ifdef __INTEL_COMPILER
-    #pragma novector
+#pragma novector
 #else
-    #pragma omp simd safelen(1)
+#pragma omp simd safelen(1)
 #endif /* __INTEL_COMPILER */
     for (int ix = loop_lo_x; ix <= x_simd_max; ix += simd_width)
     {
