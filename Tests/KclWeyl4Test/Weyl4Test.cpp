@@ -211,10 +211,6 @@ int main()
 
     std::array<double, CH_SPACEDIM> centerGW = {0, 0, 0};
 
-    int formulation = 1;
-    double G_Newton = 1.0;
-    double sigma = 0.1;
-
     struct timeval begin, end;
     gettimeofday(&begin, NULL);
 
