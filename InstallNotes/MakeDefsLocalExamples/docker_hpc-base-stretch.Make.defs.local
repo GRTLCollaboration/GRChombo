@@ -18,9 +18,9 @@ HDFMPILIBFLAGS   = -L/usr/lib/x86_64-linux-gnu/hdf5/openmpi -lhdf5 -lz
 USE_MT           = FALSE				    # disables Chombo's internal memory tracking as it seems to disagree with Allinea MAP
 OPENMPCC         = FALSE
 cxxdbgflags      = -g -Wl,--eh-frame-hdr -std=c++14
-cxxoptflags      = -Ofast -std=c++14
+cxxoptflags      = -Ofast -march=native -std=c++14
 fdbgflags        = -g -Wl,--eh-frame-hdr
-foptflags        = -Ofast
-syslibflags	 = -lgfortran
-cxxcppflags	 = -ftemplate-depth=150 -DDISABLE_AHFINDER -UCH_USE_MEMORY_TRACKING -DUSE_PAPI
-XTRALIBFLAGS	 = -L/usr/lib/openblas-base/ -lopenblas
+foptflags        = -Ofast -march=native
+syslibflags	     = -lgfortran
+cxxcppflags	     = -ftemplate-depth=150 -DDISABLE_AHFINDER -DUSE_PAPI
+XTRALIBFLAGS	   = -L/usr/lib/openblas-base/ -lopenblas

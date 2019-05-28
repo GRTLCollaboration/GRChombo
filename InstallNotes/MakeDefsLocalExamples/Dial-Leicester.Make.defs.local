@@ -1,0 +1,18 @@
+DIM             = 3
+CXX             = icpc -std=c++14 -qopenmp -mkl=sequential
+FC              = ifort -qopenmp -mkl=sequential
+OPT             = TRUE
+MPI             = TRUE
+OPENMPCC        = TRUE
+OPT             = TRUE
+USE_64          = TRUE
+USE_HDF         = TRUE
+MPICXX          = mpiicpc -std=c++14 -qopenmp -mkl=sequential
+HDFINCFLAGS     = -I/cm/shared/apps/hdf5/1.10.1/include
+HDFLIBFLAGS     = -L/cm/shared/apps/hdf5/1.10.1/lib -lhdf5 -lz
+HDFMPIINCFLAGS  = -I/cm/shared/apps/hdf5/intel_par/1.10.2/include
+HDFMPILIBFLAGS  = -L/cm/shared/apps/hdf5/intel_par/1.10.2/lib -lhdf5 -lz
+cxxdbgflags     = -g -Wl,--eh-frame-hdr
+cxxoptflags     = -O3 -qoverride-limits
+fdbgflags       = -g -Wl,--eh-frame-hdr
+foptflags       = -O3 -qoverride-limits

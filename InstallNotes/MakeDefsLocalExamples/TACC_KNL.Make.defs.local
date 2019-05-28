@@ -18,5 +18,3 @@ cxxdbgflags      = -g -qoverride-limits -Wl,--eh-frame-hdr
 cxxoptflags      = -O3
 fdbgflags        = -g -qoverride-limits -Wl,--eh-frame-hdr
 foptflags        = -O3
-syslibflag       =
-cxxcppflags = -UCH_USE_MEMORY_TRACKING
