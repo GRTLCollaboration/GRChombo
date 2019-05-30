@@ -106,12 +106,13 @@ WeylExtraction::integrate_surface(int es, int el, int em,
         // of vector) is equal to the first point
 #ifdef _OPENMP
 #if __GNUC__ > 8
-#define OMP_SHARED_CLAUSE shared(es, el, em, integral_re, integral_im, \
-                                 a_re_part, a_im_part)
+#define OPENMP_CONST_SHARED shared(a_re_part, a_im_part)
 #else
-#define OMP_SHARED_CLAUSE shared(es, el, em, integral_re, integral_im)
+#define OPENMP_CONST_SHARED
 #endif
-#pragma omp parallel for collapse(2) default(none) OMP_SHARED_CLAUSE
+#pragma omp parallel for collapse(2) default(none)                             \
+    shared(es, el, em, integral_re, integral_im) OPENMP_CONST_SHARED
+#undef OPENMP_CONST_SHARED
 #endif
         for (int iradius = 0; iradius < m_params.num_extraction_radii;
              ++iradius)
