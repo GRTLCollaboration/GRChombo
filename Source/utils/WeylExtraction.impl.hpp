@@ -105,8 +105,14 @@ WeylExtraction::integrate_surface(int es, int el, int em,
         // the function is periodic  and so the last point (implied but not part
         // of vector) is equal to the first point
 #ifdef _OPENMP
+#if __GNUC__ > 8
+#define OPENMP_CONST_SHARED shared(a_re_part, a_im_part)
+#else
+#define OPENMP_CONST_SHARED
+#endif
 #pragma omp parallel for collapse(2) default(none)                             \
-    shared(es, el, em, integral_re, integral_im)
+    shared(es, el, em, integral_re, integral_im) OPENMP_CONST_SHARED
+#undef OPENMP_CONST_SHARED
 #endif
         for (int iradius = 0; iradius < m_params.num_extraction_radii;
              ++iradius)
