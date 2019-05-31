@@ -320,6 +320,17 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
     m_state_old.define(level_domain, NUM_VARS, iv_ghosts);
 }
 
+/// things to do after regridding
+void GRAMRLevel::postRegrid(int a_base_level)
+{
+    // set m_restart_time to same as the coarser level
+    if(m_level > a_base_level && m_coarser_level_ptr != nullptr)
+    {
+        GRAMRLevel *coarser_gr_amr_level_ptr = gr_cast(m_coarser_level_ptr);
+        m_restart_time = coarser_gr_amr_level_ptr->m_restart_time;
+    }
+}
+
 // initialize grid
 void GRAMRLevel::initialGrid(const Vector<Box> &a_new_grids)
 {
