@@ -14,15 +14,14 @@ class EquationOfState
     struct params_t
     {
       double omega;
-        // double evo_rho;
-        // double evo_epsilon;
+        // double evo_density;
+        // double evo_energy;
         // double evo_pressure;
         // double evo_u0;
         // double evo_u1;
         // double evo_u2;
         // double evo_u3;
     };
-
 
   private:
     params_t m_params;
@@ -37,8 +36,8 @@ class EquationOfState
                            const vars_t<data_t> &vars) const
    {
 
-	       pressure = omega * vars.rho;
-	       enthalpy =  1.0 + vars.epsilon + pressure / vars.rho
+	       pressure = omega * vars.density;
+	       enthalpy =  1.0 + vars.energy + pressure / vars.density
 
    }
 };

@@ -125,7 +125,7 @@ void PerfectFluidLevel::specificUpdateODE(GRLevelData &a_soln,
 void PerfectFluidLevel::specificWritePlotHeader(
     std::vector<int> &plot_states) const
 {
-    plot_states = {c_phi, c_K};
+    plot_states = {c_density, c_K};
 }
 
 void PerfectFluidLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
