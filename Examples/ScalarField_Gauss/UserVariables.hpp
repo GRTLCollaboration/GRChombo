@@ -48,6 +48,8 @@ enum
 
     c_Ham,
 
+    // c_Ham_ricci, c_Ham_trA2, c_Ham_K, c_Ham_rho,       //Extended
+
     c_Mom1,
     c_Mom2,
     c_Mom3,
@@ -78,7 +80,11 @@ static constexpr char const *variable_names[NUM_VARS] = {
 
     "phi",    "Pi",
 
-    "Ham",    "Mom1",   "Mom2",   "Mom3"};
+    "Ham",
+
+    // "Ham_ricci", "Ham_trA2", "Ham_K", "Ham_rho",  // Extended!
+
+    "Mom1",   "Mom2",   "Mom3"};
 }
 
 #endif /* USERVARIABLES_HPP */
