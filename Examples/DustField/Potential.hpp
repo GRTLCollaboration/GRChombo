@@ -30,11 +30,10 @@ class Potential
     {
         // The potential value at phi
         // 1/2 m^2 phi^2
-        V_of_phi = 0.5 * pow(m_params.scalar_mass * vars.phi, 2.0);
-
+        V_of_phi = 0.0;
         // The potential gradient at phi
         // m^2 phi
-        dVdphi = pow(m_params.scalar_mass, 2.0) * vars.phi;
+        dVdphi =0.0;
 
     }
 };

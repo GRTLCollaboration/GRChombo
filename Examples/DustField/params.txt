@@ -1,9 +1,9 @@
 #Params for runtime inputs
 
 verbosity = 0
-chk_prefix = ScalarField_
-plot_prefix = ScalarFieldp_
-#restart_file = ScalarField_000060.3d.hdf5
+chk_prefix = DustField_
+plot_prefix = DustFieldp_
+#restart_file = DustField_000000.3d.hdf5
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
@@ -13,7 +13,7 @@ N3 = 32
 
 # Length of longest box side, dx_coarsest = L/N(max)
 # NB if non cubic, this determines dx for all sides
-L =  64
+L =  32
 
 # Regridding
 # Thresholds on the change across a cell which prompts regrid
@@ -41,15 +41,15 @@ plot_interval = 5
 dt_multiplier = 0.25
 stop_time = 50.0
 
-#Lapse evolution
-lapse_power = 1.0
-lapse_coeff = 2.0
-lapse_advec_coeff = 1 # 1 makes the lapse gauge 1+log slicing
+#Lapse evolution    # For DUST keep all zero for now (synch gauge)
+lapse_power = 0.0
+lapse_coeff = 0.0
+lapse_advec_coeff = 0.0 # 1 makes the lapse gauge 1+log slicing
 
 # Shift evolution coefficients
 shift_advec_coeff = 0 # Usually no advection for beta
-shift_Gamma_coeff = 0.75 #
-eta = 1.0 # This is beta_driver, usually of order 1/M_ADM of spacetime
+shift_Gamma_coeff = 0 #
+eta = 0.0 # This is beta_driver, usually of order 1/M_ADM of spacetime
 
 # CCZ4 parameters
 # if using BSSN the kappa values should be zero
@@ -68,15 +68,17 @@ sigma = 0.3
 # G_Newton = 1.0
 
 # SF Initial data
-amplitudeSF = 0.01
-widthSF = 1.0
-r_zero = 5.0
-scalar_mass =  0.25 * 1e-11 # 0.001
+amplitudeSF = 0.0
+bkgSF = 1e-4
+widthSF = 5.0
+r_zero = 0.0
+kfactor = -0.08683215054
+# scalar_mass =  0.25 * 1e-11 # 0.001
 # parameter for bubble centre - defaulted to center of grid
 # so only uncomment if you want to place it off center
 #center = 32 32 32
 
 # Relaxation paramters
 # how long and how fast to relax
-relaxtime = 20.0
-relaxspeed = 0.01
+relaxtime = 10.0
+relaxspeed = 0.05
