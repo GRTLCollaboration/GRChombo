@@ -30,47 +30,68 @@ emtensor_t<data_t> PerfectFluid<eosl_t>::compute_emtensor(
     data_t enthalpy = 0.0;
 
     // compute potential and add constributions to EM Tensor
-    my_eos.compute_eos(pressure, enthalpy, vars);                                      //FIXME: Stopped  coding here!
+    my_eos.compute_eos(pressure, enthalpy, vars);
 
     // call the function which computes the em tensor excluding the potential
-    emtensor_excl_potential(out, vars, vars_sf, d1.phi, h_UU, chris_ULL);
 
-    out.rho += V_of_phi;
-    out.S += -3.0 * V_of_phi;
-    FOR2(i, j) { out.Sij[i][j] += -vars.h[i][j] * V_of_phi / vars.chi; }
+    { //TODO:   Is it okay here, or create a function
+
+        FOR2(i, j) { Vt += vars.chi * h_UU[i][j] * d1_phi[i] * d1_phi[j]; }           //FIXME: check that I should be using vars, and not vars_fl
+
+        // Calculate components of EM Tensor
+        // S_ij = T_ij
+        FOR2(i, j)
+        {
+            out.Sij[i][j] =
+              vars.density * vars.u[i] * vars.u[j] +
+              vars.pressure * vars.h[i][j] / vars.chi;
+        }
+
+        // S_i (note lower index) = - n^a T_ai
+        FOR1(i) { out.Si[i] = vars.lapse * vars.density * vars.enthalpy * vars.u[i] * vars.u[0]; }
+
+        // S = Tr_S_ij
+        out.S = vars.chi * TensorAlgebra::compute_trace(out.Sij, h_UU);
+
+
+        // rho = n^a n^b T_ab
+        out.rho = vars.lapse * vars.lapse *
+                 (vars.density * vars.enthalpy * vars.u[0] * vars.u[0] -
+                  vars.pressure) ;
+    }
 
     return out;
 }
-
-// Calculate the stress energy tensor elements
-template <class potential_t>
-template <class data_t, template <typename> class vars_t>
-void ScalarField<potential_t>::emtensor_excl_potential(
-    emtensor_t<data_t> &out, const vars_t<data_t> &vars,
-    const SFObject<data_t> &vars_sf, const Tensor<1, data_t> &d1_phi,
-    const Tensor<2, data_t> &h_UU, const Tensor<3, data_t> &chris_ULL)
-{
-    // Useful quantity Vt
-    data_t Vt = -vars_sf.Pi * vars_sf.Pi;
-    FOR2(i, j) { Vt += vars.chi * h_UU[i][j] * d1_phi[i] * d1_phi[j]; }
-
-    // Calculate components of EM Tensor
-    // S_ij = T_ij
-    FOR2(i, j)
-    {
-        out.Sij[i][j] =
-            -0.5 * vars.h[i][j] * Vt / vars.chi + d1_phi[i] * d1_phi[j];
-    }
-
-    // S = Tr_S_ij
-    out.S = vars.chi * TensorAlgebra::compute_trace(out.Sij, h_UU);
-
-    // S_i (note lower index) = - n^a T_ai
-    FOR1(i) { out.Si[i] = -d1_phi[i] * vars_sf.Pi; }
-
-    // rho = n^a n^b T_ab
-    out.rho = vars_sf.Pi * vars_sf.Pi + 0.5 * Vt;
-}
+                                                                                      //FIXME: Stopped  coding here!
+// // Calculate the stress energy tensor elements
+// template <class potential_t>
+// template <class data_t, template <typename> class vars_t>
+// void ScalarField<potential_t>::emtensor_excl_potential(
+//     emtensor_t<data_t> &out, const vars_t<data_t> &vars,
+//     const SFObject<data_t> &vars_sf, const Tensor<1, data_t> &d1_phi,
+//     const Tensor<2, data_t> &h_UU, const Tensor<3, data_t> &chris_ULL)
+// {
+//     // Useful quantity Vt
+//     data_t Vt = -vars_sf.Pi * vars_sf.Pi;
+//     FOR2(i, j) { Vt += vars.chi * h_UU[i][j] * d1_phi[i] * d1_phi[j]; }
+//
+//     // Calculate components of EM Tensor
+//     // S_ij = T_ij
+//     FOR2(i, j)
+//     {
+//         out.Sij[i][j] =
+//             -0.5 * vars.h[i][j] * Vt / vars.chi + d1_phi[i] * d1_phi[j];
+//     }
+//
+//     // S = Tr_S_ij
+//     out.S = vars.chi * TensorAlgebra::compute_trace(out.Sij, h_UU);
+//
+//     // S_i (note lower index) = - n^a T_ai
+//     FOR1(i) { out.Si[i] = -d1_phi[i] * vars_sf.Pi; }
+//
+//     // rho = n^a n^b T_ab
+//     out.rho = vars_sf.Pi * vars_sf.Pi + 0.5 * Vt;
+// }
 
 // Adds in the RHS for the matter vars
 template <class potential_t>

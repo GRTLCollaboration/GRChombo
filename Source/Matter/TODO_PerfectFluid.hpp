@@ -7,7 +7,7 @@
 #define PERFECTFLUID_HPP_
 
 #include "CCZ4Geometry.hpp"
-#include "DefaultPotential.hpp"
+#include "DefaultEquationOfState.hpp"
 #include "FourthOrderDerivatives.hpp"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"

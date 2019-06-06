@@ -69,7 +69,7 @@ void PerfectFluidLevel::preCheckpointLevel()
 }
 
 // Things to do in RHS update, at each RK4 step
-void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
+void PerfectFluidLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
                                        const double a_time)
 {
     // Relaxation function for chi - this will eventually be done separately

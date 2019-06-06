@@ -43,16 +43,12 @@ enum
     c_B2,
     c_B3,
 
-    c_phi, // matter field added
-    c_Pi,  //(minus) conjugate momentum
+    c_density,  c_energy, c_pressure, c_enthalpy,
+    c_u0, c_u1, c_u2, c_u3,
 
     c_Ham,
 
     c_Ham_ricci, c_Ham_trA2, c_Ham_K, c_Ham_rho,       //Extended
-
-    c_density,  c_energy, c_pressure, c_entalphy,
-
-    c_u0, c_u1, c_u2, c_u3,
 
     c_Mom1,
     c_Mom2,
@@ -82,7 +78,7 @@ static constexpr char const *variable_names[NUM_VARS] = {
 
     "B1",     "B2",     "B3",
 
-    "density",  "energy", "pressure", "entalphy",
+    "density",  "energy", "pressure", "enthalpy",
 
     "u0", "u1", "u2", "u3",
 
