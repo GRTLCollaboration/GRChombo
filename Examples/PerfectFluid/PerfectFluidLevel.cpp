@@ -61,8 +61,8 @@ void PerfectFluidLevel::preCheckpointLevel()
 {
     fillAllGhosts();
 
-    // Potential potential(m_p.potential_params);              // FIXME: needed?
-    // ScalarFieldWithPotential scalar_field(potential);
+    EquationOfState eos(m_p.eos_params);                                 // FIXME: needed?   Yes, PerfectFluidWithEOS shoudl be defined here  (or alike)
+    PerfectFluidWithEOS perfect_fluid(eos);
     // BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
     //                    scalar_field, m_dx, m_p.G_Newton),
     //                m_state_new, m_state_new, EXCLUDE_GHOST_CELLS);

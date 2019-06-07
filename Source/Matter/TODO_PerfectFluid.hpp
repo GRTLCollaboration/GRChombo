@@ -56,23 +56,35 @@ template <class eos_t = DefaultEquationOfState> class PerfectFluid
     PerfectFluid(const eos_t a_eos) : my_eos(a_eos) {}
 
     //! Structure containing the variables for the matter fields
-    template <class data_t> struct FluidObject
+    template <class data_t> struct FluidObject                                    //FIXME: needed?
     {
         data_t density;
         data_t energy;
         data_t pressure;
         data_t enthalpy;
-        data_t u0, u1, u2, u3;
+        data_t u[4];
+
+        data_t W;
+        data_t D;
+        data_t E;
+        data_t V[3];
+        data_t Z[4];
     };
 
     //! Structure containing the rhs variables for the matter fields
     template <class data_t> struct Vars
     {
+        data_t density;
+        data_t energy;
+        data_t pressure;
+        data_t enthalpy;
+        data_t u[4];
+
         data_t W;
         data_t D;
         data_t E;
-        data_t V1, V2, V3;
-        data_t Z0, Z1, Z2, Z3;                                                              //FIXME: Stopped  coding here!
+        data_t V[3];
+        data_t Z[4];                                                              //FIXME: Stopped  coding here!
 
         /// Defines the mapping between members of Vars and Chombo grid
         /// variables (enum in User_Variables)
