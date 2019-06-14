@@ -62,13 +62,16 @@ template <class eos_t = DefaultEquationOfState> class PerfectFluid
         data_t energy;
         data_t pressure;
         data_t enthalpy;
-        data_t u[4];
+        data_t u0;
+        Tensor<1, data_t> u;
 
         data_t W;
+        data_t Z0;
+        Tensor<1, data_t> V;
+
         data_t D;
         data_t E;
-        data_t V[3];
-        data_t Z[4];
+        Tensor<1, data_t> Z;
     };
 
     //! Structure containing the rhs variables for the matter fields
@@ -78,13 +81,16 @@ template <class eos_t = DefaultEquationOfState> class PerfectFluid
         data_t energy;
         data_t pressure;
         data_t enthalpy;
-        data_t u[4];
+        data_t u0;
+        Tensor<1, data_t> u;
 
         data_t W;
+        data_t Z0;
+        Tensor<1, data_t> V;
+
         data_t D;
         data_t E;
-        data_t V[3];
-        data_t Z[4];                                                              //FIXME: Stopped  coding here!
+        Tensor<1, data_t> Z;                                                              //FIXME: Stopped  coding here!
 
         /// Defines the mapping between members of Vars and Chombo grid
         /// variables (enum in User_Variables)

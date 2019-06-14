@@ -113,7 +113,7 @@ void PerfectFluid<eos_t>::add_matter_rhs(
     rhs_fl.W = 0;
     rhs_fl.D = 0;
     rhs_fl.E = 0;
-    rhs_fl.Z[0] = 0;
+    rhs_fl.Z0 = 0;
 
     // advection terms
     FluidObject<data_t> advec_fl;
@@ -123,7 +123,7 @@ void PerfectFluid<eos_t>::add_matter_rhs(
     vars_fl.W = vars.W;
     vars_fl.D = vars.D;
     vars_fl.E = vars.E;
-    vars_fl.Z[0] = vars.Z[0];
+    vars_fl.Z0 = vars.Z0;
 
     FOR1(i) {
       advec_fl.Z[i] = advec.Z[i];
@@ -159,7 +159,7 @@ void PerfectFluid<eos_t>::add_matter_rhs(
                    ( - d1.W[i] * vars_fl.V[i] - vars_fl.W * d1.V[i][i] - dt_W)
                    * pressure;
 
-          rhs_sf.Z[i] +=  vars_fl.Z[0] * vars.lapse * d1.lapse[i] +
+          rhs_sf.Z[i] +=  vars_fl.Z0 * vars.lapse * d1.lapse[i] +
                       - vars.lapse * pow(vars.chi, 1.5) * d1.preassure[i]                 // FIXME:   first deriv. of pressure!!  var not exist yet
                       +  advec_sf.Z[i];
       }
@@ -173,11 +173,67 @@ void PerfectFluid<eos_t>::add_matter_rhs(
           FOR1(k)
           {
               rhs_sf.Z[i] +=  0.5 * vars_fl.Z[j] * vars_fl.Z[k] *
-                              d1.h_UU[i][j][k] / vars_fl.Z[0];                            // FIXME:  d1.h_UU  var not exist yet
+                              d1.h_UU[i][j][k] / vars_fl.Z0;                            // FIXME:  d1.h_UU  var not exist yet
           }
       }
   }
 }
+
+
+
+template <class potential_t>
+template <class data_t, template <typename> class vars_t,
+          template <typename> class diff2_vars_t,
+          template <typename> class rhs_vars_t>
+void PerfectFluid<eos_t>::add_matter_rhs(
+    rhs_vars_t<data_t> &total_rhs, const vars_t<data_t> &vars,
+    const vars_t<Tensor<1, data_t>> &d1,
+    const diff2_vars_t<Tensor<2, data_t>> &d2,
+    const vars_t<data_t> &advec) const
+
+
+
+template <class potential_t>
+template <class data_t>
+void PerfectFluid<eos_t>::update_fluid_vars(
+  Cell<data_t> current_cell) const
+{
+
+    const auto vars = current_cell.template load_vars<Vars>();
+    auto up_vars = current_cell.template load_vars<Vars>();
+
+    // Load local vars and calculate derivs
+    // const auto vars = current_cell.template load_vars<Vars>();
+    // const auto d1 = m_deriv.template diff1<Vars>(current_cell);
+    // const auto d2 = m_deriv.template diff2<Vars>(current_cell);
+
+    // Get the non matter terms for the constraints
+    // constraints_t<data_t> out = constraint_equations(vars, d1, d2);
+
+    // compute potential and add constributions to EM Tensor
+    data_t pressure = 0.0;   // P = P ( density, energy)                              //FIXME   use data_t?
+    data_t enthalpy = 0.0;   // h = 1 + energy + pressure/density
+    my_eos.compute_eos(pressure, enthalpy, vars);
+
+    // // Inverse metric and Christoffel symbol
+    const auto h_UU = TensorAlgebra::compute_inverse_sym(vars.h);
+    data_t determinant = 0.0;
+    FOR2(i, j) { determinant += h_UU[i][j] * vars.h[i][j]; }
+
+    // Hamiltonain constraint
+    up_vars.density = vars.D / vars.W;                                                  //FIXME: how W is defined?
+    up_vars.energy = vars.E / vars.D;
+
+    FOR1(i) { up_vars.u[i] = vars.Z[i] / vars.D / enthalpy;  }
+    up_vars.u0 = vars.W / vars.lapse / detrminant;                                       //FIXME: how u0 is defined?
+
+    // Write the rhs into the output FArrayBox
+    current_cell.store_vars(up_vars.density, c_density);
+    current_cell.store_vars(up_vars.energy, c_energy);
+    current_cell.store_vars(up_vars.u, GRInterval<c_u1, c_u3>());
+    current_cell.store_vars(up_vars.u0, c_u0);
+}
+
 
 //                                                                                        //FIXME: Stopped  coding here!
 
