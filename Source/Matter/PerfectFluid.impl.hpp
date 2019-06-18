@@ -63,7 +63,7 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
 }
 
 // Adds in the RHS for the matter vars
-template <class potential_t>
+template <class eos_t>
 template <class data_t, template <typename> class vars_t,
           template <typename> class diff2_vars_t,
           template <typename> class rhs_vars_t>
@@ -108,7 +108,7 @@ void PerfectFluid<eos_t>::add_matter_rhs(
     data_t pressure = 0.0;   // P = P ( density, energy)
     data_t enthalpy = 0.0;   // h = 1 + energy + pressure/density
 
-    // compute potential and add constributions to EM Tensor
+    // compute derived fluid vars from the EOS
     my_eos.compute_eos(pressure, enthalpy, vars);
 
     // useful variable
@@ -151,7 +151,7 @@ void PerfectFluid<eos_t>::add_matter_rhs(
 }
 
 
-template <class potential_t>
+template <class eos_t>
 template <class data_t>
 void PerfectFluid<eos_t>::update_fluid_vars(
   Cell<data_t> current_cell) const

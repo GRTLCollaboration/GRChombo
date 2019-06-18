@@ -119,6 +119,30 @@ void PerfectFluidLevel::specificUpdateODE(GRLevelData &a_soln,
 {
     // Enforce trace free A_ij
     BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
+
+    // Update fluid (non-evolving) variables
+    EquationOfState eos(m_p.eos_params);
+    PerfectFluidWithEOS perfect_fluid(eos);
+
+
+
+
+
+    MatterCCZ4<PerfectFluidWithEOS> my_ccz4_matter(
+        perfect_fluid, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
+        m_p.G_Newton);
+
+
+
+        // PerfectFluid<PerfectFluidWithEOS> update_fluid_vars(
+        //   Cell<data_t> current_cell)
+
+
+    SetValue set_constraints_zero(0.0, Interval(c_Ham, c_Mom3));
+    auto compute_pack2 =
+        make_compute_pack(my_ccz4_matter, set_constraints_zero);
+    BoxLoops::loop(compute_pack2, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+
 }
 
 // Specify if you want any plot files to be written, with which vars

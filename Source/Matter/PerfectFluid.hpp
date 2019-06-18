@@ -14,6 +14,8 @@
 #include "UserVariables.hpp" //This files needs NUM_VARS, total num of components
 #include "VarsTools.hpp"
 
+#include "Cell.hpp" // added for update_fluid_vars
+
 //!  Calculates the matter type specific elements such as the EMTensor and
 //   matter evolution
 /*!
@@ -147,6 +149,11 @@ template <class eos_t = DefaultEquationOfState> class PerfectFluid
        // const diff2_vars_t<Tensor<2, data_t>> &d2, //!< value of the 2nd derivs
        const vars_t<data_t> &advec)
        const; //!< the value of the advection terms
+
+   //! The compute member which update the non-evolving fluid vars at each point
+   //! in the box
+   template <class data_t>
+   void update_fluid_vars(Cell<data_t> current_cell) const;
 
    // FIXME: remove?
    // //! The function which calculates the EM Tensor, given the vars and
