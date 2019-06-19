@@ -18,7 +18,7 @@
 //#include "ExtendedMatterConstraints.hpp"
 
 // For tag cells
-#include "PhiAndKTaggingCriterion.hpp"
+// #include "PhiAndKTaggingCriterion.hpp"
 
 // Problem specific includes
 #include "ChiRelaxation.hpp"   // $GRCHOMBO/Source/Matter/
@@ -41,20 +41,20 @@ void PerfectFluidLevel::specificAdvance()
                        EXCLUDE_GHOST_CELLS, disable_simd());
 }
 
-// // Initial data for field and metric variables           TODO : ???
-// void PerfectFluidLevel::initialData()
-// {
-//     CH_TIME("PerfectFluidLevel::initialData");
-//     if (m_verbosity)
-//         pout() << "PerfectFluidLevel::initialData " << m_level << endl;
-//
-//     // First set everything to zero ... we don't want undefined values in
-//     // constraints etc, then  initial conditions for scalar field - here a
-//     // Gaussian bubble
-//     BoxLoops::loop(make_compute_pack(SetValue(0.0),
-//                                      ScalarGauss(m_p.initial_params, m_dx)),
-//                    m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
-// }
+// Initial data for field and metric variables           TODO : ???
+void PerfectFluidLevel::initialData()
+{
+    CH_TIME("PerfectFluidLevel::initialData");
+    if (m_verbosity)
+        pout() << "PerfectFluidLevel::initialData " << m_level << endl;
+
+    // First set everything to zero ... we don't want undefined values in
+    // constraints etc, then  initial conditions for scalar field - here a
+    // Gaussian bubble
+    // BoxLoops::loop(make_compute_pack(SetValue(0.0),
+                                     // ScalarGauss(m_p.initial_params, m_dx)),
+                   // m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
+}
 
 // Things to do before outputting a checkpoint file
 void PerfectFluidLevel::preCheckpointLevel()
@@ -119,30 +119,6 @@ void PerfectFluidLevel::specificUpdateODE(GRLevelData &a_soln,
 {
     // Enforce trace free A_ij
     BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
-
-    // Update fluid (non-evolving) variables
-    EquationOfState eos(m_p.eos_params);
-    PerfectFluidWithEOS perfect_fluid(eos);
-
-
-
-
-
-    MatterCCZ4<PerfectFluidWithEOS> my_ccz4_matter(
-        perfect_fluid, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
-        m_p.G_Newton);
-
-
-
-        // PerfectFluid<PerfectFluidWithEOS> update_fluid_vars(
-        //   Cell<data_t> current_cell)
-
-
-    SetValue set_constraints_zero(0.0, Interval(c_Ham, c_Mom3));
-    auto compute_pack2 =
-        make_compute_pack(my_ccz4_matter, set_constraints_zero);
-    BoxLoops::loop(compute_pack2, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
-
 }
 
 // Specify if you want any plot files to be written, with which vars

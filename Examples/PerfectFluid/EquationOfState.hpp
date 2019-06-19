@@ -36,8 +36,8 @@ class EquationOfState
                            const vars_t<data_t> &vars) const
    {
 
-	       pressure = omega * vars.density;
-	       enthalpy =  1.0 + vars.energy + pressure / vars.density
+	       pressure = m_params.omega * vars.density;
+	       enthalpy =  1.0 + vars.energy + pressure / vars.density;
 
    }
 };

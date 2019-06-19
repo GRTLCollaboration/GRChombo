@@ -34,8 +34,6 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
 
     { //emtensor_excl_potential  TODO:Is it okay here, or create a function?
 
-    FOR2(i, j) { Vt += vars.chi * h_UU[i][j] * d1_phi[i] * d1_phi[j]; }               //FIXME: check that I should be using vars, and not vars_fl
-
     // Calculate components of EM Tensor
     // S_ij = T_ij
     FOR2(i, j)
@@ -47,7 +45,7 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
 
     // S_i (note lower index) = - n^a T_ai
     FOR1(i) { out.Si[i] = vars.lapse * vars.density * vars.enthalpy *
-                vars.u[i] * vars.u[0]; }
+                vars.u[i] * vars.u0; }
 
     // S = Tr_S_ij
     out.S = vars.chi * TensorAlgebra::compute_trace(out.Sij, h_UU);
@@ -55,7 +53,7 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
 
     // rho = n^a n^b T_ab
     out.rho = vars.lapse * vars.lapse *
-             (vars.density * enthalpy * vars.u[0] * vars.u[0] -
+             (vars.density * vars.enthalpy * vars.u0 * vars.u0 -
               vars.pressure);
     }
 
@@ -70,7 +68,7 @@ template <class data_t, template <typename> class vars_t,
 void PerfectFluid<eos_t>::add_matter_rhs(
     rhs_vars_t<data_t> &total_rhs, const vars_t<data_t> &vars,
     const vars_t<Tensor<1, data_t>> &d1,
-    // const diff2_vars_t<Tensor<2, data_t>> &d2,
+    const diff2_vars_t<Tensor<2, data_t>> &d2,
     const vars_t<data_t> &advec) const
 {
     // first get the non potential part of the rhs
@@ -129,8 +127,8 @@ void PerfectFluid<eos_t>::add_matter_rhs(
                  ( - d1.W[i] * vars_fl.V[i] - vars_fl.W * d1.V[i][i] - dt_W)
                  * vars.pressure;
 
-        rhs_fl.Z[i] +=  vars_fl.Z0 * vars.lapse * d1.lapse[i] +
-                    - vars.lapse * pow(vars.chi, 1.5) * d1.preassure[i]                 // FIXME:   first deriv. of pressure!!  var not exist yet
+        rhs_fl.Z[i] +=  vars_fl.Z0 * vars.lapse * d1.lapse[i] +                        // FIXME: not with a Minus sign?
+                    - vars.lapse * pow(vars.chi, 1.5) * d1.pressure[i]                 // FIXME:   first deriv. of pressure!!  var not exist yet
                     +  advec_fl.Z[i];
     }
 
@@ -142,8 +140,13 @@ void PerfectFluid<eos_t>::add_matter_rhs(
 
         FOR1(k)
         {
-            rhs_fl.Z[i] +=  0.5 * vars_fl.Z[j] * vars_fl.Z[k] *
-                            d1.h_UU[i][j][k] / vars_fl.Z0;                             // FIXME:  d1.h_UU  var not exist yet
+
+          FOR2(m,n)
+            {
+              rhs_fl.Z[i] +=  0.5 * h_UU[m][j] * h_UU[n][k]
+                                  * vars_fl.Z[j] * vars_fl.Z[n]
+                                  * d1.h[i][j][k] / vars_fl.Z0;                             // FIXME:  d1.h_UU  var not exist yet
+            }
         }
     }
     /* ** ends braket */

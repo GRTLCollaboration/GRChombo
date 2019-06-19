@@ -7,7 +7,7 @@
 #define PERFECTFLUID_HPP_
 
 #include "CCZ4Geometry.hpp"
-#include "DefaultEquationOfState.hpp"
+#include "DefaultEOS.hpp"
 #include "FourthOrderDerivatives.hpp"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"
@@ -39,7 +39,7 @@
 scalar_field --> perfect_field
 ScalarField --> PerfectFluid
 potential_t --> eos_t
-DefaultPotential --> DefaultEquationOfState
+DefaultPotential --> DefaultEOS
 my_potential --> my_eos
 SFObject --> FluidObject
 
@@ -47,7 +47,7 @@ SFObject --> FluidObject
 
 
 
-template <class eos_t = DefaultEquationOfState> class PerfectFluid
+template <class eos_t = DefaultEOS> class PerfectFluid
 {
   protected:
     //! The local copy of the potential
@@ -126,6 +126,24 @@ template <class eos_t = DefaultEquationOfState> class PerfectFluid
        }
    };
 
+   //! Structure containing the rhs variables for the matter fields requiring
+   // //!  2nd derivs
+   template <class data_t> struct Diff2Vars
+   {
+       // /*  Commented out as no variables needed so far
+
+       data_t D;
+
+       /// Defines the mapping between members of Vars and Chombo grid
+       ///  variables (enum in User_Variables)
+       template <typename mapping_function_t>
+       void enum_mapping(mapping_function_t mapping_function)
+       {
+           VarsTools::define_enum_mapping(mapping_function, c_D, D);
+       }
+
+       // */
+   };
 
    //! The function which calculates the EM Tensor, given the vars and
    //! derivatives, including the potential
@@ -146,7 +164,7 @@ template <class eos_t = DefaultEquationOfState> class PerfectFluid
        rhs_vars_t<data_t> &total_rhs,       //!< value of the RHS for all vars
        const vars_t<data_t> &vars,          //!< value of the variables
        const vars_t<Tensor<1, data_t>> &d1, //!< value of the 1st derivs
-       // const diff2_vars_t<Tensor<2, data_t>> &d2, //!< value of the 2nd derivs
+       const diff2_vars_t<Tensor<2, data_t>> &d2, //!< value of the 2nd derivs
        const vars_t<data_t> &advec)
        const; //!< the value of the advection terms
 
@@ -184,25 +202,6 @@ template <class eos_t = DefaultEquationOfState> class PerfectFluid
    //     const Tensor<1, data_t> &d1_phi, //!< the value of the 1st derivs of phi
    //     const Tensor<2, data_t> &d2_phi, //!< the value of the 2nd derivs of phi
    //     const FluidObject<data_t> &advec_sf); //!< advection terms for the sf vars
-
-   //! Structure containing the rhs variables for the matter fields requiring
-   // //!  2nd derivs
-   // template <class data_t> struct Diff2Vars
-   // {
-   //     /*  Commented out as no variables needed so far
-   //
-   //     data_t phi;
-   //
-   //     /// Defines the mapping between members of Vars and Chombo grid
-   //     ///  variables (enum in User_Variables)
-   //     template <typename mapping_function_t>
-   //     void enum_mapping(mapping_function_t mapping_function)
-   //     {
-   //         VarsTools::define_enum_mapping(mapping_function, c_phi, phi);
-   //     }
-   //
-   //     */
-   // };
 
 };
 

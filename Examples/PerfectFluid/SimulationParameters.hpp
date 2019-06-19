@@ -38,7 +38,7 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("G_Newton", G_Newton, 1.0);
 
         // Predefine ideal Fluids as eos = omega
-        pp.load("omega", eos_params.omega, 0);
+        pp.load("omega", eos_params.omega, 0.0);
 
 
         // FIXME: I think this is useless.  (commented out)
@@ -53,8 +53,8 @@ class SimulationParameters : public SimulationParametersBase
 
 
         // Relaxation params  // TODO: implement
-        // pp.load("relaxtime", relaxtime);
-        // pp.load("relaxspeed", relaxspeed);
+        pp.load("relaxtime", relaxtime);
+        pp.load("relaxspeed", relaxspeed);
     }
 
     // Regrid parameters
@@ -65,9 +65,9 @@ class SimulationParameters : public SimulationParametersBase
     double G_Newton;
     EquationOfState::params_t eos_params;
 
-    // // Relaxation params
-    // Real relaxtime, relaxspeed;  TODO
-
+    // Relaxation params
+    Real relaxtime, relaxspeed;
+    
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */

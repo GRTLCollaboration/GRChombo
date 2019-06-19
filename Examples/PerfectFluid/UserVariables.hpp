@@ -46,6 +46,10 @@ enum
     c_density,  c_energy, c_pressure, c_enthalpy,
     c_u0, c_u1, c_u2, c_u3,
 
+    c_D,  c_E, c_W,
+    c_Z0, c_Z1, c_Z2, c_Z3,
+    c_V1, c_V2, c_V3,
+
     c_Ham,
 
     c_Ham_ricci, c_Ham_trA2, c_Ham_K, c_Ham_rho,       //Extended
@@ -81,6 +85,10 @@ static constexpr char const *variable_names[NUM_VARS] = {
     "density",  "energy", "pressure", "enthalpy",
 
     "u0", "u1", "u2", "u3",
+
+    "D",  "E", "W",
+    "Z0", "Z1","Z2", "Z3",
+    "V1", "V2","V3",
 
     "Ham",
 
