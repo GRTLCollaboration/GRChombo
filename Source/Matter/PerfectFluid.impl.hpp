@@ -112,10 +112,10 @@ void PerfectFluid<eos_t>::add_matter_rhs(
     // useful variable
     data_t dt_W = 0.0;                                                                  // FIXME: need to be defined
 
-    {  //matter_rhs_excl_potential  //TODO: create indp function?
+    {  // templated from (ScalarField)  matter_rhs_excl_potential                                                      // TODO: create indp function?
     /* ** starts braket */
+    
     using namespace TensorAlgebra;
-
     const auto h_UU = compute_inverse_sym(vars.h);
     const auto chris = compute_christoffel(d1.h, h_UU);
 
@@ -127,8 +127,8 @@ void PerfectFluid<eos_t>::add_matter_rhs(
                  ( - d1.W[i] * vars_fl.V[i] - vars_fl.W * d1.V[i][i] - dt_W)
                  * vars.pressure;
 
-        rhs_fl.Z[i] +=  vars_fl.Z0 * vars.lapse * d1.lapse[i] +                        // FIXME: not with a Minus sign?
-                    - vars.lapse * pow(vars.chi, 1.5) * d1.pressure[i]                 // FIXME:   first deriv. of pressure!!  var not exist yet
+        rhs_fl.Z[i] +=  - vars_fl.Z0 * vars.lapse * d1.lapse[i] +
+                    - vars.lapse * pow(vars.chi, 1.5) * d1.pressure[i]
                     +  advec_fl.Z[i];
     }
 
@@ -141,14 +141,15 @@ void PerfectFluid<eos_t>::add_matter_rhs(
         FOR1(k)
         {
 
-          FOR2(m,n)
+            FOR2(m,n)
             {
-              rhs_fl.Z[i] +=  0.5 * h_UU[m][j] * h_UU[n][k]
-                                  * vars_fl.Z[j] * vars_fl.Z[n]
-                                  * d1.h[i][j][k] / vars_fl.Z0;                             // FIXME:  d1.h_UU  var not exist yet
+                rhs_fl.Z[i] +=  0.5 * h_UU[m][j] * h_UU[n][k]
+                                    * vars_fl.Z[j] * vars_fl.Z[n]
+                                    * d1.h[i][j][k] / vars_fl.Z0;
             }
         }
     }
+
     /* ** ends braket */
     }
 }
@@ -163,17 +164,6 @@ void PerfectFluid<eos_t>::update_fluid_vars(
     const auto vars = current_cell.template load_vars<Vars>();
     auto up_vars = current_cell.template load_vars<Vars>();
 
-    // Load local vars and calculate derivs
-    // const auto vars = current_cell.template load_vars<Vars>();
-    // const auto d1 = m_deriv.template diff1<Vars>(current_cell);
-    // const auto d2 = m_deriv.template diff2<Vars>(current_cell);
-
-    // Get the non matter terms for the constraints
-    // constraints_t<data_t> out = constraint_equations(vars, d1, d2);
-
-    // compute potential and add constributions to EM Tensor
-    // data_t pressure = 0.0;   // P = P ( density, energy)                              //FIXME   use data_t?
-    // data_t enthalpy = 0.0;   // h = 1 + energy + pressure/density
     my_eos.compute_eos(up_vars.pressure, up_vars.enthalpy, vars);
 
     // Inverse metric
@@ -185,11 +175,15 @@ void PerfectFluid<eos_t>::update_fluid_vars(
     data_t shift_ui = 0.0;
     data_t lapse2 = vars.lapse * vars.lapse;
 
-    FOR2(i, j) {
+    FOR2(i, j)
+    {
       determinant += h_UU[i][j] * vars.h[i][j];
       uiui += h_UU[i][j] * vars.u[i] * vars.u[j];
     }
-    FOR1(i) {shift_ui += vars.shift[i] * vars.u[i];  }                                   // See page 250 Shibata's book
+    FOR1(i)
+    {
+      shift_ui += vars.shift[i] * vars.u[i];     // See page 250 Shibata's book
+    }
     shift_ui = shift_ui / lapse2;
 
     // Hamiltonain constraint
@@ -198,12 +192,11 @@ void PerfectFluid<eos_t>::update_fluid_vars(
 
     FOR1(i) { up_vars.u[i] = vars.Z[i] / vars.D / up_vars.enthalpy;  }
 
+    // from : -\lapse^2 * u_0^2 + (u_0 \shift^i u_i  + u_i h^{ij} u_l = -1
     up_vars.u0 = 0.5 * shift_ui +
                 sqrt(0.25 * shift_ui * shift_ui + (uiui + 1) / lapse2);
 
-    up_vars.W = vars.lapse  * determinant / vars.u0;                                      //FIXME:
-                                                                                          //     OKAY, I think u0 is defined by ~  - lapse * u0^2 + uiui = -1
-                                                                                          //     and then W is defined from u0 (as it is coded now)
+    up_vars.W = vars.lapse  * determinant / vars.u0;
 
     // Write the rhs into the output FArrayBox
     current_cell.store_vars(up_vars.density, c_density);
@@ -214,68 +207,6 @@ void PerfectFluid<eos_t>::update_fluid_vars(
     current_cell.store_vars(up_vars.u0, c_u0);
     current_cell.store_vars(up_vars.W, c_W);
 }
-
-// // the RHS excluding the potential terms
-// template <class potential_t>
-// template <class data_t, template <typename> class vars_t>
-// void ScalarField<potential_t>::matter_rhs_excl_potential(
-//     SFObject<data_t> &rhs_sf, const vars_t<data_t> &vars,
-//     const SFObject<data_t> &vars_sf, const vars_t<Tensor<1, data_t>> &d1,
-//     const Tensor<1, data_t> &d1_phi, const Tensor<2, data_t> &d2_phi,
-//     const SFObject<data_t> &advec_sf)
-// {
-//     using namespace TensorAlgebra;
-//
-//     const auto h_UU = compute_inverse_sym(vars.h);
-//     const auto chris = compute_christoffel(d1.h, h_UU);
-//
-//     // evolution equations for scalar field and (minus) its conjugate momentum
-//     rhs_sf.phi = vars.lapse * vars_sf.Pi + advec_sf.phi;
-//     rhs_sf.Pi = vars.lapse * vars.K * vars_sf.Pi + advec_sf.Pi;
-//
-//     FOR2(i, j)
-//     {
-//         // includes non conformal parts of chris not included in chris_ULL
-//         rhs_sf.Pi += h_UU[i][j] * (-0.5 * d1.chi[j] * vars.lapse * d1_phi[i] +
-//                                    vars.chi * vars.lapse * d2_phi[i][j] +
-//                                    vars.chi * d1.lapse[i] * d1_phi[j]);
-//         FOR1(k)
-//         {
-//             rhs_sf.Pi += -vars.chi * vars.lapse * h_UU[i][j] *
-//                          chris.ULL[k][i][j] * d1_phi[k];
-//         }
-//     }
-// }
-
-// // Calculate the stress energy tensor elements
-// template <class potential_t>
-// template <class data_t, template <typename> class vars_t>
-// void ScalarField<potential_t>::emtensor_excl_potential(
-//     emtensor_t<data_t> &out, const vars_t<data_t> &vars,
-//     const SFObject<data_t> &vars_sf, const Tensor<1, data_t> &d1_phi,
-//     const Tensor<2, data_t> &h_UU, const Tensor<3, data_t> &chris_ULL)
-// {
-//     // Useful quantity Vt
-//     data_t Vt = -vars_sf.Pi * vars_sf.Pi;
-//     FOR2(i, j) { Vt += vars.chi * h_UU[i][j] * d1_phi[i] * d1_phi[j]; }
-//
-//     // Calculate components of EM Tensor
-//     // S_ij = T_ij
-//     FOR2(i, j)
-//     {
-//         out.Sij[i][j] =
-//             -0.5 * vars.h[i][j] * Vt / vars.chi + d1_phi[i] * d1_phi[j];
-//     }
-//
-//     // S = Tr_S_ij
-//     out.S = vars.chi * TensorAlgebra::compute_trace(out.Sij, h_UU);
-//
-//     // S_i (note lower index) = - n^a T_ai
-//     FOR1(i) { out.Si[i] = -d1_phi[i] * vars_sf.Pi; }
-//
-//     // rho = n^a n^b T_ab
-//     out.rho = vars_sf.Pi * vars_sf.Pi + 0.5 * Vt;
-// }
 
 
 #endif /* PERFECTFLUID_IMPL_HPP_ */

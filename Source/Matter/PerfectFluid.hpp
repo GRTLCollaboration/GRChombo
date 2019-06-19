@@ -11,10 +11,10 @@
 #include "FourthOrderDerivatives.hpp"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"
-#include "UserVariables.hpp" //This files needs NUM_VARS, total num of components
+#include "UserVariables.hpp"
 #include "VarsTools.hpp"
 
-#include "Cell.hpp" // added for update_fluid_vars
+#include "Cell.hpp" // added for update_fluid_vars()
 
 //!  Calculates the matter type specific elements such as the EMTensor and
 //   matter evolution
@@ -35,7 +35,7 @@
 */
 
 
-/* TODO: FIXME:  Here I annotate replacements
+/* TODO:                                                                            TODO:  Here I annotate replacements (delete afterwards)
 scalar_field --> perfect_field
 ScalarField --> PerfectFluid
 potential_t --> eos_t
@@ -105,10 +105,14 @@ template <class eos_t = DefaultEOS> class PerfectFluid
        template <typename mapping_function_t>
        void enum_mapping(mapping_function_t mapping_function)
        {
-           VarsTools::define_enum_mapping(mapping_function, c_density, density);
-           VarsTools::define_enum_mapping(mapping_function, c_energy, energy);
-           VarsTools::define_enum_mapping(mapping_function, c_pressure, pressure);
-           VarsTools::define_enum_mapping(mapping_function, c_enthalpy, enthalpy);
+           VarsTools::define_enum_mapping(mapping_function, c_density,
+              density);
+           VarsTools::define_enum_mapping(mapping_function, c_energy,
+              energy);
+           VarsTools::define_enum_mapping(mapping_function, c_pressure,
+              pressure);
+           VarsTools::define_enum_mapping(mapping_function, c_enthalpy,
+              enthalpy);
            VarsTools::define_enum_mapping(mapping_function, c_u0, u0);
            VarsTools::define_enum_mapping(mapping_function,
              GRInterval<c_u1, c_u3>(), u);
@@ -172,36 +176,6 @@ template <class eos_t = DefaultEOS> class PerfectFluid
    //! in the box
    template <class data_t>
    void update_fluid_vars(Cell<data_t> current_cell) const;
-
-   // FIXME: remove?
-   // //! The function which calculates the EM Tensor, given the vars and
-   // //! derivatives, excluding the potential
-   // template <class data_t, template <typename> class vars_t>
-   // static void emtensor_excl_potential(
-   //     emtensor_t<data_t> &out,         //!< the em tensor output
-   //     const vars_t<data_t> &vars,      //!< the value of the variables
-   //     const FluidObject<data_t> &vars_sf, //!< the value of the sf variables
-   //     const Tensor<1, data_t>
-   //         &d1_phi,                   //!< the value of the first deriv of phi
-   //     const Tensor<2, data_t> &h_UU, //!< the inverse metric (raised indices).
-   //     const Tensor<3, data_t>
-   //         &chris_ULL); //!< the conformal christoffel symbol
-
-
-
-   // FIXME: remove?
-   // //! The function which calculates the RHS for the matter field vars
-   // //! excluding the potential
-   // template <class data_t, template <typename> class vars_t>
-   // static void matter_rhs_excl_potential(
-   //     FluidObject<data_t>
-   //         &rhs_sf, //!< the value of the RHS terms for the sf vars
-   //     const vars_t<data_t> &vars,      //!< the values of all the variables
-   //     const FluidObject<data_t> &vars_sf, //!< the value of the sf variables
-   //     const vars_t<Tensor<1, data_t>> &d1, //!< the value of the 1st derivs
-   //     const Tensor<1, data_t> &d1_phi, //!< the value of the 1st derivs of phi
-   //     const Tensor<2, data_t> &d2_phi, //!< the value of the 2nd derivs of phi
-   //     const FluidObject<data_t> &advec_sf); //!< advection terms for the sf vars
 
 };
 

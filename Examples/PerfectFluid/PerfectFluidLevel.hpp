@@ -31,7 +31,7 @@ class PerfectFluidLevel : public GRAMRLevel
 
     // FIXME: Remove?
     // // Typedef for scalar field
-    typedef PerfectFluid<EquationOfState> PerfectFluidWithEOS;                                  //FIXME PerfectFluidWithEOS  should be defined here
+    typedef PerfectFluid<EquationOfState> PerfectFluidWithEOS;
 
     //! Things to do at the end of the advance step, after RK4 calculation
     virtual void specificAdvance();

@@ -41,7 +41,7 @@ void PerfectFluidLevel::specificAdvance()
                        EXCLUDE_GHOST_CELLS, disable_simd());
 }
 
-// Initial data for field and metric variables           TODO : ???
+// Initial data for field and metric variables                                     //TODO : 
 void PerfectFluidLevel::initialData()
 {
     CH_TIME("PerfectFluidLevel::initialData");
@@ -61,7 +61,7 @@ void PerfectFluidLevel::preCheckpointLevel()
 {
     fillAllGhosts();
 
-    EquationOfState eos(m_p.eos_params);                                 // FIXME: needed?   Yes, PerfectFluidWithEOS shoudl be defined here  (or alike)
+    EquationOfState eos(m_p.eos_params);                                           // FIXME: needed?
     PerfectFluidWithEOS perfect_fluid(eos);
     // BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
     //                    scalar_field, m_dx, m_p.G_Newton),
@@ -77,7 +77,7 @@ void PerfectFluidLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     if (m_time < m_p.relaxtime)
     {
 
-        // FIXME:
+                                                                                    // TODO:
         // // Calculate chi relaxation right hand side
         // // Note this assumes conformal chi and Mom constraint trivially
         // // satisfied  No evolution in other variables, which are assumed to
@@ -131,7 +131,7 @@ void PerfectFluidLevel::specificWritePlotHeader(
 void PerfectFluidLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                                const FArrayBox &current_state)
 {
-    // TODO: set-up a good tagging criterion
+                                                                                    // TODO: set-up a good tagging criterion
     // BoxLoops::loop(PhiAndKTaggingCriterion(m_dx, m_p.regrid_threshold_phi,
     //                                        m_p.regrid_threshold_K),
     //                current_state, tagging_criterion);
