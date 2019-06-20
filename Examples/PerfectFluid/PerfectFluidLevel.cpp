@@ -14,8 +14,8 @@
 #include "MatterCCZ4.hpp"
 
 // For constraints calculation
-#include "MatterConstraints.hpp"
-//#include "ExtendedMatterConstraints.hpp"
+// #include "MatterConstraints.hpp"
+#include "ExtendedMatterConstraints.hpp"
 
 // For tag cells
 // #include "PhiAndKTaggingCriterion.hpp"
@@ -41,7 +41,7 @@ void PerfectFluidLevel::specificAdvance()
                        EXCLUDE_GHOST_CELLS, disable_simd());
 }
 
-// Initial data for field and metric variables                                     //TODO : 
+// Initial data for field and metric variables                                     //TODO :
 void PerfectFluidLevel::initialData()
 {
     CH_TIME("PerfectFluidLevel::initialData");
@@ -63,9 +63,9 @@ void PerfectFluidLevel::preCheckpointLevel()
 
     EquationOfState eos(m_p.eos_params);                                           // FIXME: needed?
     PerfectFluidWithEOS perfect_fluid(eos);
-    // BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
-    //                    scalar_field, m_dx, m_p.G_Newton),
-    //                m_state_new, m_state_new, EXCLUDE_GHOST_CELLS);
+    BoxLoops::loop(MatterConstraints<PerfectFluidWithEOS>(
+                       perfect_fluid, m_dx, m_p.G_Newton),
+                   m_state_new, m_state_new, EXCLUDE_GHOST_CELLS);
 }
 
 // Things to do in RHS update, at each RK4 step

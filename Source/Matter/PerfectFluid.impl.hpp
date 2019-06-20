@@ -44,15 +44,15 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
     }
 
     // S_i (note lower index) = - n^a T_ai
-    FOR1(i) { out.Si[i] = vars.lapse * vars.density * vars.enthalpy *
-                vars.u[i] * vars.u0; }
+    FOR1(i) { out.Si[i] =  vars.lap *                                               //FIXME:  if one uses lapse it doesn't work, I donno why
+                        vars.density * vars.enthalpy * vars.u[i] * vars.u0; }
 
     // S = Tr_S_ij
     out.S = vars.chi * TensorAlgebra::compute_trace(out.Sij, h_UU);
 
 
     // rho = n^a n^b T_ab
-    out.rho = vars.lapse * vars.lapse *
+    out.rho =  vars.lap * vars.lap *
              (vars.density * vars.enthalpy * vars.u0 * vars.u0 -
               vars.pressure);
     }
@@ -114,7 +114,7 @@ void PerfectFluid<eos_t>::add_matter_rhs(
 
     {  // templated from (ScalarField)  matter_rhs_excl_potential                                                      // TODO: create indp function?
     /* ** starts braket */
-    
+
     using namespace TensorAlgebra;
     const auto h_UU = compute_inverse_sym(vars.h);
     const auto chris = compute_christoffel(d1.h, h_UU);
