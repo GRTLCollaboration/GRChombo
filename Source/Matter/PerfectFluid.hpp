@@ -57,22 +57,9 @@ template <class eos_t = DefaultEOS> class PerfectFluid
     //!  Constructor of class PerfectFluid, inputs are the matter parameters.
     PerfectFluid(const eos_t a_eos) : my_eos(a_eos) {}
 
-    //! Structure containing the variables for the matter fields
+    //! Structure containing the variables for the matter fields (for RHS)
     template <class data_t> struct FluidObject                                    //FIXME: needed?
     {
-        // fluid variables
-        data_t density;
-        data_t energy;
-        data_t pressure;
-        data_t enthalpy;
-        data_t u0;
-        Tensor<1, data_t> u;
-
-        // defined vars for evol. eq.
-        data_t W;
-        data_t Z0;
-        Tensor<1, data_t> V;
-
         // evolving vars
         data_t D;
         data_t E;

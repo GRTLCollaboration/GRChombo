@@ -20,20 +20,6 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
 {
     emtensor_t<data_t> out;
 
-    // // Copy the field vars into FluidObject
-    // FluidObject<data_t> vars_fl;
-    // vars_fl.density = vars.density;
-    // vars_fl.energy = vars.energy;                                                     //FIXME: check that I should be using vars_fl, and not vars
-    //
-    // // set the eos variables
-    // data_t pressure = 0.0;   // P = P ( density, energy)
-    // data_t enthalpy = 0.0;   // h = 1 + energy + pressure/density
-    //
-    // // compute potential and add constributions to EM Tensor
-    // my_eos.compute_eos(pressure, enthalpy, vars);
-
-    { //emtensor_excl_potential  TODO:Is it okay here, or create a function?
-
     // Calculate components of EM Tensor
     // S_ij = T_ij
     FOR2(i, j)
@@ -55,7 +41,6 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
     out.rho =  vars.lap * vars.lap *
              (vars.density * vars.enthalpy * vars.u0 * vars.u0 -
               vars.pressure);
-    }
 
     return out;
 }
@@ -71,22 +56,16 @@ void PerfectFluid<eos_t>::add_matter_rhs(
     const diff2_vars_t<Tensor<2, data_t>> &d2,
     const vars_t<data_t> &advec) const
 {
-    // first get the non potential part of the rhs
-    // this may seem a bit long winded, but it makes the function
-    // work for more multiple fields
-
     // the rhs vars
     FluidObject<data_t> rhs_fl;
-    rhs_fl.W = 0;
     rhs_fl.D = 0;
     rhs_fl.E = 0;
-    rhs_fl.Z0 = 0;
 
     // advection terms
     FluidObject<data_t> advec_fl;
 
     // the vars
-    FluidObject<data_t> vars_fl;
+    Vars<data_t> vars_fl;
     vars_fl.W = vars.W;
     vars_fl.D = vars.D;
     vars_fl.E = vars.E;
@@ -98,21 +77,14 @@ void PerfectFluid<eos_t>::add_matter_rhs(
       vars_fl.V[i] = vars.V[i];
       vars_fl.Z[i] = vars.Z[i];
 
-      rhs_fl.V[i] = 0;
+      // rhs_fl.V[i] = 0;
       rhs_fl.Z[i] = 0;
     }
-
-    // set the eos values
-    data_t pressure = 0.0;   // P = P ( density, energy)
-    data_t enthalpy = 0.0;   // h = 1 + energy + pressure/density
-
-    // compute derived fluid vars from the EOS
-    my_eos.compute_eos(pressure, enthalpy, vars);
 
     // useful variable
     data_t dt_W = 0.0;                                                                  // FIXME: need to be defined
 
-    {  // templated from (ScalarField)  matter_rhs_excl_potential                                                      // TODO: create indp function?
+    {  // templated from (ScalarField)  matter_rhs_excl_potential                       // TODO: create indp function?
     /* ** starts braket */
 
     using namespace TensorAlgebra;
@@ -123,7 +95,7 @@ void PerfectFluid<eos_t>::add_matter_rhs(
     FOR1(i)
     {
         rhs_fl.D += - d1.D[i] * vars_fl.V[i] - vars_fl.D * d1.V[i][i];
-        rhs_fl.E += - d1.E[i] * vars_fl.V[i] - vars_fl.D * d1.V[i][i] +
+        rhs_fl.E += - d1.E[i] * vars_fl.V[i] - vars_fl.E * d1.V[i][i] +
                  ( - d1.W[i] * vars_fl.V[i] - vars_fl.W * d1.V[i][i] - dt_W)
                  * vars.pressure;
 
@@ -164,11 +136,13 @@ void PerfectFluid<eos_t>::update_fluid_vars(
     const auto vars = current_cell.template load_vars<Vars>();
     auto up_vars = current_cell.template load_vars<Vars>();
 
-    my_eos.compute_eos(up_vars.pressure, up_vars.enthalpy, vars);
+    data_t pressure = 0.0;
+    data_t enthalpy = 0.0;
+    my_eos.compute_eos(pressure, enthalpy, vars);
 
     // Inverse metric
     const auto h_UU = TensorAlgebra::compute_inverse_sym(vars.h);
-    data_t determinant = 0.0;
+    // data_t determinant = 1.0/vars.chi/vars.chi/vars.chi;
 
     //  useful vars
     data_t uiui = 0.0;                                                                  //FIXME   use data_t?
@@ -177,7 +151,7 @@ void PerfectFluid<eos_t>::update_fluid_vars(
 
     FOR2(i, j)
     {
-      determinant += h_UU[i][j] * vars.h[i][j];
+      // determinant += h_UU[i][j] * vars.h[i][j];
       uiui += h_UU[i][j] * vars.u[i] * vars.u[j];
     }
     FOR1(i)
@@ -186,9 +160,11 @@ void PerfectFluid<eos_t>::update_fluid_vars(
     }
     shift_ui = shift_ui / lapse2;
 
-    // Hamiltonain constraint
+    // fluit variables
     up_vars.density = vars.D / vars.W;
     up_vars.energy = vars.E / vars.D;
+    up_vars.pressure = pressure;
+    up_vars.enthalpy = enthalpy;
 
     FOR1(i) { up_vars.u[i] = vars.Z[i] / vars.D / up_vars.enthalpy;  }
 
@@ -196,9 +172,9 @@ void PerfectFluid<eos_t>::update_fluid_vars(
     up_vars.u0 = 0.5 * shift_ui +
                 sqrt(0.25 * shift_ui * shift_ui + (uiui + 1) / lapse2);
 
-    up_vars.W = vars.lapse  * determinant / vars.u0;
+    up_vars.W = 1.618033; //vars.lapse  * pow(vars.chi, -3) / vars.u0;
 
-    // Write the rhs into the output FArrayBox
+    // Overwrite new values for fluid variables
     current_cell.store_vars(up_vars.density, c_density);
     current_cell.store_vars(up_vars.energy, c_energy);
     current_cell.store_vars(up_vars.pressure, c_pressure);
