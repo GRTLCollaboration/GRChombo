@@ -87,15 +87,11 @@ template <class eos_t = DefaultEOS> class PerfectFluid
         data_t E;
         Tensor<1, data_t> Z;
 
-        data_t lap;                                                               //FIXME:  if one uses lapse it doesn't work, I donno why
-
        /// Defines the mapping between members of Vars and Chombo grid
        /// variables (enum in User_Variables)
        template <typename mapping_function_t>
        void enum_mapping(mapping_function_t mapping_function)
        {
-           VarsTools::define_enum_mapping(mapping_function, c_lapse,
-             lap);
 
            VarsTools::define_enum_mapping(mapping_function, c_density,
               density);
@@ -121,6 +117,40 @@ template <class eos_t = DefaultEOS> class PerfectFluid
 
        }
    };
+
+   //! Structure containing the rhs variables for the matter fields
+   template <class data_t> struct GeoVars
+   {
+       // geo variables
+       data_t lapse;
+       data_t chi;
+       Tensor<2, data_t> h;
+       Tensor<1, data_t> shift;
+
+
+      /// Defines the mapping between members of Vars and Chombo grid
+      /// variables (enum in User_Variables)
+      template <typename mapping_function_t>
+      void enum_mapping(mapping_function_t mapping_function)
+      {
+          VarsTools::define_enum_mapping(mapping_function, c_lapse,
+            lapse);
+
+            VarsTools::define_enum_mapping(mapping_function, c_chi,
+              chi);
+
+          VarsTools::define_enum_mapping(mapping_function,
+            GRInterval<c_shift1, c_shift3>(), shift);
+
+          VarsTools::define_symmetric_enum_mapping(mapping_function,
+            GRInterval<c_h11, c_h33>(), h);
+
+
+
+      }
+  };
+
+
 
    //! Structure containing the rhs variables for the matter fields requiring
    // //!  2nd derivs
@@ -167,7 +197,7 @@ template <class eos_t = DefaultEOS> class PerfectFluid
    //! The compute member which update the non-evolving fluid vars at each point
    //! in the box
    template <class data_t>
-   void update_fluid_vars(Cell<data_t> current_cell) const;
+   void compute(Cell<data_t> current_cell) const;
 
 };
 

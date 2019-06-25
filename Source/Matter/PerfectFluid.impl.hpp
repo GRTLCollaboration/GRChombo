@@ -19,6 +19,7 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
     const Tensor<2, data_t> &h_UU, const Tensor<3, data_t> &chris_ULL) const
 {
     emtensor_t<data_t> out;
+    GeoVars<data_t> geo_vars;
 
     // Calculate components of EM Tensor
     // S_ij = T_ij
@@ -30,7 +31,7 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
     }
 
     // S_i (note lower index) = - n^a T_ai
-    FOR1(i) { out.Si[i] =  vars.lap *                                               //FIXME:  if one uses lapse it doesn't work, I donno why
+    FOR1(i) { out.Si[i] =  geo_vars.lapse *                                               //FIXME:  if one uses lapse it doesn't work, I donno why
                         vars.density * vars.enthalpy * vars.u[i] * vars.u0; }
 
     // S = Tr_S_ij
@@ -38,7 +39,7 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
 
 
     // rho = n^a n^b T_ab
-    out.rho =  vars.lap * vars.lap *
+    out.rho =  geo_vars.lapse * geo_vars.lapse *
              (vars.density * vars.enthalpy * vars.u0 * vars.u0 -
               vars.pressure);
 
@@ -129,11 +130,12 @@ void PerfectFluid<eos_t>::add_matter_rhs(
 
 template <class eos_t>
 template <class data_t>
-void PerfectFluid<eos_t>::update_fluid_vars(
+void PerfectFluid<eos_t>::compute(
   Cell<data_t> current_cell) const
 {
 
     const auto vars = current_cell.template load_vars<Vars>();
+    const auto geo_vars = current_cell.template load_vars<GeoVars>();
     auto up_vars = current_cell.template load_vars<Vars>();
 
     data_t pressure = 0.0;
@@ -141,22 +143,21 @@ void PerfectFluid<eos_t>::update_fluid_vars(
     my_eos.compute_eos(pressure, enthalpy, vars);
 
     // Inverse metric
-    const auto h_UU = TensorAlgebra::compute_inverse_sym(vars.h);
+    const auto h_UU = TensorAlgebra::compute_inverse_sym(geo_vars.h);
     // data_t determinant = 1.0/vars.chi/vars.chi/vars.chi;
 
     //  useful vars
     data_t uiui = 0.0;                                                                  //FIXME   use data_t?
     data_t shift_ui = 0.0;
-    data_t lapse2 = vars.lapse * vars.lapse;
+    data_t lapse2 = geo_vars.lapse * geo_vars.lapse;
 
     FOR2(i, j)
     {
-      // determinant += h_UU[i][j] * vars.h[i][j];
       uiui += h_UU[i][j] * vars.u[i] * vars.u[j];
     }
     FOR1(i)
     {
-      shift_ui += vars.shift[i] * vars.u[i];     // See page 250 Shibata's book
+      shift_ui += geo_vars.shift[i] * vars.u[i];     // See page 250 Shibata's book
     }
     shift_ui = shift_ui / lapse2;
 
@@ -172,7 +173,7 @@ void PerfectFluid<eos_t>::update_fluid_vars(
     up_vars.u0 = 0.5 * shift_ui +
                 sqrt(0.25 * shift_ui * shift_ui + (uiui + 1) / lapse2);
 
-    up_vars.W = 1.618033; //vars.lapse  * pow(vars.chi, -3) / vars.u0;
+    up_vars.W = geo_vars.lapse  * pow(geo_vars.chi, -3) / vars.u0;
 
     // Overwrite new values for fluid variables
     current_cell.store_vars(up_vars.density, c_density);

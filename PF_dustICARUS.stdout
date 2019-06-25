@@ -3,7 +3,7 @@ number of processors is 32
 number of cpus per node is 4
 number of processus is 8
 threads per processus is 4
-mpirun started with mpirun --bind-to none --map-by node -np 8 -x OMP_NUM_THREADS -hostfile /home/cjoana/PerfectFluid/machinefile.nodes.1235.cosmo
+mpirun started with mpirun --bind-to none --map-by node -np 8 -x OMP_NUM_THREADS -hostfile /home/cjoana/PerfectFluid/machinefile.nodes.1246.cosmo
 OMP THREADS 4
 OMP THREADS 4
 OMP THREADS 4
