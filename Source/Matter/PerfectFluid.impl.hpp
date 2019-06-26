@@ -31,7 +31,7 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
     }
 
     // S_i (note lower index) = - n^a T_ai
-    FOR1(i) { out.Si[i] =  geo_vars.lapse *                                               //FIXME:  if one uses lapse it doesn't work, I donno why
+    FOR1(i) { out.Si[i] =  vars.newlapse  *                                               //FIXME:  if one uses lapse it doesn't work, I donno why
                         vars.density * vars.enthalpy * vars.u[i] * vars.u0; }
 
     // S = Tr_S_ij
@@ -39,9 +39,14 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
 
 
     // rho = n^a n^b T_ab
-    out.rho =  geo_vars.lapse * geo_vars.lapse *
+    out.rho = // 17.0319 +
+              vars.newlapse * vars.newlapse *                                            //FIXME:  if one uses lapse it doesn't work, I donno why
              (vars.density * vars.enthalpy * vars.u0 * vars.u0 -
               vars.pressure);
+
+    // pout() << "values of rho " << out.rho << std::endl;                              //FIXME: delete (debuggin test)
+    // pout() << "values of newlapse " << vars.newlapse << std::endl;
+    // pout() << "values of chi " << vars.chi << std::endl;
 
     return out;
 }
@@ -147,9 +152,14 @@ void PerfectFluid<eos_t>::compute(
     // data_t determinant = 1.0/vars.chi/vars.chi/vars.chi;
 
     //  useful vars
-    data_t uiui = 0.0;                                                                  //FIXME   use data_t?
+    data_t uiui = 0.0;                                                                  
     data_t shift_ui = 0.0;
     data_t lapse2 = geo_vars.lapse * geo_vars.lapse;
+
+
+    // pout() << "values of rho " << out.rho << std::endl;                              //FIXME: delete (debuggin test)
+    // pout() << "values of geo lapse " << geo_vars.lapse << std::endl;
+    // pout() << "values of chi " << vars.chi << std::endl;
 
     FOR2(i, j)
     {

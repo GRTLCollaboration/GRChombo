@@ -87,6 +87,8 @@ template <class eos_t = DefaultEOS> class PerfectFluid
         data_t E;
         Tensor<1, data_t> Z;
 
+        data_t newlapse;                                                             //FIXME:  if one uses lapse it doesn't work, I donno why
+
        /// Defines the mapping between members of Vars and Chombo grid
        /// variables (enum in User_Variables)
        template <typename mapping_function_t>
@@ -114,6 +116,10 @@ template <class eos_t = DefaultEOS> class PerfectFluid
            VarsTools::define_enum_mapping(mapping_function, c_E, E);
            VarsTools::define_enum_mapping(mapping_function,
              GRInterval<c_Z1, c_Z3>(), Z);
+
+
+           VarsTools::define_enum_mapping(mapping_function, c_lapse,
+                newlapse);                                                          //FIXME:  if one uses lapse it doesn't work, I donno why
 
        }
    };
