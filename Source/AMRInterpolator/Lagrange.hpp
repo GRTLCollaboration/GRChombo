@@ -23,7 +23,7 @@ template <int Order> class Lagrange
         double m_dx;
         double m_point_offset;
 
-        double *m_weights;
+        std::vector<double> m_weights;
 
         Stencil(int width, int deriv, double point_offset, double dx);
         inline bool operator==(const Stencil &rhs) const;
