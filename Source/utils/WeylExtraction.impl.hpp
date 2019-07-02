@@ -62,16 +62,16 @@ inline void WeylExtraction::execute_query(
 
     for (int imode = 0; imode < m_params.num_modes; ++imode)
     {
-        const std::pair<int, int>& mode = m_params.modes[imode];
+        const std::pair<int, int> &mode = m_params.modes[imode];
         auto integral = integrate_surface(-2, mode.first, mode.second,
                                           interp_re_part, interp_im_part);
-        std::string integral_filename = "Weyl_integral_"
-                                        + std::to_string(mode.first)
-                                        + std::to_string(mode.second);
+        std::string integral_filename = "Weyl_integral_" +
+                                        std::to_string(mode.first) +
+                                        std::to_string(mode.second);
         write_integral(integral.first, integral.second, integral_filename);
     }
 
-    if(m_params.write_extraction)
+    if (m_params.write_extraction)
     {
         write_extraction("ExtractionOut_", interp_re_part, interp_im_part);
     }
