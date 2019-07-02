@@ -23,8 +23,7 @@ const string Lagrange<Order>::TAG = "\x1b[36;1m[Lagrange]\x1b[0m ";
 template <int Order>
 Lagrange<Order>::Stencil::Stencil(int width, int deriv, double dx,
                                   double point_offset)
-    : m_width(width), m_deriv(deriv), m_dx(dx), m_point_offset(point_offset),
-      m_weights(new double[width])
+    : m_width(width), m_deriv(deriv), m_dx(dx), m_point_offset(point_offset)
 {
     int c1 = 1;
     int c2;
@@ -32,9 +31,7 @@ Lagrange<Order>::Stencil::Stencil(int width, int deriv, double dx,
     double c4 = 0 - m_point_offset; /* replace for general grid */
     double c5;
 
-    double *tmp_weights =
-        (deriv == 0) ? m_weights : new double[width * (deriv + 1)];
-    memset(tmp_weights, 0, sizeof(double) * width * (deriv + 1));
+    std::vector<double> tmp_weights(width * (deriv + 1), 0);
 
     tmp_weights[0] = 1.0;
 
@@ -80,13 +77,15 @@ Lagrange<Order>::Stencil::Stencil(int width, int deriv, double dx,
     if (deriv > 0)
     {
         const double dx_factor = pow(m_dx, deriv);
-
+        m_weights.resize(m_width);
         for (int i = 0; i < m_width; ++i)
         {
             m_weights[i] = tmp_weights[m_width * m_deriv + i] / dx_factor;
         }
-
-        delete[] tmp_weights;
+    }
+    else
+    {
+        m_weights = std::move(tmp_weights);
     }
 
     if (false)
