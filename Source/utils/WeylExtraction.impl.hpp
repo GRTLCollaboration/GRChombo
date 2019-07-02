@@ -60,22 +60,21 @@ inline void WeylExtraction::execute_query(
     // submit the query
     a_interpolator->interp(query);
 
-    // calculate the integral over the surface -currently only 20, 21 and 22
-    // modes implemented here, but easily extended if more required
-    auto integrals20 =
-        integrate_surface(-2, 2, 0, interp_re_part, interp_im_part);
-    auto integrals21 =
-        integrate_surface(-2, 2, 1, interp_re_part, interp_im_part);
-    auto integrals22 =
-        integrate_surface(-2, 2, 2, interp_re_part, interp_im_part);
+    for (int imode = 0; imode < m_params.num_modes; ++imode)
+    {
+        const std::pair<int, int>& mode = m_params.modes[imode];
+        auto integral = integrate_surface(-2, mode.first, mode.second,
+                                          interp_re_part, interp_im_part);
+        std::string integral_filename = "Weyl_integral_"
+                                        + std::to_string(mode.first)
+                                        + std::to_string(mode.second);
+        write_integral(integral.first, integral.second, integral_filename);
+    }
 
-    // Output the result to a single file over the whole run
-    write_integral(integrals20.first, integrals20.second, "Weyl_integral_20");
-    write_integral(integrals21.first, integrals21.second, "Weyl_integral_21");
-    write_integral(integrals22.first, integrals22.second, "Weyl_integral_22");
-
-    // This generates a lot of output so is commented out
-    // write_extraction("ExtractionOut_", interp_re_part, interp_im_part);
+    if(m_params.write_extraction)
+    {
+        write_extraction("ExtractionOut_", interp_re_part, interp_im_part);
+    }
 }
 
 //! integrate over a spherical shell with given harmonics for each extraction
