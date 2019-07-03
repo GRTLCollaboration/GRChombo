@@ -19,7 +19,10 @@ struct extraction_params_t
     std::array<double, CH_SPACEDIM> extraction_center;
     int num_points_phi;
     int num_points_theta;
+    int num_modes;
+    std::vector<std::pair<int, int>> modes; // l = first, m = second
     std::vector<int> extraction_levels;
+    bool write_extraction;
     int min_extraction_level;
 };
 
@@ -89,6 +92,34 @@ class SimulationParametersBase : public ChomboParameters
         pp.load("num_points_theta", extraction_params.num_points_theta, 4);
         pp.load("extraction_center", extraction_params.extraction_center,
                 {0.5 * L, 0.5 * L, 0.5 * L});
+        if (pp.contains("modes"))
+        {
+            pp.load("num_modes", extraction_params.num_modes);
+            std::vector<int> extraction_modes_vect(2 *
+                                                   extraction_params.num_modes);
+            pp.load("modes", extraction_modes_vect,
+                    2 * extraction_params.num_modes);
+            extraction_params.modes.resize(extraction_params.num_modes);
+            for (int i = 0; i < extraction_params.num_modes; ++i)
+            {
+                extraction_params.modes[i].first = extraction_modes_vect[2 * i];
+                extraction_params.modes[i].second =
+                    extraction_modes_vect[2 * i + 1];
+            }
+        }
+        else
+        {
+            // by default extraction (l,m) = (2,0), (2,1) and (2,2)
+            extraction_params.num_modes = 3;
+            extraction_params.modes.resize(3);
+            for (int i = 0; i < 3; ++i)
+            {
+                extraction_params.modes[i].first = 2;
+                extraction_params.modes[i].second = i;
+            }
+        }
+
+        pp.load("write_extraction", extraction_params.write_extraction, false);
 
         // Work out the minimum extraction level
         auto min_extraction_level_it =
