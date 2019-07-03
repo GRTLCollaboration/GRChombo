@@ -152,7 +152,7 @@ void PerfectFluid<eos_t>::compute(
     // data_t determinant = 1.0/vars.chi/vars.chi/vars.chi;
 
     //  useful vars
-    data_t uiui = 0.0;                                                                  
+    data_t uiui = 0.0;
     data_t shift_ui = 0.0;
     data_t lapse2 = geo_vars.lapse * geo_vars.lapse;
 
@@ -183,7 +183,7 @@ void PerfectFluid<eos_t>::compute(
     up_vars.u0 = 0.5 * shift_ui +
                 sqrt(0.25 * shift_ui * shift_ui + (uiui + 1) / lapse2);
 
-    up_vars.W = geo_vars.lapse  * pow(geo_vars.chi, -3) / vars.u0;
+    up_vars.W = geo_vars.lapse  * pow(geo_vars.chi, -1.5) / vars.u0;
 
     // Overwrite new values for fluid variables
     current_cell.store_vars(up_vars.density, c_density);
