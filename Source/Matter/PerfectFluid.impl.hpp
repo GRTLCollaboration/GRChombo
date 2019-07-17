@@ -26,27 +26,19 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
     FOR2(i, j)
     {
         out.Sij[i][j] =
-          vars.density * vars.u[i] * vars.u[j] +
-          vars.pressure * vars.h[i][j] / vars.chi;
+          vars.density * vars.enthalpy * vars.u[i] * vars.u[j]  +                              //FIXME: Check that u[i] is defined as u_i
+          vars.pressure * vars.h[i][j];
     }
 
     // S_i (note lower index) = - n^a T_ai
-    FOR1(i) { out.Si[i] =  vars.newlapse  *                                               //FIXME:  if one uses lapse it doesn't work, I donno why
-                        vars.density * vars.enthalpy * vars.u[i] * vars.u0; }
+    FOR1(i) { out.Si[i] =  vars.Z[i]; }
 
     // S = Tr_S_ij
     out.S = vars.chi * TensorAlgebra::compute_trace(out.Sij, h_UU);
 
 
     // rho = n^a n^b T_ab
-    out.rho = // 17.0319 +
-              vars.newlapse * vars.newlapse *                                            //FIXME:  if one uses lapse it doesn't work, I donno why
-             (vars.density * vars.enthalpy * vars.u0 * vars.u0 -
-              vars.pressure);
-
-    // pout() << "values of rho " << out.rho << std::endl;                              //FIXME: delete (debuggin test)
-    // pout() << "values of newlapse " << vars.newlapse << std::endl;
-    // pout() << "values of chi " << vars.chi << std::endl;
+    out.rho =  vars.E + vars.D;
 
     return out;
 }
@@ -63,32 +55,32 @@ void PerfectFluid<eos_t>::add_matter_rhs(
     const vars_t<data_t> &advec) const
 {
     // the rhs vars
-    FluidObject<data_t> rhs_fl;
-    rhs_fl.D = 0;
-    rhs_fl.E = 0;
+    // FluidObject<data_t> rhs_fl;
+    total_rhs.D = 0;
+    total_rhs.E = 0;
 
     // advection terms
-    FluidObject<data_t> advec_fl;
+    // FluidObject<data_t> advec_fl;
+    // advec.D = advec.D;
+    // advec.E = advec.E;
 
     // the vars
-    Vars<data_t> vars_fl;
-    vars_fl.W = vars.W;
-    vars_fl.D = vars.D;
-    vars_fl.E = vars.E;
-    vars_fl.Z0 = vars.Z0;
+    // Vars<data_t> vars_fl;
+    // vars.W = vars.W;
+    // vars.D = vars.D;
+    // vars.E = vars.E;
+    // vars.Z0 = vars.Z0;
 
-    FOR1(i) {
-      advec_fl.Z[i] = advec.Z[i];
+    // FOR1(i) {
+    //   advec.Z[i] = advec.Z[i];
+    //
+    //   vars.V[i] = vars.V[i];
+    //   vars.Z[i] = vars.Z[i];
+    //
+    //   // total_rhs.V[i] = 0;
+    //   total_rhs.Z[i] = 0;
+    // }
 
-      vars_fl.V[i] = vars.V[i];
-      vars_fl.Z[i] = vars.Z[i];
-
-      // rhs_fl.V[i] = 0;
-      rhs_fl.Z[i] = 0;
-    }
-
-    // useful variable
-    data_t dt_W = 0.0;                                                                  // FIXME: need to be defined
 
     {  // templated from (ScalarField)  matter_rhs_excl_potential                       // TODO: create indp function?
     /* ** starts braket */
@@ -97,36 +89,71 @@ void PerfectFluid<eos_t>::add_matter_rhs(
     const auto h_UU = compute_inverse_sym(vars.h);
     const auto chris = compute_christoffel(d1.h, h_UU);
 
-    // evolution equations for scalar field and (minus) its conjugate momentum
+
+    Tensor<2, data_t> K_tensor;
+    FOR2(i, j)
+    {
+      K_tensor[i][j] = (vars.A[i][j] + vars.h[i][j] * vars.K / 3.) / vars.chi;
+    }
+
+    total_rhs.D += advec.D + vars.newlapse * vars.K * vars.D;
+    total_rhs.E += advec.E + vars.newlapse * vars.K *
+                            (vars.pressure + vars.E);
+
+
+
     FOR1(i)
     {
-        rhs_fl.D += - d1.D[i] * vars_fl.V[i] - vars_fl.D * d1.V[i][i];
-        rhs_fl.E += - d1.E[i] * vars_fl.V[i] - vars_fl.E * d1.V[i][i] +
-                 ( - d1.W[i] * vars_fl.V[i] - vars_fl.W * d1.V[i][i] - dt_W)
-                 * vars.pressure;
+        total_rhs.D += - vars.newlapse * (d1.D[i] * vars.V[i]
+                                    + vars.D * d1.V[i][i])
+                       - d1.lapse[i] * vars.D * vars.V[i];
 
-        rhs_fl.Z[i] +=  - vars_fl.Z0 * vars.lapse * d1.lapse[i] +
-                    - vars.lapse * pow(vars.chi, 1.5) * d1.pressure[i]
-                    +  advec_fl.Z[i];
+        total_rhs.E += - vars.newlapse * (d1.E[i] * vars.V[i]
+                                    + vars.E * d1.V[i][i])
+                       - d1.lapse[i] * vars.E * vars.V[i]
+                       - vars.newlapse * (d1.pressure[i] * vars.V[i]
+                                    + vars.pressure * d1.V[i][i])
+                       - d1.lapse[i] * vars.pressure * vars.V[i]
+                       - (vars.D + vars.E + vars.pressure) *
+                                    vars.V[i] * d1.lapse[i];
+
+
+        total_rhs.Z[i] += advec.Z[i]
+                       + vars.newlapse * d1.pressure[i]
+                       + d1.lapse[i] * vars.pressure
+                       - (vars.E + vars.D) * d1.lapse[i]
+                       + vars.newlapse * vars.K * vars.Z[i];
     }
 
     FOR2(i, j)
     {
         // includes non conformal parts of chris not included in chris_ULL
-        rhs_fl.Z[i] += - d1.V[j][j] * vars_fl.Z[i] - d1.Z[j][i] * vars_fl.V[j];
+        total_rhs.Z[i] += - vars.newlapse * (d1.V[j][j] * vars.Z[i] +
+                                     d1.Z[j][i] * vars.V[j])
+                          - d1.lapse[j] * vars.V[j] * vars.Z[i];
+
+        total_rhs.D += - vars.newlapse * vars.D * vars.V[j] *
+                            chris.ULL[i][i][j];
+
+        total_rhs.E += - vars.newlapse * vars.E * vars.V[j] *
+                            chris.ULL[i][i][j]
+                       - vars.newlapse * vars.pressure * vars.V[j] *
+                            chris.ULL[i][i][j]
+                       + (vars.D + vars.E + vars.pressure) *
+                            vars.newlapse * vars.V[i] * vars.V[j] *
+                            K_tensor[i][j];
 
 
         FOR1(k)
         {
-
-            FOR2(m,n)
-            {
-                rhs_fl.Z[i] +=  0.5 * h_UU[m][j] * h_UU[n][k]
-                                    * vars_fl.Z[j] * vars_fl.Z[n]
-                                    * d1.h[i][j][k] / vars_fl.Z0;
-            }
+          total_rhs.Z[i] += - vars.newlapse * vars.Z[i] *
+                                  vars.V[j] * chris.ULL[k][k][j]
+                            + vars.newlapse * vars.V[j] *
+                                  vars.Z[k] * chris.ULL[k][j][i];
         }
     }
+
+    // pout() << "rhs D:  " <<  total_rhs.D   << std::endl;
 
     /* ** ends braket */
     }
@@ -143,53 +170,57 @@ void PerfectFluid<eos_t>::compute(
     const auto geo_vars = current_cell.template load_vars<GeoVars>();
     auto up_vars = current_cell.template load_vars<Vars>();
 
-    data_t pressure = 0.0;
     data_t enthalpy = 0.0;
-    my_eos.compute_eos(pressure, enthalpy, vars);
+    data_t pressure = vars.pressure;  // A Guess, For non-dust we need an
+                                      // algorithm to minimize residual
+                                      // ( See Alcubierre 245)
+    Tensor<1, data_t> V_i; // with lower indices: V_i
+    data_t V2 = 0.0;
 
     // Inverse metric
     const auto h_UU = TensorAlgebra::compute_inverse_sym(geo_vars.h);
-    // data_t determinant = 1.0/vars.chi/vars.chi/vars.chi;
 
-    //  useful vars
-    data_t uiui = 0.0;
-    data_t shift_ui = 0.0;
-    data_t lapse2 = geo_vars.lapse * geo_vars.lapse;
-
-
-    // pout() << "values of rho " << out.rho << std::endl;                              //FIXME: delete (debuggin test)
-    // pout() << "values of geo lapse " << geo_vars.lapse << std::endl;
-    // pout() << "values of chi " << vars.chi << std::endl;
-
-    FOR2(i, j)
-    {
-      uiui += h_UU[i][j] * vars.u[i] * vars.u[j];
-    }
     FOR1(i)
     {
-      shift_ui += geo_vars.shift[i] * vars.u[i];     // See page 250 Shibata's book
+      V_i[i] = vars.Z[i] / (vars.E + vars.D + pressure);
     }
-    shift_ui = shift_ui / lapse2;
+    FOR2(i,j)
+    {
+      V2 +=  V_i[i] * h_UU[i][j] * V_i[j];
+    }
 
-    // fluit variables
-    up_vars.density = vars.D / vars.W;
-    up_vars.energy = vars.E / vars.D;
+    up_vars.W = 1.0 / sqrt(1.0 - V2);
+    up_vars.density = vars.D / up_vars.W;
+    // up_vars.energy = (vars.E + vars.D + pressure) / vars.D / up_vars.W
+    //                   - pressure / up_vars.density - 1.0;
+
+    up_vars.energy = (vars.E + vars.D * ( 1 - up_vars.W)
+                             + pressure * (1 - up_vars.W * up_vars.W))
+                    / vars.D / up_vars.W;
+
+
+    // TODO:  Compute & minimize residual: Res = p(density, energy) - pressure
+    // Needed for non-trivial pressure ( See Alcubierre 245)
+
+
+    my_eos.compute_eos(pressure, enthalpy, vars);
     up_vars.pressure = pressure;
     up_vars.enthalpy = enthalpy;
 
-    FOR1(i) { up_vars.u[i] = vars.Z[i] / vars.D / up_vars.enthalpy;  }
+    FOR1(i) { up_vars.u[i] = V_i[i] * up_vars.W; }
 
-    // from : -\lapse^2 * u_0^2 + (u_0 \shift^i u_i  + u_i h^{ij} u_l = -1
-    up_vars.u0 = 0.5 * shift_ui +
-                sqrt(0.25 * shift_ui * shift_ui + (uiui + 1) / lapse2);
+    up_vars.u0 = up_vars.W / vars.newlapse;
 
-    up_vars.W = geo_vars.lapse  * pow(geo_vars.chi, -1.5) / vars.u0;
+    FOR1(i) { up_vars.V[i] = up_vars.u[i] / geo_vars.lapse / up_vars.u0
+                              + geo_vars.shift[i] / geo_vars.lapse;  }
+
 
     // Overwrite new values for fluid variables
     current_cell.store_vars(up_vars.density, c_density);
     current_cell.store_vars(up_vars.energy, c_energy);
     current_cell.store_vars(up_vars.pressure, c_pressure);
     current_cell.store_vars(up_vars.enthalpy, c_enthalpy);
+    current_cell.store_vars(up_vars.V, GRInterval<c_V1, c_V3>());
     current_cell.store_vars(up_vars.u, GRInterval<c_u1, c_u3>());
     current_cell.store_vars(up_vars.u0, c_u0);
     current_cell.store_vars(up_vars.W, c_W);
@@ -197,3 +228,7 @@ void PerfectFluid<eos_t>::compute(
 
 
 #endif /* PERFECTFLUID_IMPL_HPP_ */
+
+
+
+//                                                    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TODO %%%%%%%%%%%%%%%%%%
