@@ -26,7 +26,7 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
     FOR2(i, j)
     {
         out.Sij[i][j] =
-          vars.density * vars.enthalpy * vars.u[i] * vars.u[j]  +                              //FIXME: Check that u[i] is defined as u_i
+          vars.density * vars.enthalpy * vars.u[i] * vars.u[j]  +
           vars.pressure * vars.h[i][j];
     }
 
@@ -55,32 +55,8 @@ void PerfectFluid<eos_t>::add_matter_rhs(
     const vars_t<data_t> &advec) const
 {
     // the rhs vars
-    // FluidObject<data_t> rhs_fl;
     total_rhs.D = 0;
     total_rhs.E = 0;
-
-    // advection terms
-    // FluidObject<data_t> advec_fl;
-    // advec.D = advec.D;
-    // advec.E = advec.E;
-
-    // the vars
-    // Vars<data_t> vars_fl;
-    // vars.W = vars.W;
-    // vars.D = vars.D;
-    // vars.E = vars.E;
-    // vars.Z0 = vars.Z0;
-
-    // FOR1(i) {
-    //   advec.Z[i] = advec.Z[i];
-    //
-    //   vars.V[i] = vars.V[i];
-    //   vars.Z[i] = vars.Z[i];
-    //
-    //   // total_rhs.V[i] = 0;
-    //   total_rhs.Z[i] = 0;
-    // }
-
 
     {  // templated from (ScalarField)  matter_rhs_excl_potential                       // TODO: create indp function?
     /* ** starts braket */
@@ -153,8 +129,6 @@ void PerfectFluid<eos_t>::add_matter_rhs(
         }
     }
 
-    // pout() << "rhs D:  " <<  total_rhs.D   << std::endl;
-
     /* ** ends braket */
     }
 }
@@ -199,7 +173,7 @@ void PerfectFluid<eos_t>::compute(
                     / vars.D / up_vars.W;
 
 
-    // TODO:  Compute & minimize residual: Res = p(density, energy) - pressure
+    // TODO:  Compute & minimize residual: Res = p(density, energy) - pressure       // See TODO
     // Needed for non-trivial pressure ( See Alcubierre 245)
 
 
@@ -228,7 +202,3 @@ void PerfectFluid<eos_t>::compute(
 
 
 #endif /* PERFECTFLUID_IMPL_HPP_ */
-
-
-
-//                                                    // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% TODO %%%%%%%%%%%%%%%%%%

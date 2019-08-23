@@ -22,7 +22,7 @@ class DefaultEOS
     {
         // The default dust EOS
         pressure = 0.0;
-        enthalpy = 1.0;  // density * velocity**2
+        enthalpy = 1.0;  // mass + energy + pressure/density
     }
 };
 
