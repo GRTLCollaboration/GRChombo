@@ -38,7 +38,7 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
 
 
     // rho = n^a n^b T_ab
-    out.rho =  vars.E + vars.D;
+    out.rho =  vars.density * vars.enthalpy * vars.W * vars.W - vars.pressure;
 
     return out;
 }
