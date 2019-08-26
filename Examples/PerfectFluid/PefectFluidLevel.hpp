@@ -29,9 +29,8 @@ class PerfectFluidLevel : public GRAMRLevel
     // Inherit the contructors from GRAMRLevel
     using GRAMRLevel::GRAMRLevel;
 
-    // FIXME: Remove?
     // // Typedef for scalar field
-    typedef PerfectFluid<EOS> PerfectFluidWithEOS;                                  //FIXME PerfectFluidWithEOS  should be defined here 
+    typedef PerfectFluid<EOS> PerfectFluidWithEOS;                                  //FIXME PerfectFluidWithEOS  should be defined here
 
     //! Things to do at the end of the advance step, after RK4 calculation
     virtual void specificAdvance();

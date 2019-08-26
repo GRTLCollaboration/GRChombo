@@ -24,8 +24,8 @@
      of the constraints. This includes the Energy Momentum Tensor, and
      the matter evolution terms. In this case, a Perfect Fluid,
      the primary matter elements are: rho (rest mass density), epsilon
-     (internal energy) and u-ith (the 4-velocity of the fluid), both pressure
-     and enthalpy depend on rho and epsilon. For convinence, other derived
+     (internal energy) and u-ith (the 4-velocity of the fluid), both pressure and
+     enthalpy depend on rho and epsilon. For convinence, other derived
      intermidiete derived variable W, D, Vi are defined for the time evolution.
      This class is templated over a EOS function EOS_t which the
      user must specify in a class, although a default is provided which
@@ -33,6 +33,8 @@
      It assumes minimal coupling of the field to gravity.
      \sa MatterCCZ4(), ConstraintsMatter()
 */
+
+
 
 template <class eos_t = DefaultEOS> class PerfectFluid
 {
@@ -45,7 +47,7 @@ template <class eos_t = DefaultEOS> class PerfectFluid
     PerfectFluid(const eos_t a_eos) : my_eos(a_eos) {}
 
     //! Structure containing the variables for the matter fields (for RHS)
-    template <class data_t> struct FluidObject
+    template <class data_t> struct FluidObject                                    //FIXME: needed?
     {
         // evolving vars
         data_t D;
@@ -74,7 +76,7 @@ template <class eos_t = DefaultEOS> class PerfectFluid
         data_t E;
         Tensor<1, data_t> Z;
 
-        data_t newlapse;                                                             //FIXME:  if one uses lapse it doesn't work, I don't know why
+        data_t newlapse;                                                             //FIXME:  if one uses lapse it doesn't work, I donno why
 
        /// Defines the mapping between members of Vars and Chombo grid
        /// variables (enum in User_Variables)
@@ -106,7 +108,7 @@ template <class eos_t = DefaultEOS> class PerfectFluid
 
 
            VarsTools::define_enum_mapping(mapping_function, c_lapse,
-                newlapse);                                                          //FIXME:  if one uses lapse it doesn't work, I don't know why
+                newlapse);                                                          //FIXME:  if one uses lapse it doesn't work, I donno why
 
        }
    };
@@ -143,10 +145,14 @@ template <class eos_t = DefaultEOS> class PerfectFluid
       }
   };
 
+
+
    //! Structure containing the rhs variables for the matter fields requiring
    // //!  2nd derivs
    template <class data_t> struct Diff2Vars
    {
+       // /*  Commented out as no variables needed so far
+
        data_t D;
 
        /// Defines the mapping between members of Vars and Chombo grid
@@ -157,6 +163,7 @@ template <class eos_t = DefaultEOS> class PerfectFluid
            VarsTools::define_enum_mapping(mapping_function, c_D, D);
        }
 
+       // */
    };
 
    //! The function which calculates the EM Tensor, given the vars and
@@ -189,9 +196,7 @@ template <class eos_t = DefaultEOS> class PerfectFluid
 
 };
 
+
 #include "PerfectFluid.impl.hpp"
 
 #endif /* PERFECTFLUID_HPP_ */
-
-
-                                                                                  //FIXME: Stopped  coding here!

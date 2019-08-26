@@ -26,7 +26,7 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
     FOR2(i, j)
     {
         out.Sij[i][j] =
-          vars.density * vars.enthalpy * vars.u[i] * vars.u[j]  +
+          vars.density * vars.enthalpy * vars.u[i] * vars.u[j]  +                              //FIXME: Check that u[i] is defined as u_i
           vars.pressure * vars.h[i][j];
     }
 
@@ -55,8 +55,32 @@ void PerfectFluid<eos_t>::add_matter_rhs(
     const vars_t<data_t> &advec) const
 {
     // the rhs vars
+    // FluidObject<data_t> rhs_fl;
     total_rhs.D = 0;
     total_rhs.E = 0;
+
+    // advection terms
+    // FluidObject<data_t> advec_fl;
+    // advec.D = advec.D;
+    // advec.E = advec.E;
+
+    // the vars
+    // Vars<data_t> vars_fl;
+    // vars.W = vars.W;
+    // vars.D = vars.D;
+    // vars.E = vars.E;
+    // vars.Z0 = vars.Z0;
+
+    // FOR1(i) {
+    //   advec.Z[i] = advec.Z[i];
+    //
+    //   vars.V[i] = vars.V[i];
+    //   vars.Z[i] = vars.Z[i];
+    //
+    //   // total_rhs.V[i] = 0;
+    //   total_rhs.Z[i] = 0;
+    // }
+
 
     {  // templated from (ScalarField)  matter_rhs_excl_potential                       // TODO: create indp function?
     /* ** starts braket */
@@ -129,6 +153,8 @@ void PerfectFluid<eos_t>::add_matter_rhs(
         }
     }
 
+    // pout() << "rhs D:  " <<  total_rhs.D   << std::endl;
+
     /* ** ends braket */
     }
 }
@@ -144,40 +170,65 @@ void PerfectFluid<eos_t>::compute(
     const auto geo_vars = current_cell.template load_vars<GeoVars>();
     auto up_vars = current_cell.template load_vars<Vars>();
 
-    data_t enthalpy = 0.0;
-    data_t pressure = vars.pressure;  // A Guess, For non-dust we need an
-                                      // algorithm to minimize residual
-                                      // ( See Alcubierre 245)
     Tensor<1, data_t> V_i; // with lower indices: V_i
     data_t V2 = 0.0;
 
     // Inverse metric
     const auto h_UU = TensorAlgebra::compute_inverse_sym(geo_vars.h);
 
-    FOR1(i)
-    {
-      V_i[i] = vars.Z[i] / (vars.E + vars.D + pressure);
+    data_t enthalpy = 0.0;
+    data_t pressure = vars.pressure;
+    data_t residual = 1e6;
+    data_t threshold_residual = 1e-4;                                                 // TODO: aribtrary value?
+    data_t pressure_guess;
+    data_t criterion;
+    bool condition = true;
+
+    int cont = 0;
+
+    /* Iterative minimization of the residual to calculate the Presseure
+      (See Alcubierre p. 245) */
+    while (condition) {
+
+        // TODO: implement a iter_max for non-convergence                             // TODO
+        // (in principle it should easily converge all the time)
+
+        pressure_guess = pressure;
+
+        FOR1(i)
+        {
+          V_i[i] = vars.Z[i] / (vars.E + vars.D + pressure_guess);
+        }
+        FOR2(i,j)
+        {
+          V2 +=  V_i[i] * h_UU[i][j] * V_i[j];
+        }
+
+        up_vars.W = 1.0 / sqrt(1.0 - V2);
+        up_vars.density = vars.D / up_vars.W;
+        up_vars.energy = (vars.E + vars.D * ( 1 - up_vars.W)
+                         + pressure_guess * (1 - up_vars.W * up_vars.W))
+                         / vars.D / up_vars.W;
+
+
+        my_eos.compute_eos(pressure, enthalpy, vars);
+        residual =  (pressure - pressure_guess);
+        pressure += 0.5 * residual;
+
+
+        criterion = simd_compare_gt(
+                abs(residual), threshold_residual );
+
+        // condition = simd_conditional_bool(true);
+        // condition = criterion; //simd_conditional(criterion, true, false);
+
+        condition = criterion;
+        cont += 1;
     }
-    FOR2(i,j)
-    {
-      V2 +=  V_i[i] * h_UU[i][j] * V_i[j];
-    }
 
-    up_vars.W = 1.0 / sqrt(1.0 - V2);
-    up_vars.density = vars.D / up_vars.W;
-    // up_vars.energy = (vars.E + vars.D + pressure) / vars.D / up_vars.W
-    //                   - pressure / up_vars.density - 1.0;
+    pout() << "cont:  " <<  cont << "\n" << std::endl;
+    // my_eos.compute_eos(pressure, enthalpy, vars);
 
-    up_vars.energy = (vars.E + vars.D * ( 1 - up_vars.W)
-                             + pressure * (1 - up_vars.W * up_vars.W))
-                    / vars.D / up_vars.W;
-
-
-    // TODO:  Compute & minimize residual: Res = p(density, energy) - pressure       // See TODO
-    // Needed for non-trivial pressure ( See Alcubierre 245)
-
-
-    my_eos.compute_eos(pressure, enthalpy, vars);
     up_vars.pressure = pressure;
     up_vars.enthalpy = enthalpy;
 
@@ -199,6 +250,7 @@ void PerfectFluid<eos_t>::compute(
     current_cell.store_vars(up_vars.u0, c_u0);
     current_cell.store_vars(up_vars.W, c_W);
 }
+
 
 
 #endif /* PERFECTFLUID_IMPL_HPP_ */
