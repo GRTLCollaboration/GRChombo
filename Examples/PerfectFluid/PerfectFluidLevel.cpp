@@ -14,19 +14,14 @@
 #include "MatterCCZ4.hpp"
 
 // For constraints calculation
-// #include "MatterConstraints.hpp"
-#include "ExtendedMatterConstraints.hpp"
-
-// For tag cells
-// #include "PhiAndKTaggingCriterion.hpp"
+#include "MatterConstraints.hpp"
+// #include "ExtendedMatterConstraints.hpp"
 
 // Problem specific includes
 #include "ChiRelaxation.hpp"   // $GRCHOMBO/Source/Matter/
 #include "ComputePack.hpp"
 #include "SetValue.hpp"
 #include "PerfectFluid.hpp"     // $GRCHOMBO/Source/Matter/
-//#include "ScalarGauss.hpp"
-//#include "Potential.hpp"
 
 // Things to do at each advance step, after the RK4 is calculated
 void PerfectFluidLevel::specificAdvance()
@@ -86,7 +81,7 @@ void PerfectFluidLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
         PerfectFluidWithEOS perfect_fluid(eos);
         ChiRelaxation<PerfectFluidWithEOS> relaxation(
             perfect_fluid, m_dx, m_p.relaxspeed, m_p.G_Newton);
-        SetValue set_other_values_zero(0.0, Interval(c_h11, c_Mom3));               // FIXME: check:  from c_h11
+        SetValue set_other_values_zero(0.0, Interval(c_h11, c_Mom3));  
         auto compute_pack1 =
             make_compute_pack(relaxation, set_other_values_zero);
         BoxLoops::loop(compute_pack1, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
