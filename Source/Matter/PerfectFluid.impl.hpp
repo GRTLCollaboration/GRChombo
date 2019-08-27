@@ -26,7 +26,7 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
     FOR2(i, j)
     {
         out.Sij[i][j] =
-          vars.density * vars.enthalpy * vars.u[i] * vars.u[j]  +                              //FIXME: Check that u[i] is defined as u_i
+          vars.density * vars.enthalpy * vars.u[i] * vars.u[j]  +     
           vars.pressure * vars.h[i][j];
     }
 
