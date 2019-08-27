@@ -5,7 +5,7 @@ import os
 """
 SET PARAMETERS
 """
-path = "./"
+path = "./init/"
 filename = path +"DustMatter_Homogeneous.3d.hdf5"  # Name of the new file to create
 
 EXTENDED = False
@@ -161,7 +161,7 @@ print("K mean:",  np.mean(dset['K']), "   ", np.sqrt(np.mean(dset['D']) *24*np.p
 print("E mean:",  np.mean(dset['E']))
 print("D mean:",  np.mean(dset['D']))
 
-print("Prassure mean:",  np.mean(dset['pressure']),  "  ", rho_mean/3)
+print("Prassure mean:",  np.mean(dset['pressure']))
 # print("phi mean:",  np.mean( np.hstack(dset['phi'])))
 
 
