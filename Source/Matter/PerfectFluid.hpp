@@ -46,15 +46,6 @@ template <class eos_t = DefaultEOS> class PerfectFluid
     //!  Constructor of class PerfectFluid, inputs are the matter parameters.
     PerfectFluid(const eos_t a_eos) : my_eos(a_eos) {}
 
-    //! Structure containing the variables for the matter fields (for RHS)
-    template <class data_t> struct FluidObject                                    //FIXME: needed?
-    {
-        // evolving vars
-        data_t D;
-        data_t E;
-        Tensor<1, data_t> Z;
-    };
-
     //! Structure containing the rhs variables for the matter fields
     template <class data_t> struct Vars
     {
@@ -116,7 +107,7 @@ template <class eos_t = DefaultEOS> class PerfectFluid
    //! Structure containing the rhs variables for the matter fields
    template <class data_t> struct GeoVars
    {
-       // geo variables
+       // geometric variables
        data_t lapse;
        data_t chi;
        Tensor<2, data_t> h;
@@ -139,8 +130,6 @@ template <class eos_t = DefaultEOS> class PerfectFluid
 
           VarsTools::define_symmetric_enum_mapping(mapping_function,
             GRInterval<c_h11, c_h33>(), h);
-
-
 
       }
   };

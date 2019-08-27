@@ -14,13 +14,7 @@ class EquationOfState
     struct params_t
     {
       double omega;
-        // double evo_density;
-        // double evo_energy;
-        // double evo_pressure;
-        // double evo_u0;
-        // double evo_u1;
-        // double evo_u2;
-        // double evo_u3;
+      double mass;
     };
 
   private:
@@ -37,7 +31,7 @@ class EquationOfState
    {
 
 	       pressure = m_params.omega * vars.density;
-	       enthalpy =  1.0 + vars.energy + pressure / vars.density;
+	       enthalpy = m_params.mass + vars.energy + pressure / vars.density;
 
    }
 };

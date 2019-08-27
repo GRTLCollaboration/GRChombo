@@ -1,9 +1,11 @@
 #Params for runtime inputs
 
 verbosity = 1
-chk_prefix = Large_ScalarField_
-plot_prefix = Large_ScalarFieldp_
-#restart_file = Large_ScalarField_004000.3d.hdf5
+chk_prefix = PerfectFluid_
+plot_prefix = PerfectFluid_p_
+#restart_file = PerfectFluid_000000.3d.hdf5
+#restart_file = init/Radiation_Homogeneous.3d.hdf5
+#restart_file = init/DustMatter_Homogeneous.3d.hdf5
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
@@ -22,7 +24,7 @@ regrid_threshold_phi = 0.01
 
 # Level data
 # Maximum number of times you can regrid above coarsest level
-max_level = 4 # There are (max_level+1) grids, so min is zero
+max_level = 0 # There are (max_level+1) grids, so min is zero
 # Frequency of regridding at each level
 # Need one for each level, ie max_level+1 items
 # Generally you do not need to regrid frequently on every level
@@ -43,8 +45,6 @@ checkpoint_interval = 10
 plot_interval = 0
 dt_multiplier = 0.25
 stop_time = 5000
-
-#max_steps = 3107201218 # CJ added, but does not work so commented out (it gives negative max_steps parm)
 
 #Lapse evolution
 lapse_power = 1.0
@@ -72,16 +72,10 @@ sigma = 0.3
 # G_Newton = 1.0
 
 # SF Initial data
-amplitudeSF = 0.01
-bkgSF = 4.0     ## CURRENTLY HARDCODED IN Source/I...C../S..F../ScalarBubble.impl.hpp
-widthSF = 5.0
-r_zero =  0.0
-scalar_mass =  2.5e-12 # 0.001
-# parameter for bubble centre - defaulted to center of grid
-# so only uncomment if you want to place it off center
-#center = 32 32 32
+mass = 0 # Fluid mass: 0 for Radiation; 1 for matter
+omega = 0.333333
 
 # Relaxation paramters
 # how long and how fast to relax
-relaxtime =  40.0
+relaxtime =  0.0
 relaxspeed = 0.01

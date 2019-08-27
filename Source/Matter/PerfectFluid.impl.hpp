@@ -54,41 +54,12 @@ void PerfectFluid<eos_t>::add_matter_rhs(
     const diff2_vars_t<Tensor<2, data_t>> &d2,
     const vars_t<data_t> &advec) const
 {
-    // the rhs vars
-    // FluidObject<data_t> rhs_fl;
-    total_rhs.D = 0;
-    total_rhs.E = 0;
-
-    // advection terms
-    // FluidObject<data_t> advec_fl;
-    // advec.D = advec.D;
-    // advec.E = advec.E;
-
-    // the vars
-    // Vars<data_t> vars_fl;
-    // vars.W = vars.W;
-    // vars.D = vars.D;
-    // vars.E = vars.E;
-    // vars.Z0 = vars.Z0;
-
-    // FOR1(i) {
-    //   advec.Z[i] = advec.Z[i];
-    //
-    //   vars.V[i] = vars.V[i];
-    //   vars.Z[i] = vars.Z[i];
-    //
-    //   // total_rhs.V[i] = 0;
-    //   total_rhs.Z[i] = 0;
-    // }
-
-
-    {  // templated from (ScalarField)  matter_rhs_excl_potential                       // TODO: create indp function?
-    /* ** starts braket */
-
     using namespace TensorAlgebra;
     const auto h_UU = compute_inverse_sym(vars.h);
     const auto chris = compute_christoffel(d1.h, h_UU);
 
+	total_rhs.D = 0;
+    total_rhs.E = 0;
 
     Tensor<2, data_t> K_tensor;
     FOR2(i, j)
@@ -152,11 +123,6 @@ void PerfectFluid<eos_t>::add_matter_rhs(
                                   vars.Z[k] * chris.ULL[k][j][i];
         }
     }
-
-    // pout() << "rhs D:  " <<  total_rhs.D   << std::endl;
-
-    /* ** ends braket */
-    }
 }
 
 
@@ -190,9 +156,6 @@ void PerfectFluid<eos_t>::compute(
       (See Alcubierre p. 245) */
     while (condition) {
 
-        // TODO: implement a iter_max for non-convergence                             // TODO
-        // (in principle it should easily converge all the time)
-
         pressure_guess = pressure;
 
         FOR1(i)
@@ -219,15 +182,9 @@ void PerfectFluid<eos_t>::compute(
         criterion = simd_compare_gt(
                 abs(residual), threshold_residual );
 
-        // condition = simd_conditional_bool(true);
-        // condition = criterion; //simd_conditional(criterion, true, false);
-
         condition = criterion;
         cont += 1;
     }
-
-    pout() << "cont:  " <<  cont << "\n" << std::endl;
-    // my_eos.compute_eos(pressure, enthalpy, vars);
 
     up_vars.pressure = pressure;
     up_vars.enthalpy = enthalpy;
@@ -250,7 +207,6 @@ void PerfectFluid<eos_t>::compute(
     current_cell.store_vars(up_vars.u0, c_u0);
     current_cell.store_vars(up_vars.W, c_W);
 }
-
 
 
 #endif /* PERFECTFLUID_IMPL_HPP_ */
