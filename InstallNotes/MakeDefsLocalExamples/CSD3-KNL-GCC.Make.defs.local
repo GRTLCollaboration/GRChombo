@@ -14,7 +14,7 @@ HDFINCFLAGS      = -I/usr/local/software/spack/current/opt/spack/linux-rhel7-x86
 HDFLIBFLAGS      = -L/usr/local/software/spack/current/opt/spack/linux-rhel7-x86_64/gcc-5.4.0/hdf5-1.10.4-7zl2gouwqhefpanaa2cegxe7hj2672tc/lib -lhdf5 -lz
 HDFMPIINCFLAGS   = -I/usr/local/software/spack/current/opt/spack/linux-rhel7-x86_64/gcc-5.4.0/hdf5-1.10.4-7zl2gouwqhefpanaa2cegxe7hj2672tc/include
 HDFMPILIBFLAGS   = -L/usr/local/software/spack/current/opt/spack/linux-rhel7-x86_64/gcc-5.4.0/hdf5-1.10.4-7zl2gouwqhefpanaa2cegxe7hj2672tc/lib -lhdf5 -lz
-USE_MT           = TRUE
+USE_MT           = FALSE
 cxxdbgflags      = -g
 cxxoptflags      = -O3 -march=knl
 fdbgflags        = -g

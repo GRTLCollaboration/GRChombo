@@ -86,7 +86,9 @@ void mainFinalize()
 {
 #ifdef CH_MPI
     // Exit MPI
+#ifdef CH_USE_MEMORY_TRACKING
     dumpmemoryatexit();
+#endif
     MPI_Finalize();
 #endif
 }
