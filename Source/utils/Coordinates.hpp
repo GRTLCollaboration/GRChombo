@@ -46,7 +46,7 @@ template <class data_t> class Coordinates
         out = (position + 0.5) * dx - center_distance;
     }
 
-    static typename std::enable_if_t<(simd_traits<double>::simd_len > 1), void>
+    typename std::enable_if_t<(sizeof(data_t) > sizeof(double)), void>
     compute_coord(simd<double> &out, int position, double dx,
                   double center_distance = 0)
     {
