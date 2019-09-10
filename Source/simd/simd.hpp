@@ -93,7 +93,7 @@ template <typename t> struct simd
     {
         return simd(op(m_value, arg));
     }
-#if !defined(__x86_64__)
+#if !defined(__x86_64__) && !defined(__ARM_NEON)
     static const int simd_len = 1;
 #endif
 };
