@@ -102,7 +102,10 @@ template <typename t> struct simd
 
 #if defined(__x86_64__)
 #include "x64/x64.hpp" //Define simd-functions whose implementation depends on the architecture
+#elif defined(__ARM_NEON)
+#include "arm/neon.hpp"
 #endif
+
 
 // We have defined various simd-specific calls (simd_compare_lt,
 // simd_compare_gt, min, max etc.)  For simd<t> these are defined in the various
