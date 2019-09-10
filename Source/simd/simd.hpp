@@ -93,6 +93,9 @@ template <typename t> struct simd
     {
         return simd(op(m_value, arg));
     }
+#if !defined(__x86_64__)
+    static const int simd_len = 1;
+#endif
 };
 
 #include "simd_base.hpp" //Define all the simd-functions whose implementation does not depend on the architecture
