@@ -16,3 +16,9 @@ BH_0fast Total simulation time (mins): 0.169227.
 BH_0fast_native Total simulation time (mins): 0.164469.
 BH_0fast_native Total simulation time (mins): 0.163522.
 BH_0fast_native Total simulation time (mins): 0.164143.
+BH_0fast_vect Total simulation time (mins): 0.169491.
+BH_0fast_vect Total simulation time (mins): 0.169257.
+BH_0fast_vect Total simulation time (mins): 0.168975.
+BH_0fast_native_vect Total simulation time (mins): 0.164706.
+BH_0fast_native_vect Total simulation time (mins): 0.195718.
+BH_0fast_native_vect Total simulation time (mins): 0.164334.
