@@ -39,7 +39,7 @@ checkpoint_interval = -1
 plot_interval = 0
 dt_multiplier = 0.25
 stop_time = 1.0
-max_steps = 2
+max_steps = 1
 
 nan_check = 1
 
