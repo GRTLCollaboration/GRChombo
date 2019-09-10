@@ -21,7 +21,7 @@ void BinaryBHLevel::specificAdvance()
 {
     // Enforce the trace free A_ij condition and positive chi and alpha
     BoxLoops::loop(make_compute_pack(TraceARemoval(), PositiveChiAndAlpha()),
-                   m_state_new, m_state_new, INCLUDE_GHOST_CELLS, disable_simd());
+                   m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
 
     // Check for nan's
     if (m_p.nan_check)
@@ -41,14 +41,14 @@ void BinaryBHLevel::initialData()
     // First set everything to zero (to avoid undefinded values in constraints)
     // then calculate initial data
     BoxLoops::loop(make_compute_pack(SetValue(0.), binary), m_state_new,
-                   m_state_new, INCLUDE_GHOST_CELLS, disable_simd());
+                   m_state_new, INCLUDE_GHOST_CELLS);
 }
 
 void BinaryBHLevel::preCheckpointLevel()
 {
     fillAllGhosts();
     BoxLoops::loop(Constraints(m_dx), m_state_new, m_state_new,
-                   EXCLUDE_GHOST_CELLS, disable_simd());
+                   EXCLUDE_GHOST_CELLS);
 }
 
 void BinaryBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
@@ -56,21 +56,21 @@ void BinaryBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
 {
     // Enforce positive chi and alpha and trace free A
     BoxLoops::loop(make_compute_pack(TraceARemoval(), PositiveChiAndAlpha()),
-                   a_soln, a_soln, INCLUDE_GHOST_CELLS, disable_simd());
+                   a_soln, a_soln, INCLUDE_GHOST_CELLS);
 
     // Calculate CCZ4 right hand side and set constraints to zero to avoid
     // undefined values
     BoxLoops::loop(
         make_compute_pack(CCZ4(m_p.ccz4_params, m_dx, m_p.sigma),
                           SetValue(0, Interval(c_Ham, NUM_VARS - 1))),
-        a_soln, a_rhs, EXCLUDE_GHOST_CELLS, disable_simd());
+        a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
 }
 
 void BinaryBHLevel::specificUpdateODE(GRLevelData &a_soln,
                                       const GRLevelData &a_rhs, Real a_dt)
 {
     // Enforce the trace free A_ij condition
-    BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS, disable_simd());
+    BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
 }
 
 void BinaryBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
@@ -78,7 +78,7 @@ void BinaryBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
 {
     BoxLoops::loop(
         ChiExtractionTaggingCriterion(m_dx, m_level, m_p.extraction_params),
-        current_state, tagging_criterion, disable_simd());
+        current_state, tagging_criterion);
 }
 
 void BinaryBHLevel::specificPostTimeStep()
@@ -89,7 +89,7 @@ void BinaryBHLevel::specificPostTimeStep()
         // Populate the Weyl Scalar values on the grid
         fillAllGhosts();
         BoxLoops::loop(Weyl4(m_p.extraction_params.extraction_center, m_dx),
-                       m_state_new, m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
+                       m_state_new, m_state_new, EXCLUDE_GHOST_CELLS);
 
         // Do the extraction on the min extraction level
         if (m_level == m_p.extraction_params.min_extraction_level)
@@ -110,7 +110,7 @@ void BinaryBHLevel::prePlotLevel()
     if (m_p.activate_extraction == 1)
     {
         BoxLoops::loop(Weyl4(m_p.extraction_params.extraction_center, m_dx),
-                       m_state_new, m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
+                       m_state_new, m_state_new, EXCLUDE_GHOST_CELLS);
     }
 }
 
