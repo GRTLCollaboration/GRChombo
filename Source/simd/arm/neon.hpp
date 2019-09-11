@@ -85,6 +85,11 @@ template <> struct simd<double> : public simd_base<double>
         return vmaxq_f64(a, b);
     }
 
+    friend ALWAYS_INLINE simd simd_sqrt(const simd &a)
+    {
+        return vsqrtq_f64(a);
+    }
+
 };
 
 
