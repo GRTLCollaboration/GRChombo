@@ -6,6 +6,8 @@
 #ifndef MPILAYOUT_HPP_
 #define MPILAYOUT_HPP_
 
+#include <vector>
+
 class MPILayout
 {
 

@@ -73,7 +73,7 @@ inline void set_global_cell_coordinates(const IntVect current_integer_coords)
     check_no_omp();
     s_current_integer_coords = current_integer_coords;
 }
-}
+} // namespace EquationDebugging
 #endif
 
 #endif /* DEBUGGINGTOOLS_HPP_ */

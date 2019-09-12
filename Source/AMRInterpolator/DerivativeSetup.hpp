@@ -6,6 +6,8 @@
 #ifndef DERIVATIVESETUP_HPP_
 #define DERIVATIVESETUP_HPP_
 
+#include "Derivative.hpp"
+
 const Derivative Derivative::LOCAL;
 
 const Derivative Derivative::dx(0);

@@ -30,7 +30,7 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("momentumA", bh1_params.momentum);
         pp.load("massB", bh2_params.mass);
         pp.load("centerB", bh2_params.center);
-        pp.load("momentumB", bh1_params.momentum);
+        pp.load("momentumB", bh2_params.momentum);
         pp.load("activate_extraction", activate_extraction, 0);
     }
 

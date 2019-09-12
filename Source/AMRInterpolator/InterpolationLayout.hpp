@@ -6,6 +6,8 @@
 #ifndef INTERPOLATIONLAYOUT_HPP_
 #define INTERPOLATIONLAYOUT_HPP_
 
+#include <vector>
+
 class InterpolationLayout
 {
   private:

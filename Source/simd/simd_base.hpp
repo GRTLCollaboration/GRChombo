@@ -94,7 +94,7 @@ template <typename t> struct simd_base
         t out_arr[simd_traits<t>::simd_len];
         simd<t>::store(in_arr, m_value);
 
-#pragma simd vectorlengthfor(t)
+#pragma omp simd
         for (int i = 0; i < simd_traits<t>::simd_len; ++i)
         {
             out_arr[i] = op(in_arr[i]);
@@ -112,7 +112,7 @@ template <typename t> struct simd_base
         simd<t>::store(in_arr, m_value);
         simd<t>::store(arg_arr, arg);
 
-#pragma simd vectorlengthfor(t)
+#pragma omp simd
         for (int i = 0; i < simd_traits<t>::simd_len; ++i)
         {
             out_arr[i] = op(in_arr[i], arg_arr[i]);

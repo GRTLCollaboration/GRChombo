@@ -8,6 +8,7 @@
 
 #include "GRInterval.hpp"
 #include "Tensor.hpp"
+#include "UserVariables.hpp"
 #include "parstream.H" //Gives us pout()
 
 namespace VarsTools
@@ -94,6 +95,6 @@ void print(const vars_t<data_t> &vars)
         pout() << UserVariables::variable_names[ivar] << ": " << var << "\n";
     });
 }
-}
+} // namespace VarsTools
 
 #endif /* VARSTOOLS_HPP_ */

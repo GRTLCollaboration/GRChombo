@@ -7,6 +7,7 @@
 #define GRAMRLEVEL_HPP_
 
 #include "AMRLevel.H"
+#include "BoundaryConditions.hpp"
 #include "CoarseAverage.H"
 #include "FourthOrderFillPatch.H"
 #include "GRAMR.hpp"
@@ -60,6 +61,9 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     /// regrid
     virtual void regrid(const Vector<Box> &a_new_grids);
 
+    /// things to do after regridding
+    virtual void postRegrid(int a_base_level);
+
     /// initialize grids
     virtual void initialGrid(const Vector<Box> &a_new_grids);
 
@@ -100,7 +104,7 @@ class GRAMRLevel : public AMRLevel, public InterpSource
                  Real newCrseTime,               //!< new crse time
                  Real time,      //!< current time centering of soln
                  Real fluxWeight //!< weight to apply to fluxRegister updates
-                 );
+    );
 
     /// implements soln += dt*rhs
     void updateODE(GRLevelData &soln, const GRLevelData &rhs, Real dt);
@@ -129,10 +133,6 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     virtual void computeTaggingCriterion(FArrayBox &tagging_criterion,
                                          const FArrayBox &current_state) = 0;
 
-    /// This function shouldbe overriden to fill ghost cells outside the domain
-    /// (for non-periodic boundary conditions)
-    virtual void fillBdyGhosts() {}
-
 #ifdef CH_USE_HDF5
     /// Things to do immediately before checkpointing
     virtual void preCheckpointLevel() {}
@@ -143,6 +143,9 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     /// Specify which variables to write at plot intervals
     virtual void
     specificWritePlotHeader(std::vector<int> &plot_states) const {};
+
+    /// Things to do immediately after restart from checkpoint
+    virtual void postRestart() {}
 #endif
 
     virtual void specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
@@ -163,6 +166,20 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     /// between levels.
     virtual void fillIntralevelGhosts();
 
+    /// This function is used to fill ghost cells outside the domain
+    /// (for non-periodic boundary conditions, where values depend on state)
+    virtual void fillBdyGhosts(GRLevelData &a_state);
+
+    /// This function is used to copy ghost cells outside the domain
+    /// (for non-periodic boundary conditions, where boundaries evolve via rhs)
+    virtual void copyBdyGhosts(const GRLevelData &a_src, GRLevelData &a_dest);
+
+    /// This function is used to define the exchange copiers required for
+    /// copying ghost cells between boxes
+    virtual void defineExchangeCopier(const DisjointBoxLayout &a_level_domain);
+
+    BoundaryConditions m_boundaries; // the class for implementing BCs
+
     GRLevelData m_state_old; //!< the solution at the old time
     GRLevelData m_state_new; //!< the solution at the new time
     Real m_dx;               //!< grid spacing
@@ -178,12 +195,14 @@ class GRAMRLevel : public AMRLevel, public InterpSource
 
     CoarseAverage m_coarse_average; //!< Averages from fine to coarse level
 
-    FourthOrderFillPatch
-        m_patcher; //!< Organises interpolation from coarse to fine levels
-    FourthOrderFineInterp
-        m_fine_interp; //!< executes the interpolation from coarse to fine
+    FourthOrderFillPatch m_patcher; //!< Organises interpolation from coarse to
+                                    //!< fine levels of ghosts
+    FourthOrderFineInterp m_fine_interp; //!< executes the interpolation from
+                                         //!< coarse to fine when regridding
 
-    DisjointBoxLayout m_grids; //!< Holds grid setup (the layout of boxes)
+    DisjointBoxLayout m_grids;       //!< Holds grid setup (the layout of boxes)
+    DisjointBoxLayout m_grown_grids; //!< Holds grown grid setup (for
+                                     //!< Sommerfeld BCs)
 
   public:
     const int m_num_ghosts; //!< Number of ghost cells

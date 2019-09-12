@@ -6,6 +6,9 @@
 #ifndef INTERPOLATIONALGORITHM_HPP_
 #define INTERPOLATIONALGORITHM_HPP_
 
+#include "FArrayBox.H"
+#include <array>
+
 class InterpolationAlgorithm
 {
   public:

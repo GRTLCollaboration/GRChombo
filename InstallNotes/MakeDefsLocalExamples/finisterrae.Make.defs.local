@@ -1,0 +1,27 @@
+# We seem to have to use gcc rather than intel to compile on ft because of gcc compatibility issues
+# Also in the file mk/compiler/Make.defs.GNU we must change the line
+#  _cxxbaseflags := -Wno-long-long -Wno-sign-compare -Wno-deprecated -ftemplate-depth-25
+# to
+#  _cxxbaseflags := -Wno-long-long -Wno-sign-compare -Wno-deprecated -lm -lc
+# One must load the modules: module load gcc/6.3.0 openmpi/2.1.1 mkl/2017.0 hdf5/1.8.18
+DIM            = 3
+DEBUG          = FALSE
+OPT            = TRUE
+PRECISION      = DOUBLE
+CXX            = g++ -std=c++14 -ftemplate-depth-50 -DMKL_ILP64 -m64 -I${MKLROOT}/include
+FC             = gfortran
+MPI            = TRUE
+MPICXX         = mpicxx -std=c++14 -ftemplate-depth-50 -DMKL_ILP64 -m64 -I${MKLROOT}/include
+USE_64         = TRUE
+USE_HDF        = TRUE
+HDFINCFLAGS    = -I/opt/cesga/easybuild/software/HDF5/1.8.18-foss-2017a/include
+HDFLIBFLAGS    = -L/opt/cesga/easybuild/software/HDF5/1.8.18-foss-2017a/lib -lhdf5 -lz
+HDFMPIINCFLAGS = -I/opt/cesga/easybuild/software/HDF5/1.8.18-foss-2017a/include
+HDFMPILIBFLAGS = -L/opt/cesga/easybuild/software/HDF5/1.8.18-foss-2017a/lib -lhdf5 -lz
+USE_MT         = FALSE # disables Chombo's internal memory tracking as it seems to disagree with Allinea MAP
+OPENMPCC       = TRUE
+OBJMODEL       = DYNAMIC
+cxxoptflags    = -march=haswell -O3 -fopenmp -fPIC -Wl,--eh-frame-hdr -DMKL_ILP64 -m64 -I${MKLROOT}/include -mtune=haswell -lc
+foptflags      = -march=haswell -O3 -fopenmp -fPIC -Wl,--eh-frame-hdr -DMKL_ILP64 -m64 -I${MKLROOT}/include -mtune=haswell -lc
+syslibflags    = -L${MKLROOT}/lib/intel64 -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -lm -ldl -lc
+_cxxbaseflags:= -Wno-long-long -Wno-sign-compare -Wno_deprecated -lm -lc

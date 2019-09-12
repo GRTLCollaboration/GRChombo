@@ -1,0 +1,21 @@
+DIM            = 3
+DEBUG          = TRUE
+OPT            = TRUE
+PRECISION      = DOUBLE
+PROFILE        = FALSE
+CXX            = icpc -std=c++14 -mkl=sequential -qopenmp
+FC             = ifort -fpe-all0 -mkl=sequential -qopenmp
+MPI            = TRUE
+OPENMPCC       = TRUE
+MPICXX         = mpiicpc -std=c++14 -mkl=sequential -qopenmp
+XTRACONFIG     = .Skylake
+USE_64         = TRUE
+USE_HDF        = TRUE
+HDFINCFLAGS    = -I/nfs/software/spack/linux-sles12-x86_64/gcc-7.3.0/hdf5-1.10.1-mjgmsccmhio74tqbyazd4mavff4jhu5s/include
+HDFLIBFLAGS    = -L/nfs/software/spack/linux-sles12-x86_64/gcc-7.3.0/hdf5-1.10.1-mjgmsccmhio74tqbyazd4mavff4jhu5s/lib64 -lhdf5 -lz
+HDFMPIINCFLAGS = -I/nfs/software/spack/linux-sles12-x86_64/intel-18.0.3/hdf5-1.10.1-wiegkjgw4yui6nqqxgv7kt2pgxwrmue7/include
+HDFMPILIBFLAGS = -L/nfs/software/spack/linux-sles12-x86_64/intel-18.0.3/hdf5-1.10.1-wiegkjgw4yui6nqqxgv7kt2pgxwrmue7/lib -lhdf5 -lz
+cxxdbgflags    = -g
+cxxoptflags    = -O3 -xCORE-AVX512
+fdbgflags      = -g
+foptflags      = -O3 -xCORE-AVX512
