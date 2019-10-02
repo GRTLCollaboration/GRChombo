@@ -471,12 +471,8 @@ void GRAMRLevel::writeCheckpointLevel(HDF5Handle &a_handle) const
 
     write(a_handle, m_state_new.boxLayout());
 
-    // only need to write ghosts when non periodic BCs exist
-    IntVect ghost_vector = IntVect::Zero;
-    if (m_p.nonperiodic_boundaries_exist)
-    {
-        ghost_vector = m_num_ghosts * IntVect::Unit;
-    }
+    // Always write ghost cells even for periodic BCs
+    IntVect ghost_vector = m_num_ghosts * IntVect::Unit;
     write(a_handle, m_state_new, "data", ghost_vector);
 }
 
