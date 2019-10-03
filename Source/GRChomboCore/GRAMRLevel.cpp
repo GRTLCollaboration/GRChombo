@@ -471,8 +471,12 @@ void GRAMRLevel::writeCheckpointLevel(HDF5Handle &a_handle) const
 
     write(a_handle, m_state_new.boxLayout());
 
-    // Always write ghost cells even for periodic BCs
-    IntVect ghost_vector = m_num_ghosts * IntVect::Unit;
+    // only need to write ghosts when non periodic BCs exist
+    IntVect ghost_vector = IntVect::Zero;
+    if (m_p.nonperiodic_boundaries_exist)
+    {
+        ghost_vector = m_num_ghosts * IntVect::Unit;
+    }
     write(a_handle, m_state_new, "data", ghost_vector);
 }
 
@@ -655,8 +659,10 @@ void GRAMRLevel::readCheckpointLevel(HDF5Handle &a_handle)
 
     // reshape state with new grids
     m_state_new.define(level_domain, NUM_VARS, iv_ghosts);
-    const int data_status =
-        read<FArrayBox>(a_handle, m_state_new, "data", level_domain);
+    bool redefine_data = false;
+    Interval comps(0, NUM_VARS - 1);
+    const int data_status = read<FArrayBox>(a_handle, m_state_new, "data",
+                                            level_domain, comps, redefine_data);
     if (data_status != 0)
     {
         MayDay::Error("GRAMRLevel::readCheckpointLevel: file does not contain "
