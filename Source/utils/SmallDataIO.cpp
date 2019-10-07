@@ -3,12 +3,7 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#if !defined(SMALLDATAIO_HPP_)
-#error "This file should only be included through SmallDataIO.hpp"
-#endif
-
-#ifndef SMALLDATAIO_IMPL_HPP_
-#define SMALLDATAIO_IMPL_HPP_
+#include "SmallDataIO.hpp"
 
 void SmallDataIO::write_header_line(
     const std::vector<std::string> &a_header_strings,
@@ -97,7 +92,7 @@ void SmallDataIO::remove_duplicate_time_data()
     if (m_rank == 0 && m_restart_time > 0. && m_mode == APPEND &&
         m_time < m_restart_time + m_dt + epsilon)
     {
-        // copy lines with time <= restart_time into a temporary file
+        // copy lines with time < m_time into a temporary file
         std::string line;
         std::string temp_filename = m_filename + ".temp";
         std::ofstream temp_file(temp_filename);
@@ -107,8 +102,8 @@ void SmallDataIO::remove_duplicate_time_data()
             {
                 temp_file << line << "\n";
             }
-            else if (std::stod(line.substr(0, m_coords_width)) <=
-                     m_restart_time + epsilon)
+            else if (std::stod(line.substr(0, m_coords_width)) <
+                     m_time - epsilon)
             {
                 temp_file << line << "\n";
             }
@@ -125,5 +120,3 @@ void SmallDataIO::remove_duplicate_time_data()
         m_file.open(m_filename, std::ios::app);
     }
 }
-
-#endif /* SMALLDATAIO_IMPL_HPP_ */
