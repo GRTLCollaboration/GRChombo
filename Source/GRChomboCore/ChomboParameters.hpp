@@ -108,8 +108,7 @@ class ChomboParameters
         pp.load("plot_prefix", plot_prefix);
         pp.load("stop_time", stop_time, 1.0);
         pp.load("max_steps", max_steps, 1000000);
-        pp.load("write_plot_ghosts", write_plot_ghosts,
-                nonperiodic_boundaries_exist);
+        pp.load("write_plot_ghosts", write_plot_ghosts, false);
 
         // alias the weird chombo names to something more descriptive
         // for these box params, and default to some reasonable values
