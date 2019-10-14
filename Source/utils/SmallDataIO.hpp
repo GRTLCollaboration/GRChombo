@@ -10,14 +10,19 @@
 // instead of cstdio but I'm sure someone would tell me off for not maintaining
 // backwards compatability.
 #include <cstdio>
+#include <vector>
 #include <fstream>
 #include <iostream>
+#include <iomanip>
 #include <string>
+#include <cmath>
+#include "SPMD.H" // for Chombo_MPI
+
 
 //! A class for writing small data to a file in ASCII format.
 /*!
     A class for writing small data, usually 0D, 1D or 2D, to a file in ASCII
-    format. This should be used in specificPostTimeStep in a GRAMRLevel child
+    format. This can be used in specificPostTimeStep in a GRAMRLevel child
     class or in functions that are called at this point. For an example on how
     to use it, see the WeylExtraction class.
 */
@@ -39,6 +44,8 @@ class SmallDataIO
     const double m_restart_time;
     int m_step;
     const Mode m_mode;
+    const bool m_first_step; // this should be set to true if this is the first
+                             // timestep
     const int m_data_precision;
     const int m_data_width;
     const int m_coords_precision;
@@ -49,10 +56,11 @@ class SmallDataIO
   public:
     //! Constructor (opens file)
     SmallDataIO(std::string a_filename, double a_dt, double a_time,
-                double a_restart_time, Mode a_mode, int a_data_precision = 10,
-                int a_coords_precision = 7)
+                double a_restart_time, Mode a_mode, bool a_first_step,
+                int a_data_precision = 10, int a_coords_precision = 7)
         : m_filename(a_filename), m_dt(a_dt), m_time(a_time),
           m_restart_time(a_restart_time), m_mode(a_mode),
+          m_first_step(a_first_step),
           m_data_precision(a_data_precision),
           // data columns need extra space for scientific notation
           // compared to coords columns
@@ -71,15 +79,15 @@ class SmallDataIO
             std::ios::openmode file_openmode;
             if (m_mode == APPEND)
             {
-                if (m_time == m_dt)
+                if (m_first_step)
                 {
-                    // overwrite any existing file if starting from time 0
+                    // overwrite any existing file if this is the first step
                     file_openmode = std::ios::out;
                 }
                 else if (m_restart_time > 0. &&
                          m_time < m_restart_time + m_dt + epsilon)
                 {
-                    // allow reading in thie restart case so that duplicate time
+                    // allow reading in the restart case so that duplicate time
                     // data may be removed
                     file_openmode = std::ios::app | std::ios::in;
                 }
@@ -103,6 +111,15 @@ class SmallDataIO
             }
         }
     }
+
+    //! Old constructor which assumes SmallDataIO is called in
+    //! specificPostTimeStep
+    SmallDataIO(std::string a_filename, double a_dt, double a_time,
+                double a_restart_time, Mode a_mode, int a_data_precision = 10,
+                int a_coords_precision = 7)
+        : SmallDataIO(a_filename, a_dt, a_time, a_restart_time, a_mode,
+                      (a_time == a_dt), a_data_precision, a_coords_precision)
+    {}
 
     //! Destructor (closes file)
     ~SmallDataIO()
@@ -154,7 +171,5 @@ class SmallDataIO
     //! any time data that will be replaced.
     void remove_duplicate_time_data();
 };
-
-#include "SmallDataIO.impl.hpp"
 
 #endif /* SMALLDATAIO_HPP_ */
