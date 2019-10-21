@@ -32,7 +32,8 @@ class Constraints
     template <class data_t> struct constraints_t
     {
         data_t Ham;
-        data_t Ham_K, Ham_rho, Ham_trA2, Ham_ricci;
+        // data_t Ham_K, Ham_rho, Ham_trA2, Ham_ricci;
+        data_t rho, trA2, ricci_scalar, S, HamRel, psi_dot, psi_dotdot;
         Tensor<1, data_t> Mom;
     };
 
