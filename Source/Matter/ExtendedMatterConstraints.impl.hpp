@@ -41,7 +41,7 @@ void MatterConstraints<matter_t>::compute(Cell<data_t> current_cell) const
     // Hamiltonain constraint
     out.Ham += -16.0 * M_PI * m_G_Newton * emtensor.rho;
     out.HamRel += pow(16.0 * M_PI * m_G_Newton * emtensor.rho, 2);
-    out.HamRel = out.HamRel / (out.Ham * out.Ham);
+    out.HamRel = (out.Ham * out.Ham) / out.HamRel ;
     out.rho = emtensor.rho;
     out.S = emtensor.S;
 
