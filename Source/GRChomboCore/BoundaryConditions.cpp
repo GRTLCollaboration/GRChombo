@@ -636,17 +636,20 @@ Box ExpandGridsToBoundaries::operator()(const Box &a_in_box)
 
     FOR1(idir)
     {
-        if (m_boundaries.get_boundary_condition(Side::Lo, idir) ==
-                BoundaryConditions::SOMMERFELD_BC &&
-            offset_lo[idir] == 0)
+        if (!m_boundaries.m_params.is_periodic[idir])
         {
-            out_box.growLo(idir, m_boundaries.m_num_ghosts);
-        }
-        if (m_boundaries.get_boundary_condition(Side::Hi, idir) ==
-                BoundaryConditions::SOMMERFELD_BC &&
-            offset_hi[idir] == 0)
-        {
-            out_box.growHi(idir, m_boundaries.m_num_ghosts);
+            if (m_boundaries.get_boundary_condition(Side::Lo, idir) ==
+                    BoundaryConditions::SOMMERFELD_BC &&
+                offset_lo[idir] == 0)
+            {
+                out_box.growLo(idir, m_boundaries.m_num_ghosts);
+            }
+            if (m_boundaries.get_boundary_condition(Side::Hi, idir) ==
+                    BoundaryConditions::SOMMERFELD_BC &&
+                offset_hi[idir] == 0)
+            {
+                out_box.growHi(idir, m_boundaries.m_num_ghosts);
+            }
         }
     }
     return out_box;
@@ -669,13 +672,16 @@ void BoundaryConditions::expand_grids_to_boundaries(
     ProblemDomain domain_with_boundaries = a_in_grids.physDomain();
     FOR1(idir)
     {
-        if (get_boundary_condition(Side::Lo, idir) == SOMMERFELD_BC)
+        if (!m_params.is_periodic[idir])
         {
-            domain_with_boundaries.growLo(idir, m_num_ghosts);
-        }
-        if (get_boundary_condition(Side::Hi, idir) == SOMMERFELD_BC)
-        {
-            domain_with_boundaries.growHi(idir, m_num_ghosts);
+            if (get_boundary_condition(Side::Lo, idir) == SOMMERFELD_BC)
+            {
+                domain_with_boundaries.growLo(idir, m_num_ghosts);
+            }
+            if (get_boundary_condition(Side::Hi, idir) == SOMMERFELD_BC)
+            {
+                domain_with_boundaries.growHi(idir, m_num_ghosts);
+            }
         }
     }
 
