@@ -23,15 +23,17 @@ namespace BoxLoops
 {
 /// Perform the innermost (i.e. the x) loop, standard version with simd
 template <typename... compute_ts>
-void innermost_loop(const ComputePack<compute_ts...> &compute_pack,
-                    const BoxPointers &box_pointers, const int iy, const int iz,
-                    const int loop_lo_x, const int loop_hi_x);
+ALWAYS_INLINE void
+innermost_loop(const ComputePack<compute_ts...> &compute_pack,
+               const BoxPointers &box_pointers, const int iy, const int iz,
+               const int loop_lo_x, const int loop_hi_x);
 
 /// Perform the innermost (i.e. the x) loop, simd switched off
 template <typename... compute_ts>
-void innermost_loop(const ComputePack<compute_ts...> &compute_pack,
-                    const BoxPointers &box_pointers, const int iy, const int iz,
-                    const int loop_lo_x, const int loop_hi_x, disable_simd);
+ALWAYS_INLINE void
+innermost_loop(const ComputePack<compute_ts...> &compute_pack,
+               const BoxPointers &box_pointers, const int iy, const int iz,
+               const int loop_lo_x, const int loop_hi_x, disable_simd);
 
 /// Performs loop insde the box loop_box and calls compute(...) for all compute
 /// classes in the compute_pack  with input FArrayBox 'in' and output FArrayBox

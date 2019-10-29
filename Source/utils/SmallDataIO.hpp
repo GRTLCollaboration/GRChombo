@@ -9,15 +9,14 @@
 // (MR): if it were up to me, I'd be using the C++17 filesystems library
 // instead of cstdio but I'm sure someone would tell me off for not maintaining
 // backwards compatability.
-#include <cstdio>
-#include <vector>
-#include <fstream>
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <cmath>
 #include "SPMD.H" // for Chombo_MPI
-
+#include <cmath>
+#include <cstdio>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <string>
+#include <vector>
 
 //! A class for writing small data to a file in ASCII format.
 /*!
@@ -60,8 +59,7 @@ class SmallDataIO
                 int a_data_precision = 10, int a_coords_precision = 7)
         : m_filename(a_filename), m_dt(a_dt), m_time(a_time),
           m_restart_time(a_restart_time), m_mode(a_mode),
-          m_first_step(a_first_step),
-          m_data_precision(a_data_precision),
+          m_first_step(a_first_step), m_data_precision(a_data_precision),
           // data columns need extra space for scientific notation
           // compared to coords columns
           m_data_width(m_data_precision + 10),
@@ -119,7 +117,8 @@ class SmallDataIO
                 int a_coords_precision = 7)
         : SmallDataIO(a_filename, a_dt, a_time, a_restart_time, a_mode,
                       (a_time == a_dt), a_data_precision, a_coords_precision)
-    {}
+    {
+    }
 
     //! Destructor (closes file)
     ~SmallDataIO()
