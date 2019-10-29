@@ -56,7 +56,6 @@ class WeylExtraction
     {
     }
 
-
     //! Destructor
     ~WeylExtraction() {}
 

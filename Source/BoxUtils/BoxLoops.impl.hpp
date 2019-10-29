@@ -16,10 +16,10 @@
 #include "simd.hpp"
 
 template <typename... compute_ts>
-ALWAYS_INLINE void
-BoxLoops::innermost_loop(const ComputePack<compute_ts...> &compute_pack,
-                         const BoxPointers &box_pointers, const int iy,
-                         const int iz, const int loop_lo_x, const int loop_hi_x)
+void BoxLoops::innermost_loop(const ComputePack<compute_ts...> &compute_pack,
+                              const BoxPointers &box_pointers, const int iy,
+                              const int iz, const int loop_lo_x,
+                              const int loop_hi_x)
 {
     int simd_width = simd<double>::simd_len;
     int x_simd_max =
@@ -46,11 +46,10 @@ BoxLoops::innermost_loop(const ComputePack<compute_ts...> &compute_pack,
 }
 
 template <typename... compute_ts>
-ALWAYS_INLINE void
-BoxLoops::innermost_loop(const ComputePack<compute_ts...> &compute_pack,
-                         const BoxPointers &box_pointers, const int iy,
-                         const int iz, const int loop_lo_x, const int loop_hi_x,
-                         disable_simd)
+void BoxLoops::innermost_loop(const ComputePack<compute_ts...> &compute_pack,
+                              const BoxPointers &box_pointers, const int iy,
+                              const int iz, const int loop_lo_x,
+                              const int loop_hi_x, disable_simd)
 {
     for (int ix = loop_lo_x; ix <= loop_hi_x; ++ix)
     {
