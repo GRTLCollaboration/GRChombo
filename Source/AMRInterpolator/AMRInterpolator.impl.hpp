@@ -139,8 +139,8 @@ void AMRInterpolator<InterpAlgo>::computeLevelLayouts()
     m_origin.resize(num_levels);
     m_dx.resize(num_levels);
 
-    IntVect prev_small_end;
-    IntVect prev_big_end;
+    IntVect prev_small_end = IntVect::Zero;
+    IntVect prev_big_end = IntVect::Zero;
 
     for (int level_idx = 0; level_idx < num_levels; ++level_idx)
     {

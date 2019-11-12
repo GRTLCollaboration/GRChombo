@@ -12,7 +12,6 @@
 
 #include "DebuggingTools.hpp"
 #include "HarmonicTest.hpp"
-#include "ScalarField.hpp"
 #include "SphericalHarmonics.hpp"
 #include "simd.hpp"
 
@@ -20,17 +19,16 @@ template <class data_t>
 void HarmonicTest::compute(Cell<data_t> current_cell) const
 {
 
-    ScalarField<>::Vars<data_t> vars;
     Coordinates<data_t> coords(current_cell, m_dx, m_center_vector);
 
-    vars.phi = compute_harmonic(coords);
+    data_t phi = compute_harmonic(coords);
 
     data_t radius1 = coords.get_radius();
     data_t radius2 =
         Coordinates<data_t>::get_radius(current_cell, m_dx, m_center_vector);
-    vars.phi = vars.phi / radius1 / radius2;
+    phi = phi / radius1 / radius2;
 
-    current_cell.store_vars(vars.phi, c_phi);
+    current_cell.store_vars(phi, c_phi);
 }
 
 template <class data_t>

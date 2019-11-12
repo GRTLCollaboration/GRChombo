@@ -64,6 +64,6 @@ template <class data_t>
 struct Diff2VarsWithGauge : public ADMConformalVars::Diff2VarsWithGauge<data_t>
 {
 };
-}
+} // namespace CCZ4Vars
 
 #endif /* CCZ4VARS_HPP_ */

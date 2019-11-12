@@ -26,30 +26,18 @@ class SimulationParameters : public SimulationParametersBase
 
     void readParams(GRParmParse &pp)
     {
-        // Reads the problem specific params
-        auto_read_params(pp);
-
-        // Fill in the Matter Parameters
-        initial_params.amplitudeSF = amplitudeSF;
-        initial_params.centerSF = centerSF;
-        initial_params.widthSF = widthSF;
-        initial_params.r_zero = r_zero;
-
-        // Fill in the potential parameters
-        potential_params.scalar_mass = scalar_mass;
-    }
-
-    void auto_read_params(GRParmParse &pp)
-    {
-        pp.load("regrid_threshold_K", regrid_threshold_K);
+        // for regridding
+        pp.load("regrid_threshold_chi", regrid_threshold_chi);
         pp.load("regrid_threshold_phi", regrid_threshold_phi);
 
         // Initial and SF data
+        initial_params.centerSF =
+            center; // already read in SimulationParametersBase
         pp.load("G_Newton", G_Newton, 1.0);
-        pp.load("amplitudeSF", amplitudeSF);
-        pp.load("widthSF", widthSF);
-        pp.load("r_zero", r_zero);
-        pp.load("scalar_mass", scalar_mass);
+        pp.load("amplitudeSF", initial_params.amplitudeSF);
+        pp.load("widthSF", initial_params.widthSF);
+        pp.load("r_zero", initial_params.r_zero);
+        pp.load("scalar_mass", potential_params.scalar_mass);
 
         // Relaxation params
         pp.load("relaxtime", relaxtime);
@@ -57,17 +45,14 @@ class SimulationParameters : public SimulationParametersBase
     }
 
     // Problem specific parameters
-    Real regrid_threshold_K, regrid_threshold_phi;
+    Real regrid_threshold_chi, regrid_threshold_phi;
+
     // Initial data for matter and potential
     double G_Newton;
-    Real amplitudeSF, widthSF, r_zero, scalar_mass;
-    std::array<double, CH_SPACEDIM> centerSF;
-    // Relaxation params
-    Real relaxtime, relaxspeed;
-
-    // Collection of parameters necessary for the problem
     ScalarBubble::params_t initial_params;
     Potential::params_t potential_params;
+    // Relaxation params
+    Real relaxtime, relaxspeed;
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */

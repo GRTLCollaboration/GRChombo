@@ -1,0 +1,21 @@
+DIM              = 3
+DEBUG            = FALSE
+OPT              = TRUE
+PRECISION        = DOUBLE
+CXX              = icpc -std=c++14 -qopenmp -mkl=sequential
+FC               = ifort -qopenmp -mkl=sequential
+MPI              = TRUE
+MPICXX           = mpic++ -std=c++14 -qopenmp -mkl=sequential -lmpi
+USE_64           = TRUE
+USE_HDF          = TRUE
+HDFINCFLAGS 	 = -I$(HDF5_DIR)/include
+HDFLIBFLAGS	 = -L$(HDF5_DIR)/lib -lhdf5 -lz
+HDFMPIINCFLAGS   = -I$(HDF5_DIR)/include
+HDFMPILIBFLAGS   = -L$(HDF5_DIR)/lib -lhdf5 -lz
+USE_MT           = FALSE
+OPENMPCC         = TRUE
+cxxdbgflags      = -g -Wl,--eh-frame-hdr
+cxxoptflags      = -O3 -qoverride-limits -xSSE4.2 -axAVX
+fdbgflags        = -g -Wl,--eh-frame-hdr
+foptflags        = -O3 -qoverride-limits -xSSE4.2 -axAVX
+cxxcppflags := ${cxxcppflags} -DDISABLE_AHFINDER -DUSE_PAPI -UCH_USE_MEMORY_TRACKING

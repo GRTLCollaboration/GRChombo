@@ -13,7 +13,6 @@
 #include "DebuggingTools.hpp"
 #include "FArrayBox.H"
 #include "HarmonicTest.hpp"
-#include "ScalarField.hpp"
 #include "SetValue.hpp"
 #include "UserVariables.hpp"
 #include <sys/time.h>

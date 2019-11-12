@@ -1,0 +1,21 @@
+DIM              = 3
+DEBUG            = TRUE
+OPT              = TRUE
+PRECISION        = DOUBLE
+CXX              = icpc -std=c++14 -mkl=sequential -qopenmp
+FC               = ifort -mkl=sequential -qopenmp -fpe-all0
+MPI              = TRUE
+OPENMPCC         = TRUE
+MPICXX           = mpiicpc -std=c++14 -mkl=sequential -qopenmp
+XTRACONFIG       = .Skylake.Intel # This just appends to all object files and executables
+USE_64           = TRUE
+USE_HDF          = TRUE
+HDFINCFLAGS      = -I/usr/local/software/spack/current/opt/spack/linux-rhel7-x86_64/intel-17.0.4/hdf5-1.10.4-swn7n437jodmcy3p2nqjqk7fda7fjqa6/include
+HDFLIBFLAGS      = -L/usr/local/software/spack/current/opt/spack/linux-rhel7-x86_64/intel-17.0.4/hdf5-1.10.4-swn7n437jodmcy3p2nqjqk7fda7fjqa6/lib -lhdf5 -lz
+HDFMPIINCFLAGS   = -I/usr/local/software/spack/current/opt/spack/linux-rhel7-x86_64/intel-17.0.4/hdf5-1.10.4-swn7n437jodmcy3p2nqjqk7fda7fjqa6/include
+HDFMPILIBFLAGS   = -L/usr/local/software/spack/current/opt/spack/linux-rhel7-x86_64/intel-17.0.4/hdf5-1.10.4-swn7n437jodmcy3p2nqjqk7fda7fjqa6/lib -lhdf5 -lz
+USE_MT           = FALSE
+cxxdbgflags      = -g
+cxxoptflags      = -O3 -xCORE-AVX512
+fdbgflags        = -g
+foptflags        = -O3 -xCORE-AVX512

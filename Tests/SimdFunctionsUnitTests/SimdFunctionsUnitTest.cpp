@@ -30,7 +30,11 @@ bool sv_test(const char *name, sop_t sop, vop_t vop)
     auto simd_in = simd<t>::load(vals);
     auto simd_out = vop(simd_in);
 
+#ifdef __INTEL_COMPILER
 #pragma novector
+#else
+#pragma omp simd safelen(1)
+#endif /* __INTEL_COMPILER */
     for (int i = 0; i < simd_length; i++)
         vals[i] = sop(static_cast<t>(i + 1));
 
@@ -58,7 +62,11 @@ bool rv_test(const char *name, op_t op, rev_op_t rev_op)
     constexpr int simd_length = simd_traits<t>::simd_len;
     t vals[simd_length];
 
+#ifdef __INTEL_COMPILER
 #pragma novector
+#else
+#pragma omp simd safelen(1)
+#endif /* __INTEL_COMPILER */
     for (int i = 0; i < simd_length; i++)
         vals[i] = op(i + 1);
     auto simd_in = simd<t>::load(vals);

@@ -131,7 +131,7 @@ template <typename t> ALWAYS_INLINE t simd_max(const t &a, const t &b)
 {
     return (a > b) ? a : b;
 }
-    //<-- End: Defining the simd specific calls for non-simd datatypes.
+//<-- End: Defining the simd specific calls for non-simd datatypes.
 
 #include "simdify.hpp"
 

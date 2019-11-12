@@ -6,6 +6,9 @@
 #ifndef INTERPSOURCE_H_
 #define INTERPSOURCE_H_
 
+#include "LevelData.H"
+#include <array>
+
 // Abstrace base class to get the FABs out of an AMRLevel
 class InterpSource
 {
