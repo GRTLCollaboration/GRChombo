@@ -1,0 +1,20 @@
+# Supermuc NG Make.defs.local file
+# module load hdf5 gcc/7 (intel etc loaded by default)
+DIM           = 3
+CXX           = icpc -std=c++14 -qopenmp -mkl=sequential -traditional -xCORE-AVX512
+FC            = ifort -qopenmp -mkl=sequential
+OPT           = TRUE
+DEBUG         = FALSE
+MPI           = TRUE
+OMP           = TRUE
+OPT           = HIGH
+USE_64         = TRUE
+USE_HDF        = TRUE
+MPICXX        = mpiicpc -std=c++14 -qopenmp -mkl=sequential -xCORE-AVX512
+HDFINCFLAGS    = -I${HDF5_BASE}/include
+HDFLIBFLAGS    = -L${HDF5_BASE}/lib -lhdf5 -lz
+HDFMPIINCFLAGS = -I${HDF5_BASE}/include
+HDFMPILIBFLAGS = -L${HDF5_BASE}/lib -lhdf5 -lz
+cxxdbgflags      = -g -Wl,--eh-frame-hdr
+cxxoptflags      = -O3 -qoverride-limits
+fdbgflags        = -g -Wl,--eh-frame-hdr
