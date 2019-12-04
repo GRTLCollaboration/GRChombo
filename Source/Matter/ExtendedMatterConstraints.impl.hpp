@@ -44,9 +44,10 @@ void MatterConstraints<matter_t>::compute(Cell<data_t> current_cell) const
     out.HamRel = (out.Ham * out.Ham) / out.HamRel ;
     out.rho = emtensor.rho;
     out.S = emtensor.S;
-
-    out.psi_dotdot -= 4 * M_PI * (emtensor.rho +
-                                  emtensor.S) / (vars.chi * vars.chi);
+    
+    out.psi_dotdot = 0; 
+    // out.psi_dotdot -=  4 * M_PI * (emtensor.rho +
+                         //         emtensor.S) / (vars.chi * vars.chi);
 
     // Momentum constraints
     FOR1(i) { out.Mom[i] += -8.0 * M_PI * m_G_Newton * emtensor.Si[i]; }

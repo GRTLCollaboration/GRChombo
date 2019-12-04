@@ -101,9 +101,9 @@ Constraints::constraints_t<data_t> Constraints::constraint_equations(
     out.ricci_scalar = ricci.scalar;
     out.trA2 = tr_A2;
 
-    out.psi_dot = -2 * vars.K / (3. * vars.chi * vars.chi);
-    out.psi_dot =  8 * vars.K *vars.K / ( 9 *vars.chi * vars.chi * vars.chi) -
-                ( tr_A2  +  vars.K * vars.K / 3) / (vars.chi * vars.chi);
+    out.psi_dot = 0; // -2 * vars.K / (3. * vars.chi * vars.chi);
+    out.psi_dot = 0;// 8 * vars.K *vars.K / ( 9 *vars.chi * vars.chi * vars.chi) -
+                    // ( tr_A2  +  vars.K * vars.K / 3) / (vars.chi * vars.chi);
 
     return out;
 }
