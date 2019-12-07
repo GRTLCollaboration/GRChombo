@@ -75,7 +75,7 @@ template <typename compute_t, typename... simd_info>
 std::enable_if_t<!is_compute_pack<compute_t>::value, void>
 loop(compute_t compute_class, const LevelData<FArrayBox> &in,
      LevelData<FArrayBox> &out, bool fill_ghosts, simd_info... info);
-}
+} // namespace BoxLoops
 
 #include "BoxLoops.impl.hpp"
 

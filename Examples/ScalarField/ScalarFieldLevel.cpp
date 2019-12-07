@@ -17,7 +17,7 @@
 #include "MatterConstraints.hpp"
 
 // For tag cells
-#include "PhiAndKTaggingCriterion.hpp"
+#include "ChiAndPhiTaggingCriterion.hpp"
 
 // Problem specific includes
 #include "ChiRelaxation.hpp"
@@ -123,13 +123,13 @@ void ScalarFieldLevel::specificUpdateODE(GRLevelData &a_soln,
 void ScalarFieldLevel::specificWritePlotHeader(
     std::vector<int> &plot_states) const
 {
-    plot_states = {c_phi, c_K};
+    plot_states = {c_phi, c_chi};
 }
 
 void ScalarFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                                const FArrayBox &current_state)
 {
-    BoxLoops::loop(PhiAndKTaggingCriterion(m_dx, m_p.regrid_threshold_phi,
-                                           m_p.regrid_threshold_K),
+    BoxLoops::loop(ChiAndPhiTaggingCriterion(m_dx, m_p.regrid_threshold_chi,
+                                             m_p.regrid_threshold_phi),
                    current_state, tagging_criterion);
 }

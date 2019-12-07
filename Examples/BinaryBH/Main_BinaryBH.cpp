@@ -3,6 +3,7 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
+#include "CH_Timer.H"
 #include "parstream.H" //Gives us pout()
 #include <chrono>
 #include <iostream>

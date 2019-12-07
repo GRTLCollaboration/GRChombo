@@ -27,6 +27,6 @@ inline double n_choose_r(int n, int r)
     double out = factorial(n) / (factorial(r) * factorial(n - r));
     return out;
 }
-}
+} // namespace Combinatorics
 
 #endif /* COMBINATORICS_HPP_ */

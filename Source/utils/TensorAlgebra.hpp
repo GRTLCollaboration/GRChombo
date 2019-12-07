@@ -334,6 +334,6 @@ Tensor<3, data_t> compute_phys_chris(const Tensor<1, data_t> &d1_chi,
     }
     return chris_phys;
 }
-}
+} // namespace TensorAlgebra
 
 #endif /* TENSORALGEBRA_HPP_ */

@@ -94,5 +94,5 @@ Tensor<1, data_t> spherical_to_cartesian_U(Tensor<1, data_t> spherical_v,
     }
     return cartesian_v;
 }
-}
+} // namespace InitialDataTools
 #endif /* INITIALDATATOOLS_HPP_ */

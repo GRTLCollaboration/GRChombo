@@ -1,0 +1,22 @@
+DIM              = 3
+DEBUG            = TRUE
+OPT              = TRUE
+PRECISION        = DOUBLE
+CXX              = g++ -I${MKLROOT}/include
+FC               = gfortran -I${MKLROOT}/include
+MPI              = TRUE
+OPENMPCC         = TRUE
+MPICXX           = mpicxx -I${MKLROOT}/include
+XTRACONFIG       = .Skylake.GCC # This just appends to all object files and executables
+USE_64           = TRUE
+USE_HDF          = TRUE
+HDFINCFLAGS      = -I/usr/local/software/spack/current/opt/spack/linux-rhel7-x86_64/gcc-5.4.0/hdf5-1.10.4-7zl2gouwqhefpanaa2cegxe7hj2672tc/include
+HDFLIBFLAGS      = -L/usr/local/software/spack/current/opt/spack/linux-rhel7-x86_64/gcc-5.4.0/hdf5-1.10.4-7zl2gouwqhefpanaa2cegxe7hj2672tc/lib -lhdf5 -lz
+HDFMPIINCFLAGS   = -I/usr/local/software/spack/current/opt/spack/linux-rhel7-x86_64/gcc-5.4.0/hdf5-1.10.4-7zl2gouwqhefpanaa2cegxe7hj2672tc/include
+HDFMPILIBFLAGS   = -L/usr/local/software/spack/current/opt/spack/linux-rhel7-x86_64/gcc-5.4.0/hdf5-1.10.4-7zl2gouwqhefpanaa2cegxe7hj2672tc/lib -lhdf5 -lz
+USE_MT           = FALSE
+cxxdbgflags      = -g
+cxxoptflags      = -O3 -march=skylake-avx512
+fdbgflags        = -g
+foptflags        = -O3 -march=skylake-avx512
+syslibflags      = -L${MKLROOT}/lib/intel64 -Wl,--no-as-needed -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -lm -ldl
