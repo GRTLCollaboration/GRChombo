@@ -174,7 +174,7 @@ void PerfectFluid<eos_t>::compute(
                          / vars.D / up_vars.W;
 
 
-        my_eos.compute_eos(pressure, enthalpy, vars);
+        my_eos.compute_eos(pressure, enthalpy, up_vars);
         residual =  (pressure - pressure_guess);
         pressure += 0.5 * residual;
 
