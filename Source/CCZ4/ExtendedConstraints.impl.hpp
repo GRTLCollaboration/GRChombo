@@ -42,9 +42,6 @@ void Constraints::compute(Cell<data_t> current_cell) const
     current_cell.store_vars(out.S, c_S);
     current_cell.store_vars(out.trA2, c_trA2);
     current_cell.store_vars(out.HamRel, c_HamRel);
-    current_cell.store_vars(out.psi_dot, c_psi_dot);
-    current_cell.store_vars(out.psi_dotdot, c_psi_dotdot);
-
 }
 
 template <class data_t, template <typename> class vars_t,
@@ -100,10 +97,6 @@ Constraints::constraints_t<data_t> Constraints::constraint_equations(
     //out.HamRel += pow(2 * m_cosmological_constant, 2);
     out.ricci_scalar = ricci.scalar;
     out.trA2 = tr_A2;
-
-    out.psi_dot = 0; // -2 * vars.K / (3. * vars.chi * vars.chi);
-    out.psi_dot = 0;// 8 * vars.K *vars.K / ( 9 *vars.chi * vars.chi * vars.chi) -
-                    // ( tr_A2  +  vars.K * vars.K / 3) / (vars.chi * vars.chi);
 
     return out;
 }
