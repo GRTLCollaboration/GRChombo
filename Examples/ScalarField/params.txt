@@ -65,7 +65,7 @@ vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 1
+checkpoint_interval = 100
 plot_interval = 10
 dt_multiplier = 0.25
 stop_time = 10.0
@@ -104,5 +104,7 @@ scalar_mass = 0.001
 
 # Relaxation paramters
 # how long and how fast to relax
+# (should be non zero if starting from phi data
+# for which constraints not solved)
 relaxtime = 0.0
 relaxspeed = 0.01
