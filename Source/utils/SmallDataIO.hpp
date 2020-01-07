@@ -45,10 +45,12 @@ class SmallDataIO
     const Mode m_mode;
     const bool m_first_step; // this should be set to true if this is the first
                              // timestep
+    const std::string m_file_extension;
     const int m_data_precision;
     const int m_data_width;
     const int m_coords_precision;
     const int m_coords_width;
+
     std::fstream m_file;
     int m_rank; // only rank 0 does the write out
 
@@ -56,10 +58,12 @@ class SmallDataIO
     //! Constructor (opens file)
     SmallDataIO(std::string a_filename, double a_dt, double a_time,
                 double a_restart_time, Mode a_mode, bool a_first_step,
+                std::string a_file_extension = ".dat",
                 int a_data_precision = 10, int a_coords_precision = 7)
         : m_filename(a_filename), m_dt(a_dt), m_time(a_time),
           m_restart_time(a_restart_time), m_mode(a_mode),
-          m_first_step(a_first_step), m_data_precision(a_data_precision),
+          m_first_step(a_first_step), m_file_extension(a_file_extension),
+          m_data_precision(a_data_precision),
           // data columns need extra space for scientific notation
           // compared to coords columns
           m_data_width(m_data_precision + 10),
@@ -102,6 +106,7 @@ class SmallDataIO
                 // append step number to filename if in NEW mode
                 m_filename += std::to_string(m_step);
             }
+            m_filename += m_file_extension;
             m_file.open(m_filename, file_openmode);
             if (!m_file)
             {
@@ -113,10 +118,12 @@ class SmallDataIO
     //! Old constructor which assumes SmallDataIO is called in
     //! specificPostTimeStep
     SmallDataIO(std::string a_filename, double a_dt, double a_time,
-                double a_restart_time, Mode a_mode, int a_data_precision = 10,
-                int a_coords_precision = 7)
+                double a_restart_time, Mode a_mode,
+                std::string a_file_extension = ".dat",
+                int a_data_precision = 10, int a_coords_precision = 7)
         : SmallDataIO(a_filename, a_dt, a_time, a_restart_time, a_mode,
-                      (a_time == a_dt), a_data_precision, a_coords_precision)
+                      (a_time == a_dt), a_file_extension, a_data_precision,
+                      a_coords_precision)
     {
     }
 
