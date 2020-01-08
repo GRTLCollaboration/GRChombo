@@ -10,7 +10,7 @@
 #include "Coordinates.hpp"
 #include "DimensionDefinitions.hpp"
 #include "FourthOrderDerivatives.hpp"
-#include "SimulationParametersBase.hpp"
+#include "SphericalExtraction.hpp"
 #include "Tensor.hpp"
 
 //! This class tags cells based on two criteria - the
@@ -19,11 +19,11 @@ class ChiExtractionTaggingCriterion
 {
   protected:
     const double m_dx;
+    const FourthOrderDerivatives m_deriv;
+    const SphericalExtraction::params_t m_params;
     const int m_level;
     const int m_max_level;
     const bool m_activate_extraction;
-    const extraction_params_t m_params;
-    const FourthOrderDerivatives m_deriv;
 
   public:
     template <class data_t> struct Vars
@@ -42,7 +42,7 @@ class ChiExtractionTaggingCriterion
     // The constructor
     ChiExtractionTaggingCriterion(const double dx, const int a_level,
                                   const int a_max_level,
-                                  const extraction_params_t a_params,
+                                  const SphericalExtraction::params_t a_params,
                                   const bool activate_extraction = false)
         : m_dx(dx), m_deriv(dx), m_params(a_params), m_level(a_level),
           m_max_level(a_max_level),
@@ -70,8 +70,8 @@ class ChiExtractionTaggingCriterion
                 // refinement
                 if (m_level < m_params.extraction_levels[iradius])
                 {
-                    const Coordinates<data_t> coords(
-                        current_cell, m_dx, m_params.extraction_center);
+                    const Coordinates<data_t> coords(current_cell, m_dx,
+                                                     m_params.center);
                     const data_t r = coords.get_radius();
                     // add a 20% buffer to extraction zone so not too near to
                     // boundary
