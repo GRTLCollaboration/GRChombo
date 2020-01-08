@@ -27,7 +27,7 @@ class SphericalGeometry : public SurfaceGeometry
     //! returns the grid spacing in theta
     virtual double du(int a_num_points_theta) const override
     {
-        return M_PI / ((double)a_num_points_theta);
+        return M_PI / (double)(a_num_points_theta - 1);
     }
 
     //! returns the grid spacing in phi
@@ -39,15 +39,17 @@ class SphericalGeometry : public SurfaceGeometry
     //! returns the theta coordinate associated to the theta/u index
     virtual double u(int a_itheta, int a_num_points_theta) const override
     {
-        return (a_itheta + 0.5) * du(a_num_points_theta);
+        return a_itheta * du(a_num_points_theta);
     }
 
     //! returns the phi coordinate associated to the phi/v index
     virtual double v(int a_iphi, int a_num_points_phi) const override
     {
-        return (a_iphi)*dv(a_num_points_phi);
+        return a_iphi * dv(a_num_points_phi);
     }
 
+    virtual bool is_u_periodic() const override { return false; }
+    virtual bool is_v_periodic() const override { return true; }
     //! returns the Cartesian coordinate in direction a_dir with specified
     //! radius, theta and phi.
     virtual double cartesian_coord(int a_dir, double a_radius, double a_theta,

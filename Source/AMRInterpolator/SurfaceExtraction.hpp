@@ -19,6 +19,60 @@
 #include <utility>
 #include <vector>
 
+//! A class to store and return the weights associated to a Newton-Cotes formula
+//! for numerical integration/quadrature which can be closed (i.e. includes the
+//! endpoints) or open (does not include the end points)
+class IntegrationMethod
+{
+  private:
+    std::vector<double> m_weights;
+    int m_num_weights;
+    bool m_is_closed;
+
+  public:
+    //! Constructor
+    IntegrationMethod(const std::vector<double> &a_weights,
+                      bool a_is_closed = true)
+        : m_weights(a_weights), m_num_weights(a_weights.size()),
+          m_is_closed(a_is_closed)
+    {
+    }
+
+    //! Checks that this integration method is suitable given the number of
+    //! points and periodicity
+    inline bool is_valid(int a_num_points, bool a_is_periodic) const
+    {
+        if (m_is_closed && !a_is_periodic)
+        {
+            return (a_num_points % m_num_weights == 1);
+        }
+        else
+        {
+            return (a_num_points % m_num_weights == 0);
+        }
+    }
+
+    //! Returns whether this IntegrationMethod is closed or not
+    inline bool is_closed() const { return m_is_closed; }
+    //! Returns the weight for a point with given index
+    inline double weight(int a_index, int a_num_points,
+                         bool a_is_periodic) const
+    {
+        const int weight_index = a_index % m_num_weights;
+        const bool endpoint =
+            (a_index == 0 || a_index == a_num_points - 1) && !a_is_periodic;
+        if (m_is_closed && !endpoint && weight_index == 0)
+            return 2.0 * m_weights[weight_index];
+        else
+            return m_weights[weight_index];
+    }
+
+    static const IntegrationMethod trapezium;
+    static const IntegrationMethod midpoint;
+    static const IntegrationMethod simpson;
+    static const IntegrationMethod boole;
+};
+
 //! This class extracts grid variables on 2 dimensional surfaces each
 //! parameterised by u and v with different surfaces given by level sets of
 //! another parameter
@@ -104,8 +158,7 @@ class SurfaceExtraction
         }
         // set up the interpolation query
         InterpolationQuery query(m_num_points * m_params.num_surfaces);
-        FOR1(idir)
-        query.setCoords(idir, m_interp_coords[idir].data());
+        FOR1(idir) { query.setCoords(idir, m_interp_coords[idir].data()); }
         for (int ivar = 0; ivar < m_vars.size(); ++ivar)
         {
             query.addComp(m_vars[ivar].first, m_interp_data[ivar].data(),
@@ -123,9 +176,11 @@ class SurfaceExtraction
     //!     double a_surface_param_value, double a_u, double a_v)
     //! where data_here is a vector of all the interpolated variables at the
     //! point specified by the other arguments.
-    std::vector<double>
-    integrate(std::function<double(std::vector<double>, double, double, double)>
-                  a_integrand);
+    std::vector<double> integrate(
+        std::function<double(std::vector<double>, double, double, double)>
+            a_integrand,
+        const IntegrationMethod &a_method_u = IntegrationMethod::trapezium,
+        const IntegrationMethod &a_method_v = IntegrationMethod::trapezium);
 
     //! Write the interpolated data to a file with a block for each surface
     void write_extraction(std::string a_file_prefix) const;

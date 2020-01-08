@@ -25,6 +25,12 @@ class SurfaceGeometry
     //! returns the v coordinate associated to the v index
     virtual double v(int a_iv, int a_num_points_v) const = 0;
 
+    //! returns the periodicity of the u coordinate
+    virtual bool is_u_periodic() const = 0;
+
+    //! returns the periodicity of the v coordinate
+    virtual bool is_v_periodic() const = 0;
+
     //! returns the Cartesian coordinate in direction a_dir of the point on the
     //! surface with specified param value with given surface coordinates
     virtual double cartesian_coord(int a_dir, double a_surface_param_value,

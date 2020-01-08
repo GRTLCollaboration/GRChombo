@@ -25,4 +25,4 @@ checkpoint_interval = 1
 num_extraction_radii = 2
 extraction_radii = 4. 6.
 num_points_phi = 16
-num_points_theta = 24
+num_points_theta = 25

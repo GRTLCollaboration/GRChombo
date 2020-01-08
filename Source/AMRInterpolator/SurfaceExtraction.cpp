@@ -75,6 +75,15 @@ SurfaceExtraction::SurfaceExtraction(
     add_vars(a_vars);
 }
 
+// define the static IntegrationMethods here
+const IntegrationMethod IntegrationMethod::trapezium({0.5});
+const IntegrationMethod IntegrationMethod::midpoint({1.0}, false);
+const IntegrationMethod IntegrationMethod::simpson({0.3333333333333333,
+                                                     1.3333333333333333});
+const IntegrationMethod
+    IntegrationMethod::boole({0.3111111111111111, 1.4222222222222222,
+                              0.53333333333333, 1.4222222222222222});
+
 //! Integrate some integrand dependent on the interpolated data over the
 //! surface. The integrand function should be of the signature
 //! double integrand(std::vector<double> data_here,
@@ -83,10 +92,42 @@ SurfaceExtraction::SurfaceExtraction(
 //! point specified by the other arguments.
 std::vector<double> SurfaceExtraction::integrate(
     std::function<double(std::vector<double>, double, double, double)>
-        a_integrand)
+        a_integrand,
+    const IntegrationMethod &a_method_u, const IntegrationMethod &a_method_v)
 {
     CH_assert(m_done_extraction);
     std::vector<double> out_integrals(m_params.num_surfaces, 0.0);
+
+    bool valid_u =
+        a_method_u.is_valid(m_params.num_points_u, m_geom_ptr->is_u_periodic());
+    bool valid_v =
+        a_method_v.is_valid(m_params.num_points_v, m_geom_ptr->is_v_periodic());
+
+    // default to using the trapezium rule if provided methods are not valid
+    IntegrationMethod method_u = IntegrationMethod::trapezium;
+    IntegrationMethod method_v = IntegrationMethod::trapezium;
+    if (!valid_u)
+    {
+        MayDay::Warning(
+            "SurfaceExtraction::integrate: Provided "
+            "IntegrationMethod for u is not valid with\nthis num_points_u; "
+            "reverting to trapezium rule.");
+    }
+    else
+    {
+        method_u = a_method_u;
+    }
+    if (!valid_v)
+    {
+        MayDay::Warning(
+            "SurfaceExtraction::integrate: Provided "
+            "IntegrationMethod for v is not valid with\nthis num_points_v; "
+            "reverting to trapezium rule.");
+    }
+    else
+    {
+        method_v = a_method_v;
+    }
 
     for (int isurface = 0; isurface < m_params.num_surfaces; ++isurface)
     {
@@ -107,9 +148,13 @@ std::vector<double> SurfaceExtraction::integrate(
                 double integrand_with_area_element =
                     a_integrand(data_here, surface_param_value, u, v) *
                     m_geom_ptr->area_element(surface_param_value, u, v);
-                inner_integral += m_dv * integrand_with_area_element;
+                double weight = method_v.weight(iv, m_params.num_points_v,
+                                                m_geom_ptr->is_v_periodic());
+                inner_integral += weight * m_dv * integrand_with_area_element;
             }
-            out_integrals[isurface] += m_du * inner_integral;
+            double weight = method_u.weight(iu, m_params.num_points_u,
+                                            m_geom_ptr->is_u_periodic());
+            out_integrals[isurface] += weight * m_du * inner_integral;
         }
     }
     return out_integrals;

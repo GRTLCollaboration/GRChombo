@@ -94,8 +94,8 @@ class SphericalExtraction : public SurfaceExtraction
                    (r * r);
         };
 
-        auto integral_re = integrate(integrand_re);
-        auto integral_im = integrate(integrand_im);
+        auto integral_re = integrate(integrand_re, IntegrationMethod::simpson);
+        auto integral_im = integrate(integrand_im, IntegrationMethod::simpson);
 
         return std::make_pair(integral_re, integral_im);
     }
