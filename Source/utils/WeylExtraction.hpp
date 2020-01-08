@@ -51,6 +51,7 @@ class WeylExtraction : public SphericalExtraction
         // now calculate and write the requested spherical harmonic modes
         for (int imode = 0; imode < m_num_modes; ++imode)
         {
+            // note that this is normalised by multiplying by radius
             auto normalised_Weyl4_complex =
                 [](std::vector<double> Weyl4_reim_parts, double r, double,
                    double) {

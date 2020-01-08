@@ -240,7 +240,7 @@ void SurfaceExtraction::write_integrals(
     integral_file.write_time_data_line(data_for_writing);
 }
 
-//! convenience caller for write_integrals in the case of just integral per
+//! convenience caller for write_integrals in the case of just one integral per
 //! surface
 void SurfaceExtraction::write_integral(const std::string &a_filename,
                                        const std::vector<double> a_integrals,

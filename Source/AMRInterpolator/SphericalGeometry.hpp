@@ -66,6 +66,8 @@ class SphericalGeometry : public SurfaceGeometry
         }
     }
 
+    //! returns the area element on a sphere with radius a_radius at the point
+    //! (a_theta, a_phi)
     virtual double area_element(double a_radius, double a_theta,
                                 double a_phi) const override
     {
