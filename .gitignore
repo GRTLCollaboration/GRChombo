@@ -4,7 +4,6 @@ pout.*
 *.pbs
 *.sh
 *.s
-jobscript*
 d
 o
 p
@@ -15,9 +14,14 @@ log*
 *.ex
 *.swp
 *.out
+*.dat
 *.hdf5
 *.dSYM
+LB.txt
 Weyl_integral*
-ExtractionOut_*
+*ExtractionOut_*
+time.table.*
+*.patch
+*.log
 
 Doxygen/html
