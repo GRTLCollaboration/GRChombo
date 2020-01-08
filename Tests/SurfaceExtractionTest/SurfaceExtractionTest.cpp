@@ -79,8 +79,10 @@ int runSurfaceExtractionTest(int argc, char *argv[])
     };
 
     // integrate chi and dphi/dx over the extraction spheres
-    auto integral_chi = spherical_extraction.integrate(integrand_chi);
-    auto integral_dphi_dx = spherical_extraction.integrate(integrand_dphi_dx);
+    auto integral_chi = spherical_extraction.integrate(
+        integrand_chi, IntegrationMethod::simpson);
+    auto integral_dphi_dx = spherical_extraction.integrate(
+        integrand_dphi_dx, IntegrationMethod::simpson);
 
     int status = 0;
 
@@ -90,14 +92,18 @@ int runSurfaceExtractionTest(int argc, char *argv[])
         double r = sim_params.extraction_params.extraction_radii[iradius];
         double result_chi = integral_chi[iradius];
         double analytic_result_chi = 4.0 * M_PI * r * r * 42.0;
+        double relative_error_chi = abs(result_chi / analytic_result_chi - 1.0);
         double result_dphi_dx = integral_dphi_dx[iradius];
         // analytic_result_dphi_dx = 0.0
         pout() << "At r = " << r << ", integral_chi = " << result_chi
-               << ", and integral_dphi_dx = " << result_dphi_dx << endl;
-        pout() << "analytic_integral_chi = " << analytic_result_chi << endl;
-        // want max 0.1% relative error and 1.0e-10 absolute error
-        status |= (abs(result_chi - analytic_result_chi) >
-                   1.0e-3 * analytic_result_chi);
+               << ", and integral_dphi_dx = " << result_dphi_dx << "\n";
+        pout() << "analytic_integral_chi = " << analytic_result_chi << "\n";
+        pout() << "relative_error in integral_chi = " << relative_error_chi
+               << endl;
+        // want max 0.01% relative error in integral_chi
+        // and 1.0e-10 absolute error in integral_dphi_dx
+        // (since the latter is just a sum of zeros)
+        status |= (relative_error_chi > 1.0e-4 );
         status |= (abs(result_dphi_dx) > 1.0e-10);
     }
 

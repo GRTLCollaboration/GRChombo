@@ -78,7 +78,13 @@ class SimulationParametersBase : public ChomboParameters
                     0.1);
         }
         pp.load("num_points_phi", extraction_params.num_points_phi, 2);
-        pp.load("num_points_theta", extraction_params.num_points_theta, 4);
+        pp.load("num_points_theta", extraction_params.num_points_theta, 5);
+        if (extraction_params.num_points_theta % 2 == 0)
+        {
+            extraction_params.num_points_theta += 1;
+            pout() << "Parameter: num_points_theta incompatible with Simpson's "
+                   << "rule so increased by 1.\n";
+        }
         pp.load("extraction_center", extraction_params.center,
                 center); // default to center of the grid
         if (pp.contains("modes"))
