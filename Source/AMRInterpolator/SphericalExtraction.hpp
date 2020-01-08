@@ -23,7 +23,8 @@ class SphericalExtraction : public SurfaceExtraction
         std::array<double, CH_SPACEDIM> center; //!< the center of the spherical
                                                 //!< shells
         int num_modes; //!< the number of modes to extract
-        std::vector<std::pair<int, int>> modes; //!<
+        std::vector<std::pair<int, int>> modes; //!< the modes to extract
+                                                //!< l = first, m = second
     };
     const std::array<double, CH_SPACEDIM> m_center;
     const int m_num_modes;
