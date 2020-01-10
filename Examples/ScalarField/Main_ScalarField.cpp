@@ -28,8 +28,9 @@ int runGRChombo(int argc, char *argv[])
     // and an associated LevelFactory)
     GRAMR gr_amr;
     DefaultLevelFactory<ScalarFieldLevel> scalar_field_level_fact(gr_amr,
-                                                                  sim_params);
-    setupAMRObject(gr_amr, scalar_field_level_fact);
+                                                                  sim_params);     // CJ See DefaultLevelFactory.hpp
+    setupAMRObject(gr_amr, scalar_field_level_fact);                               // CJ See SetupFunctions.hpp
+
 
     // Engage! Run the evolution
     gr_amr.run(sim_params.stop_time, sim_params.max_steps);

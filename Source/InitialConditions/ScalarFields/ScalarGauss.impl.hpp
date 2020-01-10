@@ -3,21 +3,21 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#if !defined(SCALARBUBBLE_HPP_)
-#error "This file should only be included through ScalarBubble.hpp"
+#if !defined(SCALARGAUSS_HPP_)
+#error "This file should only be included through ScalarGauss.hpp"
 #endif
 
-#ifndef SCALARBUBBLE_IMPL_HPP_
-#define SCALARBUBBLE_IMPL_HPP_
+#ifndef SCALARGAUSS_IMPL_HPP_
+#define SCALARGAUSS_IMPL_HPP_
 
-inline ScalarBubble::ScalarBubble(params_t a_params, double a_dx)
+inline ScalarGauss::ScalarGauss(params_t a_params, double a_dx)
     : m_dx(a_dx), m_params(a_params)
 {
 }
 
 // Compute the value of the initial vars on the grid
 template <class data_t>
-void ScalarBubble::compute(Cell<data_t> current_cell) const
+void ScalarGauss::compute(Cell<data_t> current_cell) const
 {
     MatterCCZ4<ScalarField<>>::Vars<data_t> vars;
     VarsTools::assign(vars, 0.); // Set only the non-zero components below
@@ -40,15 +40,16 @@ void ScalarBubble::compute(Cell<data_t> current_cell) const
 
 // Compute the value of phi at the current point
 template <class data_t>
-data_t ScalarBubble::compute_phi(Coordinates<data_t> coords) const
+data_t ScalarGauss::compute_phi(Coordinates<data_t> coords) const
 {
     data_t rr = coords.get_radius();
-    data_t rr2 = rr * rr;
-    data_t out_phi = m_params.amplitudeSF * rr2 *
-                     exp(-pow((rr - m_params.r_zero) / m_params.widthSF, 2.0));
+    // data_t rr2 = rr * rr;
+    data_t out_phi =  m_params.bkgSF +
+		     m_params.amplitudeSF *
+                     exp(-pow( (rr - m_params.r_zero) / m_params.widthSF, 2.0));
 
 
     return out_phi;
 }
 
-#endif /* SCALARBUBBLE_IMPL_HPP_ */
+#endif /* SCALARGAUSS_IMPL_HPP_ */
