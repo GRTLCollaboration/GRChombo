@@ -50,22 +50,22 @@ template <class eos_t = DefaultEOS> class PerfectFluid
     template <class data_t> struct Vars
     {
         // fluid variables
-        data_t density;
-        data_t energy;
-        data_t pressure;
+        data_t density;        	// rest-mass energy density;  total fluid-energy-density = density (1 + energy)
+        data_t energy;		// internal energy
+        data_t pressure;	
         data_t enthalpy;
         data_t u0;
-        Tensor<1, data_t> u;
+        Tensor<1, data_t> u;    // upper-case   ??
 
         // defined vars for evol. eq.
         data_t W;
         data_t Z0;
-        Tensor<1, data_t> V;
+        Tensor<1, data_t> V;   // upper-case   ??
 
         // evolving vars
         data_t D;
         data_t E;
-        Tensor<1, data_t> Z;
+        Tensor<1, data_t> Z;  //  lower-case   ??
 
         data_t newlapse;                                                             //FIXME:  if one uses lapse it doesn't work, I donno why
 

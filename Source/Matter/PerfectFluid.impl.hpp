@@ -26,7 +26,7 @@ emtensor_t<data_t> PerfectFluid<eos_t>::compute_emtensor(
     FOR2(i, j)
     {
         out.Sij[i][j] =
-          vars.density * vars.enthalpy * vars.u[i] * vars.u[j]  +     
+          vars.density * vars.enthalpy * vars.u[i] * vars.u[j]  +
           vars.pressure * vars.h[i][j];
     }
 
@@ -136,7 +136,8 @@ void PerfectFluid<eos_t>::compute(
     const auto geo_vars = current_cell.template load_vars<GeoVars>();
     auto up_vars = current_cell.template load_vars<Vars>();
 
-    Tensor<1, data_t> V_i; // with lower indices: V_i
+    Tensor<1, data_t> V_i; // with lower indices : V_i
+    Tensor<1, data_t> u_contravariant; // with upper indices: u_contravariant
     data_t V2 = 0.0;
 
     // Inverse metric
@@ -145,7 +146,7 @@ void PerfectFluid<eos_t>::compute(
     data_t enthalpy = 0.0;
     data_t pressure = vars.pressure;
     data_t residual = 1e6;
-    data_t threshold_residual = 1e-4;                                                 // TODO: aribtrary value?
+    data_t threshold_residual = 1e-3;                                                 // TODO: aribtrary value?
     data_t pressure_guess;
     data_t criterion;
     bool condition = true;
@@ -162,21 +163,28 @@ void PerfectFluid<eos_t>::compute(
         {
           V_i[i] = vars.Z[i] / (vars.E + vars.D + pressure_guess);
         }
+        V2 = 0;
         FOR2(i,j)
         {
-          V2 +=  V_i[i] * h_UU[i][j] * V_i[j];
+          V2 +=  V_i[i] * h_UU[i][j] * V_i[j];   // Check V_i is with lower indices.
         }
+
+        if(!(V2 < 1)){
+		        pout() << "W divergent, ... " << V2 << std::endl;
+		        V2 = 0.99999;
+	      }
+
 
         up_vars.W = 1.0 / sqrt(1.0 - V2);
         up_vars.density = vars.D / up_vars.W;
         up_vars.energy = (vars.E + vars.D * ( 1 - up_vars.W)
                          + pressure_guess * (1 - up_vars.W * up_vars.W))
-                         / vars.D / up_vars.W;
+                         / (vars.D * up_vars.W);
 
 
         my_eos.compute_eos(pressure, enthalpy, up_vars);
         residual =  (pressure - pressure_guess);
-        pressure += 0.5 * residual;
+        pressure += 0.1 * residual;
 
 
         criterion = simd_compare_gt(
@@ -184,16 +192,23 @@ void PerfectFluid<eos_t>::compute(
 
         condition = criterion;
         cont += 1;
+
+      	if(cont > 1e6) {
+      	pout() << "Pressure criterion not achieved ,  current convergence: " << abs(residual) << std::endl;
+      	break;
+      	}
     }
 
     up_vars.pressure = pressure;
     up_vars.enthalpy = enthalpy;
 
-    FOR1(i) { up_vars.u[i] = V_i[i] * up_vars.W; }
+    FOR1(i) { up_vars.u[i] = V_i[i] * up_vars.W; }    // lower  indices    ///   DELETE VARIABLE   (edit S_ij)
 
-    up_vars.u0 = up_vars.W / vars.newlapse;
+    FOR2(i, j) { u_contravariant[i] = V_i[j] * h_UU[i][j] * up_vars.W; }       // upper indices
 
-    FOR1(i) { up_vars.V[i] = up_vars.u[i] / geo_vars.lapse / up_vars.u0
+    up_vars.u0 = up_vars.W / geo_vars.lapse;                               ///   DELETE VERIABLE
+
+    FOR1(i) { up_vars.V[i] = u_contravariant[i] / up_vars.W                //  Upper_indices
                               + geo_vars.shift[i] / geo_vars.lapse;  }
 
 
