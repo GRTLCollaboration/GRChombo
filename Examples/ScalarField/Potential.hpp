@@ -35,7 +35,6 @@ class Potential
         // The potential gradient at phi
         // m^2 phi
         dVdphi = pow(m_params.scalar_mass, 2.0) * vars.phi;
-
     }
 };
 

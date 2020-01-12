@@ -42,7 +42,7 @@ Constraints::constraints_t<data_t> Constraints::constraint_equations(
 {
     constraints_t<data_t> out;
 
-    const data_t chi_regularised = simd_max(1e-12, vars.chi);
+    const data_t chi_regularised = simd_max(1e-6, vars.chi);
 
     auto h_UU = TensorAlgebra::compute_inverse_sym(vars.h);
     auto chris = TensorAlgebra::compute_christoffel(d1.h, h_UU);
