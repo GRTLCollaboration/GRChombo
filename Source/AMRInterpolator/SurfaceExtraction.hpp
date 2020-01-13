@@ -44,7 +44,7 @@ class IntegrationMethod
     {
         if (m_is_closed && !a_is_periodic)
         {
-            return (a_num_points % m_num_weights == 1);
+            return (a_num_points % m_num_weights == 1 % m_num_weights);
         }
         else
         {
@@ -54,6 +54,7 @@ class IntegrationMethod
 
     //! Returns whether this IntegrationMethod is closed or not
     inline bool is_closed() const { return m_is_closed; }
+    
     //! Returns the weight for a point with given index
     inline double weight(int a_index, int a_num_points,
                          bool a_is_periodic) const
