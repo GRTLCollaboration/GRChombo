@@ -3,14 +3,14 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef SURFACEEXTRACTIONTESTLEVEL_HPP_
-#define SURFACEEXTRACTIONTESTLEVEL_HPP_
+#ifndef SPHERICALEXTRACTIONTESTLEVEL_HPP_
+#define SPHERICALEXTRACTIONTESTLEVEL_HPP_
 
 #include "GRAMRLevel.hpp"
 
-class SurfaceExtractionTestLevel : public GRAMRLevel
+class SphericalExtractionTestLevel : public GRAMRLevel
 {
-    friend class DefaultLevelFactory<SurfaceExtractionTestLevel>;
+    friend class DefaultLevelFactory<SphericalExtractionTestLevel>;
     // Inherit the contructors from GRAMRLevel
     using GRAMRLevel::GRAMRLevel;
 
