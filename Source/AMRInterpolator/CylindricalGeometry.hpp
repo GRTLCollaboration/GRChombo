@@ -10,9 +10,8 @@
 #include <array>
 #include <cmath>
 
-//! This class, derived from the SurfaceGeometry class, provides cylindrical shell
-//! geometry implementation for the SurfaceExtraction class
-//! v = phi
+//! This class, derived from the SurfaceGeometry class, provides cylindrical
+//! shell geometry implementation for the SurfaceExtraction class v = phi
 class CylindricalGeometry : public SurfaceGeometry
 {
   private:
@@ -20,27 +19,28 @@ class CylindricalGeometry : public SurfaceGeometry
     double m_z_length;
 
   public:
-    CylindricalGeometry(std::array<double, CH_SPACEDIM> &a_center, double &a_z_length)
-      : m_center(a_center), m_z_length(a_z_length)
+    CylindricalGeometry(const std::array<double, CH_SPACEDIM> &a_center,
+                        double a_z_length)
+        : m_center(a_center), m_z_length(a_z_length)
     {
     }
 
     //! returns the grid spacing in z
     virtual double du(int a_num_points_z) const override
     {
-      return m_z_length / (a_num_points_z - 1);
+        return m_z_length / (a_num_points_z - 1);
     }
 
     //! returns the grid spacing in phi
     virtual double dv(int a_num_points_phi) const override
     {
-      return 2.0 * M_PI / ((double)a_num_points_phi);
+        return 2.0 * M_PI / ((double)a_num_points_phi);
     }
 
     //! returns the z coordinate associated to the theta/u index
     virtual double u(int a_iz, int a_num_points_z) const override
     {
-      return a_iz * du(a_num_points_z) - (m_z_length / 2.0);
+        return a_iz * du(a_num_points_z) - (m_z_length / 2.0);
     }
 
     //! returns the phi coordinate associated to the phi/v index

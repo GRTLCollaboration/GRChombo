@@ -85,8 +85,7 @@ class SimulationParametersBase : public ChomboParameters
             pout() << "Parameter: num_points_theta incompatible with Simpson's "
                    << "rule so increased by 1.\n";
         }
-        pp.load("extraction_center", extraction_params.center,
-                center); // default to center of the grid
+        pp.load("extraction_center", extraction_params.center, center);
         if (pp.contains("modes"))
         {
             pp.load("num_modes", extraction_params.num_modes);

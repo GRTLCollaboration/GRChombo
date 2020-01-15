@@ -54,7 +54,7 @@ class IntegrationMethod
 
     //! Returns whether this IntegrationMethod is closed or not
     inline bool is_closed() const { return m_is_closed; }
-    
+
     //! Returns the weight for a point with given index
     inline double weight(int a_index, int a_num_points,
                          bool a_is_periodic) const
@@ -132,19 +132,31 @@ class SurfaceExtraction
   public:
     //! Normal constructor which requires vars to be added after construction
     //! using add_var or add_vars
-    SurfaceExtraction(SurfaceGeometry *a_geom_ptr, params_t &a_params,
-                      double a_dt, double a_time, bool a_first_step,
-                      double a_restart_time = 0.0);
+    SurfaceExtraction(const SurfaceGeometry *a_geom_ptr,
+                      const params_t &a_params, double a_dt, double a_time,
+                      bool a_first_step, double a_restart_time = 0.0);
 
     //! add a single variable or derivative of variable
-    void add_var(const int a_var, const Derivative a_deriv = Derivative::LOCAL);
+    void add_var(int a_var, const Derivative &a_deriv = Derivative::LOCAL);
 
     //! add a vector of variables/derivatives of variables
     void add_vars(const std::vector<std::pair<int, Derivative>> &a_vars);
 
-    //! Alternative constructor with a predefined vector of variables
-    SurfaceExtraction(SurfaceGeometry *a_geom_ptr, params_t &a_params,
+    //! add a vector of variables (no derivatives)
+    void add_vars(const std::vector<int> &a_vars);
+
+    //! Alternative constructor with a predefined vector of variables and
+    //! derivatives
+    SurfaceExtraction(const SurfaceGeometry *a_geom_ptr,
+                      const params_t &a_params,
                       const std::vector<std::pair<int, Derivative>> &a_vars,
+                      double a_dt, double a_time, bool a_first_step,
+                      double a_restart_time = 0.0);
+
+    //! Another alternative constructor with a predefined vector of variables
+    //! no derivatives
+    SurfaceExtraction(const SurfaceGeometry *a_geom_ptr,
+                      const params_t &a_params, const std::vector<int> &a_vars,
                       double a_dt, double a_time, bool a_first_step,
                       double a_restart_time = 0.0);
 

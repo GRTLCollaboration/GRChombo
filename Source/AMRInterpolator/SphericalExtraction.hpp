@@ -30,7 +30,7 @@ class SphericalExtraction : public SurfaceExtraction
     const int m_num_modes;
     const std::vector<std::pair<int, int>> m_modes;
 
-    SphericalExtraction(params_t &a_params, double a_dt, double a_time,
+    SphericalExtraction(const params_t &a_params, double a_dt, double a_time,
                         bool a_first_step, double a_restart_time = 0.0)
         : SurfaceExtraction(new SphericalGeometry(a_params.center), a_params,
                             a_dt, a_time, a_first_step, a_restart_time),
@@ -39,9 +39,19 @@ class SphericalExtraction : public SurfaceExtraction
     {
     }
 
-    SphericalExtraction(params_t &a_params,
+    SphericalExtraction(const params_t &a_params,
                         const std::vector<std::pair<int, Derivative>> &a_vars,
                         double a_dt, double a_time, bool a_first_step,
+                        double a_restart_time = 0.0)
+        : SphericalExtraction(a_params, a_dt, a_time, a_first_step,
+                              a_restart_time)
+    {
+        add_vars(a_vars);
+    }
+
+    SphericalExtraction(const params_t &a_params,
+                        const std::vector<int> &a_vars, double a_dt,
+                        double a_time, bool a_first_step,
                         double a_restart_time = 0.0)
         : SphericalExtraction(a_params, a_dt, a_time, a_first_step,
                               a_restart_time)

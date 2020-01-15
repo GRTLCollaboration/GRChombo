@@ -7,8 +7,8 @@
 
 //! Normal constructor which requires vars to be added after construction
 //! using add_var or add_vars
-SurfaceExtraction::SurfaceExtraction(SurfaceGeometry *a_geom_ptr,
-                                     params_t &a_params, double a_dt,
+SurfaceExtraction::SurfaceExtraction(const SurfaceGeometry *a_geom_ptr,
+                                     const params_t &a_params, double a_dt,
                                      double a_time, bool a_first_step,
                                      double a_restart_time)
     : m_geom_ptr(a_geom_ptr), m_params(a_params), m_dt(a_dt), m_time(a_time),
@@ -47,7 +47,7 @@ SurfaceExtraction::SurfaceExtraction(SurfaceGeometry *a_geom_ptr,
 }
 
 //! add a single variable or derivative of variable
-void SurfaceExtraction::add_var(const int a_var, const Derivative a_deriv)
+void SurfaceExtraction::add_var(int a_var, const Derivative &a_deriv)
 {
     CH_assert(!m_done_extraction);
     m_vars.push_back({a_var, a_deriv});
@@ -64,11 +64,35 @@ void SurfaceExtraction::add_vars(
     }
 }
 
-//! Alternative constructor with a predefined vector of variables
+//! add a vector of variables (no derivatives)
+void SurfaceExtraction::add_vars(const std::vector<int> &a_vars)
+{
+    for (auto var : a_vars)
+    {
+        add_var(var);
+    }
+}
+
+//! Alternative constructor with a predefined vector of variables and
+//! derivatives
 SurfaceExtraction::SurfaceExtraction(
-    SurfaceGeometry *a_geom_ptr, params_t &a_params,
+    const SurfaceGeometry *a_geom_ptr, const params_t &a_params,
     const std::vector<std::pair<int, Derivative>> &a_vars, double a_dt,
     double a_time, bool a_first_step, double a_restart_time)
+    : SurfaceExtraction(a_geom_ptr, a_params, a_dt, a_time, a_first_step,
+                        a_restart_time)
+{
+    add_vars(a_vars);
+}
+
+//! Another alternative constructor with a predefined vector of variables
+//! no derivatives
+
+SurfaceExtraction::SurfaceExtraction(const SurfaceGeometry *a_geom_ptr,
+                                     const params_t &a_params,
+                                     const std::vector<int> &a_vars,
+                                     double a_dt, double a_time,
+                                     bool a_first_step, double a_restart_time)
     : SurfaceExtraction(a_geom_ptr, a_params, a_dt, a_time, a_first_step,
                         a_restart_time)
 {
@@ -79,7 +103,7 @@ SurfaceExtraction::SurfaceExtraction(
 const IntegrationMethod IntegrationMethod::trapezium({0.5});
 const IntegrationMethod IntegrationMethod::midpoint({1.0}, false);
 const IntegrationMethod IntegrationMethod::simpson({0.3333333333333333,
-                                                     1.3333333333333333});
+                                                    1.3333333333333333});
 const IntegrationMethod
     IntegrationMethod::boole({0.3111111111111111, 1.4222222222222222,
                               0.53333333333333, 1.4222222222222222});
