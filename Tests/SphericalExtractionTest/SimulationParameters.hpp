@@ -44,8 +44,7 @@ class SimulationParameters : public ChomboParameters
         }
         pp.load("num_points_phi", extraction_params.num_points_phi, 8);
         pp.load("num_points_theta", extraction_params.num_points_theta, 16);
-        pp.load("extraction_center", extraction_params.center,
-                {0.5 * L, 0.5 * L, 0.5 * L});
+        pp.load("extraction_center", extraction_params.center, center);
         pp.load("write_extraction", extraction_params.write_extraction, false);
     }
 

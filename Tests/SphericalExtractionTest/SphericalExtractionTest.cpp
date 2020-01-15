@@ -103,7 +103,7 @@ int runSphericalExtractionTest(int argc, char *argv[])
         // want max 0.01% relative error in integral_chi
         // and 1.0e-10 absolute error in integral_dphi_dx
         // (since the latter is just a sum of zeros)
-        status |= (relative_error_chi > 1.0e-4 );
+        status |= (relative_error_chi > 1.0e-4);
         status |= (abs(result_dphi_dx) > 1.0e-10);
     }
 

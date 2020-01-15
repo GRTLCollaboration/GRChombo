@@ -19,7 +19,7 @@ class SphericalGeometry : public SurfaceGeometry
     std::array<double, CH_SPACEDIM> m_center;
 
   public:
-    SphericalGeometry(std::array<double, CH_SPACEDIM> &a_center)
+    SphericalGeometry(const std::array<double, CH_SPACEDIM> &a_center)
         : m_center(a_center)
     {
     }
