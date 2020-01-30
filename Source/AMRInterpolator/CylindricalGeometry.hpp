@@ -6,13 +6,12 @@
 #ifndef CYLINDRICALGEOMETRY_HPP_
 #define CYLINDRICALGEOMETRY_HPP_
 
-#include "SurfaceGeometry.hpp"
 #include <array>
 #include <cmath>
 
 //! This class, derived from the SurfaceGeometry class, provides cylindrical
 //! shell geometry implementation for the SurfaceExtraction class v = phi
-class CylindricalGeometry : public SurfaceGeometry
+class CylindricalGeometry
 {
   private:
     std::array<double, CH_SPACEDIM> m_center;
@@ -26,35 +25,35 @@ class CylindricalGeometry : public SurfaceGeometry
     }
 
     //! returns the grid spacing in z
-    virtual double du(int a_num_points_z) const override
+    inline double du(int a_num_points_z) const
     {
         return m_z_length / (a_num_points_z - 1);
     }
 
     //! returns the grid spacing in phi
-    virtual double dv(int a_num_points_phi) const override
+    inline double dv(int a_num_points_phi) const
     {
         return 2.0 * M_PI / ((double)a_num_points_phi);
     }
 
     //! returns the z coordinate associated to the theta/u index
-    virtual double u(int a_iz, int a_num_points_z) const override
+    inline double u(int a_iz, int a_num_points_z) const
     {
         return a_iz * du(a_num_points_z) - (m_z_length / 2.0);
     }
 
     //! returns the phi coordinate associated to the phi/v index
-    virtual double v(int a_iphi, int a_num_points_phi) const override
+    inline double v(int a_iphi, int a_num_points_phi) const
     {
         return a_iphi * dv(a_num_points_phi);
     }
 
-    virtual bool is_u_periodic() const override { return false; }
-    virtual bool is_v_periodic() const override { return true; }
+    inline bool is_u_periodic() const { return false; }
+    inline bool is_v_periodic() const { return true; }
     //! returns the Cartesian coordinate in direction a_dir with specified
     //! radius, z and phi.
-    virtual double cartesian_coord(int a_dir, double a_radius, double a_z,
-                                   double a_phi) const override
+    inline double get_grid_coord(int a_dir, double a_radius, double a_z,
+                                 double a_phi) const
     {
         switch (a_dir)
         {
@@ -71,17 +70,16 @@ class CylindricalGeometry : public SurfaceGeometry
 
     //! returns the area element on a cylinder with radius a_radius at the point
     //! (a_z, a_phi)
-    virtual double area_element(double a_radius, double a_z,
-                                double a_phi) const override
+    inline double area_element(double a_radius, double a_z, double a_phi) const
     {
         return a_radius;
     }
 
-    virtual std::string param_name() const override { return "r"; }
+    inline std::string param_name() const { return "r"; }
 
-    virtual std::string u_name() const override { return "z"; }
+    inline std::string u_name() const { return "z"; }
 
-    virtual std::string v_name() const override { return "phi"; }
+    inline std::string v_name() const { return "phi"; }
 };
 
 #endif /* CYLINDRICALGEOMETRY_HPP_ */

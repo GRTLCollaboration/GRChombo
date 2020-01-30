@@ -10,7 +10,7 @@
 #include "SurfaceExtraction.hpp"
 
 //! A child class of SurfaceExtraction for extraction on cylindrical shells
-class CylindricalExtraction : public SurfaceExtraction
+class CylindricalExtraction : public SurfaceExtraction<CylindricalGeometry>
 {
   public:
     struct params_t : SurfaceExtraction::params_t
@@ -28,8 +28,7 @@ class CylindricalExtraction : public SurfaceExtraction
 
     CylindricalExtraction(const params_t &a_params, double a_dt, double a_time,
                           bool a_first_step, double a_restart_time = 0.0)
-        : SurfaceExtraction(
-              new CylindricalGeometry(a_params.center, a_params.z_length),
+        : SurfaceExtraction({a_params.center, a_params.z_length},
               a_params, a_dt, a_time, a_first_step, a_restart_time),
           m_center(a_params.center), m_z_length(a_params.z_length)
     {
@@ -54,8 +53,6 @@ class CylindricalExtraction : public SurfaceExtraction
     {
         add_vars(a_vars);
     }
-
-    ~CylindricalExtraction() { delete m_geom_ptr; }
 
     void execute_query(AMRInterpolator<Lagrange<4>> *a_interpolator)
     {

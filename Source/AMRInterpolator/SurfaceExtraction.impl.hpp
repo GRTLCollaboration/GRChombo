@@ -3,24 +3,25 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#include "SurfaceExtraction.hpp"
+#if !defined(SURFACEEXTRACTION_HPP_)
+#error "This file should only be included through SurfaceExtraction.hpp"
+#endif
+
+#ifndef SURFACEEXTRACTION_IMPL_HPP_
+#define SURFACEEXTRACTION_IMPL_HPP_
 
 //! Normal constructor which requires vars to be added after construction
 //! using add_var or add_vars
-SurfaceExtraction::SurfaceExtraction(const SurfaceGeometry *a_geom_ptr,
-                                     const params_t &a_params, double a_dt,
-                                     double a_time, bool a_first_step,
-                                     double a_restart_time)
-    : m_geom_ptr(a_geom_ptr), m_params(a_params), m_dt(a_dt), m_time(a_time),
+template <class SurfaceGeometry>
+SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
+    const SurfaceGeometry &a_geom, const params_t &a_params, double a_dt,
+    double a_time, bool a_first_step, double a_restart_time)
+    : m_geom(a_geom), m_params(a_params), m_dt(a_dt), m_time(a_time),
       m_first_step(a_first_step), m_restart_time(a_restart_time),
       m_num_points(m_params.num_points_u * m_params.num_points_v),
-      m_du(m_geom_ptr->du(m_params.num_points_u)),
-      m_dv(m_geom_ptr->dv(m_params.num_points_v)), m_done_extraction(false)
+      m_du(m_geom.du(m_params.num_points_u)),
+      m_dv(m_geom.dv(m_params.num_points_v)), m_done_extraction(false)
 {
-    if (m_geom_ptr == nullptr)
-    {
-        MayDay::Error("SurfaceExtraction: invalid geometry pointer");
-    }
     FOR1(idir)
     {
         m_interp_coords[idir].resize(m_num_points * m_params.num_surfaces);
@@ -31,14 +32,14 @@ SurfaceExtraction::SurfaceExtraction(const SurfaceGeometry *a_geom_ptr,
         double surface_param_value = m_params.surface_param_values[isurface];
         for (int iu = 0; iu < m_params.num_points_u; ++iu)
         {
-            double u = m_geom_ptr->u(iu, m_params.num_points_u);
+            double u = m_geom.u(iu, m_params.num_points_u);
             for (int iv = 0; iv < m_params.num_points_v; ++iv)
             {
-                double v = m_geom_ptr->v(iv, m_params.num_points_v);
+                double v = m_geom.v(iv, m_params.num_points_v);
                 FOR1(idir)
                 {
                     int idx = index(isurface, iu, iv);
-                    m_interp_coords[idir][idx] = m_geom_ptr->cartesian_coord(
+                    m_interp_coords[idir][idx] = m_geom.get_grid_coord(
                         idir, surface_param_value, u, v);
                 }
             }
@@ -47,7 +48,9 @@ SurfaceExtraction::SurfaceExtraction(const SurfaceGeometry *a_geom_ptr,
 }
 
 //! add a single variable or derivative of variable
-void SurfaceExtraction::add_var(int a_var, const Derivative &a_deriv)
+template <class SurfaceGeometry>
+void SurfaceExtraction<SurfaceGeometry>::add_var(int a_var,
+                                                 const Derivative &a_deriv)
 {
     CH_assert(!m_done_extraction);
     m_vars.push_back({a_var, a_deriv});
@@ -55,7 +58,8 @@ void SurfaceExtraction::add_var(int a_var, const Derivative &a_deriv)
 }
 
 //! add a vector of variables/derivatives of variables
-void SurfaceExtraction::add_vars(
+template <class SurfaceGeometry>
+void SurfaceExtraction<SurfaceGeometry>::add_vars(
     const std::vector<std::pair<int, Derivative>> &a_vars)
 {
     for (auto var : a_vars)
@@ -65,7 +69,9 @@ void SurfaceExtraction::add_vars(
 }
 
 //! add a vector of variables (no derivatives)
-void SurfaceExtraction::add_vars(const std::vector<int> &a_vars)
+template <class SurfaceGeometry>
+void SurfaceExtraction<SurfaceGeometry>::add_vars(
+    const std::vector<int> &a_vars)
 {
     for (auto var : a_vars)
     {
@@ -75,38 +81,53 @@ void SurfaceExtraction::add_vars(const std::vector<int> &a_vars)
 
 //! Alternative constructor with a predefined vector of variables and
 //! derivatives
-SurfaceExtraction::SurfaceExtraction(
-    const SurfaceGeometry *a_geom_ptr, const params_t &a_params,
+template <class SurfaceGeometry>
+SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
+    const SurfaceGeometry &a_geom, const params_t &a_params,
     const std::vector<std::pair<int, Derivative>> &a_vars, double a_dt,
     double a_time, bool a_first_step, double a_restart_time)
-    : SurfaceExtraction(a_geom_ptr, a_params, a_dt, a_time, a_first_step,
-                        a_restart_time)
+    : SurfaceExtraction<SurfaceGeometry>(a_geom, a_params, a_dt, a_time,
+                                         a_first_step, a_restart_time)
 {
     add_vars(a_vars);
 }
 
 //! Another alternative constructor with a predefined vector of variables
 //! no derivatives
-
-SurfaceExtraction::SurfaceExtraction(const SurfaceGeometry *a_geom_ptr,
-                                     const params_t &a_params,
-                                     const std::vector<int> &a_vars,
-                                     double a_dt, double a_time,
-                                     bool a_first_step, double a_restart_time)
-    : SurfaceExtraction(a_geom_ptr, a_params, a_dt, a_time, a_first_step,
-                        a_restart_time)
+template <class SurfaceGeometry>
+SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
+    const SurfaceGeometry &a_geom, const params_t &a_params,
+    const std::vector<int> &a_vars, double a_dt, double a_time,
+    bool a_first_step, double a_restart_time)
+    : SurfaceExtraction<SurfaceExtraction>(a_geom, a_params, a_dt, a_time,
+                                           a_first_step, a_restart_time)
 {
     add_vars(a_vars);
 }
 
-// define the static IntegrationMethods here
-const IntegrationMethod IntegrationMethod::trapezium({0.5});
-const IntegrationMethod IntegrationMethod::midpoint({1.0}, false);
-const IntegrationMethod IntegrationMethod::simpson({0.3333333333333333,
-                                                    1.3333333333333333});
-const IntegrationMethod
-    IntegrationMethod::boole({0.3111111111111111, 1.4222222222222222,
-                              0.53333333333333, 1.4222222222222222});
+//! Do the extraction
+template <class SurfaceGeometry>
+template <typename InterpAlgo>
+void SurfaceExtraction<SurfaceGeometry>::extract(
+    AMRInterpolator<InterpAlgo> *a_interpolator)
+{
+    if (a_interpolator == nullptr)
+    {
+        MayDay::Error("SurfaceExtraction: invalid AMRInterpolator pointer");
+    }
+    // set up the interpolation query
+    InterpolationQuery query(m_num_points * m_params.num_surfaces);
+    FOR1(idir) { query.setCoords(idir, m_interp_coords[idir].data()); }
+    for (int ivar = 0; ivar < m_vars.size(); ++ivar)
+    {
+        query.addComp(m_vars[ivar].first, m_interp_data[ivar].data(),
+                      m_vars[ivar].second);
+    }
+
+    // submit the query
+    a_interpolator->interp(query);
+    m_done_extraction = true;
+}
 
 //! Integrate some integrand dependent on the interpolated data over the
 //! surface. The integrand function should be of the signature
@@ -114,7 +135,8 @@ const IntegrationMethod
 //!     double a_surface_param_value, double a_u, double a_v)
 //! where data_here is a vector of all the interpolated variables at the
 //! point specified by the other arguments.
-std::vector<double> SurfaceExtraction::integrate(
+template <class SurfaceGeometry>
+std::vector<double> SurfaceExtraction<SurfaceGeometry>::integrate(
     std::function<double(std::vector<double>, double, double, double)>
         a_integrand,
     const IntegrationMethod &a_method_u, const IntegrationMethod &a_method_v)
@@ -123,9 +145,9 @@ std::vector<double> SurfaceExtraction::integrate(
     std::vector<double> out_integrals(m_params.num_surfaces, 0.0);
 
     bool valid_u =
-        a_method_u.is_valid(m_params.num_points_u, m_geom_ptr->is_u_periodic());
+        a_method_u.is_valid(m_params.num_points_u, m_geom.is_u_periodic());
     bool valid_v =
-        a_method_v.is_valid(m_params.num_points_v, m_geom_ptr->is_v_periodic());
+        a_method_v.is_valid(m_params.num_points_v, m_geom.is_v_periodic());
 
     // default to using the trapezium rule if provided methods are not valid
     IntegrationMethod method_u = IntegrationMethod::trapezium;
@@ -133,7 +155,7 @@ std::vector<double> SurfaceExtraction::integrate(
     if (!valid_u)
     {
         MayDay::Warning(
-            "SurfaceExtraction::integrate: Provided "
+            "SurfaceExtraction<SurfaceGeometry>::integrate: Provided "
             "IntegrationMethod for u is not valid with\nthis num_points_u; "
             "reverting to trapezium rule.");
     }
@@ -144,7 +166,7 @@ std::vector<double> SurfaceExtraction::integrate(
     if (!valid_v)
     {
         MayDay::Warning(
-            "SurfaceExtraction::integrate: Provided "
+            "SurfaceExtraction<SurfaceGeometry>::integrate: Provided "
             "IntegrationMethod for v is not valid with\nthis num_points_v; "
             "reverting to trapezium rule.");
     }
@@ -158,11 +180,11 @@ std::vector<double> SurfaceExtraction::integrate(
         double surface_param_value = m_params.surface_param_values[isurface];
         for (int iu = 0; iu < m_params.num_points_u; ++iu)
         {
-            double u = m_geom_ptr->u(iu, m_params.num_points_u);
+            double u = m_geom.u(iu, m_params.num_points_u);
             double inner_integral = 0.0;
             for (int iv = 0; iv < m_params.num_points_v; ++iv)
             {
-                double v = m_geom_ptr->v(iv, m_params.num_points_v);
+                double v = m_geom.v(iv, m_params.num_points_v);
                 std::vector<double> data_here(m_vars.size());
                 for (int ivar = 0; ivar < m_vars.size(); ++ivar)
                 {
@@ -171,13 +193,13 @@ std::vector<double> SurfaceExtraction::integrate(
                 }
                 double integrand_with_area_element =
                     a_integrand(data_here, surface_param_value, u, v) *
-                    m_geom_ptr->area_element(surface_param_value, u, v);
+                    m_geom.area_element(surface_param_value, u, v);
                 double weight = method_v.weight(iv, m_params.num_points_v,
-                                                m_geom_ptr->is_v_periodic());
+                                                m_geom.is_v_periodic());
                 inner_integral += weight * m_dv * integrand_with_area_element;
             }
             double weight = method_u.weight(iu, m_params.num_points_u,
-                                            m_geom_ptr->is_u_periodic());
+                                            m_geom.is_u_periodic());
             out_integrals[isurface] += weight * m_du * inner_integral;
         }
     }
@@ -185,7 +207,9 @@ std::vector<double> SurfaceExtraction::integrate(
 }
 
 //! Write the interpolated data to a file with a block for each surface
-void SurfaceExtraction::write_extraction(std::string a_file_prefix) const
+template <class SurfaceGeometry>
+void SurfaceExtraction<SurfaceGeometry>::write_extraction(
+    std::string a_file_prefix) const
 {
     CH_assert(m_done_extraction);
     SmallDataIO extraction_file(a_file_prefix, m_dt, m_time, m_restart_time,
@@ -196,7 +220,7 @@ void SurfaceExtraction::write_extraction(std::string a_file_prefix) const
         // Write headers
         std::vector<std::string> header1_strings = {
             "time = " + std::to_string(m_time) + ",",
-            m_geom_ptr->param_name() + " = " +
+            m_geom.param_name() + " = " +
                 std::to_string(m_params.surface_param_values[isurface])};
         extraction_file.write_header_line(header1_strings, "");
         std::vector<std::string> components(m_vars.size());
@@ -213,17 +237,17 @@ void SurfaceExtraction::write_extraction(std::string a_file_prefix) const
             components[ivar] +=
                 UserVariables::variable_names[m_vars[ivar].first];
         }
-        std::vector<std::string> coords = {m_geom_ptr->u_name(),
-                                           m_geom_ptr->v_name()};
+        std::vector<std::string> coords = {m_geom.u_name(),
+                                           m_geom.v_name()};
         extraction_file.write_header_line(components, coords);
 
         // Now the data
         for (int iu = 0; iu < m_params.num_points_u; ++iu)
         {
-            double u = m_geom_ptr->u(iu, m_params.num_points_u);
+            double u = m_geom.u(iu, m_params.num_points_u);
             for (int iv = 0; iv < m_params.num_points_v; ++iv)
             {
-                double v = m_geom_ptr->v(iv, m_params.num_points_v);
+                double v = m_geom.v(iv, m_params.num_points_v);
                 int idx = index(isurface, iu, iv);
                 std::vector<double> data(m_vars.size());
                 for (int ivar = 0; ivar < m_vars.size(); ++ivar)
@@ -239,7 +263,8 @@ void SurfaceExtraction::write_extraction(std::string a_file_prefix) const
 }
 
 //! write some integrals to a file at this timestep
-void SurfaceExtraction::write_integrals(
+template <class SurfaceGeometry>
+void SurfaceExtraction<SurfaceGeometry>::write_integrals(
     const std::string &a_filename,
     const std::vector<std::vector<double>> &a_integrals,
     const std::vector<std::string> &a_labels) const
@@ -285,7 +310,7 @@ void SurfaceExtraction::write_integrals(
                     std::to_string(m_params.surface_param_values[isurface]);
             }
         }
-        std::string pre_header2_string = m_geom_ptr->param_name() + " = ";
+        std::string pre_header2_string = m_geom.param_name() + " = ";
 
         // write headers
         integral_file.write_header_line(header1_strings);
@@ -311,9 +336,10 @@ void SurfaceExtraction::write_integrals(
 
 //! convenience caller for write_integrals in the case of just one integral per
 //! surface
-void SurfaceExtraction::write_integral(const std::string &a_filename,
-                                       const std::vector<double> a_integrals,
-                                       const std::string a_label) const
+template <class SurfaceGeometry>
+void SurfaceExtraction<SurfaceGeometry>::write_integral(
+    const std::string &a_filename, const std::vector<double> a_integrals,
+    const std::string a_label) const
 {
     std::vector<std::vector<double>> integrals(1, a_integrals);
     if (!a_label.empty())
@@ -324,3 +350,5 @@ void SurfaceExtraction::write_integral(const std::string &a_filename,
     else
         write_integrals(a_filename, integrals);
 }
+
+#endif /* SURFACEEXTRACTION_IMPL_HPP_ */
