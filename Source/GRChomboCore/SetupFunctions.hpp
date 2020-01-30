@@ -17,6 +17,7 @@ using std::endl;
 #include "DerivativeSetup.hpp"
 #include "GRAMR.hpp"
 #include "GRParmParse.hpp"
+#include "IntegrationMethodSetup.hpp"
 
 #include "simd.hpp"
 

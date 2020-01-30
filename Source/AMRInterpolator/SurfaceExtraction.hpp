@@ -9,74 +9,20 @@
 #include "AMRInterpolator.hpp"
 #include "CH_assert.H"
 #include "DimensionDefinitions.hpp"
+#include "IntegrationMethod.hpp"
 #include "InterpolationQuery.hpp"
 #include "Lagrange.hpp"
 #include "SmallDataIO.hpp" // for writing data
-#include "SurfaceGeometry.hpp"
 #include "UserVariables.hpp"
 #include <algorithm>
 #include <array>
 #include <utility>
 #include <vector>
 
-//! A class to store and return the weights associated to a Newton-Cotes formula
-//! for numerical integration/quadrature which can be closed (i.e. includes the
-//! endpoints) or open (does not include the end points)
-class IntegrationMethod
-{
-  private:
-    std::vector<double> m_weights;
-    int m_num_weights;
-    bool m_is_closed;
-
-  public:
-    //! Constructor
-    IntegrationMethod(const std::vector<double> &a_weights,
-                      bool a_is_closed = true)
-        : m_weights(a_weights), m_num_weights(a_weights.size()),
-          m_is_closed(a_is_closed)
-    {
-    }
-
-    //! Checks that this integration method is suitable given the number of
-    //! points and periodicity
-    inline bool is_valid(int a_num_points, bool a_is_periodic) const
-    {
-        if (m_is_closed && !a_is_periodic)
-        {
-            return (a_num_points % m_num_weights == 1 % m_num_weights);
-        }
-        else
-        {
-            return (a_num_points % m_num_weights == 0);
-        }
-    }
-
-    //! Returns whether this IntegrationMethod is closed or not
-    inline bool is_closed() const { return m_is_closed; }
-
-    //! Returns the weight for a point with given index
-    inline double weight(int a_index, int a_num_points,
-                         bool a_is_periodic) const
-    {
-        const int weight_index = a_index % m_num_weights;
-        const bool endpoint =
-            (a_index == 0 || a_index == a_num_points - 1) && !a_is_periodic;
-        if (m_is_closed && !endpoint && weight_index == 0)
-            return 2.0 * m_weights[weight_index];
-        else
-            return m_weights[weight_index];
-    }
-
-    static const IntegrationMethod trapezium;
-    static const IntegrationMethod midpoint;
-    static const IntegrationMethod simpson;
-    static const IntegrationMethod boole;
-};
-
 //! This class extracts grid variables on 2 dimensional surfaces each
 //! parameterised by u and v with different surfaces given by level sets of
 //! another parameter
+template <class SurfaceGeometry>
 class SurfaceExtraction
 {
   public:
@@ -104,7 +50,8 @@ class SurfaceExtraction
     };
 
   protected:
-    const SurfaceGeometry *m_geom_ptr; //!< the pointer to the geometry class
+    const SurfaceGeometry m_geom; //!< the geometry class which knows about
+                                  //!< the particular surface
     const params_t m_params;
     std::vector<std::pair<int, Derivative>> m_vars; //!< the vector of pairs of
     //!< variables and derivatives to extract
@@ -132,7 +79,7 @@ class SurfaceExtraction
   public:
     //! Normal constructor which requires vars to be added after construction
     //! using add_var or add_vars
-    SurfaceExtraction(const SurfaceGeometry *a_geom_ptr,
+    SurfaceExtraction(const SurfaceGeometry &a_geom,
                       const params_t &a_params, double a_dt, double a_time,
                       bool a_first_step, double a_restart_time = 0.0);
 
@@ -147,7 +94,7 @@ class SurfaceExtraction
 
     //! Alternative constructor with a predefined vector of variables and
     //! derivatives
-    SurfaceExtraction(const SurfaceGeometry *a_geom_ptr,
+    SurfaceExtraction(const SurfaceGeometry &a_geom,
                       const params_t &a_params,
                       const std::vector<std::pair<int, Derivative>> &a_vars,
                       double a_dt, double a_time, bool a_first_step,
@@ -155,33 +102,15 @@ class SurfaceExtraction
 
     //! Another alternative constructor with a predefined vector of variables
     //! no derivatives
-    SurfaceExtraction(const SurfaceGeometry *a_geom_ptr,
+    SurfaceExtraction(const SurfaceGeometry &a_geom,
                       const params_t &a_params, const std::vector<int> &a_vars,
                       double a_dt, double a_time, bool a_first_step,
                       double a_restart_time = 0.0);
 
-    //! Do the extraction
-    // defined here as this is a templated function
-    template <typename InterpAlgo>
-    void extract(AMRInterpolator<InterpAlgo> *a_interpolator)
-    {
-        if (a_interpolator == nullptr)
-        {
-            MayDay::Error("SurfaceExtraction: invalid AMRInterpolator pointer");
-        }
-        // set up the interpolation query
-        InterpolationQuery query(m_num_points * m_params.num_surfaces);
-        FOR1(idir) { query.setCoords(idir, m_interp_coords[idir].data()); }
-        for (int ivar = 0; ivar < m_vars.size(); ++ivar)
-        {
-            query.addComp(m_vars[ivar].first, m_interp_data[ivar].data(),
-                          m_vars[ivar].second);
-        }
 
-        // submit the query
-        a_interpolator->interp(query);
-        m_done_extraction = true;
-    }
+//! Do the extraction
+template <typename InterpAlgo>
+void extract(AMRInterpolator<InterpAlgo> *a_interpolator);
 
     //! Integrate some integrand dependent on the interpolated data over the
     //! surface. The integrand function should be of the signature
@@ -209,5 +138,7 @@ class SurfaceExtraction
                         const std::vector<double> a_integrals,
                         const std::string a_label = "") const;
 };
+
+#include "SurfaceExtraction.impl.hpp"
 
 #endif /* SURFACEEXTRACTION_HPP_ */
