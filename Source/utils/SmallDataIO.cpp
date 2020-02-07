@@ -5,6 +5,8 @@
 
 #include "SmallDataIO.hpp"
 
+// ------------ Writing Functions ------------
+
 void SmallDataIO::write_header_line(
     const std::vector<std::string> &a_header_strings,
     const std::string &a_pre_header_string)
@@ -86,16 +88,22 @@ void SmallDataIO::line_break()
     }
 }
 
-void SmallDataIO::remove_duplicate_time_data()
+void SmallDataIO::remove_duplicate_time_data(const bool keep_m_time_data)
 {
     constexpr double epsilon = 1.0e-8;
     if (m_rank == 0 && m_restart_time > 0. && m_mode == APPEND &&
         m_time < m_restart_time + m_dt + epsilon)
     {
         // copy lines with time < m_time into a temporary file
+        m_file.seekg(0);
         std::string line;
         std::string temp_filename = m_filename + ".temp";
         std::ofstream temp_file(temp_filename);
+        int sign = -1;
+        if (keep_m_time_data)
+        {
+            sign = 1;
+        }
         while (std::getline(m_file, line))
         {
             if (!(line.find("#") == std::string::npos))
@@ -103,7 +111,7 @@ void SmallDataIO::remove_duplicate_time_data()
                 temp_file << line << "\n";
             }
             else if (std::stod(line.substr(0, m_coords_width)) <
-                     m_time - epsilon)
+                     m_time + sign * epsilon)
             {
                 temp_file << line << "\n";
             }
@@ -119,4 +127,64 @@ void SmallDataIO::remove_duplicate_time_data()
         // reopen the file in append mode
         m_file.open(m_filename, std::ios::app);
     }
+}
+
+// ------------ Reading Functions ------------
+
+void SmallDataIO::get_specific_data_line(std::vector<double> &a_out_data,
+                                         const std::vector<double> a_coords)
+{
+    if (m_rank == 0)
+    {
+        bool line_found = false;
+        // first set the current position to the beginning of the file
+        m_file.seekg(0);
+
+        // get a string of the coords as they are in the file
+        std::stringstream coords_ss;
+        coords_ss << std::fixed << std::setprecision(m_coords_precision);
+        for (double coord : a_coords)
+        {
+            coords_ss << std::setw(m_coords_width) << coord;
+        }
+        std::string coords_string = coords_ss.str();
+
+        // now search for lines that start with coords_string and put the data
+        // in a_out_data
+        std::string line;
+        while (std::getline(m_file, line))
+        {
+            if (!(line.find(coords_string) == std::string::npos))
+            {
+                for (int ichar = a_coords.size() * m_coords_width;
+                     ichar < line.size(); ichar += m_data_width)
+                {
+                    double data_value =
+                        std::stod(line.substr(ichar, m_data_width));
+                    a_out_data.push_back(data_value);
+                }
+                line_found = true;
+                // only want the first occurrence so break the while loop
+                break;
+            }
+        }
+        if (!line_found)
+        {
+            MayDay::Error(
+                "SmallDataIO : Data to be read in at coord not found in file");
+        }
+    }
+    // now broadcast the vector to all ranks using Chombo broadcast function
+    // need to convert std::vector to Vector first
+    Vector<double> data_Vect(a_out_data);
+    int broadcast_rank = 0;
+    broadcast(data_Vect, broadcast_rank);
+    a_out_data = data_Vect.stdVector();
+}
+
+void SmallDataIO::get_specific_data_line(std::vector<double> &a_out_data,
+                                         const double a_coord)
+{
+    std::vector<double> coords(1, a_coord);
+    get_specific_data_line(a_out_data, coords);
 }

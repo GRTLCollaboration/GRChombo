@@ -93,7 +93,7 @@ class SimulationParametersBase : public ChomboParameters
         pp.load("num_points_phi", extraction_params.num_points_phi, 2);
         pp.load("num_points_theta", extraction_params.num_points_theta, 4);
         pp.load("extraction_center", extraction_params.extraction_center,
-                {0.5 * L, 0.5 * L, 0.5 * L});
+                center); // default to center of the grid
         if (pp.contains("modes"))
         {
             pp.load("num_modes", extraction_params.num_modes);
