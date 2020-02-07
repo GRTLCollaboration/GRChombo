@@ -1,0 +1,121 @@
+# See the wiki page for an explanation of the params!
+# https://github.com/GRChombo/GRChombo/wiki/Guide-to-parameters
+# and a guide to this specific example at
+# https://github.com/GRChombo/GRChombo/wiki/Running-the-BBH-example
+
+# location / naming of output files (must give full path)
+verbosity = 0
+chk_prefix = BinaryBHChk_
+plot_prefix = BinaryBHPlot_
+#restart_file = BinaryBHChk_000000.3d.hdf5
+
+# Set up coarsest level number of grid points in each dir
+# NB - the values need to be multiples of block_factor
+N1 = 64
+N2 = 64
+N3 = 64
+
+# Length of the longest N side
+# (This sets dx in all directions)
+L = 512
+
+# Defaults to center of grid L/2
+# uncomment to change
+#center = 256.0 256.0 256.0
+
+# BH params, use puncture tracking to
+# ensure horizons resolved
+track_punctures = 1
+massA = 0.48847892320123
+offsetA = 0.0 6.10679 0.0
+momentumA = -0.0841746 -0.000510846 0.0
+massB = 0.48847892320123
+offsetB = 0.0 -6.10679 0.0
+momentumB =  0.0841746  0.000510846 0.0
+
+# regridding control, specify frequency on each level
+# so need max_level + 1 entries for interval
+regrid_threshold = 0.05
+max_level = 9
+regrid_interval = 0 0 0 64 64 64 64 64 64 0
+
+# Max and min box sizes
+max_grid_size = 16
+block_factor = 16
+
+# Set up time steps
+# dt will be dx*dt_multiplier on each grid level
+# HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
+checkpoint_interval = 50
+# set to zero to turn off plot files, comps defined in BinaryBHLevel.cpp
+plot_interval = 0
+dt_multiplier = 0.20
+stop_time = 2500.0
+
+# boundaries and periodicity of grid
+# Periodic directions - 0 = false, 1 = true
+isPeriodic = 0 0 0
+# if not periodic, then specify the boundary type
+# 0 = static, 1 = sommerfeld, 2 = reflective
+# (see BoundaryConditions.hpp for details)
+hi_boundary = 1 1 1
+lo_boundary = 1 1 1
+
+# if reflective boundaries selected, must set
+# parity of all vars (in order given by UserVariables.hpp)
+# 0 = even
+# 1,2,3 = odd x, y, z
+# 4,5,6 = odd xy, yz, xz
+vars_parity            = 0 0 4 6 0 5 0    #chi and hij
+                         0 0 4 6 0 5 0    #K and Aij
+                         0 1 2 3          #Theta and Gamma
+                         0 1 2 3 1 2 3    #lapse shift and B
+                         0 1 2 3          #Ham and Mom
+                         0 0              #Weyl
+
+# if sommerfeld boundaries selected, must select
+# asymptotic values (in order given by UserVariables.hpp)
+vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
+                         0.0 0.0 0.0 0.0 0.0 0.0 0.0 #K and Aij
+                         0.0 0.0 0.0 0.0             #Theta and Gamma
+                         1.0 0.0 0.0 0.0 0.0 0.0 0.0 #lapse shift and B
+                         0.0 0.0 0.0 0.0             #Ham and Mom
+                         0.0 0.0                     #Weyl
+
+# Lapse evolution
+lapse_advec_coeff = 1.0
+lapse_coeff = 2.0
+lapse_power = 1.0
+
+# Shift evolution
+shift_advec_coeff = 0.0
+shift_Gamma_coeff = 0.75
+eta = 1.0
+
+# CCZ4 parameters
+kappa1 = 0.1
+kappa2 = 0
+kappa3 = 1.0
+covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
+
+# coefficient for KO numerical dissipation
+sigma = 1.0
+
+# extraction params
+# default of extraction_center is center, uncomment to change
+#extraction_center = 256 256 256
+activate_extraction = 1
+num_extraction_radii = 2
+extraction_radii = 50.0 100.0
+extraction_levels = 2 1
+num_points_phi = 24
+num_points_theta = 36
+num_modes = 8
+modes = 2 0 # l m for spherical harmonics
+        2 1
+        2 2
+        4 0
+        4 1
+        4 2
+        4 3
+        4 4

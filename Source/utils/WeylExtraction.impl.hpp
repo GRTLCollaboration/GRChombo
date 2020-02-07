@@ -138,6 +138,7 @@ WeylExtraction::integrate_surface(int es, int el, int em,
                         a_re_part[idx] * Y_lm.Real + a_im_part[idx] * Y_lm.Im;
                     double integrand_im =
                         a_im_part[idx] * Y_lm.Real - a_re_part[idx] * Y_lm.Im;
+
                     // note the multiplication by radius here
                     double f_theta_phi_re = m_params.extraction_radii[iradius] *
                                             integrand_re * sin(theta);

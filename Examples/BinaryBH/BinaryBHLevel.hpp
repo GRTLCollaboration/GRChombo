@@ -6,6 +6,7 @@
 #ifndef BINARYBHLEVEL_HPP_
 #define BINARYBHLEVEL_HPP_
 
+#include "BHAMR.hpp"
 #include "DefaultLevelFactory.hpp"
 #include "GRAMRLevel.hpp"
 
@@ -15,12 +16,17 @@ class BinaryBHLevel : public GRAMRLevel
     // Inherit the contructors from GRAMRLevel
     using GRAMRLevel::GRAMRLevel;
 
+    BHAMR &m_bh_amr = dynamic_cast<BHAMR &>(m_gr_amr);
+
     /// Things to do at every full timestep
     ///(might include several substeps, e.g. in RK4)
     virtual void specificAdvance() override;
 
     /// Initial data calculation
     virtual void initialData() override;
+
+    /// Things to do after a restart
+    virtual void postRestart() override;
 
     /// Any actions that should happen just before checkpointing
     virtual void preCheckpointLevel() override;
