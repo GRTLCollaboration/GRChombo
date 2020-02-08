@@ -790,11 +790,17 @@ void GRAMRLevel::evalRHS(GRLevelData &rhs, GRLevelData &soln,
                          const GRLevelData &newCrseSoln, Real newCrseTime,
                          Real time, Real fluxWeight)
 {
-    CH_TIME("GRAMRLevel::evalRHS");
+    CH_TIMERS("GRAMRLevel::evalRHS");
+    CH_TIMER("GRAMRLevel::evalRHS - exchange+ghosts", t1);
+    CH_TIMER("GRAMRLevel::evalRHS - fillInterp", t2);
+    CH_TIMER("GRAMRLevel::evalRHS - rhs", t3);
+
     if (m_verbosity)
         pout() << "GRAMRLevel::evalRHS" << endl;
 
+    CH_START(t1);
     soln.exchange(m_exchange_copier);
+    CH_STOP(t1);
 
     if (oldCrseSoln.isDefined())
     {
@@ -822,12 +828,18 @@ void GRAMRLevel::evalRHS(GRLevelData &rhs, GRLevelData &soln,
         }
 
         // Interpolate ghost cells from next coarser level in space and time
+        CH_START(t2);
         m_patcher.fillInterp(soln, alpha, 0, 0, NUM_VARS);
+        CH_STOP(t2);
     }
 
+    CH_START(t1);
     fillBdyGhosts(soln);
+    CH_STOP(t1);
 
+    CH_START(t3);
     specificEvalRHS(soln, rhs, time); // Call the problem specific rhs
+    CH_STOP(t3);
 
     // evolution of the boundaries according to conditions
     if (m_p.nonperiodic_boundaries_exist)

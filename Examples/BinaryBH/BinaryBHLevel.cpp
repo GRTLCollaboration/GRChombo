@@ -16,6 +16,7 @@
 #include "TraceARemoval.hpp"
 #include "Weyl4.hpp"
 #include "WeylExtraction.hpp"
+#include "computeNorm.H"
 
 void BinaryBHLevel::specificAdvance()
 {
@@ -112,6 +113,15 @@ void BinaryBHLevel::prePlotLevel()
         BoxLoops::loop(Weyl4(m_p.extraction_params.extraction_center, m_dx),
                        m_state_new, m_state_new, EXCLUDE_GHOST_CELLS);
     }
+
+    // Output a 1-norm of level 1 as a bitwise diagnostic
+    int ncomp = m_state_new.nComp();
+    Real level1Norm = computeNorm(m_state_new, NULL,
+        1, 1.0, Interval(0,ncomp-1), 1);
+    int origPrecision = (pout()).precision();
+    pout() << setprecision(16);
+    pout() << "Level " << m_level << ", state norm: " <<  level1Norm << endl;
+    pout() << setprecision(origPrecision);
 }
 
 // Specify if you want any plot files to be written, with which vars

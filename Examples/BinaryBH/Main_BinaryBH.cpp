@@ -5,6 +5,7 @@
 
 #include "CH_Timer.H"
 #include "parstream.H" //Gives us pout()
+#include "AMRIO.H" //Gives us pout()
 #include <chrono>
 #include <iostream>
 

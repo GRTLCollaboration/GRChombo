@@ -14,6 +14,8 @@
 #include "RealVect.H"
 #include "UserVariables.hpp"
 
+#include <array>
+
 /// Class which deals with the boundaries at the edge of the physical domain in
 /// cases where they are not periodic. Currently only options are static BCs,
 /// sommerfeld (outgoing radiation) and symmetric. The conditions can differ in
