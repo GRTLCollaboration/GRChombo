@@ -1,0 +1,17 @@
+DIM             = 3
+DEBUG           = FALSE
+OPT             = HIGH
+PRECISION       = DOUBLE
+FC              = ifort
+CXX             = icpc -std=c++14 -qopenmp -I${MKLROOT}/include -no-multibyte-chars
+MPI             = TRUE
+MPICXX          = mpicxx -std=c++14 -qopenmp -I${MKLROOT}/include -no-multibyte-chars
+OPENMPCC        = TRUE
+USE_HDF         = TRUE
+HDFINCFLAGS     = -I${HDF5_INC}
+HDFLIBFLAGS     = -L${HDF5_LIB} -lhdf5 -lz
+HDFMPIINCFLAGS  = -I${HDF5_INC} 
+HDFMPILIBFLAGS  = -L${HDF5_LIB} -lhdf5 -lz
+syslibflags     = -L${MKLROOT}/lib/intel64 -lmkl_intel_lp64 -lmkl_sequential -lmkl_core
+cxxoptflags     = -O3 -xSSE4.2 -axAVX 
+foptflags       = -O3 -xSSE4.2 -axAVX
