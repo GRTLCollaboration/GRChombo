@@ -1,0 +1,23 @@
+DIM              = 3
+DEBUG            = FALSE
+OPT              = HIGH
+PRECISION        = DOUBLE
+CXX              = icpc -std=c++14 -mkl=sequential -qopenmp
+FC               = ifort -mkl=sequential -qopenmp -fpe-all0
+MPI              = TRUE
+OPENMPCC         = TRUE
+MPICXX           = mpiicpc -std=c++14 -mkl=sequential -qopenmp
+XTRACONFIG       = .KNL # This just appends to all object files and executables
+USE_64           = TRUE
+USE_HDF          = TRUE
+HDFINCFLAGS      = -I$(TACC_HDF5_INC)
+HDFLIBFLAGS      = -L$(TACC_HDF5_LIB) -lhdf5 -lz
+HDFMPIINCFLAGS   = -I$(TACC_HDF5_INC)
+HDFMPILIBFLAGS   = -L$(TACC_HDF5_LIB) -lhdf5 -lz
+USE_MT           = FALSE
+cxxdbgflags      = -g
+cxxoptflags      = -g -O3 -xMIC-AVX512
+fdbgflags        = -g
+foptflags        = -g -O3 -xMIC-AVX512
+RUN              = ibrun -n 2 ./
+
