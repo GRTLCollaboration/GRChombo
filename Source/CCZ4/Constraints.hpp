@@ -29,10 +29,20 @@ class Constraints
     template <class data_t>
     using Diff2Vars = BSSNVars::Diff2VarsNoGauge<data_t>;
 
-    template <class data_t> struct constraints_t
+    /// Vars object for Constraints
+    template <class data_t> struct ConstraintsVars
     {
         data_t Ham;
         Tensor<1, data_t> Mom;
+
+        template <typename mapping_function_t>
+        void enum_mapping(mapping_function_t mapping_function)
+        {
+            using namespace VarsTools;
+            define_enum_mapping(mapping_function, c_Ham, Ham);
+            define_enum_mapping(mapping_function, GRInterval<c_Mom1, c_Mom3>(),
+                                Mom);
+        }
     };
 
     Constraints(double dx, double cosmological_constant = 0);
@@ -45,7 +55,7 @@ class Constraints
 
     template <class data_t, template <typename> class vars_t,
               template <typename> class diff2_vars_t>
-    constraints_t<data_t>
+    ConstraintsVars<data_t>
     constraint_equations(const vars_t<data_t> &vars,
                          const vars_t<Tensor<1, data_t>> &d1,
                          const diff2_vars_t<Tensor<2, data_t>> &d2) const;

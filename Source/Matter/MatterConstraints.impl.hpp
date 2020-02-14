@@ -29,7 +29,7 @@ void MatterConstraints<matter_t>::compute(Cell<data_t> current_cell) const
     const auto d2 = m_deriv.template diff2<Vars>(current_cell);
 
     // Get the non matter terms for the constraints
-    constraints_t<data_t> out = constraint_equations(vars, d1, d2);
+    ConstraintsVars<data_t> out = constraint_equations(vars, d1, d2);
 
     // Inverse metric and Christoffel symbol
     const auto h_UU = TensorAlgebra::compute_inverse_sym(vars.h);
