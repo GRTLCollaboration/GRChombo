@@ -1,20 +1,28 @@
-TestDirs := $(wildcard Tests/*/.)
-ExampleDirs := $(wildcard Examples/*/.)
+define SEARCH_FOR_MAKE
+$(wildcard $1/*/GNUmakefile) $(wildcard $1/*/makefile) $(wildcard $1/*/Makefile)
+endef
+
+TestDirsWithGNUmakefile := $(call SEARCH_FOR_MAKE, Tests)
+TestDirs := $(dir $(TestDirsWithGNUmakefile))
+RunTestDirs := $(TestDirs:%=run-%)
+ExampleDirsWithGNUmakefile := $(call SEARCH_FOR_MAKE, Examples)
+ExampleDirs := $(dir $(ExampleDirsWithGNUmakefile))
 CleanTestDirs := $(TestDirs:%=clean-%)
 CleanExampleDirs := $(ExampleDirs:%=clean-%)
 RealCleanTestDirs := $(TestDirs:%=realclean-%)
 RealCleanExampleDirs := $(ExampleDirs:%=realclean-%)
 
-.PHONY: all run $(TestDirs) $(ExampleDirs)
-
+.PHONY: all run examples clean realclean $(TestDirs) $(ExampleDirs)
 
 export GRCHOMBO_SOURCE = $(shell pwd)/Source
 
 test: $(TestDirs)
 
+run: $(RunTestDirs)
+
 examples: $(ExampleDirs)
 
-all: $(TestDirs) $(ExampleDirs)
+all: test run examples
 
 clean: $(CleanTestDirs) $(CleanExampleDirs)
 
@@ -23,8 +31,10 @@ realclean: $(RealCleanTestDirs) $(RealCleanExampleDirs)
 $(TestDirs):
 	$(info ################# Making test $@ #################)
 	$(MAKE) -C $@ all
+
+$(RunTestDirs):
 	$(info ################# Running test $@ #################)
-	$(MAKE) -C $@ run
+	$(MAKE) -C $(@:run-%=%) run
 
 $(ExampleDirs):
 	$(info ################# Making example $@ #################)
@@ -37,7 +47,7 @@ $(CleanExampleDirs):
 	$(MAKE) -C $(@:clean-%=%) clean NODEPENDS=TRUE
 
 $(RealCleanTestDirs):
-	$(MAKE) -C $(@:realclean-%=%) clean NODEPENDS=TRUE
+	$(MAKE) -C $(@:realclean-%=%) realclean NODEPENDS=TRUE
 
 $(RealCleanExampleDirs):
-	$(MAKE) -C $(@:realclean-%=%) clean NODEPENDS=TRUE
+	$(MAKE) -C $(@:realclean-%=%) realclean NODEPENDS=TRUE
