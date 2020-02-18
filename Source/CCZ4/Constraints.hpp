@@ -23,14 +23,14 @@ class Constraints
 {
   public:
     /// CCZ4 variables
-    template <class data_t> using Vars = BSSNVars::VarsNoGauge<data_t>;
+    template <class data_t> using BSSNVars = BSSNVars::VarsNoGauge<data_t>;
 
     /// CCZ4 variables
     template <class data_t>
     using Diff2Vars = BSSNVars::Diff2VarsNoGauge<data_t>;
 
     /// Vars object for Constraints
-    template <class data_t> struct ConstraintsVars
+    template <class data_t> struct Vars
     {
         data_t Ham;
         Tensor<1, data_t> Mom;
@@ -55,7 +55,7 @@ class Constraints
 
     template <class data_t, template <typename> class vars_t,
               template <typename> class diff2_vars_t>
-    ConstraintsVars<data_t>
+    Vars<data_t>
     constraint_equations(const vars_t<data_t> &vars,
                          const vars_t<Tensor<1, data_t>> &d1,
                          const diff2_vars_t<Tensor<2, data_t>> &d2) const;
