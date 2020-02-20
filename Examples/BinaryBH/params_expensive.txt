@@ -2,6 +2,7 @@ verbosity = 0
 chk_prefix = BinaryBH_
 plot_prefix = BinaryBHPlot_
 #restart_file = BinaryBH_000360.3d.hdf5
+allow_user_restart = 1
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor

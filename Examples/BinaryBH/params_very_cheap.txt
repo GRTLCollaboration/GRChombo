@@ -2,6 +2,7 @@ verbosity = 0
 chk_prefix = BinaryBH_
 plot_prefix = BinaryBHPlot_
 #restart_file = BinaryBH_000360.3d.hdf5
+allow_user_restart = 1
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
@@ -55,7 +56,7 @@ eta = 1.82
 kappa1 = 0.1
 kappa2 = 0
 kappa3 = 1.
-covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse  
+covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
 
 #coefficient for KO numerical dissipation
 sigma = 0.3
