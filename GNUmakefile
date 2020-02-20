@@ -18,11 +18,11 @@ export GRCHOMBO_SOURCE = $(shell pwd)/Source
 
 test: $(TestDirs)
 
-run: $(RunTestDirs)
+run: test $(RunTestDirs)
 
 examples: $(ExampleDirs)
 
-all: test run examples
+all: run examples
 
 clean: $(CleanTestDirs) $(CleanExampleDirs)
 
