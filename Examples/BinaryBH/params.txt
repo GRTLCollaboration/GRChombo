@@ -46,11 +46,11 @@ block_factor = 16
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 50
+checkpoint_interval = 100
 # set to zero to turn off plot files, comps defined in BinaryBHLevel.cpp
-plot_interval = 0
-dt_multiplier = 0.20
-stop_time = 2500.0
+plot_interval = 10
+dt_multiplier = 0.25
+stop_time = 2200.0
 
 # boundaries and periodicity of grid
 # Periodic directions - 0 = false, 1 = true

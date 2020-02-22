@@ -158,7 +158,7 @@ void BinaryBHLevel::specificPostTimeStep()
     }
 
     // do puncture tracking on finest but one level
-    if (m_p.track_punctures == 1 && m_level == m_p.max_level - 1)
+    if (m_p.track_punctures == 1 && m_level == m_p.max_level - 4)
     {
         CH_TIME("PunctureTracking");
         // only do the write out for every coarsest level timestep
