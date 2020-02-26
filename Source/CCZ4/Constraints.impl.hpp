@@ -23,24 +23,23 @@ inline Constraints::Constraints(double dx,
 template <class data_t>
 void Constraints::compute(Cell<data_t> current_cell) const
 {
-    const auto vars = current_cell.template load_vars<Vars>();
-    const auto d1 = m_deriv.template diff1<Vars>(current_cell);
+    const auto vars = current_cell.template load_vars<BSSNVars>();
+    const auto d1 = m_deriv.template diff1<BSSNVars>(current_cell);
     const auto d2 = m_deriv.template diff2<Diff2Vars>(current_cell);
 
-    constraints_t<data_t> out = constraint_equations(vars, d1, d2);
+    Vars<data_t> out = constraint_equations(vars, d1, d2);
 
     // Write the rhs into the output FArrayBox
-    current_cell.store_vars(out.Ham, c_Ham);
-    current_cell.store_vars(out.Mom, GRInterval<c_Mom1, c_Mom3>());
+    current_cell.store_vars(out);
 }
 
 template <class data_t, template <typename> class vars_t,
           template <typename> class diff2_vars_t>
-Constraints::constraints_t<data_t> Constraints::constraint_equations(
+Constraints::Vars<data_t> Constraints::constraint_equations(
     const vars_t<data_t> &vars, const vars_t<Tensor<1, data_t>> &d1,
     const diff2_vars_t<Tensor<2, data_t>> &d2) const
 {
-    constraints_t<data_t> out;
+    Vars<data_t> out;
 
     const data_t chi_regularised = simd_max(1e-6, vars.chi);
 

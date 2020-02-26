@@ -24,12 +24,12 @@ template <class data_t>
 void MatterConstraints<matter_t>::compute(Cell<data_t> current_cell) const
 {
     // Load local vars and calculate derivs
-    const auto vars = current_cell.template load_vars<Vars>();
-    const auto d1 = m_deriv.template diff1<Vars>(current_cell);
-    const auto d2 = m_deriv.template diff2<Vars>(current_cell);
+    const auto vars = current_cell.template load_vars<BSSNMatterVars>();
+    const auto d1 = m_deriv.template diff1<BSSNMatterVars>(current_cell);
+    const auto d2 = m_deriv.template diff2<BSSNMatterVars>(current_cell);
 
     // Get the non matter terms for the constraints
-    constraints_t<data_t> out = constraint_equations(vars, d1, d2);
+    Vars<data_t> out = constraint_equations(vars, d1, d2);
 
     // Inverse metric and Christoffel symbol
     const auto h_UU = TensorAlgebra::compute_inverse_sym(vars.h);
@@ -44,9 +44,8 @@ void MatterConstraints<matter_t>::compute(Cell<data_t> current_cell) const
     // Momentum constraints
     FOR1(i) { out.Mom[i] += -8.0 * M_PI * m_G_Newton * emtensor.Si[i]; }
 
-    // Write the rhs into the output FArrayBox
-    current_cell.store_vars(out.Ham, c_Ham);
-    current_cell.store_vars(out.Mom, GRInterval<c_Mom1, c_Mom3>());
+    // Write the constraints into the output FArrayBox
+    current_cell.store_vars(out);
 }
 
 #endif /* MATTERCONSTRAINTS_IMPL_HPP_ */
