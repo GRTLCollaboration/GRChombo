@@ -81,8 +81,7 @@ class GRAMRLevel : public AMRLevel, public InterpSource
 
     /// return true on the coarsest level in order to stop the evolution
     /// currently implements user restarting
-    virtual bool stopEvolution();
-
+    virtual bool stopEvolution(bool &a_write_checkpoint);
 
 #ifdef CH_USE_HDF5
     virtual void writeCheckpointHeader(HDF5Handle &a_handle) const;
