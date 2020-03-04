@@ -26,6 +26,7 @@ L = 512
 # BH params, use puncture tracking to
 # ensure horizons resolved
 track_punctures = 1
+puncture_tracking_level = 5
 massA = 0.48847892320123
 offsetA = 0.0 6.10679 0.0
 momentumA = -0.0841746 -0.000510846 0.0
