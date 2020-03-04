@@ -32,7 +32,7 @@ template <class matter_t> class MatterConstraints : public Constraints
 
     // Inherit the variable definitions from CCZ4 + matter_t
     template <class data_t>
-    struct BSSNMatterVars : public Constraints::BSSNVars<data_t>,
+    struct BSSNMatterVars : public Constraints::MetricVars<data_t>,
                             public MatterVars<data_t>
     {
         /// Defines the mapping between members of Vars and Chombo grid
@@ -40,7 +40,7 @@ template <class matter_t> class MatterConstraints : public Constraints
         template <typename mapping_function_t>
         void enum_mapping(mapping_function_t mapping_function)
         {
-            Constraints::BSSNVars<data_t>::enum_mapping(mapping_function);
+            Constraints::MetricVars<data_t>::enum_mapping(mapping_function);
             MatterVars<data_t>::enum_mapping(mapping_function);
         }
     };
