@@ -23,7 +23,7 @@ class Constraints
 {
   public:
     /// CCZ4 variables
-    template <class data_t> using BSSNVars = BSSNVars::VarsNoGauge<data_t>;
+    template <class data_t> using MetricVars = BSSNVars::VarsNoGauge<data_t>;
 
     /// CCZ4 variables
     template <class data_t>
