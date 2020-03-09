@@ -99,8 +99,8 @@ class ChomboParameters
                      BoundaryConditions::EXTRAPOLATING_BC))
                 {
                     boundary_solution_enforced = true;
-                    pp.load("extrapolation_order", 
-                             boundary_params.extrapolation_order, 1); 
+                    pp.load("extrapolation_order",
+                            boundary_params.extrapolation_order, 1);
                 }
                 if ((boundary_params.hi_boundary[idir] ==
                      BoundaryConditions::SOMMERFELD_BC) ||

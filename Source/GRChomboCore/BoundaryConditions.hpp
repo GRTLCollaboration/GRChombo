@@ -65,7 +65,7 @@ class BoundaryConditions
     double m_dx;            // The grid spacing
     int m_num_ghosts;       // the number of ghosts (usually 3)
     params_t m_params;      // the boundary params
-    RealVect m_center; // the position of the center of the grid
+    RealVect m_center;      // the position of the center of the grid
     ProblemDomain m_domain; // the problem domain (excludes boundary cells)
     Box m_domain_box;       // The box representing the domain
     bool is_defined; // whether the BoundaryConditions class members are defined
