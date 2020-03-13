@@ -22,8 +22,7 @@
 //! This class extracts grid variables on 2 dimensional surfaces each
 //! parameterised by u and v with different surfaces given by level sets of
 //! another parameter
-template <class SurfaceGeometry>
-class SurfaceExtraction
+template <class SurfaceGeometry> class SurfaceExtraction
 {
   public:
     struct params_t
@@ -79,9 +78,9 @@ class SurfaceExtraction
   public:
     //! Normal constructor which requires vars to be added after construction
     //! using add_var or add_vars
-    SurfaceExtraction(const SurfaceGeometry &a_geom,
-                      const params_t &a_params, double a_dt, double a_time,
-                      bool a_first_step, double a_restart_time = 0.0);
+    SurfaceExtraction(const SurfaceGeometry &a_geom, const params_t &a_params,
+                      double a_dt, double a_time, bool a_first_step,
+                      double a_restart_time = 0.0);
 
     //! add a single variable or derivative of variable
     void add_var(int a_var, const Derivative &a_deriv = Derivative::LOCAL);
@@ -94,23 +93,21 @@ class SurfaceExtraction
 
     //! Alternative constructor with a predefined vector of variables and
     //! derivatives
-    SurfaceExtraction(const SurfaceGeometry &a_geom,
-                      const params_t &a_params,
+    SurfaceExtraction(const SurfaceGeometry &a_geom, const params_t &a_params,
                       const std::vector<std::pair<int, Derivative>> &a_vars,
                       double a_dt, double a_time, bool a_first_step,
                       double a_restart_time = 0.0);
 
     //! Another alternative constructor with a predefined vector of variables
     //! no derivatives
-    SurfaceExtraction(const SurfaceGeometry &a_geom,
-                      const params_t &a_params, const std::vector<int> &a_vars,
-                      double a_dt, double a_time, bool a_first_step,
+    SurfaceExtraction(const SurfaceGeometry &a_geom, const params_t &a_params,
+                      const std::vector<int> &a_vars, double a_dt,
+                      double a_time, bool a_first_step,
                       double a_restart_time = 0.0);
 
-
-//! Do the extraction
-template <typename InterpAlgo>
-void extract(AMRInterpolator<InterpAlgo> *a_interpolator);
+    //! Do the extraction
+    template <typename InterpAlgo>
+    void extract(AMRInterpolator<InterpAlgo> *a_interpolator);
 
     //! Integrate some integrand dependent on the interpolated data over the
     //! surface. The integrand function should be of the signature

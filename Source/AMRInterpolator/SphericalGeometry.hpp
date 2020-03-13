@@ -47,8 +47,8 @@ class SphericalGeometry
         return a_iphi * dv(a_num_points_phi);
     }
 
-    inline bool is_u_periodic() const  { return false; }
-    inline bool is_v_periodic() const  { return true; }
+    inline bool is_u_periodic() const { return false; }
+    inline bool is_v_periodic() const { return true; }
 
     //! returns the Cartesian coordinate in direction a_dir with specified
     //! radius, theta and phi.
@@ -76,11 +76,11 @@ class SphericalGeometry
         return a_radius * a_radius * sin(a_theta);
     }
 
-    inline std::string param_name() const  { return "r"; }
+    inline std::string param_name() const { return "r"; }
 
-    inline std::string u_name() const  { return "theta"; }
+    inline std::string u_name() const { return "theta"; }
 
-    inline std::string v_name() const  { return "phi"; }
+    inline std::string v_name() const { return "phi"; }
 };
 
 #endif /* SPHERICALGEOMETRY_HPP_ */

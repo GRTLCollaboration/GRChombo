@@ -17,5 +17,4 @@ const IntegrationMethod
     IntegrationMethod::boole({0.3111111111111111, 1.4222222222222222,
                               0.53333333333333, 1.4222222222222222});
 
-
 #endif /* INTEGRATIONMETHODSETUP_HPP_ */

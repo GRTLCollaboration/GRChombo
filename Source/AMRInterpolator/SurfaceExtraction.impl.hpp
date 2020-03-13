@@ -39,8 +39,8 @@ SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
                 FOR1(idir)
                 {
                     int idx = index(isurface, iu, iv);
-                    m_interp_coords[idir][idx] = m_geom.get_grid_coord(
-                        idir, surface_param_value, u, v);
+                    m_interp_coords[idir][idx] =
+                        m_geom.get_grid_coord(idir, surface_param_value, u, v);
                 }
             }
         }
@@ -237,8 +237,7 @@ void SurfaceExtraction<SurfaceGeometry>::write_extraction(
             components[ivar] +=
                 UserVariables::variable_names[m_vars[ivar].first];
         }
-        std::vector<std::string> coords = {m_geom.u_name(),
-                                           m_geom.v_name()};
+        std::vector<std::string> coords = {m_geom.u_name(), m_geom.v_name()};
         extraction_file.write_header_line(components, coords);
 
         // Now the data

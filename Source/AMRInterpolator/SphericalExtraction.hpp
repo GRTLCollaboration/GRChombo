@@ -33,8 +33,8 @@ class SphericalExtraction : public SurfaceExtraction<SphericalGeometry>
 
     SphericalExtraction(const params_t &a_params, double a_dt, double a_time,
                         bool a_first_step, double a_restart_time = 0.0)
-        : SurfaceExtraction(a_params.center, a_params,
-                            a_dt, a_time, a_first_step, a_restart_time),
+        : SurfaceExtraction(a_params.center, a_params, a_dt, a_time,
+                            a_first_step, a_restart_time),
           m_center(a_params.center), m_num_modes(a_params.num_modes),
           m_modes(a_params.modes)
     {
@@ -69,10 +69,9 @@ class SphericalExtraction : public SurfaceExtraction<SphericalGeometry>
                                                 double, double)>
             a_function)
     {
-        auto integrand_re = [center = m_center, &geom = m_geom, es, el,
-                             em, &a_function](std::vector<double> a_data_here,
-                                              double r, double theta,
-                                              double phi) {
+        auto integrand_re = [center = m_center, &geom = m_geom, es, el, em,
+                             &a_function](std::vector<double> a_data_here,
+                                          double r, double theta, double phi) {
             // note that spin_Y_lm requires the coordinates with the center
             // at the origin
             double x = geom.get_grid_coord(0, r, theta, phi) - center[0];
@@ -86,10 +85,9 @@ class SphericalExtraction : public SurfaceExtraction<SphericalGeometry>
                    (r * r);
         };
 
-        auto integrand_im = [center = m_center, &geom = m_geom, es, el,
-                             em, &a_function](std::vector<double> a_data_here,
-                                              double r, double theta,
-                                              double phi) {
+        auto integrand_im = [center = m_center, &geom = m_geom, es, el, em,
+                             &a_function](std::vector<double> a_data_here,
+                                          double r, double theta, double phi) {
             // note that spin_Y_lm requires the coordinates with the center
             // at the origin
             double x = geom.get_grid_coord(0, r, theta, phi) - center[0];
