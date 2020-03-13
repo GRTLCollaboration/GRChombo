@@ -28,8 +28,8 @@ class CylindricalExtraction : public SurfaceExtraction<CylindricalGeometry>
 
     CylindricalExtraction(const params_t &a_params, double a_dt, double a_time,
                           bool a_first_step, double a_restart_time = 0.0)
-        : SurfaceExtraction({a_params.center, a_params.z_length},
-              a_params, a_dt, a_time, a_first_step, a_restart_time),
+        : SurfaceExtraction({a_params.center, a_params.z_length}, a_params,
+                            a_dt, a_time, a_first_step, a_restart_time),
           m_center(a_params.center), m_z_length(a_params.z_length)
     {
     }
