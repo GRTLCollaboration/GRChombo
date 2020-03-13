@@ -96,10 +96,10 @@ void BinaryBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
 
     // Calculate CCZ4 right hand side and set constraints to zero to avoid
     // undefined values
-    BoxLoops::loop(
-        make_compute_pack(CCZ4(m_p.ccz4_params, m_dx, m_p.sigma),
-                          SetValue(0, Interval(c_Ham, NUM_VARS - 1))),
-        a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    BoxLoops::loop(make_compute_pack(
+                       CCZ4(m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
+                       SetValue(0, Interval(c_Ham, NUM_VARS - 1))),
+                   a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
 }
 
 // enforce trace removal during RK4 substeps
