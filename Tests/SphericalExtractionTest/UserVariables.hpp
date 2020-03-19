@@ -9,15 +9,15 @@
 // assign enum to each variable
 enum
 {
-    c_chi,
-    c_phi,
+    c_phi_Re,
+    c_phi_Im,
 
     NUM_VARS
 };
 
 namespace UserVariables
 {
-static constexpr char const *variable_names[NUM_VARS] = {"chi", "phi"};
+static constexpr char const *variable_names[NUM_VARS] = {"phi_Re", "phi_Im"};
 }
 
 #endif /* USERVARIABLES_HPP */

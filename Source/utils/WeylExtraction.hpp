@@ -49,28 +49,41 @@ class WeylExtraction : public SphericalExtraction
         }
 
         // now calculate and write the requested spherical harmonic modes
+        std::vector<std::pair<std::vector<double>, std::vector<double>>>
+            mode_integrals(m_num_modes);
+
+        // note that this is normalised by multiplying by radius
+        auto normalised_Weyl4_complex = [](std::vector<double> Weyl4_reim_parts,
+                                           double r, double, double) {
+            // here the std::vector<double> passed will just have
+            // the real and imaginary parts of the Weyl4 scalar as its
+            // only components
+            return std::make_pair(r * Weyl4_reim_parts[0],
+                                  r * Weyl4_reim_parts[1]);
+        };
+
+        // add the modes that will be integrated
         for (int imode = 0; imode < m_num_modes; ++imode)
         {
-            // note that this is normalised by multiplying by radius
-            auto normalised_Weyl4_complex =
-                [](std::vector<double> Weyl4_reim_parts, double r, double,
-                   double) {
-                    // here the std::vector<double> passed will just have
-                    // the real and imaginary parts of the Weyl4 scalar as its
-                    // only components
-                    return std::make_pair(r * Weyl4_reim_parts[0],
-                                          r * Weyl4_reim_parts[1]);
-                };
-
             const auto &mode = m_modes[imode];
             constexpr int es = -2;
-            auto integrals = integrate_mode(es, mode.first, mode.second,
-                                            normalised_Weyl4_complex);
+            add_mode_integrand(es, mode.first, mode.second,
+                               normalised_Weyl4_complex, mode_integrals[imode]);
+        }
+
+        // do the integration over the surface
+        integrate();
+
+        // write the integrals
+        for (int imode = 0; imode < m_num_modes; ++imode)
+        {
+            const auto &mode = m_modes[imode];
             std::string integrals_filename = "Weyl_integral_" +
                                              std::to_string(mode.first) +
                                              std::to_string(mode.second);
             std::vector<std::vector<double>> integrals_for_writing = {
-                std::move(integrals.first), std::move(integrals.second)};
+                std::move(mode_integrals[imode].first),
+                std::move(mode_integrals[imode].second)};
             std::vector<std::string> labels = {"integral Re", "integral Im"};
             write_integrals(integrals_filename, integrals_for_writing, labels);
         }
