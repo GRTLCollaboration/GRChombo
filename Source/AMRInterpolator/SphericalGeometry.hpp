@@ -9,8 +9,8 @@
 #include <array>
 #include <cmath>
 
-//! This class, derived from the SurfaceGeometry class, provides spherical shell
-//! geometry implementation for the SurfaceExtraction class
+//! This SurfaceGeometry template class provides spherical shell geometry
+//! implementation for the SurfaceExtraction class
 //! u = theta, v = phi
 class SphericalGeometry
 {

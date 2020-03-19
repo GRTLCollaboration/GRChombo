@@ -13,6 +13,9 @@
 #include "GRParmParse.hpp"
 #include "SphericalExtraction.hpp"
 
+// add this type alias here for backwards compatibility
+using extraction_params_t = SphericalExtraction::params_t;
+
 class SimulationParametersBase : public ChomboParameters
 {
   public:

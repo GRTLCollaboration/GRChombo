@@ -16,6 +16,7 @@
 #include "UserVariables.hpp"
 #include <algorithm>
 #include <array>
+#include <functional>
 #include <utility>
 #include <vector>
 
@@ -64,6 +65,14 @@ template <class SurfaceGeometry> class SurfaceExtraction
 
     std::vector<std::vector<double>> m_interp_data;
     std::array<std::vector<double>, CH_SPACEDIM> m_interp_coords;
+    // this is the really long type used for integrands
+    // the vector<double> is a vector of all the extracted variables at that
+    // point in the order they were added
+    using integrand_t =
+        std::function<double(std::vector<double> &, double, double, double)>;
+    std::vector<integrand_t> m_integrands;
+    std::vector<std::array<IntegrationMethod, 2>> m_integration_methods;
+    std::vector<std::reference_wrapper<std::vector<double>>> m_integrals;
 
     bool m_done_extraction; //!< whether or not the extract function has been
                             //!< called for this object
@@ -109,15 +118,22 @@ template <class SurfaceGeometry> class SurfaceExtraction
     template <typename InterpAlgo>
     void extract(AMRInterpolator<InterpAlgo> *a_interpolator);
 
-    //! Integrate some integrand dependent on the interpolated data over the
-    //! surface. The integrand function should be of the signature
-    //! double integrand(std::vector<double> data_here,
-    //!     double a_surface_param_value, double a_u, double a_v)
-    //! where data_here is a vector of all the interpolated variables at the
-    //! point specified by the other arguments.
+    //! Add an integrand dependent on the interpolated data over the surface
+    //! for integrate() to integrate over.
+    //! Note the area_element is already included from the SurfaceGeometry
+    //! template class
+    void add_integrand(
+        const integrand_t &a_integrand, std::vector<double> &out_integrals,
+        const IntegrationMethod &a_method_u = IntegrationMethod::trapezium,
+        const IntegrationMethod &a_method_v = IntegrationMethod::trapezium);
+
+    //! Integrate the integrands added using add_integrand
+    void integrate();
+
+    //! This integrate function can be used if you only want to integrate one
+    //! integrand. It calls add_integrand() and integrate()
     std::vector<double> integrate(
-        std::function<double(std::vector<double>, double, double, double)>
-            a_integrand,
+        integrand_t a_integrand,
         const IntegrationMethod &a_method_u = IntegrationMethod::trapezium,
         const IntegrationMethod &a_method_v = IntegrationMethod::trapezium);
 

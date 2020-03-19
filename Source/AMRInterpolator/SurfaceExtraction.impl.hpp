@@ -129,21 +129,24 @@ void SurfaceExtraction<SurfaceGeometry>::extract(
     m_done_extraction = true;
 }
 
-//! Integrate some integrand dependent on the interpolated data over the
-//! surface. The integrand function should be of the signature
-//! double integrand(std::vector<double> data_here,
-//!     double a_surface_param_value, double a_u, double a_v)
-//! where data_here is a vector of all the interpolated variables at the
-//! point specified by the other arguments.
+//! Add an integrand (which must of type integrand_t) for integrate() to
+//! integrate over. Note the area_element is already included from the
+//! SurfaceGeometry template class
 template <class SurfaceGeometry>
-std::vector<double> SurfaceExtraction<SurfaceGeometry>::integrate(
-    std::function<double(std::vector<double>, double, double, double)>
-        a_integrand,
+void SurfaceExtraction<SurfaceGeometry>::add_integrand(
+    const integrand_t &a_integrand, std::vector<double> &out_integrals,
     const IntegrationMethod &a_method_u, const IntegrationMethod &a_method_v)
 {
-    CH_assert(m_done_extraction);
-    std::vector<double> out_integrals(m_params.num_surfaces, 0.0);
+    // store the integrand
+    m_integrands.push_back(a_integrand);
 
+    // resize the out_integrals and store a reference to it
+    out_integrals.resize(m_params.num_surfaces);
+    std::fill(out_integrals.begin(), out_integrals.end(), 0.0);
+    m_integrals.push_back(std::ref(out_integrals));
+
+    // check if integration methods are valid given periodicity and number of
+    // points
     bool valid_u =
         a_method_u.is_valid(m_params.num_points_u, m_geom.is_u_periodic());
     bool valid_v =
@@ -174,6 +177,16 @@ std::vector<double> SurfaceExtraction<SurfaceGeometry>::integrate(
     {
         method_v = a_method_v;
     }
+    m_integration_methods.push_back({method_u, method_v});
+}
+
+template <class SurfaceGeometry>
+void SurfaceExtraction<SurfaceGeometry>::integrate()
+{
+    CH_assert(m_done_extraction);
+    CH_assert(m_integrands.size() == m_integration_methods.size() ==
+              m_integrals.size() > 0);
+    int num_integrals = m_integrals.size();
 
     for (int isurface = 0; isurface < m_params.num_surfaces; ++isurface)
     {
@@ -181,7 +194,7 @@ std::vector<double> SurfaceExtraction<SurfaceGeometry>::integrate(
         for (int iu = 0; iu < m_params.num_points_u; ++iu)
         {
             double u = m_geom.u(iu, m_params.num_points_u);
-            double inner_integral = 0.0;
+            std::vector<double> inner_integral(num_integrals, 0.0);
             for (int iv = 0; iv < m_params.num_points_v; ++iv)
             {
                 double v = m_geom.v(iv, m_params.num_points_v);
@@ -191,18 +204,48 @@ std::vector<double> SurfaceExtraction<SurfaceGeometry>::integrate(
                     data_here[ivar] =
                         m_interp_data[ivar][index(isurface, iu, iv)];
                 }
-                double integrand_with_area_element =
-                    a_integrand(data_here, surface_param_value, u, v) *
-                    m_geom.area_element(surface_param_value, u, v);
-                double weight = method_v.weight(iv, m_params.num_points_v,
-                                                m_geom.is_v_periodic());
-                inner_integral += weight * m_dv * integrand_with_area_element;
+                for (int iintegral = 0; iintegral < num_integrals; ++iintegral)
+                {
+                    auto integrand = m_integrands[iintegral];
+                    double integrand_with_area_element =
+                        integrand(data_here, surface_param_value, u, v) *
+                        m_geom.area_element(surface_param_value, u, v);
+                    double weight = m_integration_methods[iintegral][1].weight(
+                        iv, m_params.num_points_v, m_geom.is_v_periodic());
+                    inner_integral[iintegral] +=
+                        weight * m_dv * integrand_with_area_element;
+                }
             }
-            double weight = method_u.weight(iu, m_params.num_points_u,
-                                            m_geom.is_u_periodic());
-            out_integrals[isurface] += weight * m_du * inner_integral;
+            for (int iintegral = 0; iintegral < num_integrals; ++iintegral)
+            {
+                double weight = m_integration_methods[iintegral][0].weight(
+                    iu, m_params.num_points_u, m_geom.is_u_periodic());
+                (m_integrals[iintegral].get())[isurface] +=
+                    weight * m_du * inner_integral[iintegral];
+            }
         }
     }
+}
+
+//! Integrate some integrand dependent on the interpolated data over the
+//! surface. The integrand function should be of the signature
+//! double integrand(std::vector<double> data_here,
+//!     double a_surface_param_value, double a_u, double a_v)
+//! where data_here is a vector of all the interpolated variables at the
+//! point specified by the other arguments.
+template <class SurfaceGeometry>
+std::vector<double> SurfaceExtraction<SurfaceGeometry>::integrate(
+    integrand_t a_integrand, const IntegrationMethod &a_method_u,
+    const IntegrationMethod &a_method_v)
+{
+    m_integrands.clear();
+    m_integration_methods.clear();
+    m_integrals.clear();
+
+    std::vector<double> out_integrals(m_params.num_surfaces, 0.0);
+    add_integrand(a_integrand, out_integrals, a_method_u, a_method_v);
+    integrate();
+
     return out_integrals;
 }
 
