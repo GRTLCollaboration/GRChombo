@@ -180,6 +180,21 @@ void SurfaceExtraction<SurfaceGeometry>::add_integrand(
     m_integration_methods.push_back({method_u, method_v});
 }
 
+//! Add an integrand which is just a single var. The a_var argument should
+//! correspond to the order in which the desired var was added to this object
+//! with add_var
+template <class SurfaceGeometry>
+void SurfaceExtraction<SurfaceGeometry>::add_var_integrand(
+    int a_var, std::vector<double> &out_integrals,
+    const IntegrationMethod &a_method_u, const IntegrationMethod &a_method_v)
+{
+    CH_assert(a_var > 0 && a_var < m_vars.size());
+    integrand_t var_integrand = [var = a_var](std::vector<double> &data, double,
+                                              double,
+                                              double) { return data[var]; };
+    add_integrand(var_integrand, out_integrals, a_method_u, a_method_v);
+}
+
 template <class SurfaceGeometry>
 void SurfaceExtraction<SurfaceGeometry>::integrate()
 {
