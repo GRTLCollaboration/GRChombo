@@ -89,7 +89,7 @@ int runSphericalExtractionTest(int argc, char *argv[])
     // real part is the zeroth componenent and imaginary part is first component
     auto extracted_harmonic = [](std::vector<double> &data, double, double,
                                  double) {
-        return std::make_pair(data.at(0), data.at(1));
+        return std::make_pair(data[0], data[1]);
     };
 
     // add the spherical harmonic mode integrands for each resolution and for

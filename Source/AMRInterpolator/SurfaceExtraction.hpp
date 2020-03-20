@@ -127,6 +127,14 @@ template <class SurfaceGeometry> class SurfaceExtraction
         const IntegrationMethod &a_method_u = IntegrationMethod::trapezium,
         const IntegrationMethod &a_method_v = IntegrationMethod::trapezium);
 
+    //! Add an integrand which is just a single var. The a_var argument should
+    //! correspond to the order in which the desired var was added to this
+    //! object with add_var
+    void add_var_integrand(
+        int a_var, std::vector<double> &out_integrals,
+        const IntegrationMethod &a_method_u = IntegrationMethod::trapezium,
+        const IntegrationMethod &a_method_v = IntegrationMethod::trapezium);
+
     //! Integrate the integrands added using add_integrand
     void integrate();
 
