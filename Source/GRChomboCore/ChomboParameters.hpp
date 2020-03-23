@@ -180,7 +180,7 @@ class ChomboParameters
     double fill_ratio; // determines how fussy the regridding is about tags
     std::string checkpoint_prefix, plot_prefix; // naming of files
     bool write_plot_ghosts;
-    bool allow_user_restart;    // allows the user to restart the simulation.
+    bool allow_user_restart; // allows the user to restart the simulation.
     std::string restart_trigger_file; // name of file to trigger user restart
 
     // Boundary conditions

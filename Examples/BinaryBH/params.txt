@@ -8,6 +8,8 @@ verbosity = 0
 chk_prefix = BinaryBHChk_
 plot_prefix = BinaryBHPlot_
 #restart_file = BinaryBHChk_000000.3d.hdf5
+allow_user_restart = 1
+#restart_trigger_file = GRCHOMBO_RESTART
 
 # Set up coarsest level number of grid points in each dir
 # NB - the values need to be multiples of block_factor
@@ -39,10 +41,13 @@ momentumB =  0.0841746  0.000510846 0.0
 regrid_threshold = 0.05
 max_level = 9
 regrid_interval = 0 0 0 64 64 64 64 64 64 0
+# Determines how exactly regridding tries to fit the tagging
+#fill_ration = 0.75
+#tag_buffer_size = 3
 
 # Max and min box sizes
-max_grid_size = 16
-block_factor = 16
+max_box_size = 16
+min_box_size = 16
 
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
@@ -82,6 +87,8 @@ vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
                          1.0 0.0 0.0 0.0 0.0 0.0 0.0 #lapse shift and B
                          0.0 0.0 0.0 0.0             #Ham and Mom
                          0.0 0.0                     #Weyl
+
+#nan_check = 1
 
 # Lapse evolution
 lapse_advec_coeff = 1.0

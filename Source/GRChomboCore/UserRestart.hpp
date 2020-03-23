@@ -6,8 +6,8 @@
 #ifndef USERRESTART_HPP_
 #define USERRESTART_HPP_
 
-#include <unistd.h>
 #include "SPMD.H"
+#include <unistd.h>
 
 // This class includes functions that enables the user to trigger a clean
 // restart mid evolution

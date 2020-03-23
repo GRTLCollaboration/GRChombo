@@ -3,7 +3,6 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-
 #include "UserRestart.hpp"
 
 // This file includes functions that enables the user to trigger a clean restart
@@ -30,10 +29,11 @@ void UserRestart::check(std::string a_restart_trigger_file)
 
 void UserRestart::remove_trigger(std::string a_restart_trigger_file)
 {
-    if (procID() == 0);
+    if (procID() == 0)
+        ;
     {
-        bool trigger_file_exists
-            = (access(a_restart_trigger_file.c_str(), F_OK) != -1);
+        bool trigger_file_exists =
+            (access(a_restart_trigger_file.c_str(), F_OK) != -1);
         if (trigger_file_exists)
         {
             std::remove(a_restart_trigger_file.c_str());
@@ -42,7 +42,4 @@ void UserRestart::remove_trigger(std::string a_restart_trigger_file)
     s_activate = false;
 }
 
-bool UserRestart::activate()
-{
-    return s_activate;
-}
+bool UserRestart::activate() { return s_activate; }

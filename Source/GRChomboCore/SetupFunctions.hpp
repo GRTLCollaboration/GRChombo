@@ -105,7 +105,7 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     // remove restart trigger file
     if (chombo_params.allow_user_restart && UserRestart::activate())
     {
-       UserRestart::remove_trigger(chombo_params.restart_trigger_file);
+        UserRestart::remove_trigger(chombo_params.restart_trigger_file);
     }
 
     // set size of box
