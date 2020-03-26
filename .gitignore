@@ -2,7 +2,6 @@ jobscript*
 pout.*
 .bashrc
 *.pbs
-*.sh
 *.s
 d
 o
