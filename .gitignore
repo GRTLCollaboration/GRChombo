@@ -22,5 +22,6 @@ Weyl_integral*
 time.table.*
 *.patch
 *.log
+ipo_out.optrpt
 
 Doxygen/html
