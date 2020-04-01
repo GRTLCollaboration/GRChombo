@@ -90,4 +90,5 @@ kappa3 = 1.
 covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
 
 #coefficient for KO numerical dissipation
+# See Alcubierre p344
 sigma = 0.3

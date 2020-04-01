@@ -42,7 +42,7 @@ regrid_threshold = 0.05
 max_level = 9
 regrid_interval = 0 0 0 64 64 64 64 64 64 0
 # Determines how exactly regridding tries to fit the tagging
-#fill_ration = 0.75
+#fill_ratio = 0.75
 #tag_buffer_size = 3
 
 # Max and min box sizes
@@ -107,6 +107,7 @@ kappa3 = 1.0
 covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
 
 # coefficient for KO numerical dissipation
+# See Alcubierre p344
 sigma = 1.0
 
 # extraction params

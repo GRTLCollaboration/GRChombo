@@ -95,7 +95,7 @@ kappa3 = 0
 covariantZ4 = 0 # 0: default. 1: dampk1 -> dampk1/lapse
 
 # coefficient for KO numerical dissipation
-# NB must be less than 0.5 for stability
+# See Alcubierre p344
 sigma = 0.3
 
 # Change the gravitational constant of the Universe!
