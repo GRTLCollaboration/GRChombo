@@ -20,8 +20,6 @@ class ChomboParameters
         pp.load("verbosity", verbosity, 0);
         // Grid setup
         pp.load("L", L, 1.0);
-        pp.load("center", center,
-                {0.5 * L, 0.5 * L, 0.5 * L}); // default to center
         pp.load("regrid_threshold", regrid_threshold, 0.5);
         pp.load("num_ghosts", num_ghosts, 3);
         pp.load("tag_buffer_size", tag_buffer_size, 3);
@@ -91,6 +89,13 @@ class ChomboParameters
             max_N = max(N, max_N);
         }
         coarsest_dx = L / max_N;
+      
+        pp.load("N1", N1);                                                                                                     
+        pp.load("N1", N2);                                                                                                     
+        pp.load("N1", N3);                                                                                                     
+                                                                                                                               
+        pp.load("center", center,                                                                                              
+                {0.5 * N1 * coarsest_dx, 0.5 * N2 * coarsest_dx, 0.5 * N3 * coarsest_dx}); // default to center
 
         pp.load("max_level", max_level, 0);
         // the reference ratio is hard coded to 2 on all levels
@@ -134,6 +139,7 @@ class ChomboParameters
 
     // General parameters
     int verbosity;
+    int N1, N2, N3;
     double L;                               // Physical sidelength of the grid
     std::array<double, CH_SPACEDIM> center; // grid center
     IntVect ivN;                 // The number of grid cells in each dimension
