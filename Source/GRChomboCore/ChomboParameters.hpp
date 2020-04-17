@@ -85,18 +85,15 @@ class ChomboParameters
             sprintf(dir_str, "N%d", dir + 1);
             int N;
             pp.load(dir_str, N);
+            N_vect.push_back(N);
             ivN[dir] = N - 1;
             max_N = max(N, max_N);
         }
-        coarsest_dx = L / max_N;
-      
-        pp.load("N1", N1);                                                                                                     
-        pp.load("N2", N2);                                                                                                     
-        pp.load("N3", N3);                                                                                                     
+        coarsest_dx = L / max_N;                                                                                              
                                                                                                                                
         pp.load("center", center,                                                                                              
-                {0.5 * N1 * coarsest_dx, 0.5 * N2 * coarsest_dx, 
-                 0.5 * N3 * coarsest_dx}); // default to center
+                {0.5 * N_vect[0] * coarsest_dx, 0.5 * N_vect[1] * coarsest_dx, 
+                 0.5 * N_vect[2] * coarsest_dx}); // default to center
 
         pp.load("max_level", max_level, 0);
         // the reference ratio is hard coded to 2 on all levels
@@ -140,7 +137,7 @@ class ChomboParameters
 
     // General parameters
     int verbosity;
-    int N1, N2, N3;
+    std::vector<int> N_vect;
     double L;                               // Physical sidelength of the grid
     std::array<double, CH_SPACEDIM> center; // grid center
     IntVect ivN;                 // The number of grid cells in each dimension
