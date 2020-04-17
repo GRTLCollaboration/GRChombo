@@ -91,8 +91,8 @@ class ChomboParameters
         coarsest_dx = L / max_N;
       
         pp.load("N1", N1);                                                                                                     
-        pp.load("N1", N2);                                                                                                     
-        pp.load("N1", N3);                                                                                                     
+        pp.load("N2", N2);                                                                                                     
+        pp.load("N3", N3);                                                                                                     
                                                                                                                                
         pp.load("center", center,                                                                                              
                 {0.5 * N1 * coarsest_dx, 0.5 * N2 * coarsest_dx, 
