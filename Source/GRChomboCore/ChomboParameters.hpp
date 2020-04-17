@@ -95,7 +95,8 @@ class ChomboParameters
         pp.load("N1", N3);                                                                                                     
                                                                                                                                
         pp.load("center", center,                                                                                              
-                {0.5 * N1 * coarsest_dx, 0.5 * N2 * coarsest_dx, 0.5 * N3 * coarsest_dx}); // default to center
+                {0.5 * N1 * coarsest_dx, 0.5 * N2 * coarsest_dx, 
+                 0.5 * N3 * coarsest_dx}); // default to center
 
         pp.load("max_level", max_level, 0);
         // the reference ratio is hard coded to 2 on all levels
