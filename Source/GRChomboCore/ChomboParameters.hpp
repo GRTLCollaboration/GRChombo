@@ -100,6 +100,8 @@ class ChomboParameters
                 }
             }
         }
+	pout() << "Center has been set to: " << center << endl;
+	
         if (nonperiodic_boundaries_exist)
         {
             // write out boundary conditions where non periodic - useful for
