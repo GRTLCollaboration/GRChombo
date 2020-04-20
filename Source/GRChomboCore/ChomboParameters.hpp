@@ -74,16 +74,20 @@ class ChomboParameters
                     symmetric_boundaries_exist = true;
                     pp.load("vars_parity", boundary_params.vars_parity);
 
-                    if (boundary_params.hi_boundary[idir] ==
-                        BoundaryConditions::REFLECTIVE_BC)
+                    if ((boundary_params.hi_boundary[idir] ==
+                         BoundaryConditions::REFLECTIVE_BC) &&
+                        (boundary_params.lo_boundary[idir] !=
+                         BoundaryConditions::REFLECTIVE_BC))
                     {
-                        center[idir] == N_vect[idir] * coarsest_dx;
+                        center[idir] = N_vect[idir] * coarsest_dx;
                     }
 
-                    if (boundary_params.lo_boundary[idir] ==
-                        BoundaryConditions::REFLECTIVE_BC)
+                    if ((boundary_params.lo_boundary[idir] ==
+                         BoundaryConditions::REFLECTIVE_BC) &&
+                        (boundary_params.hi_boundary[idir] !=
+                         BoundaryConditions::REFLECTIVE_BC))
                     {
-                        center[idir] == 0;
+                        center[idir] = 0;
                     }
                 }
                 if ((boundary_params.hi_boundary[idir] ==
