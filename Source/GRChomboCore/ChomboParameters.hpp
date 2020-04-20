@@ -100,7 +100,12 @@ class ChomboParameters
                 }
             }
         }
-        pout() << "Center has been set to: " << center << endl;
+        pout() << "Center has been set to: " ;
+	FOR1(idir)
+	{
+	  pout() << center[idir] << " ";	  
+	}
+	pout() << endl;
 
         if (nonperiodic_boundaries_exist)
         {
