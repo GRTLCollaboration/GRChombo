@@ -20,13 +20,30 @@ class ChomboParameters
         pp.load("verbosity", verbosity, 0);
         // Grid setup
         pp.load("L", L, 1.0);
-        pp.load("center", center,
-                {0.5 * L, 0.5 * L, 0.5 * L}); // default to center
         pp.load("regrid_threshold", regrid_threshold, 0.5);
         pp.load("num_ghosts", num_ghosts, 3);
         pp.load("tag_buffer_size", tag_buffer_size, 3);
         pp.load("dt_multiplier", dt_multiplier, 0.25);
         pp.load("fill_ratio", fill_ratio, 0.7);
+
+        // Setup the grid size
+        ivN = IntVect::Unit;
+        int max_N = 0;
+        for (int dir = 0; dir < CH_SPACEDIM; ++dir)
+        {
+            char dir_str[20];
+            sprintf(dir_str, "N%d", dir + 1);
+            int N;
+            pp.load(dir_str, N);
+            N_vect.push_back(N);
+            ivN[dir] = N - 1;
+            max_N = max(N, max_N);
+        }
+        coarsest_dx = L / max_N;
+
+        pp.load("center", center,
+                {0.5 * N_vect[0] * coarsest_dx, 0.5 * N_vect[1] * coarsest_dx,
+                 0.5 * N_vect[2] * coarsest_dx}); // default to center
 
         // Periodicity and boundaries
         pp.load("isPeriodic", isPeriodic, {true, true, true});
@@ -56,6 +73,22 @@ class ChomboParameters
                 {
                     symmetric_boundaries_exist = true;
                     pp.load("vars_parity", boundary_params.vars_parity);
+
+                    if ((boundary_params.hi_boundary[idir] ==
+                         BoundaryConditions::REFLECTIVE_BC) &&
+                        (boundary_params.lo_boundary[idir] !=
+                         BoundaryConditions::REFLECTIVE_BC))
+                    {
+                        center[idir] = N_vect[idir] * coarsest_dx;
+                    }
+
+                    if ((boundary_params.lo_boundary[idir] ==
+                         BoundaryConditions::REFLECTIVE_BC) &&
+                        (boundary_params.hi_boundary[idir] !=
+                         BoundaryConditions::REFLECTIVE_BC))
+                    {
+                        center[idir] = 0;
+                    }
                 }
                 if ((boundary_params.hi_boundary[idir] ==
                      BoundaryConditions::SOMMERFELD_BC) ||
@@ -67,6 +100,10 @@ class ChomboParameters
                 }
             }
         }
+        pout() << "Center has been set to: ";
+        FOR1(idir) { pout() << center[idir] << " "; }
+        pout() << endl;
+
         if (nonperiodic_boundaries_exist)
         {
             // write out boundary conditions where non periodic - useful for
@@ -77,20 +114,6 @@ class ChomboParameters
         // Misc
         pp.load("ignore_checkpoint_name_mismatch",
                 ignore_checkpoint_name_mismatch, false);
-
-        // Setup the grid size
-        ivN = IntVect::Unit;
-        int max_N = 0;
-        for (int dir = 0; dir < CH_SPACEDIM; ++dir)
-        {
-            char dir_str[20];
-            sprintf(dir_str, "N%d", dir + 1);
-            int N;
-            pp.load(dir_str, N);
-            ivN[dir] = N - 1;
-            max_N = max(N, max_N);
-        }
-        coarsest_dx = L / max_N;
 
         pp.load("max_level", max_level, 0);
         // the reference ratio is hard coded to 2 on all levels
@@ -134,6 +157,7 @@ class ChomboParameters
 
     // General parameters
     int verbosity;
+    std::vector<int> N_vect;
     double L;                               // Physical sidelength of the grid
     std::array<double, CH_SPACEDIM> center; // grid center
     IntVect ivN;                 // The number of grid cells in each dimension
