@@ -9,6 +9,8 @@
 // General includes
 #include "BoundaryConditions.hpp"
 #include "GRParmParse.hpp"
+#include "UserVariables.hpp"
+#include <algorithm>
 
 class ChomboParameters
 {
@@ -135,6 +137,20 @@ class ChomboParameters
         pp.load("max_steps", max_steps, 1000000);
         pp.load("write_plot_ghosts", write_plot_ghosts, false);
 
+        // load vars to write to plot files
+        pp.load("num_plot_vars", num_plot_vars, 0);
+        std::vector<std::string> plot_var_names(num_plot_vars, "");
+        pp.load("plot_vars", plot_var_names, num_plot_vars, plot_var_names);
+        for (std::string var_name : plot_var_names)
+        {
+            int var = variable_name_to_enum(var_name);
+            if (var >= 0 && var < NUM_VARS)
+            {
+                plot_vars.push_back(var);
+            }
+        }
+        num_plot_vars = plot_vars.size();
+
         // alias the weird chombo names to something more descriptive
         // for these box params, and default to some reasonable values
         if (pp.contains("max_grid_size"))
@@ -152,6 +168,38 @@ class ChomboParameters
         else
         {
             pp.load("min_box_size", block_factor, 8);
+        }
+    }
+
+    /// Takes a string and returns the variable enum number if the string
+    /// matches one of those in UserVariables::variable_names, or returns -1
+    /// otherwise
+    int variable_name_to_enum(const std::string &a_var_name)
+    {
+        using namespace UserVariables;
+
+        // std::find did not work very well with the char const* array type of
+        // UserVariables::variable_names so here convert to a
+        // std::array of std::strings first. This is quite inefficient but this
+        // function isn't used much so doesn't matter.
+        std::array<std::string, NUM_VARS> variable_names_array;
+        for (int ivar = 0; ivar < NUM_VARS; ++ivar)
+        {
+            variable_names_array[ivar] = variable_names[ivar];
+        }
+
+        const auto var_name_it =
+            std::find(variable_names_array.begin(), variable_names_array.end(),
+                      a_var_name);
+
+        int var = std::distance(variable_names_array.begin(), var_name_it);
+        if (var != NUM_VARS)
+            return var;
+        else
+        {
+            pout() << "Variable with name " << a_var_name << " not found."
+                   << std::endl;
+            return -1;
         }
     }
 
@@ -176,6 +224,8 @@ class ChomboParameters
     double fill_ratio; // determines how fussy the regridding is about tags
     std::string checkpoint_prefix, plot_prefix; // naming of files
     bool write_plot_ghosts;
+    int num_plot_vars;
+    std::vector<int> plot_vars; // vars to write to plot file
 
     // Boundary conditions
     std::array<bool, CH_SPACEDIM> isPeriodic;     // periodicity

@@ -782,6 +782,11 @@ void GRAMRLevel::writePlotHeader(HDF5Handle &a_handle) const
                         "Plot files will be empty.");
     }
 }
+
+void GRAMRLevel::specificWritePlotHeader(std::vector<int> &plot_states) const
+{
+    plot_states = m_p.plot_vars;
+}
 #endif /*ifdef CH_USE_HDF5*/
 
 void GRAMRLevel::evalRHS(GRLevelData &rhs, GRLevelData &soln,
