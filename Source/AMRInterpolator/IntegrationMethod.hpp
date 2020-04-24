@@ -27,6 +27,7 @@ class IntegrationMethod
         : m_weights(a_weights), m_num_weights(a_weights.size()),
           m_is_closed(a_is_closed)
     {
+        CH_assert(a_weights.size() > 0);
     }
 
     //! Checks that this integration method is suitable given the number of
@@ -35,7 +36,7 @@ class IntegrationMethod
     {
         if (m_is_closed && !a_is_periodic)
         {
-            return (a_num_points % m_num_weights == 1 % m_num_weights);
+            return (a_num_points % m_num_weights == 1 || m_num_weights == 1);
         }
         else
         {
@@ -53,9 +54,12 @@ class IntegrationMethod
         const int weight_index = a_index % m_num_weights;
         const bool endpoint =
             (a_index == 0 || a_index == a_num_points - 1) && !a_is_periodic;
+        // if this is a closed formula, not a geometry endpoint but at the edge
+        // of the formula, need to double the weight as this is how Newton-Cotes
+        // formulae are combined.
         if (m_is_closed && !endpoint && weight_index == 0)
             return 2.0 * m_weights[weight_index];
-        else
+        else // otherwise we just use the weight from the formula
             return m_weights[weight_index];
     }
 

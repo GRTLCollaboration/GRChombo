@@ -14,8 +14,8 @@
 class CylindricalGeometry
 {
   private:
-    std::array<double, CH_SPACEDIM> m_center;
-    double m_z_length;
+    const std::array<double, CH_SPACEDIM> m_center;
+    const double m_z_length;
 
   public:
     CylindricalGeometry(const std::array<double, CH_SPACEDIM> &a_center,
