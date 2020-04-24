@@ -128,6 +128,10 @@ class SphericalExtraction : public SurfaceExtraction<SphericalGeometry>
         const IntegrationMethod &a_method_theta = IntegrationMethod::simpson,
         const IntegrationMethod &a_method_phi = IntegrationMethod::trapezium)
     {
+        m_integrands.clear();
+        m_integration_methods.clear();
+        m_integrals.clear();
+
         std::pair<std::vector<double>, std::vector<double>> integrals;
         add_mode_integrand(es, el, em, a_function, integrals, a_method_theta,
                            a_method_phi);

@@ -132,7 +132,6 @@ int runSphericalExtractionTest(int argc, char *argv[])
     {
         double r = sim_params.extraction_params_lo.extraction_radii[iradius];
         double integral_re_lo_trapezium =
-
             (integral_lo_trapezium.first)[iradius];
         double integral_re_hi_trapezium =
             (integral_hi_trapezium.first)[iradius];
