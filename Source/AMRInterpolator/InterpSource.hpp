@@ -14,9 +14,11 @@ class InterpSource
 {
   public:
     virtual const LevelData<FArrayBox> &getLevelData() const = 0;
+    virtual const LevelData<FArrayBox> &getDiagnosticsLevelData() const = 0;
     virtual bool
     contains(const std::array<double, CH_SPACEDIM> &point) const = 0;
     virtual void fillAllGhosts() = 0;
+    virtual void fillAllDiagnosticsGhosts() = 0;
 };
 
 #endif /* INTERPSOURCE_H_ */
