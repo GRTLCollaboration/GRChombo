@@ -53,7 +53,7 @@ vars_parity            = 0 0 4 6 0 5 0    #chi and hij
                          0 0              #phi and Pi
                          0 1 2 3          #Ham and Mom
 
-# if sommerfeld boundaries selected, must select 
+# if sommerfeld boundaries selected, must select
 # asymptotic values (in order given by UserVariables.hpp)
 vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
                          0.0 0.0 0.0 0.0 0.0 0.0 0.0 #K and Aij
@@ -67,6 +67,8 @@ vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 100
 plot_interval = 10
+num_plot_vars = 2
+plot_vars = chi phi
 dt_multiplier = 0.25
 stop_time = 10.0
 
@@ -77,7 +79,7 @@ lapse_advec_coeff = 1 # 1 makes the lapse gauge 1+log slicing
 
 # Shift evolution coefficients
 shift_advec_coeff = 0 # Usually no advection for beta
-shift_Gamma_coeff = 0.75 # 
+shift_Gamma_coeff = 0.75 #
 eta = 1.0 # This is beta_driver, usually of order 1/M_ADM of spacetime
 
 # CCZ4 parameters

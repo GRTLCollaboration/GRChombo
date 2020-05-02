@@ -50,6 +50,8 @@ block_factor = 16
 checkpoint_interval = 100
 # set to zero to turn off plot files, comps defined in BinaryBHLevel.cpp
 plot_interval = 10
+num_plot_vars = 3
+plot_vars = chi Weyl4_Re Weyl4_Im
 dt_multiplier = 0.25
 stop_time = 2200.0
 
