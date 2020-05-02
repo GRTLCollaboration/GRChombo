@@ -79,13 +79,6 @@ void KerrBHLevel::specificUpdateODE(GRLevelData &a_soln,
     BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
 }
 
-// Specify which variables to write at plot intervals
-void KerrBHLevel::specificWritePlotHeader(std::vector<int> &plot_states) const
-{
-    // Specify the variables we want to output as plot
-    plot_states = {c_chi, c_K, c_lapse, c_shift1};
-}
-
 void KerrBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                           const FArrayBox &current_state)
 {

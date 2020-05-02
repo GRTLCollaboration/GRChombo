@@ -122,13 +122,6 @@ void ScalarFieldLevel::specificUpdateODE(GRLevelData &a_soln,
     BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
 }
 
-// Specify if you want any plot files to be written, with which vars
-void ScalarFieldLevel::specificWritePlotHeader(
-    std::vector<int> &plot_states) const
-{
-    plot_states = {c_phi, c_chi};
-}
-
 void ScalarFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                                const FArrayBox &current_state)
 {
