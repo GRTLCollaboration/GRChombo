@@ -185,12 +185,3 @@ void BinaryBHLevel::prePlotLevel()
                        m_state_new, m_state_new, EXCLUDE_GHOST_CELLS);
     }
 }
-
-// Specify if you want any plot files to be written, with which vars
-void BinaryBHLevel::specificWritePlotHeader(std::vector<int> &plot_states) const
-{
-    if (m_p.num_plot_vars > 0)
-        plot_states = m_p.plot_vars;
-    else
-        plot_states = {c_chi, c_Weyl4_Re, c_Weyl4_Im};
-}

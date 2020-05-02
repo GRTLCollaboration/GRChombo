@@ -47,9 +47,6 @@ class ScalarFieldLevel : public GRAMRLevel
     virtual void specificUpdateODE(GRLevelData &a_soln,
                                    const GRLevelData &a_rhs, Real a_dt);
 
-    //! Specify which variables to write at plot intervals
-    virtual void specificWritePlotHeader(std::vector<int> &plot_states) const;
-
     //! Tell Chombo how to tag cells for regridding
     virtual void computeTaggingCriterion(FArrayBox &tagging_criterion,
                                          const FArrayBox &current_state);
