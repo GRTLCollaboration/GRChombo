@@ -11,20 +11,10 @@
 #include "CCZ4.hpp"
 #include "ChomboParameters.hpp"
 #include "GRParmParse.hpp"
+#include "SphericalExtraction.hpp"
 
-struct extraction_params_t
-{
-    int num_extraction_radii;
-    std::vector<double> extraction_radii;
-    std::array<double, CH_SPACEDIM> extraction_center;
-    int num_points_phi;
-    int num_points_theta;
-    int num_modes;
-    std::vector<std::pair<int, int>> modes; // l = first, m = second
-    std::vector<int> extraction_levels;
-    bool write_extraction;
-    int min_extraction_level;
-};
+// add this type alias here for backwards compatibility
+using extraction_params_t = SphericalExtraction::params_t;
 
 class SimulationParametersBase : public ChomboParameters
 {
@@ -91,9 +81,14 @@ class SimulationParametersBase : public ChomboParameters
                     0.1);
         }
         pp.load("num_points_phi", extraction_params.num_points_phi, 2);
-        pp.load("num_points_theta", extraction_params.num_points_theta, 4);
-        pp.load("extraction_center", extraction_params.extraction_center,
-                center); // default to center of the grid
+        pp.load("num_points_theta", extraction_params.num_points_theta, 5);
+        if (extraction_params.num_points_theta % 2 == 0)
+        {
+            extraction_params.num_points_theta += 1;
+            pout() << "Parameter: num_points_theta incompatible with Simpson's "
+                   << "rule so increased by 1.\n";
+        }
+        pp.load("extraction_center", extraction_params.center, center);
         if (pp.contains("modes"))
         {
             pp.load("num_modes", extraction_params.num_modes);
@@ -122,12 +117,6 @@ class SimulationParametersBase : public ChomboParameters
         }
 
         pp.load("write_extraction", extraction_params.write_extraction, false);
-
-        // Work out the minimum extraction level
-        auto min_extraction_level_it =
-            std::min_element(extraction_params.extraction_levels.begin(),
-                             extraction_params.extraction_levels.end());
-        extraction_params.min_extraction_level = *(min_extraction_level_it);
     }
 
   public:
@@ -144,7 +133,7 @@ class SimulationParametersBase : public ChomboParameters
 
     // Collection of parameters necessary for the CCZ4 RHS and extraction
     CCZ4::params_t ccz4_params;
-    extraction_params_t extraction_params;
+    SphericalExtraction::params_t extraction_params;
 };
 
 #endif /* SIMULATIONPARAMETERSBASE_HPP_ */
