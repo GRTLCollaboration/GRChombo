@@ -68,8 +68,8 @@ void BinaryBHLevel::postRestart()
     {
         // need to set a temporary interpolator for finding the shift
         // as the happens in setupAMRObject() not amr.run()
-        AMRInterpolator<Lagrange<4>> interpolator(m_bh_amr, m_p.origin, m_p.dx,
-                                                  m_p.verbosity);
+        AMRInterpolator<Lagrange<4>> interpolator(
+            m_bh_amr, m_p.origin, m_p.dx, m_p.boundary_params, m_p.verbosity);
         m_bh_amr.set_interpolator(&interpolator);
         PunctureTracker my_punctures(m_time, m_restart_time, m_dt,
                                      m_p.checkpoint_prefix);

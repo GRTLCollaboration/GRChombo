@@ -56,53 +56,57 @@ int runInterpolatorTest(int argc, char *argv[])
     setupAMRObject(gr_amr, interpolator_test_level_fact);
 
     // Setup the AMRInterpolator
-    int num_points = 2;
-    pp.query("num_points", num_points);
+    int num_points = sim_params.num_points;
 
-    std::unique_ptr<double[]> chi_ptr{new double[num_points]};
-    std::unique_ptr<double[]> phi_ptr{new double[num_points]};
-    std::unique_ptr<double[]> interp_x{new double[num_points]};
-    std::unique_ptr<double[]> interp_y{new double[num_points]};
-    std::unique_ptr<double[]> interp_z{new double[num_points]};
+    double A_ptr[num_points];
+    double B_ptr[num_points];
+    double B_dx_ptr[num_points];
+    double interp_x[num_points];
+    double interp_y[num_points];
+    double interp_z[num_points];
 
-    double L;
-    pp.get("L", L);
-    double extract_center[3] = {L / 2, L / 2, L / 2};
-    double extract_radius = L / 4;
+    double extract_radius = sim_params.L / 4;
 
     for (int iPhi = 0; iPhi < num_points; ++iPhi)
     {
         double extract_angle = iPhi * M_PI / num_points;
         interp_x[iPhi] =
-            extract_center[0] + extract_radius * cos(extract_angle);
+            sim_params.center[0] + extract_radius * cos(extract_angle);
         interp_y[iPhi] =
-            extract_center[1] + extract_radius * sin(extract_angle);
-        interp_z[iPhi] = extract_center[2];
+            sim_params.center[1] + extract_radius * sin(extract_angle);
+        interp_z[iPhi] = sim_params.center[2];
     }
 
     InterpolationQuery query(num_points);
-    query.setCoords(0, interp_x.get())
-        .setCoords(1, interp_y.get())
-        .setCoords(2, interp_z.get())
-        .addComp(c_chi, chi_ptr.get())
-        .addComp(c_phi, phi_ptr.get());
+    query.setCoords(0, interp_x)
+        .setCoords(1, interp_y)
+        .setCoords(2, interp_z)
+        .addComp(c_A, A_ptr)
+        .addComp(c_B, B_ptr)
+        .addComp(c_B, B_dx_ptr, Derivative::dx);
 
-    auto dx_scalar = GRAMRLevel::gr_cast(gr_amr.getAMRLevels()[0])
-                         ->get_dx(); // coarsest grid spacing
-    std::array<double, 3> dx;
-    dx.fill(dx_scalar);
-    std::array<double, CH_SPACEDIM> origin;
-    origin.fill(dx_scalar / 2);
-
-    AMRInterpolator<Lagrange<4>> interpolator(gr_amr, origin, dx, 0);
+    AMRInterpolator<Lagrange<4>> interpolator(gr_amr, sim_params.origin,
+                                              sim_params.dx,
+                                              sim_params.boundary_params, 0);
     interpolator.interp(query);
 
     int status = 0;
 
     for (int ipoint = 0; ipoint < num_points; ++ipoint)
     {
-        status |= (abs(chi_ptr[ipoint] - 42.) > 1e-10);
-        status |= (abs(phi_ptr[ipoint] - 42.) > 1e-10);
+        double x = interp_x[ipoint] - sim_params.center[0];
+        double y = interp_y[ipoint] - sim_params.center[1];
+        double z = interp_z[ipoint] - sim_params.center[2];
+
+        double value_A =
+            42. + x * x +
+            (y - sim_params.center[1]) * (y - sim_params.center[1]) * z * z;
+        double value_B = pow(x, 3);
+        double value_B_dx = 3. * pow(x, 2);
+
+        status |= (abs(A_ptr[ipoint] - value_A) > 1e-10);
+        status |= (abs(B_ptr[ipoint] - value_B) > 1e-10);
+        status |= (abs(B_dx_ptr[ipoint] - value_B_dx) > 1e-10);
     }
 
     return status;

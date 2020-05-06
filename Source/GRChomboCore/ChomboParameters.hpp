@@ -29,25 +29,6 @@ class ChomboParameters
         pp.load("dt_multiplier", dt_multiplier, 0.25);
         pp.load("fill_ratio", fill_ratio, 0.7);
 
-        // Setup the grid size
-        ivN = IntVect::Unit;
-        int max_N = 0;
-        for (int dir = 0; dir < CH_SPACEDIM; ++dir)
-        {
-            char dir_str[20];
-            sprintf(dir_str, "N%d", dir + 1);
-            int N;
-            pp.load(dir_str, N);
-            N_vect.push_back(N);
-            ivN[dir] = N - 1;
-            max_N = max(N, max_N);
-        }
-        coarsest_dx = L / max_N;
-
-        pp.load("center", center,
-                {0.5 * N_vect[0] * coarsest_dx, 0.5 * N_vect[1] * coarsest_dx,
-                 0.5 * N_vect[2] * coarsest_dx}); // default to center
-
         // Periodicity and boundaries
         pp.load("isPeriodic", isPeriodic, {true, true, true});
         int bc = BoundaryConditions::STATIC_BC;
@@ -59,6 +40,7 @@ class ChomboParameters
         boundary_params.is_periodic.fill(true);
         nonperiodic_boundaries_exist = false;
         symmetric_boundaries_exist = false;
+        int num_sym_bc = 0;
         FOR1(idir)
         {
             if (isPeriodic[idir] == false)
@@ -74,24 +56,15 @@ class ChomboParameters
                     (boundary_params.lo_boundary[idir] ==
                      BoundaryConditions::REFLECTIVE_BC))
                 {
+                    // not both
+                    CH_assert(!((boundary_params.hi_boundary[idir] ==
+                                 BoundaryConditions::REFLECTIVE_BC) &&
+                                (boundary_params.lo_boundary[idir] ==
+                                 BoundaryConditions::REFLECTIVE_BC)));
+
                     symmetric_boundaries_exist = true;
+                    ++num_sym_bc;
                     pp.load("vars_parity", boundary_params.vars_parity);
-
-                    if ((boundary_params.hi_boundary[idir] ==
-                         BoundaryConditions::REFLECTIVE_BC) &&
-                        (boundary_params.lo_boundary[idir] !=
-                         BoundaryConditions::REFLECTIVE_BC))
-                    {
-                        center[idir] = N_vect[idir] * coarsest_dx;
-                    }
-
-                    if ((boundary_params.lo_boundary[idir] ==
-                         BoundaryConditions::REFLECTIVE_BC) &&
-                        (boundary_params.hi_boundary[idir] !=
-                         BoundaryConditions::REFLECTIVE_BC))
-                    {
-                        center[idir] = 0;
-                    }
                 }
                 if ((boundary_params.hi_boundary[idir] ==
                      BoundaryConditions::SOMMERFELD_BC) ||
@@ -103,10 +76,6 @@ class ChomboParameters
                 }
             }
         }
-        pout() << "Center has been set to: ";
-        FOR1(idir) { pout() << center[idir] << " "; }
-        pout() << endl;
-
         if (nonperiodic_boundaries_exist)
         {
             // write out boundary conditions where non periodic - useful for
@@ -114,19 +83,93 @@ class ChomboParameters
             BoundaryConditions::write_boundary_conditions(boundary_params);
         }
 
+        // Grid N, L and center
+        int N_full;
+        pp.load("N_full", N_full, -1);
+
+        ivN = IntVect::Unit;
+        int max_N = N_full;
+        if (N_full != -1)
+        {
+            for (int dir = 0; dir < CH_SPACEDIM; ++dir)
+            {
+                if (boundary_params.lo_boundary[dir] ==
+                        BoundaryConditions::REFLECTIVE_BC ||
+                    boundary_params.hi_boundary[dir] ==
+                        BoundaryConditions::REFLECTIVE_BC)
+                {
+                    CH_assert(N_full % 2 == 0); // N_full is even
+                    ivN[dir] = N_full / 2 - 1;
+                }
+                else
+                    ivN[dir] = N_full - 1;
+            }
+            // halve max_N if fully reflective (reflective BC in all directions)
+            if (num_sym_bc == CH_SPACEDIM)
+                max_N /= 2;
+        }
+        else
+        {
+            // Setup the grid size
+            for (int dir = 0; dir < CH_SPACEDIM; ++dir)
+            {
+                char dir_str[20];
+                sprintf(dir_str, "N%d", dir + 1);
+                int N;
+                pp.load(dir_str, N);
+                ivN[dir] = N - 1;
+                max_N = max(N, max_N);
+            }
+        }
+
+        double L_full;
+        pp.load("L_full", L_full, -1.);
+        if (L_full > 0.)
+        {
+            L = L_full;
+
+            // halve L if fully reflective (reflective BC in all directions)
+            if (num_sym_bc == CH_SPACEDIM)
+                L /= 2.;
+        }
+
+        coarsest_dx = L / max_N;
+
+        // extraction params
+        dx.fill(coarsest_dx);
+        origin.fill(coarsest_dx / 2.0);
+
+        // now that L is surely set, get center
+        pp.load("center", center,
+                {0.5 * L, 0.5 * L, 0.5 * L}); // default to center
+
+        FOR1(idir)
+        {
+            if (isPeriodic[idir] == false)
+            {
+                if ((boundary_params.lo_boundary[idir] ==
+                     BoundaryConditions::REFLECTIVE_BC))
+                    center[idir] = 0.;
+                else if ((boundary_params.hi_boundary[idir] ==
+                          BoundaryConditions::REFLECTIVE_BC))
+                    center[idir] = L / (num_sym_bc == CH_SPACEDIM ? 1. : 2.);
+            }
+        }
+        pout() << "Center has been set to: ";
+        FOR1(idir) { pout() << center[idir] << " "; }
+        pout() << endl;
+
         // Misc
         pp.load("ignore_checkpoint_name_mismatch",
                 ignore_checkpoint_name_mismatch, false);
 
         pp.load("max_level", max_level, 0);
-        // the reference ratio is hard coded to 2 on all levels
+        // the reference ratio is hard coded to 2
         // in principle it can be set to other values, but this is
         // not recommended since we do not test GRChombo with other
         // refinement ratios - use other values at your own risk
         ref_ratios.resize(max_level + 1);
         ref_ratios.assign(2);
-        // read in frequency of regrid on each levels, needs
-        // max_level + 1 entries (although never regrids on max_level+1)
         pp.getarr("regrid_interval", regrid_interval, 0, max_level + 1);
 
         // time stepping outputs and regrid data
@@ -191,7 +234,6 @@ class ChomboParameters
 
     // General parameters
     int verbosity;
-    std::vector<int> N_vect;
     double L;                               // Physical sidelength of the grid
     std::array<double, CH_SPACEDIM> center; // grid center
     IntVect ivN;                 // The number of grid cells in each dimension
@@ -213,6 +255,9 @@ class ChomboParameters
     int num_plot_vars;
     std::vector<std::pair<int, VariableType>>
         plot_vars; // vars to write to plot file
+
+    std::array<double, CH_SPACEDIM> origin,
+        dx; // location of coarsest origin and dx
 
     // Boundary conditions
     std::array<bool, CH_SPACEDIM> isPeriodic;     // periodicity
