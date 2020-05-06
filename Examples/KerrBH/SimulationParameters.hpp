@@ -28,7 +28,7 @@ class SimulationParameters : public SimulationParametersBase
         // Initial Kerr data
         pp.load("kerr_mass", kerr_params.mass);
         pp.load("kerr_spin", kerr_params.spin);
-        pp.load("kerr_center", kerr_params.center, {0.5 * L, 0.5 * L, 0.5 * L});
+        pp.load("kerr_center", kerr_params.center, center);
     }
 
     KerrBH::params_t kerr_params;

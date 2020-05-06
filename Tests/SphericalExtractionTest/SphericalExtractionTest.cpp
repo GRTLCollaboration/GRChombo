@@ -57,8 +57,8 @@ int runSphericalExtractionTest(int argc, char *argv[])
     // specified by params
     setupAMRObject(gr_amr, surface_extraction_test_level_fact);
 
-    AMRInterpolator<Lagrange<4>> interpolator(gr_amr, sim_params.origin,
-                                              sim_params.dx, 0);
+    AMRInterpolator<Lagrange<4>> interpolator(
+        gr_amr, sim_params.origin, sim_params.dx, sim_params.boundary_params);
 
     // low resolution spherical extraction
     SphericalExtraction spherical_extraction_lo(

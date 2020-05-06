@@ -1,8 +1,6 @@
 verbosity = 0
-N1 = 32
-N2 = 32
-N3 = 32
-L = 16
+N_full = 32
+L_full = 16
 
 chk_prefix = TestChk_
 plot_prefix = TestPlt_
@@ -12,11 +10,19 @@ num_points = 3
 num_ghosts = 3
 max_level = 1
 regrid_interval = 1 1 1 1 0 0 0 0 0
-ref_ratio = 2 2 2 2 2 2 2 2 2
-isPeriodic = 1 1 1
 
-#Max and min box sizes
-max_grid_size = 32
-block_factor = 4
-tag_buffer_size = 3
-checkpoint_interval = 1
+#boundaries and periodicity of grid
+#Periodic directions - 0 = false, 1 = true
+isPeriodic = 0 0 0
+# if not periodic, then specify the boundary type
+# 0 = static, 1 = sommerfeld, 2 = reflective
+# (see BoundaryConditions.hpp for details)
+hi_boundary = 0 2 0
+lo_boundary = 2 0 2
+
+# if reflective boundaries selected, must set
+# parity of all vars (in order given by UserVariables.hpp)
+# 0 = even
+# 1,2,3 = odd x, y, z
+# 4,5,6 = odd xy, yz, xz
+vars_parity = 0 1 			# A and B

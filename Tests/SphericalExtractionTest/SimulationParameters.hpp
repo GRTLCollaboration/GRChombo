@@ -24,10 +24,6 @@ class SimulationParameters : public ChomboParameters
   private:
     void read_params(GRParmParse &pp)
     {
-        // extraction params
-        dx.fill(coarsest_dx);
-        origin.fill(coarsest_dx / 2.0);
-
         // Extraction params
         pp.load("num_extraction_radii",
                 extraction_params_lo.num_extraction_radii, 1);
@@ -55,7 +51,6 @@ class SimulationParameters : public ChomboParameters
     }
 
   public:
-    std::array<double, CH_SPACEDIM> origin, dx;
     SphericalExtraction::params_t extraction_params_lo;
     int es, el, em; // spherical harmonic params
 };
