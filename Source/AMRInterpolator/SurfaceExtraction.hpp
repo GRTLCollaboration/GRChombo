@@ -187,6 +187,11 @@ template <class SurfaceGeometry> class SurfaceExtraction
     void write_integral(const std::string &a_filename,
                         const std::vector<double> a_integrals,
                         const std::string a_label = "") const;
+
+protected:
+    std::vector<double>
+    richardson_extrapolation(const std::vector<std::vector<double>> &integrals,
+                             int extrapolation_order) const;
 };
 
 #include "SurfaceExtraction.impl.hpp"

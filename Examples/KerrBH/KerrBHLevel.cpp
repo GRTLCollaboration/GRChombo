@@ -20,6 +20,9 @@
 #include "GammaCalculator.hpp"
 #include "KerrBH.hpp"
 
+#include "ADMMass.hpp"
+#include "ADMMassExtraction.hpp"
+
 void KerrBHLevel::specificAdvance()
 {
     // Enforce the trace free A_ij condition and positive chi and alpha
@@ -38,9 +41,9 @@ void KerrBHLevel::initialData()
     if (m_verbosity)
         pout() << "KerrBHLevel::initialData " << m_level << endl;
 
-    // First set everything to zero then calculate initial data  Get the Kerr
-    // solution in the variables, then calculate the \tilde\Gamma^i numerically
-    // as these are non zero and not calculated in the Kerr ICs
+    // First set everything to zero then calculate initial data
+    // Get the Kerr solution in the variables, then calculate the \tilde\Gamma^i
+    // numerically as these are non zero and not calculated in the Kerr ICs
     BoxLoops::loop(
         make_compute_pack(SetValue(0.), KerrBH(m_p.kerr_params, m_dx)),
         m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
@@ -98,4 +101,27 @@ void KerrBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                           const FArrayBox &current_state)
 {
     BoxLoops::loop(ChiTaggingCriterion(m_dx), current_state, tagging_criterion);
+}
+
+void KerrBHLevel::specificPostTimeStep()
+{
+    CH_TIME("KerrBHLevel::specificPostTimeStep");
+    if (m_p.activate_extraction == 1)
+    {
+        // Populate the Weyl Scalar values on the grid
+        fillAllGhosts();
+        BoxLoops::loop(ADMMass(m_p.extraction_params.center, m_dx), m_state_new,
+                       m_state_new, EXCLUDE_GHOST_CELLS);
+
+        // Do the extraction on the min extraction level
+        if (m_level == m_p.extraction_params.min_extraction_level())
+        {
+            CH_TIME("ADMExtraction");
+            // Now refresh the interpolator and do the interpolation
+            m_gr_amr.m_interpolator->refresh();
+            ADMMassExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
+                                            m_restart_time);
+            my_extraction.execute_query(m_gr_amr.m_interpolator);
+        }
+    }
 }
