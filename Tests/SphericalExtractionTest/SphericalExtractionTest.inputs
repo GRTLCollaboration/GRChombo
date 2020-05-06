@@ -7,9 +7,6 @@ L = 16
 chk_prefix = TestChk_
 plot_prefix = TestPlt_
 
-num_points = 3
-
-num_ghosts = 3
 max_level = 1
 regrid_interval = 1 1 1 1 0 0 0 0 0
 ref_ratio = 2 2 2 2 2 2 2 2 2
@@ -22,10 +19,10 @@ tag_buffer_size = 3
 checkpoint_interval = 1
 
 # extraction params
-num_extraction_radii = 2
-extraction_radii = 4. 6.
-num_points_phi_lo = 12
-num_points_theta_lo = 13
+num_extraction_radii = 1
+extraction_radii = 4.
+num_points_phi_lo = 1
+num_points_theta_lo = 17
 
 # Spherical Harmonic to set and extract
 es = 0

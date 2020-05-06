@@ -51,10 +51,6 @@ class SimulationParametersBase : public ChomboParameters
         pp.load("min_chi", min_chi, 1e-4);
         pp.load("min_lapse", min_lapse, 1e-4);
 
-        // extraction params
-        dx.fill(coarsest_dx);
-        origin.fill(coarsest_dx / 2.0);
-
         // Extraction params
         pp.load("num_extraction_radii", extraction_params.num_extraction_radii,
                 1);
@@ -127,9 +123,6 @@ class SimulationParametersBase : public ChomboParameters
     double min_chi, min_lapse;
 
     int formulation; // Whether to use BSSN or CCZ4
-
-    std::array<double, CH_SPACEDIM> origin,
-        dx; // location of coarsest origin and dx
 
     // Collection of parameters necessary for the CCZ4 RHS and extraction
     CCZ4::params_t ccz4_params;
