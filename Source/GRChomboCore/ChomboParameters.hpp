@@ -40,7 +40,6 @@ class ChomboParameters
         boundary_params.is_periodic.fill(true);
         nonperiodic_boundaries_exist = false;
         symmetric_boundaries_exist = false;
-        int num_sym_bc = 0;
         FOR1(idir)
         {
             if (isPeriodic[idir] == false)
@@ -63,7 +62,6 @@ class ChomboParameters
                                  BoundaryConditions::REFLECTIVE_BC)));
 
                     symmetric_boundaries_exist = true;
-                    ++num_sym_bc;
                     pp.load("vars_parity", boundary_params.vars_parity);
                 }
                 if ((boundary_params.hi_boundary[idir] ==
@@ -85,53 +83,49 @@ class ChomboParameters
 
         // Grid N, L and center
         int N_full;
-        pp.load("N_full", N_full, -1);
-
+        std::array<int, CH_SPACEDIM> Ni_full;
+        std::array<int, CH_SPACEDIM> Ni;
         ivN = IntVect::Unit;
-        int max_N = N_full;
-        if (N_full != -1)
+
+        // read all options (N_full, Ni_full and Ni) and then choose accordingly
+        pp.load("N_full", N_full, -1);
+        FOR1(dir)
         {
-            for (int dir = 0; dir < CH_SPACEDIM; ++dir)
+            std::string name = "N" + std::to_string(dir + 1);
+            pp.load(name.c_str(), Ni[dir], -1);
+            pp.load((name + "_full").c_str(), Ni_full[dir], -1);
+            CH_assert(N_full > 0 || Ni[dir] > 0 ||
+                      Ni_full[dir] > 0); // one of the N's must be set
+
+            if (Ni[dir] > 0)
+                Ni_full[dir] = Ni[dir];
+            else
             {
+                if (N_full > 0)
+                    Ni_full[dir] = N_full;
+
                 if (boundary_params.lo_boundary[dir] ==
                         BoundaryConditions::REFLECTIVE_BC ||
                     boundary_params.hi_boundary[dir] ==
                         BoundaryConditions::REFLECTIVE_BC)
                 {
-                    CH_assert(N_full % 2 == 0); // N_full is even
-                    ivN[dir] = N_full / 2 - 1;
+                    CH_assert(Ni_full[dir] % 2 == 0); // Ni_full is even
+                    Ni[dir] = Ni_full[dir] / 2;
                 }
                 else
-                    ivN[dir] = N_full - 1;
+                    Ni[dir] = Ni_full[dir];
             }
-            // halve max_N if fully reflective (reflective BC in all directions)
-            if (num_sym_bc == CH_SPACEDIM)
-                max_N /= 2;
+            ivN[dir] = Ni[dir] - 1;
         }
-        else
-        {
-            // Setup the grid size
-            for (int dir = 0; dir < CH_SPACEDIM; ++dir)
-            {
-                char dir_str[20];
-                sprintf(dir_str, "N%d", dir + 1);
-                int N;
-                pp.load(dir_str, N);
-                ivN[dir] = N - 1;
-                max_N = max(N, max_N);
-            }
-        }
+        int max_N_full = *std::max_element(Ni_full.begin(), Ni_full.end());
+        int max_N = ivN.max() + 1;
 
         double L_full;
         pp.load("L_full", L_full, -1.);
         if (L_full > 0.)
-        {
-            L = L_full;
-
-            // halve L if fully reflective (reflective BC in all directions)
-            if (num_sym_bc == CH_SPACEDIM)
-                L /= 2.;
-        }
+            // necessary for some reflective BC cases, as 'L' is the
+            // length of the longest side of the box
+            L = (L_full * max_N) / max_N_full;
 
         coarsest_dx = L / max_N;
 
@@ -141,19 +135,17 @@ class ChomboParameters
 
         // now that L is surely set, get center
         pp.load("center", center,
-                {0.5 * L, 0.5 * L, 0.5 * L}); // default to center
+                {0.5 * Ni[0] * coarsest_dx, 0.5 * Ni[1] * coarsest_dx,
+                 0.5 * Ni[2] * coarsest_dx}); // default to center
 
         FOR1(idir)
         {
-            if (isPeriodic[idir] == false)
-            {
-                if ((boundary_params.lo_boundary[idir] ==
-                     BoundaryConditions::REFLECTIVE_BC))
-                    center[idir] = 0.;
-                else if ((boundary_params.hi_boundary[idir] ==
-                          BoundaryConditions::REFLECTIVE_BC))
-                    center[idir] = L / (num_sym_bc == CH_SPACEDIM ? 1. : 2.);
-            }
+            if ((boundary_params.lo_boundary[idir] ==
+                 BoundaryConditions::REFLECTIVE_BC))
+                center[idir] = 0.;
+            else if ((boundary_params.hi_boundary[idir] ==
+                      BoundaryConditions::REFLECTIVE_BC))
+                center[idir] = coarsest_dx * Ni[idir];
         }
         pout() << "Center has been set to: ";
         FOR1(idir) { pout() << center[idir] << " "; }
