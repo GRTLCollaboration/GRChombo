@@ -19,9 +19,9 @@ tag_buffer_size = 3
 checkpoint_interval = 1
 
 # extraction params
-num_extraction_radii = 1
-extraction_radii = 4.
-num_points_phi_lo = 1
+num_extraction_radii = 2
+extraction_radii = 4. 6.
+num_points_phi_lo = 16
 num_points_theta_lo = 17
 
 # Spherical Harmonic to set and extract

@@ -771,9 +771,9 @@ void AMRInterpolator<InterpAlgo>::set_symmetric_BC()
     {
         m_upper_corner[i] = (big_end[i] + 1) * m_coarsest_dx[i];
 
-        m_lo_boundary[i] =
+        m_lo_boundary_reflective[i] =
             (m_bc_params.lo_boundary[i] == BoundaryConditions::REFLECTIVE_BC);
-        m_hi_boundary[i] =
+        m_hi_boundary_reflective[i] =
             (m_bc_params.hi_boundary[i] == BoundaryConditions::REFLECTIVE_BC);
     }
 }
@@ -787,8 +787,8 @@ int AMRInterpolator<InterpAlgo>::get_var_parity(int comp, int point_idx,
     FOR1(dir)
     {
         double coord = query.m_coords[dir][point_idx];
-        if ((m_lo_boundary[dir] && coord < 0.) ||
-            (m_hi_boundary[dir] && coord > m_upper_corner[dir]))
+        if ((m_lo_boundary_reflective[dir] && coord < 0.) ||
+            (m_hi_boundary_reflective[dir] && coord > m_upper_corner[dir]))
         {
             parity *=
                 BoundaryConditions::get_vars_parity(comp, dir, m_bc_params);
@@ -804,9 +804,9 @@ double AMRInterpolator<InterpAlgo>::apply_symmetric_BC_on_coord(
     const InterpolationQuery &query, double dir, int point_idx) const
 {
     double coord = query.m_coords[dir][point_idx];
-    if (m_lo_boundary[dir] && coord < 0.)
+    if (m_lo_boundary_reflective[dir] && coord < 0.)
         coord = -coord;
-    else if (m_hi_boundary[dir] && coord > m_upper_corner[dir])
+    else if (m_hi_boundary_reflective[dir] && coord > m_upper_corner[dir])
         coord = 2. * m_upper_corner[dir] - coord;
     return coord;
 }

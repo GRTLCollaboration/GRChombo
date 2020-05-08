@@ -104,7 +104,8 @@ template <typename InterpAlgo> class AMRInterpolator
     BoundaryConditions::params_t m_bc_params;
     /// simplified bools saying whether or not boundary has
     /// a reflective condition in a given direction
-    std::array<bool, CH_SPACEDIM> m_lo_boundary, m_hi_boundary;
+    std::array<bool, CH_SPACEDIM> m_lo_boundary_reflective,
+        m_hi_boundary_reflective;
     std::array<double, CH_SPACEDIM> m_upper_corner;
 };
 
