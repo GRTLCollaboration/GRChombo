@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef SIMULATIONPARAMETERS_HPP_
-#define SIMULATIONPARAMETERS_HPP_
+#ifndef SIMULATIONPARAMETERS_HPP
+#define SIMULATIONPARAMETERS_HPP
 
 // General includes
 #include "GRParmParse.hpp"
@@ -63,10 +63,9 @@ class SimulationParameters : public SimulationParametersBase
     // Initial data
     bool activate_extraction, track_punctures, calculate_constraint_norms;
     int puncture_tracking_level;
-    std::vector<std::array<double, CH_SPACEDIM>> initial_puncture_coords;
     // Collection of parameters necessary for initial conditions
     BoostedBH::params_t bh2_params;
     BoostedBH::params_t bh1_params;
 };
 
-#endif /* SIMULATIONPARAMETERS_HPP_ */
+#endif /* SIMULATIONPARAMETERS_HPP */
