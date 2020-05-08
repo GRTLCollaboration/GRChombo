@@ -67,13 +67,13 @@ vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 50
-plot_interval = 10
+checkpoint_interval = 1
+plot_interval = 0
 num_plot_vars = 4
 plot_vars = chi K lapse shift1
 dt_multiplier = 0.25
-stop_time = 1.0
-max_steps = 10000000
+stop_time = 10.0
+max_steps = 2
 
 #Lapse evolution
 lapse_power = 1.0

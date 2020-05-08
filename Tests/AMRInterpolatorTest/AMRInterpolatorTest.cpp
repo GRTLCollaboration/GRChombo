@@ -56,14 +56,14 @@ int runInterpolatorTest(int argc, char *argv[])
     setupAMRObject(gr_amr, interpolator_test_level_fact);
 
     // Setup the AMRInterpolator
-    int num_points = sim_params.num_points;
+    const int num_points = sim_params.num_points;
 
-    double A_ptr[num_points];
-    double B_ptr[num_points];
-    double B_dx_ptr[num_points];
-    double interp_x[num_points];
-    double interp_y[num_points];
-    double interp_z[num_points];
+    std::vector<double> A_ptr(num_points);
+    std::vector<double> B_ptr(num_points);
+    std::vector<double> B_dx_ptr(num_points);
+    std::vector<double> interp_x(num_points);
+    std::vector<double> interp_y(num_points);
+    std::vector<double> interp_z(num_points);
 
     double extract_radius = sim_params.L / 4;
 
@@ -78,12 +78,12 @@ int runInterpolatorTest(int argc, char *argv[])
     }
 
     InterpolationQuery query(num_points);
-    query.setCoords(0, interp_x)
-        .setCoords(1, interp_y)
-        .setCoords(2, interp_z)
-        .addComp(c_A, A_ptr)
-        .addComp(c_B, B_ptr)
-        .addComp(c_B, B_dx_ptr, Derivative::dx);
+    query.setCoords(0, interp_x.data())
+        .setCoords(1, interp_y.data())
+        .setCoords(2, interp_z.data())
+        .addComp(c_A, A_ptr.data())
+        .addComp(c_B, B_ptr.data())
+        .addComp(c_B, B_dx_ptr.data(), Derivative::dx);
 
     AMRInterpolator<Lagrange<4>> interpolator(gr_amr, sim_params.origin,
                                               sim_params.dx,
