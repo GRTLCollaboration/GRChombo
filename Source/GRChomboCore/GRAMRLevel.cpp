@@ -323,7 +323,11 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
     fillBdyGhosts(m_state_new);
 
     m_state_old.define(level_domain, NUM_VARS, iv_ghosts);
-    m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS, iv_ghosts);
+    if (NUM_DIAGNOSTIC_VARS > 0)
+    {
+        m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS,
+                                   iv_ghosts);
+    }
 }
 
 /// things to do after regridding
@@ -352,7 +356,11 @@ void GRAMRLevel::initialGrid(const Vector<Box> &a_new_grids)
     IntVect iv_ghosts = m_num_ghosts * IntVect::Unit;
     m_state_new.define(level_domain, NUM_VARS, iv_ghosts);
     m_state_old.define(level_domain, NUM_VARS, iv_ghosts);
-    m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS, iv_ghosts);
+    if (NUM_DIAGNOSTIC_VARS > 0)
+    {
+        m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS,
+                                   iv_ghosts);
+    }
 
     defineExchangeCopier(level_domain);
     m_coarse_average.define(level_domain, NUM_VARS, m_ref_ratio);
@@ -676,7 +684,11 @@ void GRAMRLevel::readCheckpointLevel(HDF5Handle &a_handle)
                       "state data");
     }
     m_state_old.define(level_domain, NUM_VARS, iv_ghosts);
-    m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS, iv_ghosts);
+    if (NUM_DIAGNOSTIC_VARS > 0)
+    {
+        m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS,
+                                   iv_ghosts);
+    }
 }
 
 void GRAMRLevel::writePlotLevel(HDF5Handle &a_handle) const
@@ -755,8 +767,11 @@ void GRAMRLevel::writePlotLevel(HDF5Handle &a_handle) const
                 {
                     Interval plotComps(comp - num_rhs_states,
                                        comp - num_rhs_states);
-                    m_state_diagnostics.copyTo(plotComps, plot_data,
-                                               currentComp);
+                    if (NUM_DIAGNOSTIC_VARS > 0)
+                    {
+                        m_state_diagnostics.copyTo(plotComps, plot_data,
+                                                   currentComp);
+                    }
                 }
             }
         }
@@ -775,8 +790,11 @@ void GRAMRLevel::writePlotLevel(HDF5Handle &a_handle) const
                 {
                     Interval plotComps(comp - num_rhs_states,
                                        comp - num_rhs_states);
-                    m_state_diagnostics.copyTo(plotComps, plot_data,
-                                               currentComp);
+                    if (NUM_DIAGNOSTIC_VARS > 0)
+                    {
+                        m_state_diagnostics.copyTo(plotComps, plot_data,
+                                                   currentComp);
+                    }
                 }
             }
         }
