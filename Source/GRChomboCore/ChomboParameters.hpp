@@ -22,7 +22,6 @@ class ChomboParameters
     {
         pp.load("verbosity", verbosity, 0);
         // Grid setup
-        pp.load("L", L, 1.0);
         pp.load("regrid_threshold", regrid_threshold, 0.5);
         pp.load("num_ghosts", num_ghosts, 3);
         pp.load("tag_buffer_size", tag_buffer_size, 3);
@@ -55,12 +54,6 @@ class ChomboParameters
                     (boundary_params.lo_boundary[idir] ==
                      BoundaryConditions::REFLECTIVE_BC))
                 {
-                    // not both
-                    CH_assert(!((boundary_params.hi_boundary[idir] ==
-                                 BoundaryConditions::REFLECTIVE_BC) &&
-                                (boundary_params.lo_boundary[idir] ==
-                                 BoundaryConditions::REFLECTIVE_BC)));
-
                     symmetric_boundaries_exist = true;
                     pp.load("vars_parity", boundary_params.vars_parity);
                 }
@@ -81,29 +74,57 @@ class ChomboParameters
             BoundaryConditions::write_boundary_conditions(boundary_params);
         }
 
-        // Grid N, L and center
-        int N_full;
+        // Grid N
         std::array<int, CH_SPACEDIM> Ni_full;
         std::array<int, CH_SPACEDIM> Ni;
         ivN = IntVect::Unit;
 
-        // read all options (N_full, Ni_full and Ni) and then choose accordingly
-        pp.load("N_full", N_full, -1);
+        // cannot contain both
+        CH_assert(!(pp.contains("N_full") && pp.contains("N")));
+
+        int N_full = -1;
+        int N = -1;
+        if (pp.contains("N_full"))
+            pp.load("N_full", N_full);
+        else if (pp.contains("N"))
+            pp.load("N", N);
+
+        // read all options (N, N_full, Ni_full and Ni) and then choose
+        // accordingly
         FOR1(dir)
         {
-            std::string name = "N" + std::to_string(dir + 1);
-            pp.load(name.c_str(), Ni[dir], -1);
-            pp.load((name + "_full").c_str(), Ni_full[dir], -1);
-            CH_assert(N_full > 0 || Ni[dir] > 0 ||
-                      Ni_full[dir] > 0); // one of the N's must be set
+            std::string name = ("N" + std::to_string(dir + 1));
+            std::string name_full = ("N" + std::to_string(dir + 1) + "_full");
+            Ni_full[dir] = -1;
+            Ni[dir] = -1;
+
+            // only one of them exists - this passes if none of the 4 exist, but
+            // that is asserted below
+            CH_assert(
+                ((N_full > 0 || N > 0) && !pp.contains(name.c_str()) &&
+                 !pp.contains(name_full.c_str())) ||
+                ((N_full < 0 && N < 0) && !(pp.contains(name.c_str()) &&
+                                            pp.contains(name_full.c_str()))));
+
+            if (N_full < 0 && N < 0)
+            {
+                if (pp.contains(name_full.c_str()))
+                    pp.load(name_full.c_str(), Ni_full[dir]);
+                else
+                    pp.load(name.c_str(), Ni[dir]);
+            }
+            CH_assert(N > 0 || N_full > 0 || Ni[dir] > 0 ||
+                      Ni_full[dir] > 0); // sanity check
+
+            if (N_full > 0)
+                Ni_full[dir] = N_full;
+            else if (N > 0)
+                Ni[dir] = N;
 
             if (Ni[dir] > 0)
                 Ni_full[dir] = Ni[dir];
             else
             {
-                if (N_full > 0)
-                    Ni_full[dir] = N_full;
-
                 if (boundary_params.lo_boundary[dir] ==
                         BoundaryConditions::REFLECTIVE_BC ||
                     boundary_params.hi_boundary[dir] ==
@@ -120,8 +141,16 @@ class ChomboParameters
         int max_N_full = *std::max_element(Ni_full.begin(), Ni_full.end());
         int max_N = ivN.max() + 1;
 
-        double L_full;
-        pp.load("L_full", L_full, -1.);
+        // Grid L
+        // cannot contain both
+        CH_assert(!(pp.contains("L_full") && pp.contains("L")));
+
+        double L_full = -1.;
+        if (pp.contains("L_full"))
+            pp.load("L_full", L_full);
+        else
+            pp.load("L", L, 1.0);
+
         if (L_full > 0.)
             // necessary for some reflective BC cases, as 'L' is the
             // length of the longest side of the box
@@ -133,6 +162,7 @@ class ChomboParameters
         dx.fill(coarsest_dx);
         origin.fill(coarsest_dx / 2.0);
 
+        // Grid center
         // now that L is surely set, get center
         pp.load("center", center,
                 {0.5 * Ni[0] * coarsest_dx, 0.5 * Ni[1] * coarsest_dx,
