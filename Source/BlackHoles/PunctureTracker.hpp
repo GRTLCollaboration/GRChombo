@@ -54,14 +54,7 @@ class PunctureTracker
     {
         return m_puncture_coords;
     }
-    /*
-        // function to get shift at puncture on previous timestep
-        inline const std::vector<std::array<double, CH_SPACEDIM>>
-        get_puncture_shift() const
-        {
-            return m_puncture_shift;
-        }
-    */
+
   private:
     //! set and write initial puncture locations
     void set_initial_punctures();
