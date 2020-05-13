@@ -1,0 +1,32 @@
+# This make defs file is for Mac OS Catalina
+# It assumes that you have used homebrew to install
+# the relevant packages as indicated for the commands below
+# You should also have obtained up to date Xcode command line tools
+# using 'xcode-select --install'
+DIM             = 3
+DEBUG           = TRUE
+OPT             = TRUE
+PRECISION       = DOUBLE
+USE_64          = TRUE
+# brew install gcc
+CXX             = g++-9
+FC              = gfortran-9
+# brew install libomp
+OPENMPCC        = TRUE
+# brew install mpich
+MPI             = TRUE
+MPI_DIR         = /usr/local/Cellar/mpich/3.3.2
+MPICXX          = g++-9 -I${MPI_DIR}/include -lmpi
+# brew install hdf5 is fine for serial builds
+USE_HDF         = TRUE
+HDF5_DIR = /usr/local/Cellar/hdf5/1.12.0
+HDFINCFLAGS     = -I${HDF5_DIR}/include
+HDFLIBFLAGS     = -L${HDF5_DIR}/lib -lhdf5 -lz
+# hdf5 v1.10 library downloaded and built using CMake with --enable-parallel
+# (see also the hdf5_cmake_configure.sh script)
+HDF5_PARALLEL_DIR = /usr/local/Cellar/hdf5-parallel
+HDFMPIINCFLAGS  = -I${HDF5_PARALLEL_DIR}/include
+HDFMPILIBFLAGS  = -L${HDF5_PARALLEL_DIR}/lib -lhdf5 -lz
+cxxoptflags     = -march=native -O3
+foptflags       = -march=native -O3
+syslibflags     = -lblas -llapack -L${MPI_DIR}/lib -framework Accelerate

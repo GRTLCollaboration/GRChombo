@@ -66,8 +66,9 @@ void KerrBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
 
     // Calculate CCZ4 right hand side and set constraints to zero to avoid
     // undefined values
-    BoxLoops::loop(make_compute_pack(CCZ4(m_p.ccz4_params, m_dx, m_p.sigma),
-                                     SetValue(0, Interval(c_Ham, c_Mom3))),
+    BoxLoops::loop(make_compute_pack(
+                       CCZ4(m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
+                       SetValue(0, Interval(c_Ham, c_Mom3))),
                    a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
 }
 
@@ -76,13 +77,6 @@ void KerrBHLevel::specificUpdateODE(GRLevelData &a_soln,
 {
     // Enforce the trace free A_ij condition
     BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
-}
-
-// Specify which variables to write at plot intervals
-void KerrBHLevel::specificWritePlotHeader(std::vector<int> &plot_states) const
-{
-    // Specify the variables we want to output as plot
-    plot_states = {c_chi, c_K, c_lapse, c_shift1};
 }
 
 void KerrBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
