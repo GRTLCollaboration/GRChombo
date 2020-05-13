@@ -44,12 +44,12 @@ class ADMMassExtraction : public SphericalExtraction
     //! Execute the query
     void execute_query(AMRInterpolator<Lagrange<4>> *a_interpolator)
     {
-        // extract the values of the Weyl scalars on the spheres
+        // extract the values of the ADM mass and spin on the spheres
         extract(a_interpolator);
 
         if (m_params.write_extraction)
         {
-            write_extraction("Weyl4ExtractionOut_");
+            write_extraction("MadmExtractionOut_");
         }
 
         // now calculate and write the requested spherical harmonic modes

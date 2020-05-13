@@ -40,7 +40,7 @@ class ADMMass
     ADMMass(const std::array<double, CH_SPACEDIM> &a_center, double a_dx,
             DIR spin_direction = Z, double a_G_Newton = 1.0)
         : m_deriv(a_dx), m_center(a_center), m_G_Newton(a_G_Newton),
-          dir(spin_direction)
+          m_dir(spin_direction)
     {
     }
 
@@ -87,7 +87,7 @@ class ADMMass
         // assign values of ADMMass in output box
         current_cell.store_vars(Madm, c_Madm);
 
-        if (dir == NONE)
+        if (m_dir == NONE)
             return;
 
         // spin about z axis
@@ -100,13 +100,13 @@ class ADMMass
         FOR3(i, j, k)
         {
             Jadm += -dS_L[i] / (8. * M_PI * m_G_Newton) *
-                    epsilon[dir - 1][j][k] * x[j] * vars.K *
+                    epsilon[m_dir - 1][j][k] * x[j] * vars.K *
                     TensorAlgebra::delta(i, k);
 
             FOR2(l, m)
             {
                 Jadm += dS_L[i] / (8. * M_PI * m_G_Newton) *
-                        epsilon[dir - 1][j][k] * x[j] * h_UU[i][l] *
+                        epsilon[m_dir - 1][j][k] * x[j] * h_UU[i][l] *
                         h_UU[k][m] * vars.chi *
                         (vars.A[l][m] + vars.K * vars.h[l][m] / 3.);
             }
@@ -120,7 +120,7 @@ class ADMMass
     const std::array<double, CH_SPACEDIM> &m_center;
     const double m_G_Newton; //!< Newton's constant
 
-    DIR dir;
+    DIR m_dir;
 };
 
 #endif /* ADMMASS_HPP_ */

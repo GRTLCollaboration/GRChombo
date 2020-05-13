@@ -65,6 +65,7 @@ vars_parity            = 0 0 4 6 0 5 0    #chi and hij
                          0 1 2 3          #Theta and Gamma
                          0 1 2 3 1 2 3    #lapse shift and B
 vars_parity_diagnostic = 0 1 2 3          #Ham and Mom
+                         0 0              #ADM M and J
 
 # if sommerfeld boundaries selected, must select
 # non zero asymptotic values
@@ -104,7 +105,7 @@ covariantZ4 = 1 # 0: keep kappa1; 1 [default]: replace kappa1 -> kappa1/lapse
 sigma = 0.3
 
 #extraction params
-activate_extraction = 0
+activate_extraction = 1
 num_extraction_radii = 3
 extraction_radii = 30. 40. 50.
 extraction_levels = 2 1 0

@@ -6,7 +6,7 @@
 #include "KerrBHLevel.hpp"
 #include "BoxLoops.hpp"
 #include "CCZ4RHS.hpp"
-#include "ChiTaggingCriterion.hpp"
+#include "ChiExtractionTaggingCriterion.hpp"
 #include "ComputePack.hpp"
 #include "KerrBHLevel.hpp"
 #include "NanCheck.hpp"
@@ -100,23 +100,35 @@ void KerrBHLevel::preTagCells()
 void KerrBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                           const FArrayBox &current_state)
 {
-    BoxLoops::loop(ChiTaggingCriterion(m_dx), current_state, tagging_criterion);
+    BoxLoops::loop(ChiExtractionTaggingCriterion(m_dx, m_level, m_p.max_level,
+                                                 m_p.extraction_params,
+                                                 m_p.activate_extraction),
+                   current_state, tagging_criterion);
 }
 
 void KerrBHLevel::specificPostTimeStep()
 {
     CH_TIME("KerrBHLevel::specificPostTimeStep");
+    // Do the extraction on the min extraction level
     if (m_p.activate_extraction == 1)
     {
-        // Populate the Weyl Scalar values on the grid
+        auto min_level = m_p.extraction_params.min_extraction_level();
+
+        // ensure ADM Mass is only calculated on full cycles of 'min_level'
+        double extraction_dt = m_dt * pow(2., m_level - min_level);
+        double finest_dt = m_dt * pow(2., m_level - m_p.max_level);
+        if (fabs(remainder(m_time, extraction_dt)) > finest_dt / 2.)
+            return;
+
+        // Populate the ADM Mass and Spin values on the grid
         fillAllGhosts();
         BoxLoops::loop(ADMMass(m_p.extraction_params.center, m_dx), m_state_new,
                        m_state_new, EXCLUDE_GHOST_CELLS);
 
-        // Do the extraction on the min extraction level
-        if (m_level == m_p.extraction_params.min_extraction_level())
+        if (m_level == min_level)
         {
             CH_TIME("ADMExtraction");
+
             // Now refresh the interpolator and do the interpolation
             m_gr_amr.m_interpolator->refresh();
             ADMMassExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
