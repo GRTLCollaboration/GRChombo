@@ -16,6 +16,8 @@ RealCleanExampleDirs := $(ExampleDirs:%=realclean-%)
 
 export GRCHOMBO_SOURCE = $(shell pwd)/Source
 
+ECHO?=@ # set this to null on the command line to increase verbosity
+
 test: $(TestDirs)
 
 run: test $(RunTestDirs)
@@ -30,24 +32,24 @@ realclean: $(RealCleanTestDirs) $(RealCleanExampleDirs)
 
 $(TestDirs):
 	$(info ################# Making test $@ #################)
-	$(MAKE) -C $@ all
+	$(ECHO)$(MAKE) -C $@ --no-print-directory all
 
 $(RunTestDirs):
 	$(info ################# Running test $@ #################)
-	$(MAKE) -C $(@:run-%=%) run
+	$(ECHO)$(MAKE) -C $(@:run-%=%) --no-print-directory run
 
 $(ExampleDirs):
 	$(info ################# Making example $@ #################)
-	$(MAKE) -C $@ all
+	$(ECHO)$(MAKE) -C $@ --no-print-directory all
 
 $(CleanTestDirs):
-	$(MAKE) -C $(@:clean-%=%) clean NODEPENDS=TRUE
+	$(ECHO)$(MAKE) -C $(@:clean-%=%) --no-print-directory clean NODEPENDS=TRUE
 
 $(CleanExampleDirs):
-	$(MAKE) -C $(@:clean-%=%) clean NODEPENDS=TRUE
+	$(ECHO)$(MAKE) -C $(@:clean-%=%) --no-print-directory clean NODEPENDS=TRUE
 
 $(RealCleanTestDirs):
-	$(MAKE) -C $(@:realclean-%=%) realclean NODEPENDS=TRUE
+	$(ECHO)$(MAKE) -C $(@:realclean-%=%) --no-print-directory realclean NODEPENDS=TRUE
 
 $(RealCleanExampleDirs):
-	$(MAKE) -C $(@:realclean-%=%) realclean NODEPENDS=TRUE
+	$(ECHO)$(MAKE) -C $(@:realclean-%=%) --no-print-directory realclean NODEPENDS=TRUE
