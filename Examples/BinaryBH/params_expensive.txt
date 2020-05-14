@@ -26,7 +26,8 @@ regrid_interval = 512 256 32 16 8 4 2 2 2
 isPeriodic = 1 1 1
 
 #Max and min box sizes
-max_grid_size = 32
+# max_grid_size = 32
+max_grid_size = 16
 block_factor = 16
 tag_buffer_size = 3
 
@@ -34,14 +35,14 @@ tag_buffer_size = 3
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 
-checkpoint_interval = 4
+checkpoint_interval = -1
 # set to zero to turn off plot files
 plot_interval = 0
 num_plot_vars = 3
 plot_vars = chi Weyl4_Re Weyl4_Im
 dt_multiplier = 0.25
 stop_time = 1.0
-max_steps = 2
+max_steps = 40
 
 nan_check = 1
 
