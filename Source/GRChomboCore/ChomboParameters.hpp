@@ -80,7 +80,8 @@ class ChomboParameters
         ivN = IntVect::Unit;
 
         // cannot contain both
-        CH_assert(!(pp.contains("N_full") && pp.contains("N")));
+        if ((pp.contains("N_full") && pp.contains("N")))
+            MayDay::Error("Please only provide 'N' or 'N_full', not both");
 
         int N_full = -1;
         int N = -1;
@@ -100,11 +101,12 @@ class ChomboParameters
 
             // only one of them exists - this passes if none of the 4 exist, but
             // that is asserted below
-            CH_assert(
-                ((N_full > 0 || N > 0) && !pp.contains(name.c_str()) &&
-                 !pp.contains(name_full.c_str())) ||
-                ((N_full < 0 && N < 0) && !(pp.contains(name.c_str()) &&
-                                            pp.contains(name_full.c_str()))));
+            if (!((N_full > 0 || N > 0) && !pp.contains(name.c_str()) &&
+                  !pp.contains(name_full.c_str())) &&
+                !((N_full < 0 && N < 0) && !(pp.contains(name.c_str()) &&
+                                             pp.contains(name_full.c_str()))))
+                MayDay::Error("Please provide 'N' or 'N_full' or a set of "
+                              "'N1/N1_full', 'N2/N2_full', 'N3/N3_full'");
 
             if (N_full < 0 && N < 0)
             {
@@ -113,8 +115,10 @@ class ChomboParameters
                 else
                     pp.load(name.c_str(), Ni[dir]);
             }
-            CH_assert(N > 0 || N_full > 0 || Ni[dir] > 0 ||
-                      Ni_full[dir] > 0); // sanity check
+            if (N < 0 && N_full < 0 && Ni[dir] < 0 &&
+                Ni_full[dir] < 0) // sanity check
+                MayDay::Error("Please provide 'N' or 'N_full' or a set of "
+                              "'N1/N1_full', 'N2/N2_full', 'N3/N3_full'");
 
             if (N_full > 0)
                 Ni_full[dir] = N_full;
@@ -130,7 +134,10 @@ class ChomboParameters
                     boundary_params.hi_boundary[dir] ==
                         BoundaryConditions::REFLECTIVE_BC)
                 {
-                    CH_assert(Ni_full[dir] % 2 == 0); // Ni_full is even
+                    if (Ni_full[dir] % 2 != 0) // Ni_full is even
+                        MayDay::Error("N's should be even when applying "
+                                      "reflective boundary conditions");
+
                     Ni[dir] = Ni_full[dir] / 2;
                 }
                 else
@@ -143,7 +150,8 @@ class ChomboParameters
 
         // Grid L
         // cannot contain both
-        CH_assert(!(pp.contains("L_full") && pp.contains("L")));
+        if ((pp.contains("L_full") && pp.contains("L")))
+            MayDay::Error("Please only provide 'L' or 'L_full', not both");
 
         double L_full = -1.;
         if (pp.contains("L_full"))
@@ -171,9 +179,13 @@ class ChomboParameters
         FOR1(idir)
         {
             if ((boundary_params.lo_boundary[idir] ==
+                 BoundaryConditions::REFLECTIVE_BC) &&
+                (boundary_params.hi_boundary[idir] !=
                  BoundaryConditions::REFLECTIVE_BC))
                 center[idir] = 0.;
             else if ((boundary_params.hi_boundary[idir] ==
+                      BoundaryConditions::REFLECTIVE_BC) &&
+                     (boundary_params.lo_boundary[idir] !=
                       BoundaryConditions::REFLECTIVE_BC))
                 center[idir] = coarsest_dx * Ni[idir];
         }

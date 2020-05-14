@@ -138,9 +138,10 @@ class SimulationParametersBase : public ChomboParameters
                         (ivN[i] + 1) * coarsest_dx -
                     extraction_params.center[i];
             }
-            CH_assert(radius <
-                      *std::min_element(axis_distance_to_boundary.begin(),
-                                        axis_distance_to_boundary.end()));
+            if (radius >= *std::min_element(axis_distance_to_boundary.begin(),
+                                            axis_distance_to_boundary.end()))
+                MayDay::Error(
+                    "Extraction radii go being the box's upper boundary");
 
             // lower boundary
             FOR1(i)
@@ -153,9 +154,10 @@ class SimulationParametersBase : public ChomboParameters
                          : 0.) *
                         (ivN[i] + 1) * coarsest_dx;
             }
-            CH_assert(radius <
-                      *std::min_element(axis_distance_to_boundary.begin(),
-                                        axis_distance_to_boundary.end()));
+            if (radius >= *std::min_element(axis_distance_to_boundary.begin(),
+                                            axis_distance_to_boundary.end()))
+                MayDay::Error(
+                    "Extraction radii go being the box's lower boundary");
         }
     }
 
