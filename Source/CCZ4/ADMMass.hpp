@@ -90,6 +90,12 @@ class ADMMass
         if (m_dir == NONE)
             return;
 
+        // user should be able to run this just for the ADM mass
+        auto int_Jadm = ChomboParameters::variable_name_to_enum("Jadm");
+        if (int_Jadm < 0)
+            MayDay::Error("Please include 'c_Jadm' in UserVariables with name "
+                          "'Jadm'");
+
         // spin about z axis
         data_t Jadm = 0.0;
 
@@ -111,7 +117,7 @@ class ADMMass
                         (vars.A[l][m] + vars.K * vars.h[l][m] / 3.);
             }
         }
-        current_cell.store_vars(Jadm, c_Jadm);
+        current_cell.store_vars(Jadm, int_Jadm);
     }
 
   protected:

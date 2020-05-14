@@ -128,7 +128,6 @@ void KerrBHLevel::specificPostTimeStep()
         if (m_level == min_level)
         {
             CH_TIME("ADMExtraction");
-
             // Now refresh the interpolator and do the interpolation
             m_gr_amr.m_interpolator->refresh();
             ADMMassExtraction my_extraction(m_p.extraction_params, m_dt, m_time,

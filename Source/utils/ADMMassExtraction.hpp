@@ -28,7 +28,15 @@ class ADMMassExtraction : public SphericalExtraction
     {
         add_var(c_Madm);
         if (extract_J)
-            add_var(c_Jadm);
+        {
+            // user should be able to run this just for the ADM mass
+            auto int_Jadm = ChomboParameters::variable_name_to_enum("Jadm");
+            if (int_Jadm < 0)
+                MayDay::Error(
+                    "Please include 'c_Jadm' in UserVariables with name "
+                    "'Jadm'");
+            add_var(int_Jadm);
+        }
     }
 
     //! The old constructor which assumes it is called in specificPostTimeStep
