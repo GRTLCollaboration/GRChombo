@@ -195,19 +195,14 @@ void PunctureTracker::interp_shift()
         interp_z[ipuncture] = m_puncture_coords[ipuncture][2];
     }
 
-    auto shift1 = ChomboParameters::variable_name_to_enum("shift1");
-    CH_assert(shift1 >= 0);
-
     // setup query
     InterpolationQuery query(m_num_punctures);
     query.setCoords(0, interp_x.data())
         .setCoords(1, interp_y.data())
         .setCoords(2, interp_z.data())
-        .addComp(shift1, interp_shift1.data())
-        .addComp(ChomboParameters::variable_name_to_enum("shift2"),
-                 interp_shift2.data())
-        .addComp(ChomboParameters::variable_name_to_enum("shift3"),
-                 interp_shift3.data());
+        .addComp(c_shift1, interp_shift1.data())
+        .addComp(c_shift2, interp_shift2.data())
+        .addComp(c_shift3, interp_shift3.data());
 
     // engage!
     m_interpolator->interp(query);
