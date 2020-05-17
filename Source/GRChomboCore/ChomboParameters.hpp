@@ -49,6 +49,9 @@ class ChomboParameters
 
         // Periodicity and boundaries
         pp.load("isPeriodic", isPeriodic, {true, true, true});
+
+        // TODO: MOVE ALL BCS TO NEW FUNCTION read_boundary_params, using
+        // var name to enum
         int bc = BoundaryConditions::STATIC_BC;
         pp.load("hi_boundary", boundary_params.hi_boundary, {bc, bc, bc});
         pp.load("lo_boundary", boundary_params.lo_boundary, {bc, bc, bc});
@@ -96,7 +99,11 @@ class ChomboParameters
                 if ((boundary_params.hi_boundary[idir] ==
                      BoundaryConditions::EXTRAPOLATING_BC) ||
                     (boundary_params.lo_boundary[idir] ==
-                     BoundaryConditions::EXTRAPOLATING_BC))
+                     BoundaryConditions::EXTRAPOLATING_BC) ||
+                    (boundary_params.hi_boundary[idir] ==
+                     BoundaryConditions::MIXED_BC) ||
+                    (boundary_params.lo_boundary[idir] ==
+                     BoundaryConditions::MIXED_BC))
                 {
                     boundary_solution_enforced = true;
                     pp.load("extrapolation_order",
@@ -105,10 +112,23 @@ class ChomboParameters
                 if ((boundary_params.hi_boundary[idir] ==
                      BoundaryConditions::SOMMERFELD_BC) ||
                     (boundary_params.lo_boundary[idir] ==
-                     BoundaryConditions::SOMMERFELD_BC))
+                     BoundaryConditions::SOMMERFELD_BC) ||
+                    (boundary_params.hi_boundary[idir] ==
+                     BoundaryConditions::MIXED_BC) ||
+                    (boundary_params.lo_boundary[idir] ==
+                     BoundaryConditions::MIXED_BC))
                 {
                     pp.load("vars_asymptotic_values",
                             boundary_params.vars_asymptotic_values);
+                }
+                if ((boundary_params.hi_boundary[idir] ==
+                     BoundaryConditions::MIXED_BC) ||
+                    (boundary_params.lo_boundary[idir] ==
+                     BoundaryConditions::MIXED_BC))
+                {
+                    // FIXME: load in boundary_params members
+                    // std::vector<int> mixed_bc_extrapolating_vars;
+                    // std::vector<int> mixed_bc_sommerfeld_vars;
                 }
             }
         }
