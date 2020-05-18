@@ -74,7 +74,7 @@ void BoundaryConditions::write_mixed_conditions(int idir, params_t a_params)
     // check all the vars have been assigned a BC - this should always be the
     // case because of how the params are assigned
     CH_assert(a_params.mixed_bc_sommerfeld_vars.size() +
-                  a_params.mixed_bc_extrapolating_vars.size() !=
+                  a_params.mixed_bc_extrapolating_vars.size() ==
               NUM_VARS)
 
         // now do the write out
