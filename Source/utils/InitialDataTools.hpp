@@ -16,8 +16,8 @@ namespace InitialDataTools
 // coords
 template <class data_t>
 static Tensor<2, data_t>
-    spherical_to_cartesian_LL(Tensor<2, data_t> spherical_g, data_t x, double y,
-                              double z)
+spherical_to_cartesian_LL(Tensor<2, data_t> spherical_g, data_t x, double y,
+                          double z)
 {
     Tensor<2, data_t> cartesian_g;
 

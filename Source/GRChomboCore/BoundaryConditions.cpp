@@ -58,9 +58,7 @@ void BoundaryConditions::write_reflective_conditions(int idir,
 void BoundaryConditions::write_sommerfeld_conditions(int idir,
                                                      params_t a_params)
 {
-    pout() << "The non zero asymptotic values of the variables "
-              "in this direction are : "
-           << endl;
+    pout() << "The non zero asymptotic values of the variables are : " << endl;
     for (int icomp = 0; icomp < NUM_VARS; icomp++)
     {
         if (a_params.vars_asymptotic_values[icomp] != 0)
@@ -73,24 +71,14 @@ void BoundaryConditions::write_sommerfeld_conditions(int idir,
 
 void BoundaryConditions::write_mixed_conditions(int idir, params_t a_params)
 {
-    // check all the vars have been assigned a BC
-    if (a_params.mixed_bc_sommerfeld_vars.size() +
-            a_params.mixed_bc_extrapolating_vars.size() !=
-        NUM_VARS)
-    {
-        MayDay::Error("Mixed BCs: boundary type not assigned for all vars.");
-    }
-    pout() << "The variables that use sommerfeld bcs in this direction are : "
-           << endl;
-    for (int icomp = 0; icomp < NUM_VARS; icomp++)
-    {
-        std::vector<int> v = a_params.mixed_bc_sommerfeld_vars;
-        if (std::binary_search(v.begin(), v.end(), icomp))
-        {
-            pout() << UserVariables::variable_names[icomp] << "    ";
-        }
-    }
-    pout()
+    // check all the vars have been assigned a BC - this should always be the
+    // case because of how the params are assigned
+    CH_assert(a_params.mixed_bc_sommerfeld_vars.size() +
+                  a_params.mixed_bc_extrapolating_vars.size() !=
+              NUM_VARS)
+
+        // now do the write out
+        pout()
         << "The variables that use extrapolating bcs in this direction are : "
         << endl;
     for (int icomp = 0; icomp < NUM_VARS; icomp++)
@@ -101,6 +89,10 @@ void BoundaryConditions::write_mixed_conditions(int idir, params_t a_params)
             pout() << UserVariables::variable_names[icomp] << "    ";
         }
     }
+    pout() << endl;
+    pout() << "The other variables all use Sommerfeld boundary conditions."
+           << endl;
+    write_sommerfeld_conditions(idir, a_params);
 }
 
 /// write out boundary params (used during setup for debugging)
@@ -133,7 +125,6 @@ void BoundaryConditions::write_boundary_conditions(params_t a_params)
             else if (a_params.hi_boundary[idir] == MIXED_BC)
             {
                 write_mixed_conditions(idir, a_params);
-                write_sommerfeld_conditions(idir, a_params);
             }
             pout() << endl;
 
@@ -151,7 +142,6 @@ void BoundaryConditions::write_boundary_conditions(params_t a_params)
             else if (a_params.lo_boundary[idir] == MIXED_BC)
             {
                 write_mixed_conditions(idir, a_params);
-                write_sommerfeld_conditions(idir, a_params);
             }
             pout() << endl;
         }

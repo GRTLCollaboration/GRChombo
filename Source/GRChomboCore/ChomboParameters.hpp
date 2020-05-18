@@ -49,9 +49,65 @@ class ChomboParameters
 
         // Periodicity and boundaries
         pp.load("isPeriodic", isPeriodic, {true, true, true});
+        read_boundary_params(pp);
+        pout()
+            << "After applying boundary conditions, center has been set to: ";
+        FOR1(idir) { pout() << center[idir] << " "; }
+        pout() << endl;
 
-        // TODO: MOVE ALL BCS TO NEW FUNCTION read_boundary_params, using
-        // var name to enum
+        // Misc
+        pp.load("ignore_checkpoint_name_mismatch",
+                ignore_checkpoint_name_mismatch, false);
+
+        pp.load("max_level", max_level, 0);
+        // the reference ratio is hard coded to 2 on all levels
+        // in principle it can be set to other values, but this is
+        // not recommended since we do not test GRChombo with other
+        // refinement ratios - use other values at your own risk
+        ref_ratios.resize(max_level + 1);
+        ref_ratios.assign(2);
+        // read in frequency of regrid on each levels, needs
+        // max_level + 1 entries (although never regrids on max_level+1)
+        pp.getarr("regrid_interval", regrid_interval, 0, max_level + 1);
+
+        // time stepping outputs and regrid data
+        pp.load("checkpoint_interval", checkpoint_interval, 1);
+        pp.load("chk_prefix", checkpoint_prefix);
+        pp.load("plot_interval", plot_interval, 0);
+        pp.load("plot_prefix", plot_prefix);
+        pp.load("stop_time", stop_time, 1.0);
+        pp.load("max_steps", max_steps, 1000000);
+        pp.load("write_plot_ghosts", write_plot_ghosts, false);
+
+        // load vars to write to plot files
+        load_vars_to_vector(pp, "plot_vars", "num_plot_vars", plot_vars,
+                            num_plot_vars);
+
+        // alias the weird chombo names to something more descriptive
+        // for these box params, and default to some reasonable values
+        if (pp.contains("max_grid_size"))
+        {
+            pp.load("max_grid_size", max_grid_size);
+        }
+        else
+        {
+            pp.load("max_box_size", max_grid_size, 64);
+        }
+        if (pp.contains("block_factor"))
+        {
+            pp.load("block_factor", block_factor);
+        }
+        else
+        {
+            pp.load("min_box_size", block_factor, 8);
+        }
+    }
+
+    // read in of the boundary conditions - this is quite long
+    // so kept separate for readability
+    void read_boundary_params(GRParmParse &pp)
+    {
+        // default to static BCs if unspecified in params
         int bc = BoundaryConditions::STATIC_BC;
         pp.load("hi_boundary", boundary_params.hi_boundary, {bc, bc, bc});
         pp.load("lo_boundary", boundary_params.lo_boundary, {bc, bc, bc});
@@ -62,6 +118,8 @@ class ChomboParameters
         boundary_params.extrapolation_order = 0;
         nonperiodic_boundaries_exist = false;
         boundary_solution_enforced = false;
+        boundary_params.mixed_bc_extrapolating_vars.clear();
+        boundary_params.mixed_bc_sommerfeld_vars.clear();
         FOR1(idir)
         {
             if (isPeriodic[idir] == false)
@@ -118,86 +176,113 @@ class ChomboParameters
                     (boundary_params.lo_boundary[idir] ==
                      BoundaryConditions::MIXED_BC))
                 {
-                    pp.load("vars_asymptotic_values",
-                            boundary_params.vars_asymptotic_values);
+                    int num_values = 0;
+                    std::vector<int> nonzero_asymptotic_vars;
+                    load_vars_to_vector(pp, "nonzero_asymptotic_vars",
+                                        "num_nonzero_asymptotic_vars",
+                                        nonzero_asymptotic_vars, num_values);
+                    load_values_to_array(pp, "nonzero_asymptotic_values",
+                                         nonzero_asymptotic_vars,
+                                         boundary_params.vars_asymptotic_values,
+                                         0.0);
+
+                    // for backwards compatibility, but previous method should
+                    // be preferred in future
+                    if (num_values == 0)
+                    {
+                        pp.load("vars_asymptotic_values",
+                                boundary_params.vars_asymptotic_values);
+                    }
                 }
                 if ((boundary_params.hi_boundary[idir] ==
                      BoundaryConditions::MIXED_BC) ||
                     (boundary_params.lo_boundary[idir] ==
                      BoundaryConditions::MIXED_BC))
                 {
-                    // FIXME: load in boundary_params members
-                    // std::vector<int> mixed_bc_extrapolating_vars;
-                    // std::vector<int> mixed_bc_sommerfeld_vars;
+                    // only read in these params once, even if specified in
+                    // several directions. They must be the same for all.
+                    if (boundary_params.mixed_bc_extrapolating_vars.size() > 0)
+                        break;
+
+                    // if not yet done, read in the mixed conditions
+                    int num_extrapolating_vars = 0;
+                    load_vars_to_vector(
+                        pp, "extrapolating_vars", "num_extrapolating_vars",
+                        boundary_params.mixed_bc_extrapolating_vars,
+                        num_extrapolating_vars);
+                    for (int icomp = 0; icomp < NUM_VARS; icomp++)
+                    {
+                        // if the variable is not in extrapolating vars, it is
+                        // assumed to be sommerfeld by default
+                        std::vector<int> v =
+                            boundary_params.mixed_bc_extrapolating_vars;
+                        if (!(std::binary_search(v.begin(), v.end(), icomp)))
+                        {
+                            boundary_params.mixed_bc_sommerfeld_vars.push_back(
+                                icomp);
+                        }
+                    }
                 }
             }
         }
-        pout() << "Center has been set to: ";
-        FOR1(idir) { pout() << center[idir] << " "; }
-        pout() << endl;
 
+        // write out boundary conditions where non periodic - useful for debug
         if (nonperiodic_boundaries_exist)
         {
-            // write out boundary conditions where non periodic - useful for
-            // debug
             BoundaryConditions::write_boundary_conditions(boundary_params);
         }
+    }
 
-        // Misc
-        pp.load("ignore_checkpoint_name_mismatch",
-                ignore_checkpoint_name_mismatch, false);
-
-        pp.load("max_level", max_level, 0);
-        // the reference ratio is hard coded to 2 on all levels
-        // in principle it can be set to other values, but this is
-        // not recommended since we do not test GRChombo with other
-        // refinement ratios - use other values at your own risk
-        ref_ratios.resize(max_level + 1);
-        ref_ratios.assign(2);
-        // read in frequency of regrid on each levels, needs
-        // max_level + 1 entries (although never regrids on max_level+1)
-        pp.getarr("regrid_interval", regrid_interval, 0, max_level + 1);
-
-        // time stepping outputs and regrid data
-        pp.load("checkpoint_interval", checkpoint_interval, 1);
-        pp.load("chk_prefix", checkpoint_prefix);
-        pp.load("plot_interval", plot_interval, 0);
-        pp.load("plot_prefix", plot_prefix);
-        pp.load("stop_time", stop_time, 1.0);
-        pp.load("max_steps", max_steps, 1000000);
-        pp.load("write_plot_ghosts", write_plot_ghosts, false);
-
-        // load vars to write to plot files
-        pp.load("num_plot_vars", num_plot_vars, 0);
-        std::vector<std::string> plot_var_names(num_plot_vars, "");
-        pp.load("plot_vars", plot_var_names, num_plot_vars, plot_var_names);
-        for (std::string var_name : plot_var_names)
+    // function to load enums of vars into a vector by reading in the
+    // names as strings from the params file
+    void load_vars_to_vector(GRParmParse &pp, const char *a_vars_vector_string,
+                             const char *a_vars_vector_size_string,
+                             std::vector<int> &a_vars_vector,
+                             int &a_vars_vector_size)
+    {
+        int num_values;
+        pp.load(a_vars_vector_size_string, num_values, 0);
+        std::vector<std::string> var_names(num_values, "");
+        pp.load(a_vars_vector_string, var_names, num_values, var_names);
+        for (std::string var_name : var_names)
         {
             int var = variable_name_to_enum(var_name);
             if (var >= 0 && var < NUM_VARS)
             {
-                plot_vars.push_back(var);
+                a_vars_vector.push_back(var);
+            }
+            else
+            {
+                pout() << "Warning: in params.txt you have selected a variable "
+                       << var_name
+                       << " which does not exist. This will be ignored."
+                       << std::endl;
             }
         }
-        num_plot_vars = plot_vars.size();
+        // overwrites read in value if entries have been ignored
+        a_vars_vector_size = a_vars_vector.size();
+    }
 
-        // alias the weird chombo names to something more descriptive
-        // for these box params, and default to some reasonable values
-        if (pp.contains("max_grid_size"))
+    // where one has read in a subset of variables with some double value
+    // this reads in their associated values and assigns it into the full
+    // array for all NUM_VARS (setting other values to a default value)
+    template <class T>
+    void load_values_to_array(GRParmParse &pp,
+                              const char *a_values_vector_string,
+                              const std::vector<int> &a_vars_vector,
+                              std::array<double, NUM_VARS> &a_values_array,
+                              T a_default_value)
+    {
+        int num_values = a_vars_vector.size();
+        std::vector<T> vars_values(num_values, a_default_value);
+        pp.load(a_values_vector_string, vars_values, num_values, vars_values);
+
+        // populate the array for the NUM_VARS values with those read in
+        a_values_array.fill(a_default_value);
+        for (int i = 0; i < num_values; i++)
         {
-            pp.load("max_grid_size", max_grid_size);
-        }
-        else
-        {
-            pp.load("max_box_size", max_grid_size, 64);
-        }
-        if (pp.contains("block_factor"))
-        {
-            pp.load("block_factor", block_factor);
-        }
-        else
-        {
-            pp.load("min_box_size", block_factor, 8);
+            int icomp = a_vars_vector[i];
+            a_values_array[icomp] = vars_values[i];
         }
     }
 
