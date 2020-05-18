@@ -90,7 +90,7 @@ template <class matter_t> class MatterCCZ4 : public CCZ4
         const Vars<data_t> &vars, //!< the value of the variables at the point.
         const Vars<Tensor<1, data_t>>
             &d1 //!< the value of the first derivatives of the variables.
-    ) const;
+        ) const;
 
     // Class members
     matter_t my_matter;      //!< The matter object, e.g. a scalar field.

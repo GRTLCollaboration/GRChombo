@@ -75,7 +75,7 @@ template <class matter_t> class ChiRelaxation
             &d2, //!< the value of the second derivatives of the variables.
         const Vars<data_t>
             &advec //!< advec the value of the advection terms beta^i d_i(var)
-    ) const;
+        ) const;
 };
 
 #include "ChiRelaxation.impl.hpp"
