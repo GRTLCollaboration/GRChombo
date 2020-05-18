@@ -233,8 +233,8 @@ class ChomboParameters
         }
     }
 
-    // function to load enums of vars into a vector by reading in the
-    // names as strings from the params file
+    // function to create a vector of enums of vars by reading in their
+    // names as strings from the params file and converting it to the enums
     void load_vars_to_vector(GRParmParse &pp, const char *a_vars_vector_string,
                              const char *a_vars_vector_size_string,
                              std::vector<int> &a_vars_vector,
@@ -263,21 +263,23 @@ class ChomboParameters
         a_vars_vector_size = a_vars_vector.size();
     }
 
-    // where one has read in a subset of variables with some double value
-    // this reads in their associated values and assigns it into the full
-    // array for all NUM_VARS (setting other values to a default value)
+    // where one has read in a subset of variables with some feature
+    // this reads in a set of associated values and assigns it into a full
+    // array of all NUM_VARS vars (setting other values to a default value)
     template <class T>
     void load_values_to_array(GRParmParse &pp,
                               const char *a_values_vector_string,
                               const std::vector<int> &a_vars_vector,
                               std::array<double, NUM_VARS> &a_values_array,
-                              T a_default_value)
+                              const T a_default_value)
     {
+        // how many values do I need to get?
         int num_values = a_vars_vector.size();
+        // make a container for them, and load
         std::vector<T> vars_values(num_values, a_default_value);
         pp.load(a_values_vector_string, vars_values, num_values, vars_values);
 
-        // populate the array for the NUM_VARS values with those read in
+        // populate the values_array for the NUM_VARS values with those read in
         a_values_array.fill(a_default_value);
         for (int i = 0; i < num_values; i++)
         {
