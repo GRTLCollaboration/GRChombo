@@ -6,15 +6,14 @@ tags:
   - numerical relativity
 authors:
   - name: Katy Clough
-    orcid: 0000-0000-0000-xxxx
+    orcid: 0000-0000-0000-0000
     affiliation: 1
   - name: Pau Figueras
-    orcid: 0000-0000-0000-xxxx
+    orcid: 0000-0000-0000-0000
     affiliation: 2
   - name: Eugene A. Lim
-    orcid: 0000-0000-0000-xxxx
+    orcid: 0000-0000-0000-0000
     affiliation: 3
-
 affiliations:
  - name: Oxford University
    index: 1
@@ -24,6 +23,8 @@ affiliations:
    index: 3
 date: 1 June 2020
 bibliography: paper.bib
+
+---
 
 # Summary
 
