@@ -161,16 +161,12 @@ void BinaryBHLevel::specificPostTimeStep()
     if (m_p.track_punctures == 1 && m_level == m_p.puncture_tracking_level)
     {
         CH_TIME("PunctureTracking");
-        // only do the write out for every coarsest level timestep
-        bool write_punctures = false;
-        const double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
-        const double remainder = fmod(m_time, coarsest_dt);
         PunctureTracker my_punctures(m_time, m_restart_time, m_dt,
                                      m_p.checkpoint_prefix);
-        if (min(abs(remainder), abs(remainder - coarsest_dt)) < 1.0e-8)
-        {
-            write_punctures = true;
-        }
+
+        // only do the write out for every coarsest level timestep
+        int coarsest_level = 0;
+        bool write_punctures = at_level_timestep_multiple(coarsest_level);
         my_punctures.execute_tracking(m_bh_amr, write_punctures);
     }
 }

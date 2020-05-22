@@ -885,6 +885,19 @@ void GRAMRLevel::copySolnData(GRLevelData &dest, const GRLevelData &src)
 
 double GRAMRLevel::get_dx() const { return m_dx; }
 
+bool GRAMRLevel::at_level_timestep_multiple(int a_level) const
+{
+    const double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
+    double target_dt = coarsest_dt;
+    for (int ilevel = 0; ilevel < a_level; ++ilevel)
+    {
+        target_dt /= m_p.ref_ratios[ilevel];
+    }
+    // get difference to nearest multiple of target_dt
+    const double time_remainder = remainder(m_time, target_dt);
+    return (abs(time_remainder) < m_gr_amr.timeEps() * coarsest_dt);
+}
+
 void GRAMRLevel::fillAllGhosts()
 {
     if (m_verbosity)
