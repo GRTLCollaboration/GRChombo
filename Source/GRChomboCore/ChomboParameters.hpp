@@ -143,6 +143,8 @@ class ChomboParameters
         pp.load("plot_vars", plot_var_names, num_plot_vars, plot_var_names);
         for (std::string var_name : plot_var_names)
         {
+            // TODO: replace with UserVariables::variable_name_to_enum in
+            // UserVariables.inc.hpp
             int var = variable_name_to_enum(var_name);
             if (var >= 0 && var < NUM_VARS)
             {
@@ -171,17 +173,19 @@ class ChomboParameters
         }
     }
 
+    // TODO: Remove this function
+    // (Kept here for temporary backwards compatibility)
     /// Takes a string and returns the variable enum number if the string
     /// matches one of those in UserVariables::variable_names, or returns -1
     /// otherwise
-    int variable_name_to_enum(const std::string &a_var_name)
+    static int variable_name_to_enum(const std::string &a_var_name)
     {
         using namespace UserVariables;
 
-        // std::find did not work very well with the char const* array type of
-        // UserVariables::variable_names so here convert to a
-        // std::array of std::strings first. This is quite inefficient but this
-        // function isn't used much so doesn't matter.
+        // std::find did not work very well with the old char const* array type
+        // of UserVariables::variable_names so here convert to a std::array of
+        // std::strings first. This is quite inefficient but this function isn't
+        // used much so doesn't matter.
         std::array<std::string, NUM_VARS> variable_names_array;
         for (int ivar = 0; ivar < NUM_VARS; ++ivar)
         {

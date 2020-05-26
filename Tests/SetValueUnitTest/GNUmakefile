@@ -14,6 +14,7 @@ LibNames := BoxTools
 
 src_dirs := $(GRCHOMBO_SOURCE)/utils \
             $(GRCHOMBO_SOURCE)/simd \
-		   	$(GRCHOMBO_SOURCE)/BoxUtils
+            $(GRCHOMBO_SOURCE)/BoxUtils \
+            $(GRCHOMBO_SOURCE)/CCZ4
 
 include $(CHOMBO_HOME)/mk/Make.test
