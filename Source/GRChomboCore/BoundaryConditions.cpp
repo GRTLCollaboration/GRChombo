@@ -75,12 +75,13 @@ void BoundaryConditions::write_mixed_conditions(int idir, params_t a_params)
     // case because of how the params are assigned
     CH_assert(a_params.mixed_bc_sommerfeld_vars.size() +
                   a_params.mixed_bc_extrapolating_vars.size() ==
-              NUM_VARS)
+              NUM_VARS);
 
-        // now do the write out
-        pout()
+    // now do the write out
+    pout()
         << "The variables that use extrapolating bcs in this direction are : "
         << endl;
+
     for (int icomp = 0; icomp < NUM_VARS; icomp++)
     {
         std::vector<int> v = a_params.mixed_bc_extrapolating_vars;
