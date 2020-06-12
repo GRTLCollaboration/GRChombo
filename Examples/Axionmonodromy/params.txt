@@ -1,0 +1,109 @@
+#Params for runtime inputs
+
+verbosity = 0
+chk_prefix = M1_phi03_
+plot_prefix = M1_phi03_P_
+initial_data_prefix = Oscilloton_data_iso/
+#restart_file = M1_phi03_000270.3d.hdf5
+
+# Set up grid spacings and regrid params
+# NB - the N values need to be multiples of block_factor
+N1 = 64
+N2 = 64
+N3 = 64
+
+# Length of longest box side, dx_coarsest = L/N(max)
+# NB if non cubic, this determines dx for all sides
+L = 64
+
+# Regridding
+# Thresholds on the change across a cell which prompts regrid
+regrid_threshold = 0.5
+tag_buffer_size = 0
+
+# Level data
+# Maximum number of times you can regrid above coarsest level
+max_level = 6 # There are (max_level+1) grids, so min is zero
+# Frequency of regridding at each level
+# Need one for each level, ie max_level+1 items
+# Generally you do not need to regrid frequently on every level
+regrid_interval = 64 64 64 64 64 64 64 64 64 64 64 64
+# Max box size
+max_grid_size = 16
+# Min box size
+block_factor = 16
+
+# Set up time steps
+# dt will be dx*dt_multiplier on each grid level
+# HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
+checkpoint_interval = 0
+plot_interval = 0
+dt_multiplier = 0.2
+stop_time = 30.0
+max_steps = 10000000
+
+#Lapse evolution
+lapse_power = 1.0
+lapse_coeff = 0.5
+lapse_advec_coeff = 1 # 1 makes the lapse gauge 1+log slicing
+
+# Shift evolution coefficients
+shift_advec_coeff = 0 # Usually no advection for beta
+shift_Gamma_coeff = 0.75 # 
+eta = 1.5 # This is beta_driver, usually of order 1/M_ADM of spacetime
+
+# CCZ4 parameters
+# if using BSSN the kappa values should be zero
+formulation = 0  # 1 for BSSN, 0 for CCZ4
+kappa1 = 0.1
+kappa2 = 0
+kappa3 = 1.0
+covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
+
+# coefficient for KO numerical dissipation
+sigma = 1.0
+
+# Change the gravitational constant of the Universe!
+# Default is 1.0, for standard geometric units
+G_Newton = 1.0
+
+# SF Initial data
+overall_normalization = 0.2
+decay_constant = 1.0
+sign_of_Pi = +1
+
+# Extraction Level
+extraction_radius = 2.0
+extraction_level = 2
+
+#Periodic directions - 0 = false, 1 = true
+isPeriodic = 0 0 0
+# if not periodic, then specify the boundary type
+# 0 = static, 1 = sommerfeld, 2 = reflective
+# (see BoundaryConditions.hpp for details)
+hi_boundary = 1 1 1
+lo_boundary = 2 2 2
+#center = 0.0 0.0 0.0
+
+# if reflective boundaries selected, must set
+# parity of all vars (in order given by UserVariables.hpp)
+# 0 = even
+# 1,2,3 = odd x, y, z
+# 4,5,6 = odd xy, yz, xz
+vars_parity            = 0 0 4 6 0 5 0    #chi and hij
+                         0 0 4 6 0 5 0    #K and Aij
+                         0 1 2 3          #Theta and Gamma
+                         0 1 2 3 1 2 3    #lapse shift and B
+                         0 0              #phi and Pi
+                         0 1 2 3          #Ham and Mom
+                         0 0 0 0          #diagnostics
+
+# if sommerfeld boundaries selected, must select
+# asymptotic values (in order given by UserVariables.hpp)
+vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
+                         0.0 0.0 0.0 0.0 0.0 0.0 0.0 #K and Aij
+                         0.0 0.0 0.0 0.0             #Theta and Gamma
+                         1.0 0.0 0.0 0.0 0.0 0.0 0.0 #lapse shift and B
+                         0.0 0.0                     #phi and Pi
+                         0.0 0.0 0.0 0.0             #Ham and Mom
+                         0.0 0.0 0.0 0.0          #diagnostics
