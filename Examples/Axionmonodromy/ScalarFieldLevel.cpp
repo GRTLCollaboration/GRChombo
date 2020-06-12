@@ -15,7 +15,6 @@
 
 // For constraints calculation and AH finder
 #include "MatterConstraints.hpp"
-#include "SphericalHorizon.hpp"
 
 // For tag cells
 #include "OscillotonTaggingCriterion.hpp"
@@ -23,7 +22,6 @@
 // Problem specific includes
 #include "ChiRelaxation.hpp"
 #include "ComputePack.hpp"
-#include "CustomExtraction.hpp"
 #include "GammaCalculator.hpp"
 #include "Potential.hpp"
 #include "OscillotonInitial.hpp"
@@ -88,25 +86,11 @@ void ScalarFieldLevel::initialData()
 
 // Things to do before outputting a checkpoint file
 void ScalarFieldLevel::prePlotLevel()
-{
-    fillAllGhosts();
-    Potential potential(m_p.potential_params);
-    ScalarFieldWithPotential scalar_field(potential);
-    BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
-                       scalar_field, m_dx, m_p.G_Newton),
-                   m_state_new, m_state_new, EXCLUDE_GHOST_CELLS);
-    BoxLoops::loop(SphericalHorizon(m_dx, m_p.center, potential),
-                   m_state_new, m_state_new, EXCLUDE_GHOST_CELLS);
-}
+{}
 
 // Things to do before outputting a checkpoint file
 void ScalarFieldLevel::preCheckpointLevel()
-{
-    fillAllGhosts();
-    Potential potential(m_p.potential_params);
-    BoxLoops::loop(SphericalHorizon(m_dx, m_p.center, potential),
-                   m_state_new, m_state_new, EXCLUDE_GHOST_CELLS);
-}
+{}
 
 // Things to do in RHS update, at each RK4 step
 void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
@@ -139,25 +123,8 @@ void ScalarFieldLevel::specificUpdateODE(GRLevelData &a_soln,
     BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
 }
 
-// Specify if you want any plot files to be written, with which vars
-void ScalarFieldLevel::specificWritePlotHeader(
-    std::vector<int> &plot_states) const
-{
-    plot_states = {c_phi, c_chi, c_lapse, c_Ham, c_VofPhi};
-}
-
 void ScalarFieldLevel::specificPostTimeStep()
-{
-    if (m_level == (m_p.min_level))
-    {
-        m_gr_amr.m_interpolator->refresh();
-        CustomExtraction my_extraction(m_p.L, m_p.center, 
-                                       m_time, m_dt, m_restart_time);
-        std::string extraction_filename = m_p.checkpoint_prefix + "Extraction.txt";
-        my_extraction.execute_query(m_gr_amr.m_interpolator,
-           extraction_filename);
-    }
-}
+{}
 
 void ScalarFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                                const FArrayBox &current_state)
