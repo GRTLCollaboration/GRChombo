@@ -785,7 +785,7 @@ Box ExpandGridsToBoundaries::operator()(const Box &a_in_box)
                 out_box.growLo(idir, m_boundaries.m_num_ghosts);
             }
             if ((m_boundaries.get_boundary_condition(Side::Hi, idir) ==
-                     BoundaryConditions::SOMMERFELD_BC &&
+                     BoundaryConditions::SOMMERFELD_BC ||
                  m_boundaries.get_boundary_condition(Side::Hi, idir) ==
                      BoundaryConditions::MIXED_BC) &&
                 offset_hi[idir] == 0)
