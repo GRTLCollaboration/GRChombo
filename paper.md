@@ -36,7 +36,7 @@ bibliography: paper.bib
 
 **A summary describing the high-level functionality and purpose of the software for a diverse, non-specialist audience.**
 
-The 2015 detection of gravitational waves (GWs) from a binary black hole merger [@Abbott:2016blz] was a breakthrough moment for science. The LIGO and Virgo detectors have gone on to detect hundreds of candidate events, and the next decade promises a deluge of new data detected by a world-wide network of GW instruments including Advanced LIGO and KAGRA [@TheLIGOScientific:2014jea, @Aasi:2013wya, @Somiya:2011np], and in the longer term space based missions such as LISA [@Audley:2017drz] and Tianqin [@Luo:2015ght]. To make sense of the data streams we will receive we need to fully understand the theoretical predictions that are made by our current best theory of gravity, *General Relativity* (GR), including possible deviations relating to new physics.
+The 2015 detection of gravitational waves (GWs) from a binary black hole merger [@Abbott:2016blz] was a breakthrough moment for science. The LIGO and Virgo detectors have gone on to detect hundreds of candidate events, and the next decade promises a deluge of new data detected by a world-wide network of GW instruments including Advanced LIGO and KAGRA [@TheLIGOScientific:2014jea; @Aasi:2013wya; @Somiya:2011np], and in the longer term space based missions such as LISA [@Audley:2017drz] and Tianqin [@Luo:2015ght]. To make sense of the data streams we will receive we need to fully understand the theoretical predictions that are made by our current best theory of gravity, *General Relativity* (GR), including possible deviations relating to new physics.
 
 GR is encapsulated by the Einstein Field Equations [@Einstein:1916vd]
 \begin{equation}
@@ -44,7 +44,7 @@ GR is encapsulated by the Einstein Field Equations [@Einstein:1916vd]
 \end{equation}
 This elegant and concise form somewhat obscures the nature of the equations from those unfamiliar with the notation - expanded out, it is a set of second order partial differential equations for the metric tensor field $g_{\mu\nu}$, which describes the curvature of spacetime in the presence of matter with stress-energy $T_{\mu\nu}$, i.e.
 \begin{equation}
-   \partial_t \partial_t g_{\mu\nu} = \partial_x \partial_x g_{\mu\nu} + \partial_y \partial_y g_{\mu\nu} + \partial_z \partial_z g_{\mu\nu} + {\rm non linear cross terms} 
+   \partial_t \partial_t g_{\mu\nu} = \partial_x \partial_x g_{\mu\nu} + \partial_y \partial_y g_{\mu\nu} + \partial_z \partial_z g_{\mu\nu} + {\rm non ~ linear ~ cross ~ terms} 
           + 8 \pi G T_{\mu\nu}
 \end{equation}
 where the indices $\mu, \nu$ run over the spacetime indices - in 4 dimensions, $t, x, y, z$. Given that $g_{\mu\nu}$ is symmetric in its indices, this gives a set of ten coupled, non linear wave equations, sourced by the stress-energy of any matter present in the spacetime.
@@ -123,16 +123,24 @@ GRChombo is developed and maintained by a collaboration of numerical relativists
 A few of the many fundamental physics problems for which the code has been used include:
 
 - the simulation of pre-inflationary spacetimes in early universe cosmology, to check if models are robust to inhomogeneous initial conditions [@Aurrekoetxea:2019fhr;@Clough:2017efm;@Clough:2016ymm].
-![Cosmology \label{fig:cosmo}](figures/cosmo.png){ width=50% }
-- the study of modified gravity, and violation of cosmic censorship in higher dimensional spacetimes [@Figueras:2020dzx;@Bantilan:2019bvf;@Figueras:2017zwa;@Figueras:2015hkb] See Fig. \autoref{fig:blackstring}.
-![Cosmic censorship \label{fig:blackstring}](figures/blackstring.png){ width=50% }
-- the formation, collapse and collisions of exotic compact objects (ECOs) which could mimic black holes, such as axion stars or boson stars [@Muia:2019coe;@Widdicombe:2019woy;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl]. See Fig. \autoref{fig:axionstar}.
-![Exotic compact objects \label{fig:axionstar}](figures/oscillotons.png){ width=50% }
-- Gravitational wave emission from cosmic string collapse [@Helfer:2018qgv] and cosmic string networks [@Drew:2019mzc] See Fig. \autoref{fig:cosmicstring}.
-![Cosmic strings. \label{fig:cosmicstring}](figures/cosmicstring.png){ width=50% }
+
+![Cosmology \label{fig:cosmo}](figures/cosmo.png){ width=60% }
+
+- the study of modified gravity, and violation of cosmic censorship in higher dimensional spacetimes [@Figueras:2020dzx;@Bantilan:2019bvf;@Figueras:2017zwa;@Figueras:2015hkb].
+
+![Cosmic censorship \label{fig:blackstring}](figures/blackstring.png){ width=60% }
+
+- the formation, collapse and collisions of exotic compact objects (ECOs) which could mimic black holes, such as axion stars or boson stars [@Muia:2019coe;@Widdicombe:2019woy;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl].
+
+![Exotic compact objects \label{fig:axionstar}](figures/oscillotons.png){ width=60% }
+
+- Gravitational wave emission from cosmic string collapse [@Helfer:2018qgv] and cosmic string networks [@Drew:2019mzc].
+
+![Cosmic strings. \label{fig:cosmicstring}](figures/cosmicstring.png){ width=60% }
+
 - The study of light bosonic dark matter and neutrino-like particles in black holes environments [@Alexandre:2018crg;@Clough:2019jpm].
-See Fig. \autoref{fig:dm}.
-![Black hole environments. \label{fig:dm}](figures/superradiance.png){ width=50% }
+
+![Black hole environments. \label{fig:dm}](figures/superradiance.png){ width=60% }
 
 # Acknowledgements
 
