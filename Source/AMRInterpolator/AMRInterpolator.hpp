@@ -21,6 +21,7 @@
 #include "InterpolationQuery.hpp"
 
 #include "MPIContext.hpp"
+#include "UserVariables.hpp"
 
 // End include
 

@@ -36,7 +36,10 @@ template <typename InterpAlgo> void AMRInterpolator<InterpAlgo>::refresh()
     for (int level_idx = 0; level_idx < m_num_levels; ++level_idx)
     {
         AMRLevel &level = *levels[level_idx];
-        dynamic_cast<InterpSource &>(level).fillAllGhosts();
+        InterpSource &interp_source = dynamic_cast<InterpSource &>(level);
+        interp_source.fillAllGhosts();
+        if (NUM_DIAGNOSTIC_VARS > 0)
+            interp_source.fillAllDiagnosticsGhosts();
     }
 }
 
@@ -111,7 +114,7 @@ void AMRInterpolator<InterpAlgo>::interp(InterpolationQuery &query)
         for (typename comps_t::iterator it = comps.begin(); it != comps.end();
              ++it)
         {
-            double *out = it->second;
+            double *out = std::get<1>(*it);
             for (int point_idx = 0; point_idx < query.m_num_points; ++point_idx)
             {
                 out[point_idx] =
@@ -571,18 +574,45 @@ void AMRInterpolator<InterpAlgo>::calculateAnswers(InterpolationQuery &query)
 
         const AMRLevel &level = *levels[level_idx];
         const InterpSource &source = dynamic_cast<const InterpSource &>(level);
-        const LevelData<FArrayBox> &level_data = source.getLevelData();
-        const DisjointBoxLayout &box_layout = level_data.disjointBoxLayout();
+        const LevelData<FArrayBox> *const evolution_level_data_ptr =
+            &source.getLevelData();
+        const LevelData<FArrayBox> *diagnostics_level_data_ptr;
+        if (NUM_DIAGNOSTIC_VARS > 0)
+        {
+            diagnostics_level_data_ptr = &source.getDiagnosticsLevelData();
+        }
+        const DisjointBoxLayout *const evolution_box_layout_ptr =
+            &evolution_level_data_ptr->disjointBoxLayout();
+        const DisjointBoxLayout *diagnostics_box_layout_ptr;
+        if (NUM_DIAGNOSTIC_VARS > 0)
+        {
+            diagnostics_box_layout_ptr =
+                &diagnostics_level_data_ptr->disjointBoxLayout();
+        }
 
         const Box &domain_box = level.problemDomain().domainBox();
         const IntVect &small_end = domain_box.smallEnd();
         const IntVect &big_end = domain_box.bigEnd();
 
         // Convert the LayoutIndex to DataIndex
-        const DataIndex data_idx(box_layout.layoutIterator()[box_idx]);
+        const DataIndex evolution_data_idx(
+            evolution_box_layout_ptr->layoutIterator()[box_idx]);
+        DataIndex diagnostics_data_idx;
+        if (NUM_DIAGNOSTIC_VARS > 0)
+        {
+            diagnostics_data_idx = DataIndex(
+                diagnostics_box_layout_ptr->layoutIterator()[box_idx]);
+        }
 
-        const Box &box = box_layout[data_idx];
-        const FArrayBox &fab = level_data[data_idx];
+        const Box &box = (*evolution_box_layout_ptr)[evolution_data_idx];
+        const FArrayBox *const evolution_fab_ptr =
+            &((*evolution_level_data_ptr)[evolution_data_idx]);
+        const FArrayBox *diagnostics_fab_ptr;
+        if (NUM_DIAGNOSTIC_VARS > 0)
+        {
+            diagnostics_fab_ptr =
+                &((*diagnostics_level_data_ptr)[diagnostics_data_idx]);
+        }
 
         for (int i = 0; i < CH_SPACEDIM; ++i)
         {
@@ -645,8 +675,20 @@ void AMRInterpolator<InterpAlgo>::calculateAnswers(InterpolationQuery &query)
             for (typename comps_t::iterator it = comps.begin();
                  it != comps.end(); ++it)
             {
-                int comp = it->first;
-                double out_val = algo.interpData(fab, comp);
+                int comp = std::get<0>(*it);
+                const FArrayBox *fab_ptr;
+                if (NUM_DIAGNOSTIC_VARS > 0)
+                {
+                    VariableType var_type = std::get<2>(*it);
+                    fab_ptr = (var_type == VariableType::evolution)
+                                  ? evolution_fab_ptr
+                                  : diagnostics_fab_ptr;
+                }
+                else
+                {
+                    fab_ptr = evolution_fab_ptr;
+                }
+                double out_val = algo.interpData(*fab_ptr, comp);
                 m_answer_data[comp_idx++][answer_idx] = out_val;
             }
         }

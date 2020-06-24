@@ -10,6 +10,7 @@
 #include "BoundaryConditions.hpp"
 #include "GRParmParse.hpp"
 #include "UserVariables.hpp"
+#include "VariableType.hpp"
 #include <algorithm>
 
 class ChomboParameters
@@ -143,12 +144,27 @@ class ChomboParameters
         pp.load("plot_vars", plot_var_names, num_plot_vars, plot_var_names);
         for (std::string var_name : plot_var_names)
         {
-            // TODO: replace with UserVariables::variable_name_to_enum in
-            // UserVariables.inc.hpp
-            int var = variable_name_to_enum(var_name);
-            if (var >= 0 && var < NUM_VARS)
+            // first assume plot_var is a normal evolution var
+            int var = UserVariables::variable_name_to_enum(var_name);
+            VariableType var_type = VariableType::evolution;
+            if (var < 0)
             {
-                plot_vars.push_back(var);
+                // if not an evolution var check if it's a diagnostic var
+                var = DiagnosticVariables::variable_name_to_enum(var_name);
+                if (var < 0)
+                {
+                    // it's neither :(
+                    pout() << "Variable with name " << var_name
+                           << " not found.";
+                }
+                else
+                {
+                    var_type = VariableType::diagnostic;
+                }
+            }
+            if (var >= 0)
+            {
+                plot_vars.emplace_back(var, var_type);
             }
         }
         num_plot_vars = plot_vars.size();
@@ -170,40 +186,6 @@ class ChomboParameters
         else
         {
             pp.load("min_box_size", block_factor, 8);
-        }
-    }
-
-    // TODO: Remove this function
-    // (Kept here for temporary backwards compatibility)
-    /// Takes a string and returns the variable enum number if the string
-    /// matches one of those in UserVariables::variable_names, or returns -1
-    /// otherwise
-    static int variable_name_to_enum(const std::string &a_var_name)
-    {
-        using namespace UserVariables;
-
-        // std::find did not work very well with the old char const* array type
-        // of UserVariables::variable_names so here convert to a std::array of
-        // std::strings first. This is quite inefficient but this function isn't
-        // used much so doesn't matter.
-        std::array<std::string, NUM_VARS> variable_names_array;
-        for (int ivar = 0; ivar < NUM_VARS; ++ivar)
-        {
-            variable_names_array[ivar] = variable_names[ivar];
-        }
-
-        const auto var_name_it =
-            std::find(variable_names_array.begin(), variable_names_array.end(),
-                      a_var_name);
-
-        int var = std::distance(variable_names_array.begin(), var_name_it);
-        if (var != NUM_VARS)
-            return var;
-        else
-        {
-            pout() << "Variable with name " << a_var_name << " not found."
-                   << std::endl;
-            return -1;
         }
     }
 
@@ -229,7 +211,8 @@ class ChomboParameters
     std::string checkpoint_prefix, plot_prefix; // naming of files
     bool write_plot_ghosts;
     int num_plot_vars;
-    std::vector<int> plot_vars; // vars to write to plot file
+    std::vector<std::pair<int, VariableType>>
+        plot_vars; // vars to write to plot file
 
     // Boundary conditions
     std::array<bool, CH_SPACEDIM> isPeriodic;     // periodicity
