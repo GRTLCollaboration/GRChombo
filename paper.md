@@ -123,16 +123,16 @@ GRChombo is developed and maintained by a collaboration of numerical relativists
 A few of the many fundamental physics problems for which the code has been used include:
 
 - the simulation of pre-inflationary spacetimes in early universe cosmology, to check if models are robust to inhomogeneous initial conditions [@Aurrekoetxea:2019fhr,@Clough:2017efm,@Clough:2016ymm].
-![Cosmology \label{fig:cosmo}](figures/cosmo.png)
+![Cosmology \label{fig:cosmo}](figures/cosmo.png =250x)
 - the study of modified gravity, and violation of cosmic censorship in higher dimensional spacetimes [@Figueras:2020dzx,@Bantilan:2019bvf,@Figueras:2017zwa,@Figueras:2015hkb] See Fig. \autoref{fig:blackstring}.
-![Cosmic censorship \label{fig:blackstring}](figures/blackstring.png)
+![Cosmic censorship \label{fig:blackstring}](figures/blackstring.png =250x)
 - the formation, collapse and collisions of exotic compact objects (ECOs) which could mimic black holes, such as axion stars or boson stars [@Muia:2019coe,@Widdicombe:2019woy,@Clough:2018exo,@Dietrich:2018bvi,@Helfer:2018vtq,@Helfer:2016ljl]. See Fig. \autoref{fig:axionstar}.
-![Exotic compact objects \label{fig:axionstar}](figures/oscillotons.png)
+![Exotic compact objects \label{fig:axionstar}](figures/oscillotons.png =250x)
 - Gravitational wave emission from cosmic string collapse [@Helfer:2018qgv] and cosmic string networks [@Drew:2019mzc] See Fig. \autoref{fig:cosmicstring}.
-![Cosmic strings. \label{fig:cosmicstring}](figures/cosmicstring.png)
+![Cosmic strings. \label{fig:cosmicstring}](figures/cosmicstring.png =250x)
 - The study of light bosonic dark matter and neutrino-like particles in black holes environments [@Alexandre:2018crg,@Clough:2019jpm].
 See Fig. \autoref{fig:dm}.
-![Black hole environments. \label{fig:dm}](figures/superradiance.png)
+![Black hole environments. \label{fig:dm}](figures/superradiance.png =250x)
 
 # Acknowledgements
 
