@@ -6,7 +6,9 @@
 #ifndef USERVARIABLES_HPP
 #define USERVARIABLES_HPP
 
-#include "DiagnosticVariables.hpp"
+#include "ArrayTools.hpp"
+#include "CCZ4UserVariables.hpp"
+#include "EmptyDiagnosticVariables.hpp"
 
 /// This enum gives the index of every variable stored in the grid
 enum

@@ -6,7 +6,7 @@
 #ifndef USERVARIABLES_HPP
 #define USERVARIABLES_HPP
 
-#include "DiagnosticVariables.hpp"
+#include "EmptyDiagnosticVariables.hpp"
 #include <array>
 #include <string>
 

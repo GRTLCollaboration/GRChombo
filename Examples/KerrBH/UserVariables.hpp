@@ -8,6 +8,7 @@
 
 #include "ArrayTools.hpp"
 #include "CCZ4UserVariables.hpp"
+#include "EmptyDiagnosticVariables.hpp"
 
 /// This enum gives the index of every variable stored in the grid
 enum
