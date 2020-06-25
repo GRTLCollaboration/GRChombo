@@ -8,31 +8,20 @@
 
 #include "ArrayTools.hpp"
 #include "CCZ4UserVariables.hpp"
-#include "EmptyDiagnosticVariables.hpp"
+#include "DiagnosticVariables.hpp"
 
 /// This enum gives the index of every variable stored in the grid
 enum
 {
     // Note that it is important that the first enum value is set to 1 more than
     // the last CCZ4 var enum
-    c_Ham = NUM_CCZ4_VARS,
-
-    c_Mom1,
-    c_Mom2,
-    c_Mom3,
-
-    NUM_VARS
+    NUM_VARS = NUM_CCZ4_VARS,
 };
 
 namespace UserVariables
 {
-static const std::array<std::string, NUM_VARS - NUM_CCZ4_VARS>
-    user_variable_names = {"Ham",
-
-                           "Mom1", "Mom2", "Mom3"};
-
 static const std::array<std::string, NUM_VARS> variable_names =
-    ArrayTools::concatenate(ccz4_variable_names, user_variable_names);
+    ccz4_variable_names;
 } // namespace UserVariables
 
 #include "UserVariables.inc.hpp"
