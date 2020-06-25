@@ -36,8 +36,8 @@ class ScalarFieldLevel : public GRAMRLevel
     //! Initialize data for the field and metric variables
     virtual void initialData();
 
-    //! routines to do before outputing checkpoint file
-    virtual void preCheckpointLevel();
+    //! routines to do before outputting plot file
+    virtual void prePlotLevel();
 
     //! RHS routines used at each RK4 step
     virtual void specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
