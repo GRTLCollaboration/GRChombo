@@ -12,10 +12,10 @@ N3 = 32
 L = 16 #100
 
 massA = 1
-centerA = 6 8 8
+offsetA = -2 0 0
 
 massB = 0.82
-centerB = 10 8 8
+offsetB = 2 0 0
 
 momentumA = 0. -0.14025 0.0
 momentumB = 0. 0.14025 0.0
@@ -26,7 +26,7 @@ regrid_interval = 1 1 1 1 0 0 0 0 0
 
 #Max and min box sizes
 max_grid_size = 32
-block_factor = 4
+block_factor = 8
 tag_buffer_size = 3
 
 # Set up time steps
@@ -35,7 +35,7 @@ tag_buffer_size = 3
 
 checkpoint_interval = 1
 # set to zero to turn off plot files
-plot_interval = 0
+plot_interval = 2
 num_plot_vars = 3
 plot_vars = chi Weyl4_Re Weyl4_Im
 dt_multiplier = 0.25
@@ -61,3 +61,47 @@ covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
 
 #coefficient for KO numerical dissipation
 sigma = 0.3
+
+# boundaries and periodicity of grid
+# Periodic directions - 0 = false, 1 = true
+isPeriodic = 0 0 0
+# if not periodic, then specify the boundary type
+# 0 = static, 1 = sommerfeld, 2 = reflective
+# (see BoundaryConditions.hpp for details)
+hi_boundary = 1 1 1
+lo_boundary = 1 1 2
+
+# if reflective boundaries selected, must set
+# parity of all vars (in order given by UserVariables.hpp)
+# 0 = even
+# 1,2,3 = odd x, y, z
+# 4,5,6 = odd xy, yz, xz
+vars_parity            = 0 0 4 6 0 5 0    #chi and hij
+                         0 0 4 6 0 5 0    #K and Aij
+                         0 1 2 3          #Theta and Gamma
+                         0 1 2 3 1 2 3    #lapse shift and B
+                         0 1 2 3          #Ham and Mom
+                         0 0              #Weyl
+
+# if sommerfeld boundaries selected, must select
+# asymptotic values (in order given by UserVariables.hpp)
+vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
+                         0.0 0.0 0.0 0.0 0.0 0.0 0.0 #K and Aij
+                         0.0 0.0 0.0 0.0             #Theta and Gamma
+                         1.0 0.0 0.0 0.0 0.0 0.0 0.0 #lapse shift and B
+                         0.0 0.0 0.0 0.0             #Ham and Mom
+                         0.0 0.0                     #Weyl
+
+# extraction params
+# default of extraction_center is center, uncomment to change
+activate_extraction = 1
+num_extraction_radii = 1
+extraction_radii = 6.0
+extraction_levels = 0
+num_points_phi = 24
+num_points_theta = 36
+num_modes = 3
+modes = 2 0 # l m for spherical harmonics
+        2 1
+        2 2
+

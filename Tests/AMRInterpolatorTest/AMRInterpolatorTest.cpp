@@ -58,9 +58,9 @@ int runInterpolatorTest(int argc, char *argv[])
     // Setup the AMRInterpolator
     const int num_points = sim_params.num_points;
 
-    std::vector<double> A_ptr(num_points);
-    std::vector<double> B_ptr(num_points);
-    std::vector<double> B_dx_ptr(num_points);
+    std::vector<double> A(num_points);
+    std::vector<double> B(num_points);
+    std::vector<double> B_dx(num_points);
     std::vector<double> interp_x(num_points);
     std::vector<double> interp_y(num_points);
     std::vector<double> interp_z(num_points);
@@ -81,9 +81,9 @@ int runInterpolatorTest(int argc, char *argv[])
     query.setCoords(0, interp_x.data())
         .setCoords(1, interp_y.data())
         .setCoords(2, interp_z.data())
-        .addComp(c_A, A_ptr.data())
-        .addComp(c_B, B_ptr.data())
-        .addComp(c_B, B_dx_ptr.data(), Derivative::dx);
+        .addComp(c_A, A.data())
+        .addComp(c_B, B.data())
+        .addComp(c_B, B_dx.data(), Derivative::dx);
 
     AMRInterpolator<Lagrange<4>> interpolator(gr_amr, sim_params.origin,
                                               sim_params.dx,
@@ -104,9 +104,9 @@ int runInterpolatorTest(int argc, char *argv[])
         double value_B = pow(x, 3);
         double value_B_dx = 3. * pow(x, 2);
 
-        status |= (abs(A_ptr[ipoint] - value_A) > 1e-10);
-        status |= (abs(B_ptr[ipoint] - value_B) > 1e-10);
-        status |= (abs(B_dx_ptr[ipoint] - value_B_dx) > 1e-10);
+        status |= (abs(A[ipoint] - value_A) > 1e-10);
+        status |= (abs(B[ipoint] - value_B) > 1e-10);
+        status |= (abs(B_dx[ipoint] - value_B_dx) > 1e-10);
     }
 
     return status;
