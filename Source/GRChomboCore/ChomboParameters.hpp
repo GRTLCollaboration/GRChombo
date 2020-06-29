@@ -126,7 +126,15 @@ class ChomboParameters
                 Ni[dir] = N;
 
             if (Ni[dir] > 0)
-                Ni_full[dir] = Ni[dir];
+            {
+                if (boundary_params.lo_boundary[dir] ==
+                        BoundaryConditions::REFLECTIVE_BC ||
+                    boundary_params.hi_boundary[dir] ==
+                        BoundaryConditions::REFLECTIVE_BC)
+                    Ni_full[dir] = Ni[dir] * 2;
+                else
+                    Ni_full[dir] = Ni[dir];
+            }
             else
             {
                 if (boundary_params.lo_boundary[dir] ==
@@ -263,6 +271,32 @@ class ChomboParameters
         else
         {
             pp.load("min_box_size", block_factor, 8);
+        }
+
+        // Chombo already has an error for this, but when applying symmetric BC
+        // this may help the user figure the problem more easily (e.g. N_full=48
+        // with block_factor=16 seems fine, but with symmetric BC it's not, as
+        // the box will use N=24)
+        FOR1(dir)
+        {
+            if (Ni[dir] % block_factor != 0)
+            {
+                if (boundary_params.lo_boundary[dir] ==
+                        BoundaryConditions::REFLECTIVE_BC ||
+                    boundary_params.hi_boundary[dir] ==
+                        BoundaryConditions::REFLECTIVE_BC)
+                {
+                    MayDay::Error(
+                        ("N" + std::to_string(dir + 1) + " (or half of N" +
+                         std::to_string(dir + 1) +
+                         "_full) should be a multiple of block_factor.")
+                            .c_str());
+                }
+                else
+                    MayDay::Error(("N" + std::to_string(dir + 1) +
+                                   " should be a multiple of block_factor")
+                                      .c_str());
+            }
         }
     }
 
