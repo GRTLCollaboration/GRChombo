@@ -141,7 +141,7 @@ class SimulationParametersBase : public ChomboParameters
             if (radius >= *std::min_element(axis_distance_to_boundary.begin(),
                                             axis_distance_to_boundary.end()))
                 MayDay::Error(
-                    "Extraction radii go being the box's upper boundary");
+                    "Extraction radii go beyond the box's upper boundary");
 
             // lower boundary
             FOR1(i)
@@ -157,7 +157,7 @@ class SimulationParametersBase : public ChomboParameters
             if (radius >= *std::min_element(axis_distance_to_boundary.begin(),
                                             axis_distance_to_boundary.end()))
                 MayDay::Error(
-                    "Extraction radii go being the box's lower boundary");
+                    "Extraction radii go beyond the box's lower boundary");
         }
     }
 
