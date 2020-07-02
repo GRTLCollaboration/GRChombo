@@ -1,10 +1,10 @@
 name: Run GRChombo Tests
 
-on: [pull_request]
+on: [push]
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       CHOMBO_HOME: ${{ github.workspace }}/Chombo/lib
       OMP_NUM_THREADS: 1
@@ -24,13 +24,13 @@ jobs:
     - name: Install Chombo dependencies
       run: |
         sudo apt-get update
-        sudo apt-get -y --no-install-recommends install csh make gfortran-8 g++-8 cpp-8 libhdf5-dev libhdf5-openmpi-dev openmpi-bin libblas-dev liblapack-dev libgetopt-complete-perl ssh
+        sudo apt-get -y --no-install-recommends install csh make gfortran-9 g++-9 cpp-9 libhdf5-dev libhdf5-openmpi-dev openmpi-bin libblas-dev liblapack-dev libgetopt-complete-perl ssh
 
     - name: Set Compilers
       run: |
-        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 80
-        sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-8 80
-        sudo update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-8 80
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 80
+        sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-9 80
+        sudo update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-9 80
 
     - name: Build Chombo
       run: |
