@@ -54,7 +54,7 @@ void SurfaceExtraction<SurfaceGeometry>::add_var(int a_var,
                                                  const Derivative &a_deriv)
 {
     CH_assert(!m_done_extraction);
-    m_vars.push_back({a_var, a_var_type, a_deriv});
+    m_vars.push_back(std::make_tuple(a_var, a_var_type, a_deriv));
     m_interp_data.emplace_back(m_num_points * m_params.num_surfaces);
 }
 
