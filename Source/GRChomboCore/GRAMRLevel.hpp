@@ -17,6 +17,7 @@
 #include "LevelRK4.H"
 #include "SimulationParameters.hpp"
 #include "UserVariables.hpp" // need NUM_VARS
+#include <fstream>
 #include <sys/time.h>
 
 class GRAMRLevel : public AMRLevel, public InterpSource
@@ -32,6 +33,7 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     static GRAMRLevel *gr_cast(AMRLevel *const amr_level_ptr);
 
     const GRLevelData &getLevelData() const;
+    const GRLevelData &getDiagnosticsLevelData() const;
 
     bool contains(const std::array<double, CH_SPACEDIM> &point) const;
 
@@ -140,9 +142,6 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     /// Things to do immediately before writing plot files
     virtual void prePlotLevel() {}
 
-    /// Specify which variables to write at plot intervals
-    virtual void specificWritePlotHeader(std::vector<int> &plot_states) const {}
-
     /// Things to do immediately after restart from checkpoint
     virtual void postRestart() {}
 #endif
@@ -159,6 +158,9 @@ class GRAMRLevel : public AMRLevel, public InterpSource
 
     /// Fill all ghosts cells
     virtual void fillAllGhosts();
+
+    /// Fill all diagnostics ghost cells
+    virtual void fillAllDiagnosticsGhosts();
 
   protected:
     /// Fill ghosts cells from boxes on this level only. Do not interpolate
@@ -181,7 +183,8 @@ class GRAMRLevel : public AMRLevel, public InterpSource
 
     GRLevelData m_state_old; //!< the solution at the old time
     GRLevelData m_state_new; //!< the solution at the new time
-    Real m_dx;               //!< grid spacing
+    GRLevelData m_state_diagnostics;
+    Real m_dx; //!< grid spacing
     double m_restart_time;
 
     GRAMR &m_gr_amr; //!< The GRAMR object containing this GRAMRLevel

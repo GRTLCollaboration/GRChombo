@@ -77,15 +77,6 @@ void BinaryBHLevel::postRestart()
     }
 }
 
-// Things to do before writing checkpoints
-void BinaryBHLevel::preCheckpointLevel()
-{
-    // Calculate and assing values of Ham and Mom constraints on grid
-    fillAllGhosts();
-    BoxLoops::loop(Constraints(m_dx), m_state_new, m_state_new,
-                   EXCLUDE_GHOST_CELLS);
-}
-
 // Calculate RHS during RK4 substeps
 void BinaryBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
                                     const double a_time)
@@ -96,9 +87,7 @@ void BinaryBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
 
     // Calculate CCZ4 right hand side and set constraints to zero to avoid
     // undefined values
-    BoxLoops::loop(make_compute_pack(
-                       CCZ4(m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
-                       SetValue(0, Interval(c_Ham, NUM_VARS - 1))),
+    BoxLoops::loop(CCZ4(m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
                    a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
 }
 
@@ -143,7 +132,7 @@ void BinaryBHLevel::specificPostTimeStep()
         // Populate the Weyl Scalar values on the grid
         fillAllGhosts();
         BoxLoops::loop(Weyl4(m_p.extraction_params.center, m_dx), m_state_new,
-                       m_state_new, EXCLUDE_GHOST_CELLS);
+                       m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 
         // Do the extraction on the min extraction level
         if (m_level == m_p.extraction_params.min_extraction_level())
@@ -181,7 +170,9 @@ void BinaryBHLevel::prePlotLevel()
     fillAllGhosts();
     if (m_p.activate_extraction == 1)
     {
-        BoxLoops::loop(Weyl4(m_p.extraction_params.center, m_dx), m_state_new,
-                       m_state_new, EXCLUDE_GHOST_CELLS);
+        BoxLoops::loop(
+            make_compute_pack(Weyl4(m_p.extraction_params.center, m_dx),
+                              Constraints(m_dx)),
+            m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
     }
 }

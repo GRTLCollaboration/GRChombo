@@ -75,6 +75,11 @@ GRAMRLevel *GRAMRLevel::gr_cast(AMRLevel *const amr_level_ptr)
 
 const GRLevelData &GRAMRLevel::getLevelData() const { return m_state_new; }
 
+const GRLevelData &GRAMRLevel::getDiagnosticsLevelData() const
+{
+    return m_state_diagnostics;
+}
+
 bool GRAMRLevel::contains(const std::array<double, CH_SPACEDIM> &point) const
 {
     const Box &domainBox = problemDomain().domainBox();
@@ -318,6 +323,11 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
     fillBdyGhosts(m_state_new);
 
     m_state_old.define(level_domain, NUM_VARS, iv_ghosts);
+    if (NUM_DIAGNOSTIC_VARS > 0)
+    {
+        m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS,
+                                   iv_ghosts);
+    }
 }
 
 /// things to do after regridding
@@ -346,6 +356,11 @@ void GRAMRLevel::initialGrid(const Vector<Box> &a_new_grids)
     IntVect iv_ghosts = m_num_ghosts * IntVect::Unit;
     m_state_new.define(level_domain, NUM_VARS, iv_ghosts);
     m_state_old.define(level_domain, NUM_VARS, iv_ghosts);
+    if (NUM_DIAGNOSTIC_VARS > 0)
+    {
+        m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS,
+                                   iv_ghosts);
+    }
 
     defineExchangeCopier(level_domain);
     m_coarse_average.define(level_domain, NUM_VARS, m_ref_ratio);
@@ -669,6 +684,11 @@ void GRAMRLevel::readCheckpointLevel(HDF5Handle &a_handle)
                       "state data");
     }
     m_state_old.define(level_domain, NUM_VARS, iv_ghosts);
+    if (NUM_DIAGNOSTIC_VARS > 0)
+    {
+        m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS,
+                                   iv_ghosts);
+    }
 }
 
 void GRAMRLevel::writePlotLevel(HDF5Handle &a_handle) const
@@ -676,11 +696,9 @@ void GRAMRLevel::writePlotLevel(HDF5Handle &a_handle) const
     if (m_verbosity)
         pout() << "GRAMRLevel::writePlotLevel" << endl;
 
-    // number and index of states to print. first default to parameter
-    std::vector<int> plot_states = m_p.plot_vars;
-    // but call this which may defined in specific Level class for backwards
-    // compatibility
-    specificWritePlotHeader(plot_states);
+    // number and index of states to print
+    const std::vector<std::pair<int, VariableType>> &plot_states =
+        m_p.plot_vars;
     int num_states = plot_states.size();
 
     if (num_states > 0)
@@ -722,21 +740,65 @@ void GRAMRLevel::writePlotLevel(HDF5Handle &a_handle) const
         IntVect iv_ghosts = m_num_ghosts * IntVect::Unit;
         LevelData<FArrayBox> plot_data(levelGrids, num_states, iv_ghosts);
 
-        for (int comp = 0; comp < num_states; comp++)
-        {
-            Interval currentComp(comp, comp);
-            Interval plotComps(plot_states[comp], plot_states[comp]);
-            m_state_new.copyTo(plotComps, plot_data, currentComp);
-        }
-
-        plot_data.exchange(plot_data.interval());
-
         // only need to write ghosts when non periodic BCs exist
         IntVect ghost_vector = IntVect::Zero;
         if (m_p.write_plot_ghosts)
         {
             ghost_vector = m_num_ghosts * IntVect::Unit;
+            Box grown_domain_box = m_problem_domain.domainBox();
+            grown_domain_box.grow(ghost_vector);
+            Copier boundary_copier;
+            boundary_copier.ghostDefine(
+                m_state_new.disjointBoxLayout(), plot_data.disjointBoxLayout(),
+                grown_domain_box, ghost_vector, ghost_vector);
+            for (int comp = 0; comp < num_states; comp++)
+            {
+                Interval currentComp(comp, comp);
+                if (plot_states[comp].second == VariableType::evolution)
+                {
+                    Interval plotComps(plot_states[comp].first,
+                                       plot_states[comp].first);
+                    m_state_new.copyTo(plotComps, plot_data, currentComp,
+                                       boundary_copier);
+                }
+                else
+                {
+                    Interval plotComps(plot_states[comp].first,
+                                       plot_states[comp].first);
+                    if (NUM_DIAGNOSTIC_VARS > 0)
+                    {
+                        m_state_diagnostics.copyTo(plotComps, plot_data,
+                                                   currentComp);
+                    }
+                }
+            }
         }
+
+        else
+        {
+            for (int comp = 0; comp < num_states; comp++)
+            {
+                Interval currentComp(comp, comp);
+                if (plot_states[comp].second == VariableType::evolution)
+                {
+                    Interval plotComps(plot_states[comp].first,
+                                       plot_states[comp].first);
+                    m_state_new.copyTo(plotComps, plot_data, currentComp);
+                }
+                else
+                {
+                    Interval plotComps(plot_states[comp].first,
+                                       plot_states[comp].first);
+                    if (NUM_DIAGNOSTIC_VARS > 0)
+                    {
+                        m_state_diagnostics.copyTo(plotComps, plot_data,
+                                                   currentComp);
+                    }
+                }
+            }
+        }
+
+        plot_data.exchange(plot_data.interval());
 
         // Write the data for this level
         write(a_handle, levelGrids);
@@ -749,11 +811,9 @@ void GRAMRLevel::writePlotHeader(HDF5Handle &a_handle) const
     if (m_verbosity)
         pout() << "GRAMRLevel::writePlotHeader" << endl;
 
-    // number and index of states to print. first default to parameter
-    std::vector<int> plot_states = m_p.plot_vars;
-    // but call this which may defined in specific Level class for backwards
-    // compatibility
-    specificWritePlotHeader(plot_states);
+    // number and index of states to print.
+    const std::vector<std::pair<int, VariableType>> &plot_states =
+        m_p.plot_vars;
     int num_states = plot_states.size();
 
     if (num_states > 0)
@@ -767,8 +827,17 @@ void GRAMRLevel::writePlotHeader(HDF5Handle &a_handle) const
         for (int comp = 0; comp < num_states; ++comp)
         {
             sprintf(compStr, "component_%d", comp);
-            header.m_string[compStr] =
-                UserVariables::variable_names[plot_states[comp]];
+            if (plot_states[comp].second == VariableType::evolution)
+            {
+                header.m_string[compStr] =
+                    UserVariables::variable_names[plot_states[comp].first];
+            }
+            else
+            {
+                header.m_string[compStr] =
+                    DiagnosticVariables::variable_names[plot_states[comp]
+                                                            .first];
+            }
         }
 
         // Write the header
@@ -887,6 +956,7 @@ double GRAMRLevel::get_dx() const { return m_dx; }
 
 void GRAMRLevel::fillAllGhosts()
 {
+    CH_TIME("GRAMRLevel::fillAllGhosts()");
     if (m_verbosity)
         pout() << "GRAMRLevel::fillAllGhosts" << endl;
 
@@ -898,6 +968,23 @@ void GRAMRLevel::fillAllGhosts()
                              0, 0, NUM_VARS);
     }
     fillIntralevelGhosts();
+}
+
+void GRAMRLevel::fillAllDiagnosticsGhosts()
+{
+    CH_TIME("GRAMRLevel::fillAllDiagnosticsGhosts");
+    if (m_verbosity)
+        pout() << "GRAMRLevel::fillAllDiagnosticsGhosts" << endl;
+
+    // If there is a coarser level then interpolate undefined ghost cells
+    if (m_coarser_level_ptr != nullptr)
+    {
+        GRAMRLevel *coarser_gr_amr_level_ptr = gr_cast(m_coarser_level_ptr);
+        m_patcher.fillInterp(m_state_diagnostics,
+                             coarser_gr_amr_level_ptr->m_state_diagnostics, 0,
+                             0, NUM_DIAGNOSTIC_VARS);
+    }
+    m_state_diagnostics.exchange(m_exchange_copier);
 }
 
 void GRAMRLevel::fillIntralevelGhosts()

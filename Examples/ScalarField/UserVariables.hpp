@@ -8,6 +8,7 @@
 
 #include "ArrayTools.hpp"
 #include "CCZ4UserVariables.hpp"
+#include "DiagnosticVariables.hpp"
 
 // assign an enum to each variable
 enum
@@ -17,21 +18,13 @@ enum
     c_phi = NUM_CCZ4_VARS, // matter field added
     c_Pi,                  //(minus) conjugate momentum
 
-    c_Ham,
-
-    c_Mom1,
-    c_Mom2,
-    c_Mom3,
-
     NUM_VARS
 };
 
 namespace UserVariables
 {
 static const std::array<std::string, NUM_VARS - NUM_CCZ4_VARS>
-    user_variable_names = {"phi", "Pi",
-
-                           "Ham", "Mom1", "Mom2", "Mom3"};
+    user_variable_names = {"phi", "Pi"};
 
 static const std::array<std::string, NUM_VARS> variable_names =
     ArrayTools::concatenate(ccz4_variable_names, user_variable_names);

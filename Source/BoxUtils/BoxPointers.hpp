@@ -23,13 +23,13 @@ class BoxPointers
     const int *m_out_hi;
 
   public:
-    std::array<const double *, NUM_VARS> m_in_ptr;
+    std::vector<const double *> m_in_ptr;
     std::array<int, CH_SPACEDIM> m_in_stride; //!< Distance in memory between
                                               //! two values corresponding to
                                               //! adjacent coordinates in all
                                               //! directions.
 
-    std::array<double *, NUM_VARS> m_out_ptr;
+    std::vector<double *> m_out_ptr;
     std::array<int, CH_SPACEDIM> m_out_stride; //!< Distance in memory between
                                                //! two values corresponding to
                                                //! adjacent coordinates in all
@@ -39,6 +39,8 @@ class BoxPointers
         : m_in_lo(in.loVect()), m_in_hi(in.hiVect()), m_out_lo(out.loVect()),
           m_out_hi(out.hiVect())
     {
+        m_in_ptr.resize(in.nComp());
+        m_out_ptr.resize(out.nComp());
         // dataPtr in Chombo does CH_assert bound check
         // which we don't want to do in a loop
         for (int i = 0; i < NUM_VARS; ++i)
