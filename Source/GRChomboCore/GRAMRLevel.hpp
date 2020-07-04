@@ -199,6 +199,9 @@ class GRAMRLevel : public AMRLevel, public InterpSource
 
     FourthOrderFillPatch m_patcher; //!< Organises interpolation from coarse to
                                     //!< fine levels of ghosts
+    FourthOrderFillPatch
+        m_patcher_diagnostics; //!< Organises interpolation from coarse to
+                               //!< fine levels of ghosts for diagnostics
     FourthOrderFineInterp m_fine_interp; //!< executes the interpolation from
                                          //!< coarse to fine when regridding
 
