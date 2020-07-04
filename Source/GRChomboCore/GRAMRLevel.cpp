@@ -296,6 +296,13 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
         m_patcher.define(level_domain, coarser_gr_amr_level_ptr->m_grids,
                          NUM_VARS, coarser_gr_amr_level_ptr->problemDomain(),
                          m_ref_ratio, m_num_ghosts);
+        if (NUM_DIAGNOSTIC_VARS > 0)
+        {
+            m_patcher_diagnostics.define(
+                level_domain, coarser_gr_amr_level_ptr->m_grids,
+                NUM_DIAGNOSTIC_VARS, coarser_gr_amr_level_ptr->problemDomain(),
+                m_ref_ratio, m_num_ghosts);
+        }
 
         // interpolate from coarser level
         m_fine_interp.interpToFine(m_state_new,
@@ -372,6 +379,13 @@ void GRAMRLevel::initialGrid(const Vector<Box> &a_new_grids)
         m_patcher.define(level_domain, coarser_gr_amr_level_ptr->m_grids,
                          NUM_VARS, coarser_gr_amr_level_ptr->problemDomain(),
                          m_ref_ratio, m_num_ghosts);
+        if (NUM_DIAGNOSTIC_VARS > 0)
+        {
+            m_patcher_diagnostics.define(
+                level_domain, coarser_gr_amr_level_ptr->m_grids,
+                NUM_DIAGNOSTIC_VARS, coarser_gr_amr_level_ptr->problemDomain(),
+                m_ref_ratio, m_num_ghosts);
+        }
     }
 }
 
@@ -670,6 +684,13 @@ void GRAMRLevel::readCheckpointLevel(HDF5Handle &a_handle)
         m_patcher.define(level_domain, coarser_gr_amr_level_ptr->m_grids,
                          NUM_VARS, coarser_gr_amr_level_ptr->problemDomain(),
                          m_ref_ratio, m_num_ghosts);
+        if (NUM_DIAGNOSTIC_VARS > 0)
+        {
+            m_patcher_diagnostics.define(
+                level_domain, coarser_gr_amr_level_ptr->m_grids,
+                NUM_DIAGNOSTIC_VARS, coarser_gr_amr_level_ptr->problemDomain(),
+                m_ref_ratio, m_num_ghosts);
+        }
     }
 
     // reshape state with new grids
@@ -980,9 +1001,9 @@ void GRAMRLevel::fillAllDiagnosticsGhosts()
     if (m_coarser_level_ptr != nullptr)
     {
         GRAMRLevel *coarser_gr_amr_level_ptr = gr_cast(m_coarser_level_ptr);
-        m_patcher.fillInterp(m_state_diagnostics,
-                             coarser_gr_amr_level_ptr->m_state_diagnostics, 0,
-                             0, NUM_DIAGNOSTIC_VARS);
+        m_patcher_diagnostics.fillInterp(
+            m_state_diagnostics, coarser_gr_amr_level_ptr->m_state_diagnostics,
+            0, 0, NUM_DIAGNOSTIC_VARS);
     }
     m_state_diagnostics.exchange(m_exchange_copier);
 }
