@@ -216,6 +216,7 @@ class ChomboParameters
                         extrapolating_vars, num_extrapolating_vars);
                     for (int icomp = 0; icomp < NUM_VARS; icomp++)
                     {
+                        bool is_extrapolating = false;
                         // if the variable is not in extrapolating vars, it is
                         // assumed to be sommerfeld by default
                         for (int icomp2 = 0; icomp2 < extrapolating_vars.size();
@@ -226,14 +227,15 @@ class ChomboParameters
                                 // should be an evolution variable
                                 CH_assert(extrapolating_vars[icomp2].second ==
                                           VariableType::evolution);
-                                boundary_params.mixed_bc_sommerfeld_vars
-                                    .push_back(icomp);
-                            }
-                            else
-                            {
                                 boundary_params.mixed_bc_extrapolating_vars
                                     .push_back(icomp);
+                                is_extrapolating = true;
                             }
+                        }
+                        if (!is_extrapolating)
+                        {
+                            boundary_params.mixed_bc_sommerfeld_vars.push_back(
+                                icomp);
                         }
                     }
                 }
