@@ -178,7 +178,8 @@ class ChomboParameters
                      BoundaryConditions::MIXED_BC))
                 {
                     int num_values = -1;
-                    std::vector<std::pair<int, VariableType>> nonzero_asymptotic_vars; 
+                    std::vector<std::pair<int, VariableType>>
+                        nonzero_asymptotic_vars;
                     load_vars_to_vector(pp, "nonzero_asymptotic_vars",
                                         "num_nonzero_asymptotic_vars",
                                         nonzero_asymptotic_vars, num_values);
@@ -208,29 +209,31 @@ class ChomboParameters
 
                     // if not yet done, read in the mixed conditions
                     int num_extrapolating_vars = 0;
-                    std::vector<std::pair<int, VariableType>> extrapolating_vars; 
+                    std::vector<std::pair<int, VariableType>>
+                        extrapolating_vars;
                     load_vars_to_vector(
                         pp, "extrapolating_vars", "num_extrapolating_vars",
-                        extrapolating_vars,
-                        num_extrapolating_vars);
+                        extrapolating_vars, num_extrapolating_vars);
                     for (int icomp = 0; icomp < NUM_VARS; icomp++)
                     {
                         // if the variable is not in extrapolating vars, it is
                         // assumed to be sommerfeld by default
-                        for(int icomp2 = 0; icomp2 < extrapolating_vars.size(); icomp2++)
+                        for (int icomp2 = 0; icomp2 < extrapolating_vars.size();
+                             icomp2++)
                         {
-                           if(icomp == extrapolating_vars[icomp2].first)
-                           {
-                               // should be an evolution variable
-                               CH_assert(extrapolating_vars[icomp2].second == VariableType::evolution);
-                               boundary_params.mixed_bc_sommerfeld_vars.push_back(
-                                   icomp);
-                           }
-                           else
-                           {
-                               boundary_params.mixed_bc_extrapolating_vars.push_back(
-                                   icomp);
-                           }
+                            if (icomp == extrapolating_vars[icomp2].first)
+                            {
+                                // should be an evolution variable
+                                CH_assert(extrapolating_vars[icomp2].second ==
+                                          VariableType::evolution);
+                                boundary_params.mixed_bc_sommerfeld_vars
+                                    .push_back(icomp);
+                            }
+                            else
+                            {
+                                boundary_params.mixed_bc_extrapolating_vars
+                                    .push_back(icomp);
+                            }
                         }
                     }
                 }
@@ -246,14 +249,16 @@ class ChomboParameters
 
     // function to create a vector of enums of vars by reading in their
     // names as strings from the params file and converting it to the enums
-    void load_vars_to_vector(GRParmParse &pp, const char *a_vars_vector_string,
-                             const char *a_vector_size_string,
-                             std::vector<std::pair<int, VariableType>> &a_vars_vector,
-                             int &a_vars_vector_size)
+    void load_vars_to_vector(
+        GRParmParse &pp, const char *a_vars_vector_string,
+        const char *a_vector_size_string,
+        std::vector<std::pair<int, VariableType>> &a_vars_vector,
+        int &a_vars_vector_size)
     {
         int num_values;
         pp.load(a_vector_size_string, num_values, -1);
-        // only set a_vars_vector and a_var_vector_size if a_vector_size_string found
+        // only set a_vars_vector and a_var_vector_size if a_vector_size_string
+        // found
         if (num_values >= 0)
         {
             std::vector<std::string> var_names(num_values, "");
@@ -292,11 +297,10 @@ class ChomboParameters
     // this reads in a set of associated values and assigns it into a full
     // array of all NUM_VARS vars (setting other values to a default value)
     template <class T>
-    void load_values_to_array(GRParmParse &pp,
-                              const char *a_values_vector_string,
-                              const std::vector<std::pair<int, VariableType>> &a_vars_vector,
-                              std::array<double, NUM_VARS> &a_values_array,
-                              const T a_default_value)
+    void load_values_to_array(
+        GRParmParse &pp, const char *a_values_vector_string,
+        const std::vector<std::pair<int, VariableType>> &a_vars_vector,
+        std::array<double, NUM_VARS> &a_values_array, const T a_default_value)
     {
         // how many values do I need to get?
         int num_values = a_vars_vector.size();
