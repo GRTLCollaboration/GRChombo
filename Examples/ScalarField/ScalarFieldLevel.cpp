@@ -14,7 +14,7 @@
 #include "MatterCCZ4.hpp"
 
 // For constraints calculation
-#include "MatterConstraints.hpp"
+#include "NewMatterConstraints.hpp"
 
 // For tag cells
 #include "ChiAndPhiTaggingCriterion.hpp"
@@ -63,7 +63,8 @@ void ScalarFieldLevel::prePlotLevel()
     Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
     BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
-                       scalar_field, m_dx, m_p.G_Newton),
+                       scalar_field, m_dx, c_Ham, Interval(c_Mom, c_Mom), -1,
+                       Interval(), m_p.G_Newton),
                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 }
 
