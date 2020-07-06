@@ -50,32 +50,44 @@ SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
 //! add a single variable or derivative of variable
 template <class SurfaceGeometry>
 void SurfaceExtraction<SurfaceGeometry>::add_var(int a_var,
+                                                 const VariableType a_var_type,
                                                  const Derivative &a_deriv)
 {
     CH_assert(!m_done_extraction);
-    m_vars.push_back({a_var, a_deriv});
+    m_vars.push_back(std::make_tuple(a_var, a_var_type, a_deriv));
     m_interp_data.emplace_back(m_num_points * m_params.num_surfaces);
 }
 
 //! add a vector of variables/derivatives of variables
 template <class SurfaceGeometry>
 void SurfaceExtraction<SurfaceGeometry>::add_vars(
-    const std::vector<std::pair<int, Derivative>> &a_vars)
+    const std::vector<std::tuple<int, VariableType, Derivative>> &a_vars)
 {
     for (auto var : a_vars)
     {
-        add_var(var.first, var.second);
+        add_var(std::get<0>(var), std::get<1>(var), std::get<2>(var));
     }
 }
 
-//! add a vector of variables (no derivatives)
+//! add a vector of evolutionvariables (no derivatives)
 template <class SurfaceGeometry>
-void SurfaceExtraction<SurfaceGeometry>::add_vars(
+void SurfaceExtraction<SurfaceGeometry>::add_evolution_vars(
     const std::vector<int> &a_vars)
 {
     for (auto var : a_vars)
     {
-        add_var(var);
+        add_var(var, VariableType::evolution);
+    }
+}
+
+//! add a vector of evolutionvariables (no derivatives)
+template <class SurfaceGeometry>
+void SurfaceExtraction<SurfaceGeometry>::add_diagnostic_vars(
+    const std::vector<int> &a_vars)
+{
+    for (auto var : a_vars)
+    {
+        add_var(var, VariableType::diagnostic);
     }
 }
 
@@ -120,8 +132,10 @@ void SurfaceExtraction<SurfaceGeometry>::extract(
     FOR1(idir) { query.setCoords(idir, m_interp_coords[idir].data()); }
     for (int ivar = 0; ivar < m_vars.size(); ++ivar)
     {
-        query.addComp(m_vars[ivar].first, m_interp_data[ivar].data(),
-                      m_vars[ivar].second);
+        // note the difference in order between the m_vars tuple in this class
+        // and the InterpolationQuery::out_t type
+        query.addComp(std::get<0>(m_vars[ivar]), m_interp_data[ivar].data(),
+                      std::get<2>(m_vars[ivar]), std::get<1>(m_vars[ivar]));
     }
 
     // submit the query
@@ -284,16 +298,26 @@ void SurfaceExtraction<SurfaceGeometry>::write_extraction(
         std::vector<std::string> components(m_vars.size());
         for (int ivar = 0; ivar < m_vars.size(); ++ivar)
         {
-            if (m_vars[ivar].second != Derivative::LOCAL)
+            if (std::get<2>(m_vars[ivar]) != Derivative::LOCAL)
             {
-                components[ivar] = Derivative::name(m_vars[ivar].second) + "_";
+                components[ivar] =
+                    Derivative::name(std::get<2>(m_vars[ivar])) + "_";
             }
             else
             {
                 components[ivar] = "";
             }
-            components[ivar] +=
-                UserVariables::variable_names[m_vars[ivar].first];
+            if (std::get<1>(m_vars[ivar]) == VariableType::evolution)
+            {
+                components[ivar] +=
+                    UserVariables::variable_names[std::get<0>(m_vars[ivar])];
+            }
+            else
+            {
+                components[ivar] +=
+                    DiagnosticVariables::variable_names[std::get<0>(
+                        m_vars[ivar])];
+            }
         }
         std::vector<std::string> coords = {m_geom.u_name(), m_geom.v_name()};
         extraction_file.write_header_line(components, coords);

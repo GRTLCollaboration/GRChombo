@@ -3,8 +3,11 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef USERVARIABLES_HPP_
-#define USERVARIABLES_HPP_
+#ifndef USERVARIABLES_HPP
+#define USERVARIABLES_HPP
+
+#include <array>
+#include <string>
 
 enum
 {
@@ -19,8 +22,8 @@ enum
 
 namespace UserVariables
 {
-static constexpr char const *variable_names[NUM_VARS] = {
+static const std::array<std::string, NUM_VARS> variable_names = {
     "d1", "d2", "d2_mixed", "diss", "advec_up", "advec_down"};
 }
 
-#endif /* USERVARIABLES_HPP_ */
+#endif /* USERVARIABLES_HPP */

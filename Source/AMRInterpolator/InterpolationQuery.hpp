@@ -7,14 +7,16 @@
 #define INTERPOLATIONQUERY_HPP_
 
 #include "Derivative.hpp"
+#include "VariableType.hpp"
 #include <map>
+#include <tuple>
 #include <utility>
 #include <vector>
 
 class InterpolationQuery
 {
   public:
-    typedef std::pair<int, double *> out_t;
+    typedef std::tuple<int, double *, VariableType> out_t;
     typedef std::map<Derivative, std::vector<out_t>> comp_map_t;
     typedef
         typename std::map<Derivative, std::vector<out_t>>::iterator iterator;
@@ -40,8 +42,10 @@ class InterpolationQuery
         return *this;
     }
 
-    InterpolationQuery &addComp(int comp, double *out_ptr,
-                                const Derivative &deriv = Derivative::LOCAL)
+    InterpolationQuery &
+    addComp(int comp, double *out_ptr,
+            const Derivative &deriv = Derivative::LOCAL,
+            VariableType variable_type = VariableType::evolution)
     {
         CH_assert(out_ptr != NULL || m_num_points == 0);
 
@@ -54,7 +58,7 @@ class InterpolationQuery
                          .first;
         }
 
-        result->second.push_back(out_t(comp, out_ptr));
+        result->second.push_back(out_t(comp, out_ptr, variable_type));
         return *this;
     }
 

@@ -10,6 +10,7 @@
 #include "BoundaryConditions.hpp"
 #include "GRParmParse.hpp"
 #include "UserVariables.hpp"
+#include "VariableType.hpp"
 #include <algorithm>
 
 class ChomboParameters
@@ -176,19 +177,20 @@ class ChomboParameters
                     (boundary_params.lo_boundary[idir] ==
                      BoundaryConditions::MIXED_BC))
                 {
-                    int num_values = 0;
-                    std::vector<int> nonzero_asymptotic_vars;
+                    int num_values = -1;
+                    std::vector<std::pair<int, VariableType>> nonzero_asymptotic_vars; 
                     load_vars_to_vector(pp, "nonzero_asymptotic_vars",
                                         "num_nonzero_asymptotic_vars",
                                         nonzero_asymptotic_vars, num_values);
+                    const double default_value = 0.0;
                     load_values_to_array(pp, "nonzero_asymptotic_values",
                                          nonzero_asymptotic_vars,
                                          boundary_params.vars_asymptotic_values,
-                                         0.0);
+                                         default_value);
 
-                    // for backwards compatibility, but previous method should
+                    // for backwards compatibility, but above method should
                     // be preferred in future
-                    if (num_values == 0)
+                    if (num_values == -1)
                     {
                         pp.load("vars_asymptotic_values",
                                 boundary_params.vars_asymptotic_values);
@@ -206,20 +208,29 @@ class ChomboParameters
 
                     // if not yet done, read in the mixed conditions
                     int num_extrapolating_vars = 0;
+                    std::vector<std::pair<int, VariableType>> extrapolating_vars; 
                     load_vars_to_vector(
                         pp, "extrapolating_vars", "num_extrapolating_vars",
-                        boundary_params.mixed_bc_extrapolating_vars,
+                        extrapolating_vars,
                         num_extrapolating_vars);
                     for (int icomp = 0; icomp < NUM_VARS; icomp++)
                     {
                         // if the variable is not in extrapolating vars, it is
                         // assumed to be sommerfeld by default
-                        std::vector<int> v =
-                            boundary_params.mixed_bc_extrapolating_vars;
-                        if (!(std::binary_search(v.begin(), v.end(), icomp)))
+                        for(int icomp2 = 0; icomp2 < extrapolating_vars.size(); icomp2++)
                         {
-                            boundary_params.mixed_bc_sommerfeld_vars.push_back(
-                                icomp);
+                           if(icomp == extrapolating_vars[icomp2].first)
+                           {
+                               // should be an evolution variable
+                               CH_assert(extrapolating_vars[icomp2].second == VariableType::evolution);
+                               boundary_params.mixed_bc_sommerfeld_vars.push_back(
+                                   icomp);
+                           }
+                           else
+                           {
+                               boundary_params.mixed_bc_extrapolating_vars.push_back(
+                                   icomp);
+                           }
                         }
                     }
                 }
@@ -236,31 +247,45 @@ class ChomboParameters
     // function to create a vector of enums of vars by reading in their
     // names as strings from the params file and converting it to the enums
     void load_vars_to_vector(GRParmParse &pp, const char *a_vars_vector_string,
-                             const char *a_vars_vector_size_string,
-                             std::vector<int> &a_vars_vector,
+                             const char *a_vector_size_string,
+                             std::vector<std::pair<int, VariableType>> &a_vars_vector,
                              int &a_vars_vector_size)
     {
         int num_values;
-        pp.load(a_vars_vector_size_string, num_values, 0);
-        std::vector<std::string> var_names(num_values, "");
-        pp.load(a_vars_vector_string, var_names, num_values, var_names);
-        for (std::string var_name : var_names)
+        pp.load(a_vector_size_string, num_values, -1);
+        // only set a_vars_vector and a_var_vector_size if a_vector_size_string found
+        if (num_values >= 0)
         {
-            int var = variable_name_to_enum(var_name);
-            if (var >= 0 && var < NUM_VARS)
+            std::vector<std::string> var_names(num_values, "");
+            pp.load(a_vars_vector_string, var_names, num_values, var_names);
+            for (std::string var_name : var_names)
             {
-                a_vars_vector.push_back(var);
+                // first assume plot_var is a normal evolution var
+                int var = UserVariables::variable_name_to_enum(var_name);
+                VariableType var_type = VariableType::evolution;
+                if (var < 0)
+                {
+                    // if not an evolution var check if it's a diagnostic var
+                    var = DiagnosticVariables::variable_name_to_enum(var_name);
+                    if (var < 0)
+                    {
+                        // it's neither :(
+                        pout() << "Variable with name " << var_name
+                               << " not found." << endl;
+                    }
+                    else
+                    {
+                        var_type = VariableType::diagnostic;
+                    }
+                }
+                if (var >= 0)
+                {
+                    a_vars_vector.emplace_back(var, var_type);
+                }
             }
-            else
-            {
-                pout() << "Warning: in params.txt you have selected a variable "
-                       << var_name
-                       << " which does not exist. This will be ignored."
-                       << std::endl;
-            }
+            // overwrites read in value if entries have been ignored
+            a_vars_vector_size = a_vars_vector.size();
         }
-        // overwrites read in value if entries have been ignored
-        a_vars_vector_size = a_vars_vector.size();
     }
 
     // where one has read in a subset of variables with some feature
@@ -269,7 +294,7 @@ class ChomboParameters
     template <class T>
     void load_values_to_array(GRParmParse &pp,
                               const char *a_values_vector_string,
-                              const std::vector<int> &a_vars_vector,
+                              const std::vector<std::pair<int, VariableType>> &a_vars_vector,
                               std::array<double, NUM_VARS> &a_values_array,
                               const T a_default_value)
     {
@@ -283,40 +308,9 @@ class ChomboParameters
         a_values_array.fill(a_default_value);
         for (int i = 0; i < num_values; i++)
         {
-            int icomp = a_vars_vector[i];
+            int icomp = a_vars_vector[i].first;
+            CH_assert(a_vars_vector[i].second == VariableType::evolution);
             a_values_array[icomp] = vars_values[i];
-        }
-    }
-
-    /// Takes a string and returns the variable enum number if the string
-    /// matches one of those in UserVariables::variable_names, or returns -1
-    /// otherwise
-    int variable_name_to_enum(const std::string &a_var_name)
-    {
-        using namespace UserVariables;
-
-        // std::find did not work very well with the char const* array type of
-        // UserVariables::variable_names so here convert to a
-        // std::array of std::strings first. This is quite inefficient but this
-        // function isn't used much so doesn't matter.
-        std::array<std::string, NUM_VARS> variable_names_array;
-        for (int ivar = 0; ivar < NUM_VARS; ++ivar)
-        {
-            variable_names_array[ivar] = variable_names[ivar];
-        }
-
-        const auto var_name_it =
-            std::find(variable_names_array.begin(), variable_names_array.end(),
-                      a_var_name);
-
-        int var = std::distance(variable_names_array.begin(), var_name_it);
-        if (var != NUM_VARS)
-            return var;
-        else
-        {
-            pout() << "Variable with name " << a_var_name << " not found."
-                   << std::endl;
-            return -1;
         }
     }
 
@@ -342,7 +336,8 @@ class ChomboParameters
     std::string checkpoint_prefix, plot_prefix; // naming of files
     bool write_plot_ghosts;
     int num_plot_vars;
-    std::vector<int> plot_vars; // vars to write to plot file
+    std::vector<std::pair<int, VariableType>>
+        plot_vars; // vars to write to plot file
 
     // Boundary conditions
     std::array<bool, CH_SPACEDIM> isPeriodic;     // periodicity

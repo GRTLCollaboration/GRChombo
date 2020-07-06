@@ -52,7 +52,6 @@ vars_parity            = 0 0 4 6 0 5 0    #chi and hij
                          0 1 2 3          #Theta and Gamma
                          0 1 2 3 1 2 3    #lapse shift and B
                          0 0              #phi and Pi
-                         0 1 2 3          #Ham and Mom
 
 # if sommerfeld boundaries selected, must specify any nonzero
 # asymptotic values
