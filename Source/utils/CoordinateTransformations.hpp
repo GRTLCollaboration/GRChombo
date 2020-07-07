@@ -9,6 +9,7 @@
 #include "AlwaysInline.hpp"
 #include "DimensionDefinitions.hpp"
 #include "Tensor.hpp"
+#include "simd.hpp"
 
 namespace CoordinateTransformations
 {
@@ -40,6 +41,7 @@ static Tensor<2, data_t> jacobian(const data_t x, const double y,
     jac[1][2] = -rho / r2;
     jac[2][2] = 0.0;
     return jac;
+
 }
 
 // Incerse Jacobian
@@ -61,13 +63,13 @@ static Tensor<2, data_t> inverse_jacobian(const data_t x, const double y,
     // derivatives for inverse jacobian matrix - drdx etc
     Tensor<2, data_t> inv_jac;
     inv_jac[0][0] = x / r;
-    inv_jac[1][0] = y / r;
-    inv_jac[2][0] = z / r;
-    inv_jac[0][1] = z * cos_phi;
+    inv_jac[0][1] = y / r;
+    inv_jac[0][2] = z / r;
+    inv_jac[1][0] = z * cos_phi;
     inv_jac[1][1] = z * sin_phi;
-    inv_jac[2][1] = -r * sin_theta;
-    inv_jac[0][2] = -y;
-    inv_jac[1][2] = x;
+    inv_jac[1][2] = -r * sin_theta;
+    inv_jac[2][0] = -y;
+    inv_jac[2][1] = x;
     inv_jac[2][2] = 0.0;
     return inv_jac;
 }
@@ -90,7 +92,7 @@ static Tensor<2, data_t>
         cartesian_g[i][j] = 0;
         FOR2(k, m)
         {
-            cartesian_g[i][j] += spherical_g[k][m] * jac[k][i] * jac[m][j];
+            cartesian_g[i][j] += spherical_g[k][m] * jac[i][k] * jac[j][m];
         }
     }
     return cartesian_g;
@@ -115,7 +117,7 @@ static Tensor<2, data_t>
         FOR2(k, m)
         {
             cartesian_g_UU[i][j] +=
-                spherical_g_UU[k][m] * inv_jac[k][i] * inv_jac[m][j];
+                spherical_g_UU[k][m] * inv_jac[i][k] * inv_jac[j][m];
         }
     }
     return cartesian_g_UU;
@@ -140,7 +142,7 @@ static Tensor<2, data_t>
         FOR2(k, m)
         {
             spherical_g[i][j] +=
-                cartesian_g[k][m] * inv_jac[k][i] * inv_jac[m][j];
+                cartesian_g[k][m] * inv_jac[i][k] * inv_jac[j][m];
         }
     }
     return spherical_g;
@@ -206,7 +208,7 @@ Tensor<1, data_t> spherical_to_cartesian_L(Tensor<1, data_t> spherical_v,
     FOR1(i)
     {
         cartesian_v[i] = 0.0;
-        FOR1(j) { cartesian_v[i] += inv_jac[i][j] * spherical_v[j]; }
+        FOR1(j) { cartesian_v[i] += jac[i][j] * spherical_v[j]; }
     }
     return cartesian_v;
 }
