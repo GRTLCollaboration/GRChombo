@@ -206,7 +206,7 @@ Tensor<1, data_t> spherical_to_cartesian_L(Tensor<1, data_t> spherical_v,
     FOR1(i)
     {
         cartesian_v[i] = 0.0;
-        FOR1(j) { cartesian_v[i] += inv_jac[i][j] * spherical_v[j]; }
+        FOR1(j) { cartesian_v[i] += jac[i][j] * spherical_v[j]; }
     }
     return cartesian_v;
 }
