@@ -24,8 +24,8 @@ checkpoint_interval = 1
 # extraction params
 num_extraction_radii = 2
 extraction_radii = 4. 6.
-num_points_phi_lo = 16
-num_points_theta_lo = 17
+num_points_phi_lo = 12
+num_points_theta_lo = 13
 
 # Spherical Harmonic to set and extract
 es = 0
