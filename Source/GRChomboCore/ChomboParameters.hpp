@@ -204,38 +204,40 @@ class ChomboParameters
                 {
                     // only read in these params once, even if specified in
                     // several directions. They must be the same for all.
-                    if (boundary_params.mixed_bc_extrapolating_vars.size() > 0)
-                        break;
-
-                    // if not yet done, read in the mixed conditions
-                    int num_extrapolating_vars = 0;
-                    std::vector<std::pair<int, VariableType>>
-                        extrapolating_vars;
-                    load_vars_to_vector(
-                        pp, "extrapolating_vars", "num_extrapolating_vars",
-                        extrapolating_vars, num_extrapolating_vars);
-                    for (int icomp = 0; icomp < NUM_VARS; icomp++)
+                    if (boundary_params.mixed_bc_extrapolating_vars.size() == 0)
                     {
-                        bool is_extrapolating = false;
-                        // if the variable is not in extrapolating vars, it is
-                        // assumed to be sommerfeld by default
-                        for (int icomp2 = 0; icomp2 < extrapolating_vars.size();
-                             icomp2++)
+
+                        // if not yet done, read in the mixed conditions
+                        int num_extrapolating_vars = 0;
+                        std::vector<std::pair<int, VariableType>>
+                            extrapolating_vars;
+                        load_vars_to_vector(
+                            pp, "extrapolating_vars", "num_extrapolating_vars",
+                            extrapolating_vars, num_extrapolating_vars);
+                        for (int icomp = 0; icomp < NUM_VARS; icomp++)
                         {
-                            if (icomp == extrapolating_vars[icomp2].first)
+                            bool is_extrapolating = false;
+                            // if the variable is not in extrapolating vars, it
+                            // is assumed to be sommerfeld by default
+                            for (int icomp2 = 0;
+                                 icomp2 < extrapolating_vars.size(); icomp2++)
                             {
-                                // should be an evolution variable
-                                CH_assert(extrapolating_vars[icomp2].second ==
-                                          VariableType::evolution);
-                                boundary_params.mixed_bc_extrapolating_vars
-                                    .push_back(icomp);
-                                is_extrapolating = true;
+                                if (icomp == extrapolating_vars[icomp2].first)
+                                {
+                                    // should be an evolution variable
+                                    CH_assert(
+                                        extrapolating_vars[icomp2].second ==
+                                        VariableType::evolution);
+                                    boundary_params.mixed_bc_extrapolating_vars
+                                        .push_back(icomp);
+                                    is_extrapolating = true;
+                                }
                             }
-                        }
-                        if (!is_extrapolating)
-                        {
-                            boundary_params.mixed_bc_sommerfeld_vars.push_back(
-                                icomp);
+                            if (!is_extrapolating)
+                            {
+                                boundary_params.mixed_bc_sommerfeld_vars
+                                    .push_back(icomp);
+                            }
                         }
                     }
                 }
