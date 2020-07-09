@@ -34,7 +34,7 @@
 
 template <class matter_t> class ChiRelaxation
 {
-
+  public:
     // Use the variable definitions in MatterCCZ4
     template <class data_t>
     using Vars = typename MatterCCZ4<matter_t>::template Vars<data_t>;
@@ -42,14 +42,17 @@ template <class matter_t> class ChiRelaxation
     template <class data_t>
     using Diff2Vars = typename MatterCCZ4<matter_t>::template Diff2Vars<data_t>;
 
-  public:
     //! Constructor of class ChiRelaxation
     /*!
         Takes in the grid spacing, plus the relaxation speed, a matter object
         and the value of Newton's constant, which is set to one by default.
     */
     ChiRelaxation(matter_t a_matter, double dx, double relax_speed,
-                  double G_Newton = 1.0);
+                  double G_Newton = 1.0)
+        : my_matter(a_matter), m_relax_speed(relax_speed), m_G_Newton(G_Newton),
+          m_deriv(dx)
+    {
+    }
 
     //! The compute member which calculates the RHS at each point in the box \sa
     //! rhs_equation()
@@ -63,6 +66,7 @@ template <class matter_t> class ChiRelaxation
     const FourthOrderDerivatives
         m_deriv; //!< An object for calculating derivatives of the variables
 
+  public:
     //! The function which calculates the RHS, given the vars and derivatives
     //! \sa compute()
     template <class data_t>

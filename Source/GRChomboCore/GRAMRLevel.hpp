@@ -183,6 +183,7 @@ class GRAMRLevel : public AMRLevel, public InterpSource
 
     GRLevelData m_state_old; //!< the solution at the old time
     GRLevelData m_state_new; //!< the solution at the new time
+    int m_RK_stage;          //!< RK4 stage 0-3
     GRLevelData m_state_diagnostics;
     Real m_dx; //!< grid spacing
     double m_restart_time;
@@ -201,7 +202,7 @@ class GRAMRLevel : public AMRLevel, public InterpSource
                                     //!< fine levels of ghosts
     FourthOrderFillPatch
         m_patcher_diagnostics; //!< Organises interpolation from coarse to
-                               //!< fine levels of ghosts for diagnostics
+                               //!< fine levels of ghosts
     FourthOrderFineInterp m_fine_interp; //!< executes the interpolation from
                                          //!< coarse to fine when regridding
 

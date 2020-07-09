@@ -188,3 +188,62 @@ void SmallDataIO::get_specific_data_line(std::vector<double> &a_out_data,
     std::vector<double> coords(1, a_coord);
     get_specific_data_line(a_out_data, coords);
 }
+
+// for read in of fixed size CH_SPACEDIM +1 - for spatial coords + var data)
+void SmallDataIO::get_data_array(
+    std::vector<std::array<double, CH_SPACEDIM + 1>> &a_out_data)
+{
+    // need Vector formats for broadcast
+    Vector<double> x_Vect;
+    Vector<double> y_Vect;
+    Vector<double> z_Vect;
+    Vector<double> data_Vect;
+
+    if (m_rank == 0)
+    {
+        // set the current position to the beginning of the file
+        m_file.seekg(0);
+        std::string line;
+        // loop through the lines
+        while (std::getline(m_file, line))
+        {
+            int data_width = line.size() / (CH_SPACEDIM + 1);
+            // first read in the coords
+            for (int icoord = 0; icoord < CH_SPACEDIM; icoord++)
+            {
+                double coord_value =
+                    std::stod(line.substr(icoord * data_width, data_width));
+                if (icoord == 0)
+                {
+                    x_Vect.push_back(coord_value);
+                }
+                else if (icoord == 1)
+                {
+                    y_Vect.push_back(coord_value);
+                }
+                else if (icoord == 2)
+                {
+                    z_Vect.push_back(coord_value);
+                }
+            }
+            // now the data value
+            double data_value =
+                std::stod(line.substr(CH_SPACEDIM * data_width, data_width));
+            data_Vect.push_back(data_value);
+        }
+    }
+    // now broadcast the vector to all ranks using Chombo broadcast function
+    int broadcast_rank = 0;
+    broadcast(x_Vect, broadcast_rank);
+    broadcast(y_Vect, broadcast_rank);
+    broadcast(z_Vect, broadcast_rank);
+    broadcast(data_Vect, broadcast_rank);
+
+    // finally convert the Vector into the array format required
+    a_out_data.resize(data_Vect.size());
+    for (int iline = 0; iline < data_Vect.size(); iline++)
+    {
+        a_out_data[iline] = {x_Vect[iline], y_Vect[iline], z_Vect[iline],
+                             data_Vect[iline]};
+    }
+}

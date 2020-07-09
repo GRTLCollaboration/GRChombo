@@ -81,7 +81,6 @@ class ChiExtractionTaggingCriterion
                 }
             }
         }
-
         // Write back into the flattened Chombo box
         current_cell.store_vars(criterion, 0);
     }

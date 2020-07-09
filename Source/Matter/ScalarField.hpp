@@ -8,6 +8,7 @@
 
 #include "CCZ4Geometry.hpp"
 #include "DefaultPotential.hpp"
+#include "DimensionDefinitions.hpp"
 #include "FourthOrderDerivatives.hpp"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"
@@ -37,13 +38,6 @@ template <class potential_t = DefaultPotential> class ScalarField
   public:
     //!  Constructor of class ScalarField, inputs are the matter parameters.
     ScalarField(const potential_t a_potential) : my_potential(a_potential) {}
-
-    //! Structure containing the variables for the matter fields
-    template <class data_t> struct SFObject
-    {
-        data_t phi;
-        data_t Pi;
-    };
 
     //! Structure containing the rhs variables for the matter fields
     template <class data_t> struct Vars
@@ -90,11 +84,9 @@ template <class potential_t = DefaultPotential> class ScalarField
     //! derivatives, excluding the potential
     template <class data_t, template <typename> class vars_t>
     static void emtensor_excl_potential(
-        emtensor_t<data_t> &out,         //!< the em tensor output
-        const vars_t<data_t> &vars,      //!< the value of the variables
-        const SFObject<data_t> &vars_sf, //!< the value of the sf variables
-        const Tensor<1, data_t>
-            &d1_phi,                   //!< the value of the first deriv of phi
+        emtensor_t<data_t> &out,             //!< the em tensor output
+        const vars_t<data_t> &vars,          //!< the value of the variables
+        const vars_t<Tensor<1, data_t>> &d1, //!< the value of the first derivs
         const Tensor<2, data_t> &h_UU, //!< the inverse metric (raised indices).
         const Tensor<3, data_t>
             &chris_ULL); //!< the conformal christoffel symbol
@@ -114,16 +106,15 @@ template <class potential_t = DefaultPotential> class ScalarField
 
     //! The function which calculates the RHS for the matter field vars
     //! excluding the potential
-    template <class data_t, template <typename> class vars_t>
+    template <class data_t, template <typename> class vars_t,
+              template <typename> class diff2_vars_t,
+              template <typename> class rhs_vars_t>
     static void matter_rhs_excl_potential(
-        SFObject<data_t>
-            &rhs_sf, //!< the value of the RHS terms for the sf vars
-        const vars_t<data_t> &vars,      //!< the values of all the variables
-        const SFObject<data_t> &vars_sf, //!< the value of the sf variables
+        rhs_vars_t<data_t> &rhs, //!< the value of the RHS terms for the sf vars
+        const vars_t<data_t> &vars, //!< the values of all the variables
         const vars_t<Tensor<1, data_t>> &d1, //!< the value of the 1st derivs
-        const Tensor<1, data_t> &d1_phi, //!< the value of the 1st derivs of phi
-        const Tensor<2, data_t> &d2_phi, //!< the value of the 2nd derivs of phi
-        const SFObject<data_t> &advec_sf); //!< advection terms for the sf vars
+        const diff2_vars_t<Tensor<2, data_t>> &d2, //!< value of the 2nd derivs
+        const vars_t<data_t> &advec);
 };
 
 #include "ScalarField.impl.hpp"

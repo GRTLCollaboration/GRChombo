@@ -108,6 +108,7 @@ Real GRAMRLevel::advance()
     int nbox = level_domain.dataIterator().size();
     pout() << "GRAMRLevel::advance level " << m_level << " at time " << m_time
            << " (" << speed << " M/hr)"
+
            << ". Boxes on this rank: " << nbox << "." << endl;
 
     // copy soln to old state to save it
@@ -141,6 +142,9 @@ Real GRAMRLevel::advance()
         t_coarser_old = t_coarser_new - coarser_gr_amr_level_ptr->m_dt;
     }
 
+    // Reset RK stage to zero
+    m_RK_stage = 0;
+
     if (m_finer_level_ptr != nullptr)
     {
         GRAMRLevel *fine_gr_amr_level_ptr = gr_cast(m_finer_level_ptr);
@@ -158,7 +162,7 @@ Real GRAMRLevel::advance()
     }
 
     specificAdvance();
-    // enforce symmetric BCs - in case of updates in specificAdvance
+    // enforce solution BCs - in case of updates in specificAdvance
     fillBdyGhosts(m_state_new);
 
     m_time += m_dt;
@@ -182,7 +186,7 @@ void GRAMRLevel::postTimeStep()
 
     specificPostTimeStep();
 
-    // enforce symmetric BCs - this is required after the averaging
+    // enforce solution BCs - this is required after the averaging
     // and postentially after specificPostTimeStep actions
     fillBdyGhosts(m_state_new);
 
@@ -303,7 +307,6 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
                 NUM_DIAGNOSTIC_VARS, coarser_gr_amr_level_ptr->problemDomain(),
                 m_ref_ratio, m_num_ghosts);
         }
-
         // interpolate from coarser level
         m_fine_interp.interpToFine(m_state_new,
                                    coarser_gr_amr_level_ptr->m_state_new);
@@ -326,7 +329,7 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
     // interpolated)
     copyBdyGhosts(m_state_old, m_state_new);
 
-    // enforce symmetric BCs (overwriting any interpolation)
+    // enforce solution BCs (overwriting any interpolation)
     fillBdyGhosts(m_state_new);
 
     m_state_old.define(level_domain, NUM_VARS, iv_ghosts);
@@ -390,7 +393,7 @@ void GRAMRLevel::initialGrid(const Vector<Box> &a_new_grids)
 }
 
 // things to do after initialization
-void GRAMRLevel::postInitialize() { m_restart_time = 0.; }
+void GRAMRLevel::postInitialize() { m_restart_time = 0.0; }
 
 // compute dt
 Real GRAMRLevel::computeDt()
@@ -890,7 +893,6 @@ void GRAMRLevel::evalRHS(GRLevelData &rhs, GRLevelData &soln,
 
     if (oldCrseSoln.isDefined())
     {
-        // "time" falls between the old and the new coarse times
         Real alpha = (time - oldCrseTime) / (newCrseTime - oldCrseTime);
 
         // Assuming RK4, we know that there can only be 5 different alpha so fix
@@ -913,13 +915,19 @@ void GRAMRLevel::evalRHS(GRLevelData &rhs, GRLevelData &soln,
                 "Time interpolation coefficient is incompatible with RK4.");
         }
 
-        // Interpolate ghost cells from next coarser level in space and time
+        // We should perhaps use the RK4 stage data
+        CH_assert(m_RK_stage < 4);
+        // m_patcher.fillRK4Intermediate(soln, alpha, m_RK_stage, 0, 0,
+        // NUM_VARS);
+
+        // Old code - does not use difference in stages 1 and 2
         m_patcher.fillInterp(soln, alpha, 0, 0, NUM_VARS);
     }
 
     fillBdyGhosts(soln);
 
     specificEvalRHS(soln, rhs, time); // Call the problem specific rhs
+    m_RK_stage += 1;                  // Increment RK stage info
 
     // evolution of the boundaries according to conditions
     if (m_p.nonperiodic_boundaries_exist)
@@ -995,7 +1003,7 @@ void GRAMRLevel::fillAllDiagnosticsGhosts()
 {
     CH_TIME("GRAMRLevel::fillAllDiagnosticsGhosts");
     if (m_verbosity)
-        pout() << "GRAMRLevel::fillAllDiagnosticsGhosts" << endl;
+        pout() << "GRAMRLevel::fillAllDiagnosticsGhosts " << m_level << endl;
 
     // If there is a coarser level then interpolate undefined ghost cells
     if (m_coarser_level_ptr != nullptr)
@@ -1016,11 +1024,11 @@ void GRAMRLevel::fillIntralevelGhosts()
 
 void GRAMRLevel::fillBdyGhosts(GRLevelData &a_state)
 {
-    // enforce symmetric BCs after filling ghosts
-    if (m_p.symmetric_boundaries_exist)
+    // enforce solution BCs after filling ghosts, e.g. if symmetric
+    if (m_p.boundary_solution_enforced)
     {
-        m_boundaries.enforce_symmetric_boundaries(Side::Hi, a_state);
-        m_boundaries.enforce_symmetric_boundaries(Side::Lo, a_state);
+        m_boundaries.enforce_solution_boundaries(Side::Hi, a_state);
+        m_boundaries.enforce_solution_boundaries(Side::Lo, a_state);
     }
 }
 

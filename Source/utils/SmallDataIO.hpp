@@ -206,6 +206,11 @@ class SmallDataIO
     //! file
     void get_specific_data_line(std::vector<double> &a_out_data,
                                 const double a_coord);
+
+    //! Read a file of data into a vector of arrays of length CH_SPACEDIM+1
+    //! useful for read in of grid data (x, y, z, value)
+    void get_data_array(
+        std::vector<std::array<double, CH_SPACEDIM + 1>> &a_out_data);
 };
 
 #endif /* SMALLDATAIO_HPP_ */
