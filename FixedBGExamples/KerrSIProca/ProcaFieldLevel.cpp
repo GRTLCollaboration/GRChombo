@@ -50,8 +50,8 @@ void ProcaFieldLevel::initialData()
                                 m_p.center, m_p.bg_params, m_dx);
     BoxLoops::loop(set_field, m_state_new, m_state_new, FILL_GHOST_CELLS);
 
-   // BoxLoops::loop(kerr_bh, m_state_new, m_state_diagnostics,
-   //                SKIP_GHOST_CELLS);
+    // BoxLoops::loop(kerr_bh, m_state_new, m_state_diagnostics,
+    //                SKIP_GHOST_CELLS);
 
     // now the gauss constraint
     /*

@@ -328,6 +328,17 @@ void BoundaryConditions::fill_extrapolating_cell(
             {
                 IntVect iv_tmp = iv;
                 iv_tmp[dir] += -units_from_edge - i;
+                FOR1(idir)
+                {
+                    if (iv_tmp[idir] > m_domain_box.bigEnd(idir))
+                    {
+                        iv_tmp[idir] = m_domain_box.bigEnd(idir);
+                    }
+                    else if (iv_tmp[idir] < m_domain_box.smallEnd(idir))
+                    {
+                        iv_tmp[idir] = m_domain_box.smallEnd(idir);
+                    }
+                }
                 value_at_point[i] = rhs_box(iv_tmp, icomp);
                 r_at_point[i] = Coordinates<double>::get_radius(
                     iv_tmp, m_dx, {m_center[0], m_center[1], m_center[2]});
@@ -342,6 +353,17 @@ void BoundaryConditions::fill_extrapolating_cell(
             {
                 IntVect iv_tmp = iv;
                 iv_tmp[dir] += units_from_edge + i;
+                FOR1(idir)
+                {
+                    if (iv_tmp[idir] > m_domain_box.bigEnd(idir))
+                    {
+                        iv_tmp[idir] = m_domain_box.bigEnd(idir);
+                    }
+                    else if (iv_tmp[idir] < m_domain_box.smallEnd(idir))
+                    {
+                        iv_tmp[idir] = m_domain_box.smallEnd(idir);
+                    }
+                }
                 value_at_point[i] = rhs_box(iv_tmp, icomp);
                 r_at_point[i] = Coordinates<double>::get_radius(
                     iv_tmp, m_dx, {m_center[0], m_center[1], m_center[2]});
