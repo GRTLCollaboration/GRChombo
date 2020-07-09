@@ -1,0 +1,93 @@
+#Params for runtime inputs
+
+verbosity = 0 
+integral_filename = ProcaDensities
+chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Proca/Realmu0.5A0.01c1.0_chk
+plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Proca/Realmu0.5A0.01c1.0_plt
+#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Proca/Realmu0.5A0.01c1.0_chk004500.3d.hdf5
+write_plot_ghosts = 0
+
+# Set up grid spacings and regrid params
+# NB - the N values need to be multiples of block_factor
+N1 = 96
+N2 = 96
+N3 = 48
+
+# Length of longest box side, dx_coarsest = L/N(max)
+# NB if non cubic, this determines dx for all sides
+L = 960
+#center = 320.0 320.0 0.0
+
+# Level data
+# Maximum number of times you can regrid above coarsest level
+max_level = 8 # There are (max_level+1) grids, so min is zero
+# Frequency of regridding at each level
+# Need one for each level, ie max_level+1 items
+# Generally you do not need to regrid frequently on every level
+regrid_interval = 0 0 0 0 0 0 0 0 0 0
+
+# Max box size
+max_grid_size = 16
+# Min box size
+block_factor = 16
+tag_buffer_size = 0
+
+#boundaries and periodicity of grid
+#Periodic directions - 0 = false, 1 = true
+isPeriodic = 0 0 0
+
+# if not periodic, then specify the boundary type
+# 0 = static, 1 = sommerfeld, 2 = reflective, 3 = extrapolating
+# (see BoundaryConditions.hpp for details)
+hi_boundary = 1 1 1
+lo_boundary = 1 1 2
+
+# if reflective boundaries selected, must set
+# parity of all vars (in order given by UserVariables.hpp)
+# 0 = even
+# 1,2,3 = odd x, y, z
+# 4,5,6 = odd xy, yz, xz
+vars_parity            = 0 1 2 3    #phi Avec
+                         1 2 3 0      #Evec Z
+
+# if sommerfeld boundaries selected, must specify any
+# nonzero asymptotic values
+#vars_asymptotic_values = 0 0 0 0 0 0 0 0
+num_nonzero_asymptotic_vars = 0
+nonzero_asymptotic_vars = phi
+nonzero_asymptotic_values = 0.0
+
+# Set up time steps
+# dt will be dx*dt_multiplier on each grid level
+# HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
+checkpoint_interval = 20
+plot_interval = 1
+num_plot_vars = 4
+plot_vars = phi Z rho Xsquared
+dt_multiplier = 0.2
+stop_time = 10000.0
+
+# coefficient for KO numerical dissipation
+sigma = 2.0
+
+# PF Initial data
+proca_mass = 0.5
+proca_self_interaction = 1.0
+proca_damping = 2.0
+field_amplitude = 0.01
+excision_width = 0.8
+
+# Boosted BH initial data, boost in x direction, spin in z direction
+bh_mass = 1.0
+bh_spin = 0.99 # This is a, so needs to be <= M
+
+# for extraction
+activate_extraction = 1
+write_extraction = 0
+num_extraction_radii = 3
+extraction_radii = 1.10 1.12 1.14
+extraction_levels = 0 0 0
+num_points_phi = 24
+num_points_t = 24
+zaxis_over_xaxis = 0.755
+num_modes = 0

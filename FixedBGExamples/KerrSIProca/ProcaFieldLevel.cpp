@@ -1,0 +1,154 @@
+/* GRChombo
+ * Copyright 2012 The GRChombo collaboration.
+ * Please refer to LICENSE in GRChombo's root directory.
+ */
+
+// General includes common to most GR problems
+#include "ProcaFieldLevel.hpp"
+#include "BoxLoops.hpp"
+#include "ComputePack.hpp"
+#include "NanCheck.hpp"
+#include "SetValue.hpp"
+#include "SmallDataIO.hpp"
+
+// For tag cells
+#include "FixedGridsTaggingCriterion.hpp"
+
+// Problem specific includes
+#include "ExcisionProcaDiagnostics.hpp"
+#include "ExcisionProcaEvolution.hpp"
+#include "FixedBGDensityAndAngularMom.hpp"
+#include "FixedBGEnergyAndAngularMomFlux.hpp"
+#include "FixedBGEvolution.hpp"
+#include "FixedBGProcaFieldTest.hpp"
+#include "FluxExtraction.hpp"
+#include "InitialConditions.hpp"
+#include "KerrSchildFixedBG.hpp"
+#include "Potential.hpp"
+#include "XSquared.hpp"
+//#include "ProcaConstraint.hpp"
+
+// Things to do at each advance step, after the RK4 is calculated
+void ProcaFieldLevel::specificAdvance()
+{
+    // Check for nan's
+    if (m_p.nan_check)
+        BoxLoops::loop(NanCheck(), m_state_new, m_state_new, SKIP_GHOST_CELLS,
+                       disable_simd());
+}
+
+// Initial data for field and metric variables
+void ProcaFieldLevel::initialData()
+{
+    CH_TIME("ProcaFieldLevel::initialData");
+    if (m_verbosity)
+        pout() << "ProcaFieldLevel::initialData " << m_level << endl;
+
+    // Set the ICs
+    KerrSchildFixedBG kerr_bh(m_p.bg_params, m_dx); // just calculates chi
+    InitialConditions set_field(m_p.field_amplitude, m_p.potential_params.mass,
+                                m_p.center, m_p.bg_params, m_dx);
+    BoxLoops::loop(set_field, m_state_new, m_state_new, FILL_GHOST_CELLS);
+
+   // BoxLoops::loop(kerr_bh, m_state_new, m_state_diagnostics,
+   //                SKIP_GHOST_CELLS);
+
+    // now the gauss constraint
+    /*
+        fillAllGhosts();
+        ProcaConstraint enforce_constraint(m_p.center, m_p.bg_params,
+                                           m_p.potential_params.mass, m_dx);
+        BoxLoops::loop(enforce_constraint, m_state_new, m_state_new,
+                       EXCLUDE_GHOST_CELLS);
+    */
+    // make excision data zero
+    BoxLoops::loop(ExcisionProcaEvolution<ProcaField, KerrSchildFixedBG>(
+                       m_dx, m_p.center, kerr_bh, 1.0),
+                   m_state_new, m_state_new, EXCLUDE_GHOST_CELLS,
+                   disable_simd());
+
+    // setup the output file
+    SmallDataIO integral_file(m_p.integral_filename, m_dt, m_time,
+                              m_restart_time, SmallDataIO::APPEND, true);
+    std::vector<std::string> header_strings = {"rho", "rhoJ"};
+    integral_file.write_header_line(header_strings);
+}
+
+// Things to do after each timestep
+void ProcaFieldLevel::specificPostTimeStep()
+{
+    // At any level, but after the coarsest timestep
+    double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
+    const double diff = remainder(m_time, coarsest_dt);
+    if (abs(diff) < 1.0e-8)
+    {
+        // calculate the density of the PF, but excise the BH region completely
+        fillAllGhosts();
+        Potential potential(m_p.potential_params);
+        ProcaField proca_field(potential, m_p.proca_damping);
+        KerrSchildFixedBG kerr_bh(m_p.bg_params, m_dx);
+        FixedBGDensityAndAngularMom<ProcaField, KerrSchildFixedBG> densities(
+            proca_field, kerr_bh, m_dx, m_p.center);
+        FixedBGEnergyAndAngularMomFlux<ProcaField, KerrSchildFixedBG> fluxes(
+            proca_field, kerr_bh, m_dx, m_p.center,
+            m_p.extraction_params.zaxis_over_xaxis);
+        XSquared set_xsquared(m_p.potential_params, m_p.bg_params, m_p.center,
+                              m_dx);
+        BoxLoops::loop(make_compute_pack(densities, fluxes, set_xsquared),
+                       m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
+        BoxLoops::loop(ExcisionProcaDiagnostics<ProcaField, KerrSchildFixedBG>(
+                           m_dx, m_p.center, kerr_bh, 1.0),
+                       m_state_diagnostics, m_state_diagnostics,
+                       SKIP_GHOST_CELLS, disable_simd());
+    }
+
+    // write out the integral after each coarse timestep
+    if (m_level == 0)
+    {
+        // integrate the densities and write to a file
+        double rho_sum = m_gr_amr.compute_sum(c_rho, m_p.coarsest_dx);
+        double rho_J_sum = m_gr_amr.compute_sum(c_rhoJ, m_p.coarsest_dx);
+
+        SmallDataIO integral_file(m_p.integral_filename, m_dt, m_time,
+                                  m_restart_time, SmallDataIO::APPEND, false);
+        // remove any duplicate data if this is post restart
+        integral_file.remove_duplicate_time_data();
+        std::vector<double> data_for_writing = {rho_sum, rho_J_sum};
+        // write data
+        integral_file.write_time_data_line(data_for_writing);
+
+        // Now refresh the interpolator and do the interpolation
+        m_gr_amr.m_interpolator->refresh();
+        FluxExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
+                                     m_restart_time);
+        my_extraction.execute_query(m_gr_amr.m_interpolator);
+    }
+}
+
+// Things to do before outputting a plot file
+void ProcaFieldLevel::prePlotLevel() {}
+
+// Things to do in RHS update, at each RK4 step
+void ProcaFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
+                                      const double a_time)
+{
+    // Calculate MatterCCZ4 right hand side with matter_t = ProcaField
+    Potential potential(m_p.potential_params);
+    ProcaField proca_field(potential, m_p.proca_damping);
+    KerrSchildFixedBG kerr_bh(m_p.bg_params, m_dx);
+    FixedBGEvolution<ProcaField, KerrSchildFixedBG> my_matter(
+        proca_field, kerr_bh, m_p.sigma, m_dx, m_p.center);
+    BoxLoops::loop(my_matter, a_soln, a_rhs, SKIP_GHOST_CELLS);
+
+    // excise within horizon for evolution vars
+    BoxLoops::loop(ExcisionProcaEvolution<ProcaField, KerrSchildFixedBG>(
+                       m_dx, m_p.center, kerr_bh, m_p.excision_width),
+                   a_soln, a_rhs, SKIP_GHOST_CELLS, disable_simd());
+}
+
+void ProcaFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
+                                              const FArrayBox &current_state)
+{
+    BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L, m_p.center),
+                   current_state, tagging_criterion, disable_simd());
+}

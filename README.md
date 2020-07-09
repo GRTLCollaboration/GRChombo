@@ -1,3 +1,9 @@
+# Katy's GRChombo
+
+This is Katy's working version of the GRChombo code (as in, "I'm working on it", not "the code is working" :-).
+
+Use at your own risk! It is likely that many things will be broken and may disappear without warning.
+
 # GRChombo
 GRChombo is a new open-source code for numerical general relativity simulations.
 It is developed and maintained by a collaboration of numerical relativists with a
