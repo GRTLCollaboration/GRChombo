@@ -9,27 +9,12 @@
 #include "ADMConformalVars.hpp"
 #include "Cell.hpp"
 #include "Coordinates.hpp"
-#include "DimensionDefinitions.hpp"
 #include "InitialDataTools.hpp"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"
 #include "UserVariables.hpp" //This files needs NUM_VARS - total number of components
 #include "VarsTools.hpp"
 #include "simd.hpp"
-
-enum Lapse
-{
-    ONE,
-    PRE_COLLAPSED,
-    ANALYTIC
-};
-
-enum Kerr
-{
-    QUASI_ISOTROPIC,
-    KERR_SCHILD,
-    BOWEN_YORK
-};
 
 //! Class which computes the Kerr initial conditions per arXiv 1401.1548
 class KerrBH
@@ -42,25 +27,17 @@ class KerrBH
     //! Stuct for the params of the Kerr BH
     struct params_t
     {
-        double mass; //!<< The bare mass of the Kerr BH m_bare
+        double mass;                            //!<< The mass of the Kerr BH
         std::array<double, CH_SPACEDIM> center; //!< The center of the Kerr BH
-        double spin; //!< The spin param a (NB for Bowen York this will set J_z)
-        std::array<double, CH_SPACEDIM> boost = {
-            0.0, 0.0, 0.0}; //!< Boost is only for Bowen York data
+        double spin; //!< The spin param a = J/M, so 0 < a < 1
     };
 
   protected:
-    const double m_dx;
-    const params_t m_params;
-    const int m_initial_lapse;
-    const int m_kerr_solution;
+    double m_dx;
+    params_t m_params;
 
   public:
-    KerrBH(params_t a_params, double a_dx,
-           int a_initial_lapse = Lapse::PRE_COLLAPSED,
-           int a_kerr_solution = Kerr::QUASI_ISOTROPIC)
-        : m_dx(a_dx), m_params(a_params), m_initial_lapse(a_initial_lapse),
-          m_kerr_solution(a_kerr_solution)
+    KerrBH(params_t a_params, double a_dx) : m_dx(a_dx), m_params(a_params)
 
     {
         // check this spin param is sensible
@@ -74,29 +51,18 @@ class KerrBH
     template <class data_t> void compute(Cell<data_t> current_cell) const;
 
   protected:
-    /// Quasi isotropic solution for high spin BHs per 1001.4077
+    //! Function which computes the components of the metric in spherical coords
     template <class data_t>
-    void quasi_isotropic_kerr(Vars<data_t> &vars,
-                              const Coordinates<data_t> &coords) const;
-
-    /// Bowen York solution with puncture
-    /// per http://www.livingreviews.org/Articles/Volume3/2000-5cook
-    template <class data_t>
-    void bowen_york(Vars<data_t> &vars,
-                    const Coordinates<data_t> &coords) const;
-
-    /// Kerr Schild solution, must be used with excision at centre
-    /// vars per https://arxiv.org/abs/gr-qc/0109032
-    template <class data_t>
-    void kerr_schild(Vars<data_t> &vars,
-                     const Coordinates<data_t> &coords) const;
-
-    /// Work out the gradients of the quantities H and el appearing in the Kerr
-    /// Schild solution
-    template <class data_t>
-    void get_KS_derivs(Tensor<1, data_t> &dHdx, Tensor<2, data_t> &dldx,
-                       const data_t &r_BL, const data_t &H,
-                       const Coordinates<data_t> &coords) const;
+    void compute_kerr(
+        Tensor<2, data_t>
+            &spherical_g, //!<< The spatial metric in spherical coords
+        Tensor<2, data_t>
+            &spherical_K, //!<< The extrinsic curvature in spherical coords
+        Tensor<1, data_t>
+            &spherical_shift, //!<< The spherical components of the shift
+        data_t &kerr_lapse,   //!<< The lapse for the kerr solution
+        const Coordinates<data_t> coords //!<< Coords of current cell
+        ) const;
 };
 
 #include "KerrBH.impl.hpp"
