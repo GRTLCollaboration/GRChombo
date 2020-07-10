@@ -88,17 +88,17 @@ Tensor<2, data_t> compute_inverse(const Tensor<2, data_t, 3> &matrix)
                  deth_inverse;
     h_UU[2][2] = (matrix[0][0] * matrix[1][1] - matrix[1][0] * matrix[0][1]) *
                  deth_inverse;
-    h_UU[0][1] = (matrix[2][0] * matrix[1][2] - matrix[1][0] * matrix[2][2]) *
+    h_UU[1][0] = (matrix[2][0] * matrix[1][2] - matrix[1][0] * matrix[2][2]) *
                  deth_inverse;
-    h_UU[1][0] = (matrix[0][2] * matrix[2][1] - matrix[0][1] * matrix[2][2]) *
+    h_UU[0][1] = (matrix[0][2] * matrix[2][1] - matrix[0][1] * matrix[2][2]) *
                  deth_inverse;
-    h_UU[0][2] = (matrix[1][0] * matrix[2][1] - matrix[1][1] * matrix[2][0]) *
+    h_UU[2][0] = (matrix[1][0] * matrix[2][1] - matrix[1][1] * matrix[2][0]) *
                  deth_inverse;
-    h_UU[2][0] = (matrix[0][1] * matrix[1][2] - matrix[1][1] * matrix[0][2]) *
+    h_UU[0][2] = (matrix[0][1] * matrix[1][2] - matrix[1][1] * matrix[0][2]) *
                  deth_inverse;
-    h_UU[1][2] = (matrix[0][1] * matrix[2][0] - matrix[0][0] * matrix[2][1]) *
+    h_UU[2][1] = (matrix[0][1] * matrix[2][0] - matrix[0][0] * matrix[2][1]) *
                  deth_inverse;
-    h_UU[2][1] = (matrix[1][0] * matrix[0][2] - matrix[0][0] * matrix[1][2]) *
+    h_UU[1][2] = (matrix[1][0] * matrix[0][2] - matrix[0][0] * matrix[1][2]) *
                  deth_inverse;
 
     return h_UU;
