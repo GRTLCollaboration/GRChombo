@@ -22,6 +22,8 @@
 // Problem specific includes
 #include "ChiRelaxation.hpp"
 #include "ComputePack.hpp"
+#include "MatterEnergyFlux.hpp"
+#include "MatterEnergyFluxExtraction.hpp"
 #include "Potential.hpp"
 #include "ScalarBubble.hpp"
 #include "ScalarField.hpp"
@@ -62,9 +64,13 @@ void ScalarFieldLevel::prePlotLevel()
     fillAllGhosts();
     Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
-    BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
-                       scalar_field, m_dx, m_p.G_Newton),
-                   m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+    BoxLoops::loop(
+        make_compute_pack(MatterConstraints<ScalarFieldWithPotential>(
+                              scalar_field, m_dx, m_p.G_Newton),
+                          MatterEnergyFlux<ScalarFieldWithPotential>(
+                              scalar_field, m_p.extraction_params.center, m_dx,
+                              c_energy_flux)),
+        m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 }
 
 // Things to do in RHS update, at each RK4 step
@@ -122,4 +128,30 @@ void ScalarFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
     BoxLoops::loop(ChiAndPhiTaggingCriterion(m_dx, m_p.regrid_threshold_chi,
                                              m_p.regrid_threshold_phi),
                    current_state, tagging_criterion);
+}
+
+void ScalarFieldLevel::specificPostTimeStep()
+{
+    if (m_p.activate_extraction)
+    {
+        fillAllGhosts();
+        Potential potential(m_p.potential_params);
+        ScalarFieldWithPotential scalar_field(potential);
+        BoxLoops::loop(MatterEnergyFlux<ScalarFieldWithPotential>(
+                           scalar_field, m_p.extraction_params.center, m_dx,
+                           c_energy_flux),
+                       m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+
+        // ignore extraction level param for now since tagging criterion does
+        // not enforce it
+        if (m_level == 0)
+        {
+            bool first_step = (m_dt == m_time);
+            MatterEnergyFluxExtraction energy_flux_extraction(
+                m_p.extraction_params, m_dt, m_time, first_step, m_restart_time,
+                c_energy_flux);
+            m_gr_amr.m_interpolator->refresh();
+            energy_flux_extraction.execute_query(m_gr_amr.m_interpolator);
+        }
+    }
 }

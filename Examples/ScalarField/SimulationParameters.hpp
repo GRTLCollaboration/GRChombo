@@ -42,6 +42,9 @@ class SimulationParameters : public SimulationParametersBase
         // Relaxation params
         pp.load("relaxtime", relaxtime);
         pp.load("relaxspeed", relaxspeed);
+
+        // whether to do extraction
+        pp.load("activate_extraction", activate_extraction, false);
     }
 
     // Problem specific parameters
@@ -51,8 +54,12 @@ class SimulationParameters : public SimulationParametersBase
     double G_Newton;
     ScalarBubble::params_t initial_params;
     Potential::params_t potential_params;
+
     // Relaxation params
     Real relaxtime, relaxspeed;
+
+    // do extraction?
+    bool activate_extraction;
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */

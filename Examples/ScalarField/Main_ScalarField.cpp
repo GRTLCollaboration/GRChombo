@@ -31,6 +31,12 @@ int runGRChombo(int argc, char *argv[])
                                                                   sim_params);
     setupAMRObject(gr_amr, scalar_field_level_fact);
 
+    // call this after amr object setup so grids known
+    // and need it to stay in scope throughout run
+    AMRInterpolator<Lagrange<4>> interpolator(
+        gr_amr, sim_params.origin, sim_params.dx, sim_params.verbosity);
+    gr_amr.set_interpolator(&interpolator);
+
     // Engage! Run the evolution
     gr_amr.run(sim_params.stop_time, sim_params.max_steps);
     gr_amr.conclude();
