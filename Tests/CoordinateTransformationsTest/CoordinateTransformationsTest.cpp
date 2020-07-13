@@ -10,13 +10,16 @@
 #include "simd.hpp"
 #include <limits>
 
+constexpr int ulp = 15; /* units in the last place */
+
 bool almost_equal(double value, double correct_value,
-                  int ulp /* units in the last place */)
+                  int a_ulp /* units in the last place */)
 {
     double diff = abs(value - correct_value);
     double epsilon = std::numeric_limits<double>::epsilon();
     return (diff <
-            std::max(epsilon * std::abs(correct_value + value), epsilon) * ulp);
+            std::max(epsilon * std::abs(correct_value + value), epsilon) *
+                a_ulp);
 }
 
 int check_tensor(const Tensor<2, double> &tensor,
@@ -26,7 +29,7 @@ int check_tensor(const Tensor<2, double> &tensor,
     int failed = 0;
     FOR2(i, j)
     {
-        if (!almost_equal(tensor[i][j], correct_tensor[i][j], 15))
+        if (!almost_equal(tensor[i][j], correct_tensor[i][j], ulp))
         {
             std::cout << "Failed " << test_name << " in component [" << i
                       << "][" << j << "]\n";
@@ -45,7 +48,7 @@ int check_vector(const Tensor<1, double> &vector,
     int failed = 0;
     FOR1(i)
     {
-        if (!almost_equal(vector[i], correct_vector[i], 15))
+        if (!almost_equal(vector[i], correct_vector[i], ulp))
         {
             std::cout << "Failed " << test_name << " in component [" << i
                       << "]\n";
@@ -135,7 +138,6 @@ int main()
                           "spherical_to_cartesian_UU");
 
     // Test vector transformations
-
     Tensor<1, double> si_cart_U;
     si_cart_U[0] = x / r;
     si_cart_U[1] = y / r;
@@ -157,6 +159,17 @@ int main()
     si_cart_U_check = spherical_to_cartesian_L(si_spher_U, x, y, z);
     failed =
         check_vector(si_cart_U_check, si_cart_U, "spherical_to_cartesian_U");
+
+    // Test area_element_sphere
+    double area_element = r * sqrt(rho2);
+    double area_element_check = area_element_sphere(Mij_spher);
+    if (!almost_equal(area_element, area_element_check, ulp))
+    {
+        std::cout << "Failed area_element\n";
+        std::cout << "value: " << area_element << "\n";
+        std::cout << "correct_value: " << area_element_check << std::endl;
+        failed = -1;
+    }
 
     if (failed == 0)
         std::cout << "Coordinate transformations test passed..." << std::endl;

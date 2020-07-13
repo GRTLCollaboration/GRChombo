@@ -235,43 +235,10 @@ Tensor<1, data_t> cartesian_to_spherical_U(const Tensor<1, data_t> &cartesian_v,
 
 // The area element of a sphere
 template <class data_t>
-data_t area_element_sphere(const Tensor<2, data_t> &spherical_g, data_t x,
-                           double y, double z)
+data_t area_element_sphere(const Tensor<2, data_t> &spherical_g)
 {
-
-    // Normal vector s^i in spherical coords (spatial)
-    Tensor<1, data_t> si_spher;
-    si_spher[0] = 1.0 / sqrt(spherical_g[0][0]);
-    si_spher[1] = 0.0;
-    si_spher[2] = 0.0;
-
-    // Projection operator for the surface of a sphere P^i_j
-    Tensor<2, data_t> Proj_spher;
-    FOR2(i, j)
-    {
-        Proj_spher[i][j] = TensorAlgebra::delta(i, j);
-        FOR1(k)
-        {
-            Proj_spher[i][j] += -spherical_g[i][k] * si_spher[k] * si_spher[j];
-        }
-    }
-
-    // This is the metric for the spherical surface
-    Tensor<2, data_t> Sigma;
-    FOR2(i, j)
-    {
-        Sigma[i][j] = 0.0;
-        FOR2(k, l)
-        {
-            Sigma[i][j] +=
-                Proj_spher[i][k] * Proj_spher[j][l] * spherical_g[k][l];
-        }
-    }
-
-    const data_t dArea =
-        sqrt(Sigma[1][1] * Sigma[2][2] - Sigma[1][2] * Sigma[2][1]);
-
-    return dArea;
+    return sqrt(spherical_g[1][1] * spherical_g[2][2] -
+                spherical_g[1][2] * spherical_g[2][1]);
 }
 
 } // namespace CoordinateTransformations
