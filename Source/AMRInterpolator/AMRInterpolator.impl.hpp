@@ -138,7 +138,6 @@ void AMRInterpolator<InterpAlgo>::interp(InterpolationQuery &query)
         for (typename comps_t::iterator it = comps.begin(); it != comps.end();
              ++it)
         {
-
             //            int comp = it->first;
             //            double *out = it->second;
             double *out = std::get<1>(*it);

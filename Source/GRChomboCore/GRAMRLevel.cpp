@@ -307,6 +307,7 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
                 NUM_DIAGNOSTIC_VARS, coarser_gr_amr_level_ptr->problemDomain(),
                 m_ref_ratio, m_num_ghosts);
         }
+
         // interpolate from coarser level
         m_fine_interp.interpToFine(m_state_new,
                                    coarser_gr_amr_level_ptr->m_state_new);
@@ -821,7 +822,6 @@ void GRAMRLevel::writePlotLevel(HDF5Handle &a_handle) const
                 }
             }
         }
-
         plot_data.exchange(plot_data.interval());
 
         // Write the data for this level
@@ -1003,7 +1003,7 @@ void GRAMRLevel::fillAllDiagnosticsGhosts()
 {
     CH_TIME("GRAMRLevel::fillAllDiagnosticsGhosts");
     if (m_verbosity)
-        pout() << "GRAMRLevel::fillAllDiagnosticsGhosts " << m_level << endl;
+        pout() << "GRAMRLevel::fillAllDiagnosticsGhosts" << endl;
 
     // If there is a coarser level then interpolate undefined ghost cells
     if (m_coarser_level_ptr != nullptr)

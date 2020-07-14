@@ -23,14 +23,21 @@ class SetValue
     Interval m_interval;
 
   public:
-    SetValue(double a_value, Interval a_interval = Interval(0, NUM_VARS - 1))
+    SetValue(double a_value, Interval a_interval = Interval())
         : m_value(a_value), m_interval(a_interval)
     {
     }
 
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {
-        for (int i = m_interval.begin(); i <= m_interval.end(); ++i)
+        int start_var = m_interval.begin();
+        int end_var = m_interval.end();
+        if (m_interval.size() == 0)
+        {
+            start_var = 0;
+            end_var = current_cell.get_num_out_vars() - 1;
+        }
+        for (int i = start_var; i <= end_var; ++i)
         {
             current_cell.store_vars(m_value, i);
         }

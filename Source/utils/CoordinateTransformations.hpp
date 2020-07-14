@@ -81,8 +81,8 @@ static Tensor<2, data_t> jacobian_dxdr(const data_t x, const double y,
 // coords
 template <class data_t>
 static Tensor<2, data_t>
-    spherical_to_cartesian_LL(Tensor<2, data_t> spherical_g, data_t x, double y,
-                              double z)
+spherical_to_cartesian_LL(Tensor<2, data_t> spherical_g, data_t x, double y,
+                          double z)
 {
     // The output - g in cartesian coords
     Tensor<2, data_t> cartesian_g;
@@ -106,8 +106,8 @@ static Tensor<2, data_t>
 // coords
 template <class data_t>
 static Tensor<2, data_t>
-    cartesian_to_spherical_LL(Tensor<2, data_t> cartesian_g, data_t x, double y,
-                              double z)
+cartesian_to_spherical_LL(Tensor<2, data_t> cartesian_g, data_t x, double y,
+                          double z)
 {
     // The output - g in spherical coords
     Tensor<2, data_t> spherical_g;
@@ -143,7 +143,7 @@ Tensor<1, data_t> spherical_to_cartesian_U(Tensor<1, data_t> spherical_v_U,
     // transform the vector to cartesian coords
     FOR1(i)
     {
-        cartesian_v[i] = 0.0;
+        cartesian_v_U[i] = 0.0;
         FOR1(j) { cartesian_v_U[i] += inv_jac[i][j] * spherical_v_U[j]; }
     }
     return cartesian_v_U;
