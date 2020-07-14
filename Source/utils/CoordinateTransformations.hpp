@@ -143,7 +143,7 @@ Tensor<1, data_t> spherical_to_cartesian_U(Tensor<1, data_t> spherical_v_U,
     // transform the vector to cartesian coords
     FOR1(i)
     {
-        cartesian_v[i] = 0.0;
+        cartesian_v_U[i] = 0.0;
         FOR1(j) { cartesian_v_U[i] += inv_jac[i][j] * spherical_v_U[j]; }
     }
     return cartesian_v_U;
