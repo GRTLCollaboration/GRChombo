@@ -179,37 +179,9 @@ data_t get_det_spherical_area(Tensor<2, data_t> cartesian_g, data_t x, double y,
     const Tensor<2, data_t> spherical_g =
         cartesian_to_spherical_LL(cartesian_g, x, y, z);
 
-    // This is the normal vector N^i in spherical coords
-    Tensor<1, data_t> spherical_Ni;
-    spherical_Ni[0] = 1.0 / sqrt(spherical_g[0][0]);
-    spherical_Ni[1] = 0.0;
-    spherical_Ni[2] = 0.0;
-
-    // This is the projection operator for the spherical surface P^i_j
-    Tensor<2, data_t> P_sphere;
-    FOR2(i, j)
-    {
-        P_sphere[i][j] = TensorAlgebra::delta(i, j);
-        FOR1(k)
-        {
-            // minus sign because surface is spatial so N^i N_i = 1
-            P_sphere[i][j] +=
-                -spherical_g[j][k] * spherical_Ni[k] * spherical_Ni[i];
-        }
-    }
-    // This is the metric for the spherical surface
-    Tensor<2, data_t> Sigma;
-    FOR2(i, j)
-    {
-        Sigma[i][j] = 0.0;
-        FOR2(k, l)
-        {
-            Sigma[i][j] += P_sphere[k][i] * P_sphere[l][j] * spherical_g[k][l];
-        }
-    }
     // the r components should now be zero in this adapted basis, so
     const data_t det_Sigma =
-        Sigma[1][1] * Sigma[2][2] - Sigma[1][2] * Sigma[2][1];
+        spherical_g[1][1] * spherical_g[2][2] - spherical_g[1][2] * spherical_g[2][1];
 
     return det_Sigma;
 }

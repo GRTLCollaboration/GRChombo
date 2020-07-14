@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef EXCISIONDIAGNOSTICS_HPP_
-#define EXCISIONDIAGNOSTICS_HPP_
+#ifndef EXCISIONEVOLUTION_HPP_
+#define EXCISIONEVOLUTION_HPP_
 
 #include "CCZ4Geometry.hpp"
 #include "Cell.hpp"
@@ -17,8 +17,11 @@
 
 //! Does excision for fixed BG BH solutions
 //! Note that it is does not using simd so one must set disable_simd()
-template <class matter_t, class background_t> class ExcisionDiagnostics
+template <class matter_t, class background_t> class ExcisionEvolution
 {
+    // Use matter_t class
+    using Vars = typename matter_t::template Vars<double>;
+
   protected:
     const double m_dx;                              //!< The grid spacing
     const std::array<double, CH_SPACEDIM> m_center; //!< The BH center
@@ -26,9 +29,9 @@ template <class matter_t, class background_t> class ExcisionDiagnostics
     const background_t m_background;
 
   public:
-    ExcisionDiagnostics(const double a_dx,
-                        const std::array<double, CH_SPACEDIM> a_center,
-                        background_t a_background)
+    ExcisionEvolution(const double a_dx,
+                      const std::array<double, CH_SPACEDIM> a_center,
+                      background_t a_background)
         : m_dx(a_dx), m_deriv(m_dx), m_center(a_center),
           m_background(a_background)
     {
@@ -38,13 +41,16 @@ template <class matter_t, class background_t> class ExcisionDiagnostics
     {
         const Coordinates<double> coords(current_cell, m_dx, m_center);
         double horizon_distance = m_background.excise(current_cell);
-        if (coords.get_radius() < 10.0 || coords.get_radius() > 2000.0)
+        if (horizon_distance < 0.25)
         {
-            current_cell.store_vars(0.0, c_rho);
-            current_cell.store_vars(0.0, c_rhoJ);
-            current_cell.store_vars(0.0, c_xMom);
+            // the matter rhs vars within the excision zone
+            // recalculate them - for now set to decay to zero
+            Vars vars;
+            VarsTools::assign(vars, 0.0);
+            // assign values of rhs or vars in output box
+            current_cell.store_vars(vars);
         } // else do nothing
     }
 };
 
-#endif /* EXCISIONDIAGNOSTICS_HPP_ */
+#endif /* EXCISIONEVOLUTION_HPP_ */

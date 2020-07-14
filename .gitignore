@@ -3,6 +3,7 @@ pout.*
 .bashrc
 *.pbs
 *.s
+machine.file*
 d
 o
 p

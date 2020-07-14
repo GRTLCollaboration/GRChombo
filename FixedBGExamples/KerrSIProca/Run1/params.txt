@@ -2,9 +2,9 @@
 
 verbosity = 0 
 integral_filename = ProcaDensities
-chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Proca/Realmu0.5A0.01c1.0_chk
-plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Proca/Realmu0.5A0.01c1.0_plt
-#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Proca/Realmu0.5A0.01c1.0_chk004500.3d.hdf5
+chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Proca/Realmu0.5A0.01c1.0RESTART_chk
+plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Proca/Realmu0.5A0.01c1.0RESTART_plt
+restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Proca/Realmu0.5A0.01c1.0NEW_chk000040.3d.hdf5
 write_plot_ghosts = 0
 
 # Set up grid spacings and regrid params
@@ -64,11 +64,11 @@ checkpoint_interval = 20
 plot_interval = 1
 num_plot_vars = 4
 plot_vars = phi Z rho Xsquared
-dt_multiplier = 0.2
+dt_multiplier = 0.05
 stop_time = 10000.0
 
 # coefficient for KO numerical dissipation
-sigma = 2.0
+sigma = 1.0
 
 # PF Initial data
 proca_mass = 0.5
@@ -85,7 +85,7 @@ bh_spin = 0.99 # This is a, so needs to be <= M
 activate_extraction = 1
 write_extraction = 0
 num_extraction_radii = 3
-extraction_radii = 1.10 1.12 1.14
+extraction_radii = 1.10 1.15 1.20
 extraction_levels = 0 0 0
 num_points_phi = 24
 num_points_t = 24

@@ -85,15 +85,39 @@ template <class matter_t, class background_t> class FixedBGMomentumFlux
         // The integrand for the x-momentum flux out of a radial
         // shell at the current position
         data_t Mdot = 0;
-        FOR1(i) { Mdot += -emtensor.Sij[0][i] * Ni[i]; }
+        FOR1(i) { Mdot += - metric_vars.lapse * emtensor.Sij[0][i] * Ni[i];}
+        FOR2(i,j)
+        {
+            Mdot += metric_vars.gamma[i][j]* metric_vars.shift[j] * Ni[i] * emtensor.Si[0];
+        }
+
         // the r2sintheta is taken care of by the integration of the flux
         // so just need the dA relating to the metric
         Mdot *= sqrt(det_Sigma) / r2sintheta;
 
         // Now the x Momentum density with volume factor
         data_t xMom = emtensor.Si[0] * sqrt(det_gamma);
+/*
+        //How big is the non linear effect?
+        Tensor<1, data_t> nonlinear;
+        FOR1(i)
+        {
+            nonlinear[i] = emtensor.rho * metric_vars.d1_lapse[i];
 
+            FOR1(j)
+            {
+                nonlinear[i] += - emtensor.Si[j] * metric_vars.d1_shift[j][i];
+                FOR1(k)
+                {
+                    nonlinear[i] += - emtensor.Si[j] * metric_vars.shift[j] * metric_vars.shift[k]
+                                    / metric_vars.lapse * metric_vars.K_tensor[k][i];
+                }
+            }
+
+        }
+*/
         // assign values of Stress integrand in the output box
+//        current_cell.store_vars(nonlinear[0], c_NL);
         current_cell.store_vars(Mdot, c_Stress);
         current_cell.store_vars(xMom, c_xMom);
     }

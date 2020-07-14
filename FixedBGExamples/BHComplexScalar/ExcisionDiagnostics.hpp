@@ -38,7 +38,7 @@ template <class matter_t, class background_t> class ExcisionDiagnostics
     {
         const Coordinates<double> coords(current_cell, m_dx, m_center);
         double horizon_distance = m_background.excise(current_cell);
-        if (coords.get_radius() < 10.0 || coords.get_radius() > 2000.0)
+        if (coords.get_radius() < 10.0 || coords.get_radius() > 1500.0)
         {
             current_cell.store_vars(0.0, c_rho);
             current_cell.store_vars(0.0, c_rhoJ);

@@ -2,8 +2,8 @@
 
 verbosity = 0
 integral_filename = ProcaDensities
-chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Proca/Realmu0.4c0.2_chk
-plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Proca/Realmu0.4c0.2_plt
+chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Proca/Realmu0.5c1.0NEW_chk
+plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Proca/Realmu0.5c1.0NEW_plt
 #restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Proca/Realmu0.4_chk004500.3d.hdf5
 write_plot_ghosts = 0
 

@@ -98,7 +98,7 @@ void ProcaFieldLevel::specificPostTimeStep()
                        m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
         BoxLoops::loop(ExcisionProcaDiagnostics<ProcaField, KerrSchildFixedBG>(
                            m_dx, m_p.center, kerr_bh, 1.0),
-                       m_state_diagnostics, m_state_diagnostics,
+                       m_state_new, m_state_diagnostics,
                        SKIP_GHOST_CELLS, disable_simd());
     }
 
@@ -118,10 +118,10 @@ void ProcaFieldLevel::specificPostTimeStep()
         integral_file.write_time_data_line(data_for_writing);
 
         // Now refresh the interpolator and do the interpolation
-        m_gr_amr.m_interpolator->refresh();
-        FluxExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
-                                     m_restart_time);
-        my_extraction.execute_query(m_gr_amr.m_interpolator);
+        //m_gr_amr.m_interpolator->refresh();
+        //FluxExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
+        //                             m_restart_time);
+        //my_extraction.execute_query(m_gr_amr.m_interpolator);
     }
 }
 

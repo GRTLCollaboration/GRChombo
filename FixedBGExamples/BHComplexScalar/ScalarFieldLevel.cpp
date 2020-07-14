@@ -47,7 +47,7 @@ void ScalarFieldLevel::initialData()
     SetValue set_zero(0.0);
     BoostedBHFixedBG boosted_bh(m_p.bg_params, m_dx); // just calculates chi
     InitialConditions set_phi(m_p.field_amplitude_re, m_p.field_amplitude_im,
-                              m_p.potential_params.scalar_mass, m_p.center,
+                              m_p.potential_params.scalar_mass, m_p.field_velocity, m_p.center,
                               m_p.bg_params, m_dx);
     auto compute_pack = make_compute_pack(set_zero, boosted_bh);
     BoxLoops::loop(compute_pack, m_state_diagnostics, m_state_diagnostics,
@@ -94,7 +94,8 @@ void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
 void ScalarFieldLevel::specificPostTimeStep()
 {
     // At any level, but after the coarsest timestep
-    double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
+    int n = 1;
+    double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier / pow(2.0, n);
     const double remainder = fmod(m_time, coarsest_dt);
     if (min(abs(remainder), abs(remainder - coarsest_dt)) < 1.0e-8)
     {
@@ -118,7 +119,7 @@ void ScalarFieldLevel::specificPostTimeStep()
     }
 
     // write out the integral after each coarse timestep
-    if (m_level == 0)
+    if (m_level == n)
     {
         // integrate the densities and write to a file
         double rho_sum = m_gr_amr.compute_sum(c_rho, m_p.coarsest_dx);
