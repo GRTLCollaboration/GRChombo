@@ -86,7 +86,7 @@ template <class potential_t = DefaultComplexPotential> class ComplexScalarField
         const vars_t<Tensor<1, data_t>> &d1, //!< the value of the 1st derivs
         const Tensor<2, data_t> &h_UU, //!< the inverse metric (raised indices)
         const Tensor<3, data_t> &chris_ULL //!< the conformal christoffel symbol
-        ) const;
+    ) const;
 
     //! The function which adds in the RHS for the matter field vars
     template <class data_t, template <typename> class vars_t,
@@ -97,7 +97,7 @@ template <class potential_t = DefaultComplexPotential> class ComplexScalarField
         const vars_t<Tensor<1, data_t>> &d1, //!< the value of the 1st derivs.
         const diff2_vars_t<Tensor<2, data_t>> &d2, //!< the 2nd derivs of vars
         const vars_t<data_t> &advec                //!< the advection terms
-        ) const;
+    ) const;
 };
 
 #include "ComplexScalarField.impl.hpp"

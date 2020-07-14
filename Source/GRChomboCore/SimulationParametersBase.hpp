@@ -85,7 +85,6 @@ class SimulationParametersBase : public ChomboParameters
                    << "rule so increased by 1.\n";
         }
         pp.load("extraction_center", extraction_params.center, center);
-
         check_radii();
 
         if (pp.contains("modes"))
