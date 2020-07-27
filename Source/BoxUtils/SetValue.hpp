@@ -20,24 +20,16 @@
 class SetValue
 {
     double m_value;
-    Interval m_interval;
 
   public:
-    SetValue(double a_value, Interval a_interval = Interval())
-        : m_value(a_value), m_interval(a_interval)
+    SetValue(double a_value)
+        : m_value(a_value)
     {
     }
 
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {
-        int start_var = m_interval.begin();
-        int end_var = m_interval.end();
-        if (m_interval.size() == 0)
-        {
-            start_var = 0;
-            end_var = current_cell.get_num_out_vars() - 1;
-        }
-        for (int i = start_var; i <= end_var; ++i)
+        for (int i = 0; i < current_cell.get_num_out_vars(); ++i)
         {
             current_cell.store_vars(m_value, i);
         }
