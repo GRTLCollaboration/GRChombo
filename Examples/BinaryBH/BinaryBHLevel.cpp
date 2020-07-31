@@ -100,20 +100,26 @@ void BinaryBHLevel::specificPostTimeStep()
     CH_TIME("BinaryBHLevel::specificPostTimeStep");
     if (m_p.activate_extraction == 1)
     {
-        // Populate the Weyl Scalar values on the grid
-        fillAllGhosts();
-        BoxLoops::loop(Weyl4(m_p.extraction_params.center, m_dx), m_state_new,
-                       m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-
-        // Do the extraction on the min extraction level
-        if (m_level == m_p.extraction_params.min_extraction_level())
+        int min_level = m_p.extraction_params.min_extraction_level();
+        bool calculate_weyl = at_level_timestep_multiple(min_level);
+        if (calculate_weyl)
         {
-            CH_TIME("WeylExtraction");
-            // Now refresh the interpolator and do the interpolation
-            m_gr_amr.m_interpolator->refresh();
-            WeylExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
-                                         m_restart_time);
-            my_extraction.execute_query(m_gr_amr.m_interpolator);
+            // Populate the Weyl Scalar values on the grid
+            fillAllGhosts();
+            BoxLoops::loop(Weyl4(m_p.extraction_params.center, m_dx),
+                           m_state_new, m_state_diagnostics,
+                           EXCLUDE_GHOST_CELLS);
+
+            // Do the extraction on the min extraction level
+            if (m_level == min_level)
+            {
+                CH_TIME("WeylExtraction");
+                // Now refresh the interpolator and do the interpolation
+                m_gr_amr.m_interpolator->refresh();
+                WeylExtraction my_extraction(m_p.extraction_params, m_dt,
+                                             m_time, m_restart_time);
+                my_extraction.execute_query(m_gr_amr.m_interpolator);
+            }
         }
     }
 
@@ -122,13 +128,8 @@ void BinaryBHLevel::specificPostTimeStep()
     {
         CH_TIME("PunctureTracking");
         // only do the write out for every coarsest level timestep
-        bool write_punctures = false;
-        const double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
-        const double remainder = fmod(m_time, coarsest_dt);
-        if (min(abs(remainder), abs(remainder - coarsest_dt)) < 1.0e-8)
-        {
-            write_punctures = true;
-        }
+        int coarsest_level = 0;
+        bool write_punctures = at_level_timestep_multiple(coarsest_level);
         m_bh_amr.puncture_tracker.execute_tracking(m_time, m_restart_time, m_dt,
                                                    write_punctures);
     }
