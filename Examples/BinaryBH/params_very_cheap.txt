@@ -34,8 +34,8 @@ tag_buffer_size = 3
 checkpoint_interval = 1
 # set to zero to turn off plot files
 plot_interval = 1
-num_plot_vars = 3
-plot_vars = chi Weyl4_Re Weyl4_Im
+num_plot_vars = 4
+plot_vars = chi Ham Weyl4_Re Weyl4_Im
 dt_multiplier = 0.25
 stop_time = 10.0
 
@@ -88,6 +88,9 @@ vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
                          0.0 0.0 0.0 0.0 0.0 0.0 0.0 #K and Aij
                          0.0 0.0 0.0 0.0             #Theta and Gamma
                          1.0 0.0 0.0 0.0 0.0 0.0 0.0 #lapse shift and B
+
+track_punctures = 1
+puncture_tracking_level = 1
 
 # extraction params
 # default of extraction_center is center, uncomment to change
