@@ -68,9 +68,10 @@ void PunctureTracker::set_initial_punctures()
     std::vector<std::string> header1_strings(CH_SPACEDIM * m_num_punctures);
     for (int ipuncture = 0; ipuncture < m_num_punctures; ipuncture++)
     {
-        header1_strings[CH_SPACEDIM * ipuncture + 0] = "x";
-        header1_strings[CH_SPACEDIM * ipuncture + 1] = "y";
-        header1_strings[CH_SPACEDIM * ipuncture + 2] = "z";
+        std::string idx = std::to_string(ipuncture + 1);
+        header1_strings[CH_SPACEDIM * ipuncture + 0] = "x_" + idx;
+        header1_strings[CH_SPACEDIM * ipuncture + 1] = "y_" + idx;
+        header1_strings[CH_SPACEDIM * ipuncture + 2] = "z_" + idx;
     }
     punctures_file.write_header_line(header1_strings);
 
