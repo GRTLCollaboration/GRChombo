@@ -112,27 +112,26 @@ void KerrBHLevel::specificPostTimeStep()
     // Do the extraction on the min extraction level
     if (m_p.activate_extraction == 1)
     {
-        auto min_level = m_p.extraction_params.min_extraction_level();
-
-        // ensure ADM Mass is only calculated on full cycles of 'min_level'
-        double extraction_dt = m_dt * pow(2., m_level - min_level);
-        double finest_dt = m_dt * pow(2., m_level - m_p.max_level);
-        if (fabs(remainder(m_time, extraction_dt)) > finest_dt / 2.)
-            return;
-
-        // Populate the ADM Mass and Spin values on the grid
-        fillAllGhosts();
-        BoxLoops::loop(ADMMass(m_p.extraction_params.center, m_dx), m_state_new,
-                       m_state_new, EXCLUDE_GHOST_CELLS);
-
-        if (m_level == min_level)
+        int min_level = m_p.extraction_params.min_extraction_level();
+        bool calculate_adm = at_level_timestep_multiple(min_level);
+        if (calculate_adm)
         {
-            CH_TIME("ADMExtraction");
-            // Now refresh the interpolator and do the interpolation
-            m_gr_amr.m_interpolator->refresh();
-            ADMMassExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
-                                            m_restart_time);
-            my_extraction.execute_query(m_gr_amr.m_interpolator);
+            // Populate the ADM Mass and Spin values on the grid
+            fillAllGhosts();
+            BoxLoops::loop(
+                ADMMass(m_p.extraction_params.center, m_dx, c_Madm, c_Jadm),
+                m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+
+            if (m_level == min_level)
+            {
+                CH_TIME("ADMExtraction");
+                // Now refresh the interpolator and do the interpolation
+                m_gr_amr.m_interpolator->refresh();
+                ADMMassExtraction my_extraction(m_p.extraction_params, m_dt,
+                                                m_time, m_restart_time, c_Madm,
+                                                c_Jadm);
+                my_extraction.execute_query(m_gr_amr.m_interpolator);
+            }
         }
     }
 }

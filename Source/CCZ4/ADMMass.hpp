@@ -31,18 +31,21 @@ class ADMMass
   public:
     enum DIR
     {
-        NONE,
         X,
         Y,
         Z
     };
 
     ADMMass(const std::array<double, CH_SPACEDIM> &a_center, double a_dx,
-            DIR spin_direction = Z, double a_G_Newton = 1.0)
-        : m_deriv(a_dx), m_center(a_center), m_G_Newton(a_G_Newton),
-          m_dir(spin_direction)
+            int a_c_Madm = -1, int a_c_Jadm = -1, double a_G_Newton = 1.0)
+        : m_deriv(a_dx), m_center(a_center), m_G_Newton(a_G_Newton), m_dir(Z),
+          m_c_Madm(a_c_Madm), m_c_Jadm(a_c_Jadm)
     {
     }
+
+    // in case user wants to change direction of spin calculation to something
+    // other than Z
+    void set_spin_dir(DIR spin_direction) { m_dir = spin_direction; }
 
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {
@@ -75,49 +78,46 @@ class ADMMass
             FOR1(j) { dS_L[i] += vars.h[i][j] / vars.chi * dS_U[j]; }
         }
 
-        data_t Madm = 0.0;
-        FOR4(i, j, k, l)
+        if (m_c_Madm >= 0)
         {
-            Madm += dS_L[i] / (16. * M_PI * m_G_Newton) * pow(vars.chi, -1.5) *
-                    h_UU[j][k] * h_UU[i][l] *
-                    (vars.chi * (d1.h[l][k][j] - d1.h[j][k][l]) -
-                     (vars.h[l][k] * d1.chi[j] - vars.h[j][k] * d1.chi[l]));
-        }
-
-        // assign values of ADMMass in output box
-        current_cell.store_vars(Madm, c_Madm);
-
-        if (m_dir == NONE)
-            return;
-
-        // user should be able to run this just for the ADM mass
-        auto int_Jadm = ChomboParameters::variable_name_to_enum("Jadm");
-        if (int_Jadm < 0)
-            MayDay::Error("Please include 'c_Jadm' in UserVariables with name "
-                          "'Jadm'");
-
-        // spin about z axis
-        data_t Jadm = 0.0;
-
-        // note this is the levi civita symbol,
-        // not tensor (eps_tensor = eps_symbol * chi^-1.5)
-        const Tensor<3, double> epsilon = TensorAlgebra::epsilon();
-
-        FOR3(i, j, k)
-        {
-            Jadm += -dS_L[i] / (8. * M_PI * m_G_Newton) *
-                    epsilon[m_dir - 1][j][k] * x[j] * vars.K *
-                    TensorAlgebra::delta(i, k);
-
-            FOR2(l, m)
+            data_t Madm = 0.0;
+            FOR4(i, j, k, l)
             {
-                Jadm += dS_L[i] / (8. * M_PI * m_G_Newton) *
-                        epsilon[m_dir - 1][j][k] * x[j] * h_UU[i][l] *
-                        h_UU[k][m] * vars.chi *
-                        (vars.A[l][m] + vars.K * vars.h[l][m] / 3.);
+                Madm += dS_L[i] / (16. * M_PI * m_G_Newton) *
+                        pow(vars.chi, -1.5) * h_UU[j][k] * h_UU[i][l] *
+                        (vars.chi * (d1.h[l][k][j] - d1.h[j][k][l]) -
+                         (vars.h[l][k] * d1.chi[j] - vars.h[j][k] * d1.chi[l]));
             }
+
+            // assign values of ADMMass in output box
+            current_cell.store_vars(Madm, m_c_Madm);
         }
-        current_cell.store_vars(Jadm, int_Jadm);
+
+        if (m_c_Jadm >= 0)
+        {
+            // spin about m_dir axis (x, y or z)
+            data_t Jadm = 0.0;
+
+            // note this is the levi civita symbol,
+            // not tensor (eps_tensor = eps_symbol * chi^-1.5)
+            const Tensor<3, double> epsilon = TensorAlgebra::epsilon();
+
+            FOR3(i, j, k)
+            {
+                Jadm += -dS_L[i] / (8. * M_PI * m_G_Newton) *
+                        epsilon[m_dir][j][k] * x[j] * vars.K *
+                        TensorAlgebra::delta(i, k);
+
+                FOR2(l, m)
+                {
+                    Jadm += dS_L[i] / (8. * M_PI * m_G_Newton) *
+                            epsilon[m_dir][j][k] * x[j] * h_UU[i][l] *
+                            h_UU[k][m] * vars.chi *
+                            (vars.A[l][m] + vars.K * vars.h[l][m] / 3.);
+                }
+            }
+            current_cell.store_vars(Jadm, m_c_Jadm);
+        }
     }
 
   protected:
@@ -125,6 +125,7 @@ class ADMMass
         m_deriv; //!< An object for calculating derivatives of the variables
     const std::array<double, CH_SPACEDIM> &m_center;
     const double m_G_Newton; //!< Newton's constant
+    const int m_c_Madm, m_c_Jadm;
 
     DIR m_dir;
 };

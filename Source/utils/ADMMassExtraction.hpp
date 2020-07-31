@@ -21,31 +21,25 @@ class ADMMassExtraction : public SphericalExtraction
     //! The constructor
     ADMMassExtraction(SphericalExtraction::params_t &a_params, double a_dt,
                       double a_time, bool a_first_step,
-                      double a_restart_time = 0.0, bool a_extract_J = true)
+                      double a_restart_time = 0.0, int a_c_Madm = -1,
+                      int a_c_Jadm = -1)
         : SphericalExtraction(a_params, a_dt, a_time, a_first_step,
                               a_restart_time),
-          extract_J(a_extract_J)
+          m_c_Madm(a_c_Madm), m_c_Jadm(a_c_Jadm)
     {
-        add_var(c_Madm);
-        if (extract_J)
-        {
-            // user should be able to run this just for the ADM mass
-            auto int_Jadm = ChomboParameters::variable_name_to_enum("Jadm");
-            if (int_Jadm < 0)
-                MayDay::Error(
-                    "Please include 'c_Jadm' in UserVariables with name "
-                    "'Jadm'");
-            add_var(int_Jadm);
-        }
+        if (m_c_Madm >= 0)
+            add_var(m_c_Madm, VariableType::diagnostic);
+        if (m_c_Jadm >= 0)
+            add_var(m_c_Jadm, VariableType::diagnostic);
     }
 
     //! The old constructor which assumes it is called in specificPostTimeStep
     //! so the first time step is when m_time == m_dt
     ADMMassExtraction(SphericalExtraction::params_t a_params, double a_dt,
                       double a_time, double a_restart_time = 0.0,
-                      bool a_extract_J = true)
+                      int a_c_Madm = -1, int a_c_Jadm = -1)
         : ADMMassExtraction(a_params, a_dt, a_time, (a_dt == a_time),
-                            a_restart_time, a_extract_J)
+                            a_restart_time, a_c_Madm, a_c_Jadm)
     {
     }
 
@@ -56,30 +50,37 @@ class ADMMassExtraction : public SphericalExtraction
         extract(a_interpolator);
 
         if (m_params.write_extraction)
-        {
             write_extraction("MadmExtractionOut_");
-        }
+
+        int num_integrals = (m_c_Madm >= 0) + (m_c_Jadm >= 0);
+        if (!num_integrals)
+            return;
+
+        int J_index = m_c_Madm >= 0 ? 1 : 0;
 
         // now calculate and write the requested spherical harmonic modes
-        std::vector<std::vector<double>> out_integrals(1 + extract_J);
+        std::vector<std::vector<double>> out_integrals(num_integrals);
 
-        add_var_integrand(0, out_integrals[0], IntegrationMethod::simpson);
-        if (extract_J)
-            add_var_integrand(1, out_integrals[1], IntegrationMethod::simpson);
+        if (m_c_Madm >= 0)
+            add_var_integrand(0, out_integrals[0], IntegrationMethod::simpson);
+        if (m_c_Jadm >= 0)
+            add_var_integrand(J_index, out_integrals[J_index],
+                              IntegrationMethod::simpson);
 
         // do the integration over the surface
         integrate();
         int extrapolation_order = 2;
-        std::vector<std::string> labels(1 + extract_J);
-        labels[0] = "M_adm";
-        if (extract_J)
-            labels[1] = "J_adm";
+        std::vector<std::string> labels(num_integrals);
+        if (m_c_Madm >= 0)
+            labels[0] = "M_adm";
+        if (m_c_Jadm >= 0)
+            labels[J_index] = "J_adm";
         write_integrals("IntegralADMmass", out_integrals, labels,
                         extrapolation_order);
     }
 
   private:
-    bool extract_J;
+    const int m_c_Madm, m_c_Jadm;
 };
 
 #endif /* ADMMASSEXTRACTION_HPP_ */
