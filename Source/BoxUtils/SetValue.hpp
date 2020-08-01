@@ -8,6 +8,7 @@
 
 #include "Cell.hpp"
 #include "Interval.H"
+#include <limits>
 
 /// This compute class can be used to set the value of a cell
 /** This compute class together with BoxLoops::loop(...) can be used to set the
@@ -23,7 +24,7 @@ class SetValue
     Interval m_interval;
 
   public:
-    SetValue(double a_value, Interval a_interval = Interval())
+    SetValue(double a_value, Interval a_interval = Interval(0, std::numeric_limits<int>::max()))
         : m_value(a_value), m_interval(a_interval)
     {
     }
@@ -31,12 +32,7 @@ class SetValue
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {
         int start_var = m_interval.begin();
-        int end_var = m_interval.end();
-        if (m_interval.size() == 0)
-        {
-            start_var = 0;
-            end_var = current_cell.get_num_out_vars() - 1;
-        }
+        int end_var = std::min(m_interval.end(), current_cell.get_num_out_vars() - 1);
         for (int i = start_var; i <= end_var; ++i)
         {
             current_cell.store_vars(m_value, i);
