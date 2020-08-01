@@ -13,10 +13,9 @@
 
 template <class matter_t>
 MatterConstraints<matter_t>::MatterConstraints(
-    const matter_t a_matter, double dx, int a_c_Ham, const Interval &a_c_Moms,
-    int a_c_Ham_abs_terms /* defaulted*/,
-    const Interval &a_c_Moms_abs_terms /*defaulted*/,
-    double G_Newton /*defaulted*/)
+    const matter_t a_matter, double dx, double G_Newton, int a_c_Ham,
+    const Interval &a_c_Moms, int a_c_Ham_abs_terms /* defaulted*/,
+    const Interval &a_c_Moms_abs_terms /*defaulted*/)
     : Constraints(dx, a_c_Ham, a_c_Moms, a_c_Ham_abs_terms, a_c_Moms_abs_terms,
                   0.0 /*No cosmological constant*/),
       my_matter(a_matter), m_G_Newton(G_Newton)
@@ -32,17 +31,17 @@ void MatterConstraints<matter_t>::compute(Cell<data_t> current_cell) const
     const auto d1 = m_deriv.template diff1<BSSNMatterVars>(current_cell);
     const auto d2 = m_deriv.template diff2<BSSNMatterVars>(current_cell);
 
-    // Get the non matter terms for the constraints
-    Vars<data_t> out = constraint_equations(vars, d1, d2);
-
     // Inverse metric and Christoffel symbol
     const auto h_UU = TensorAlgebra::compute_inverse_sym(vars.h);
     const auto chris = TensorAlgebra::compute_christoffel(d1.h, h_UU);
 
+    // Get the non matter terms for the constraints
+    Vars<data_t> out = constraint_equations(vars, d1, d2, h_UU, chris);
+
     // Energy Momentum Tensor
     const auto emtensor = my_matter.compute_emtensor(vars, d1, h_UU, chris.ULL);
 
-    // Hamiltonain constraint
+    // Hamiltonian constraint
     if (m_c_Ham >= 0 || m_c_Ham_abs_terms >= 0)
     {
         out.Ham += -16.0 * M_PI * m_G_Newton * emtensor.rho;

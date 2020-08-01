@@ -15,7 +15,7 @@
 #include "simd.hpp"
 #include <array>
 
-//!  Calculates the Hamiltonain and Momentum constraints with matter fields
+//!  Calculates the Hamiltonian and Momentum constraints with matter fields
 /*!
      The class calculates the Hamiltonian and Momentum constraints at each point
    in a box. It inherits from the Constraints class which calculates the
@@ -50,10 +50,10 @@ template <class matter_t> class MatterConstraints : public Constraints
         Can specify the vars of the constraint vars instead of using the
         hardcoded ones.
     */
-    MatterConstraints(const matter_t a_matter, double dx, int a_c_Ham,
-                      const Interval &a_c_Moms, int a_c_Ham_abs_terms = -1,
-                      const Interval &a_c_Moms_abs_terms = Interval(),
-                      double G_Newton = 1.0);
+    MatterConstraints(const matter_t a_matter, double dx, double G_Newton,
+                      int a_c_Ham, const Interval &a_c_Moms,
+                      int a_c_Ham_abs_terms = -1,
+                      const Interval &a_c_Moms_abs_terms = Interval());
 
     //! The compute member which calculates the constraints at each point in the
     //! box

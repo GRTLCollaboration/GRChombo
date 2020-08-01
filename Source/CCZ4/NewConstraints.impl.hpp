@@ -33,7 +33,10 @@ void Constraints::compute(Cell<data_t> current_cell) const
     const auto d1 = m_deriv.template diff1<MetricVars>(current_cell);
     const auto d2 = m_deriv.template diff2<Diff2Vars>(current_cell);
 
-    Vars<data_t> out = constraint_equations(vars, d1, d2);
+    const auto h_UU = TensorAlgebra::compute_inverse_sym(vars.h);
+    const auto chris = TensorAlgebra::compute_christoffel(d1.h, h_UU);
+
+    Vars<data_t> out = constraint_equations(vars, d1, d2, h_UU, chris);
 
     store_vars(out, current_cell);
 }
@@ -42,12 +45,10 @@ template <class data_t, template <typename> class vars_t,
           template <typename> class diff2_vars_t>
 Constraints::Vars<data_t> Constraints::constraint_equations(
     const vars_t<data_t> &vars, const vars_t<Tensor<1, data_t>> &d1,
-    const diff2_vars_t<Tensor<2, data_t>> &d2) const
+    const diff2_vars_t<Tensor<2, data_t>> &d2, const Tensor<2, data_t> &h_UU,
+    const chris_t<data_t> &chris) const
 {
     Vars<data_t> out;
-
-    auto h_UU = TensorAlgebra::compute_inverse_sym(vars.h);
-    auto chris = TensorAlgebra::compute_christoffel(d1.h, h_UU);
 
     if (m_c_Ham >= 0 || m_c_Ham_abs_terms >= 0)
     {

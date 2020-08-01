@@ -62,10 +62,11 @@ class Constraints
 
     template <class data_t, template <typename> class vars_t,
               template <typename> class diff2_vars_t>
-    Vars<data_t>
-    constraint_equations(const vars_t<data_t> &vars,
-                         const vars_t<Tensor<1, data_t>> &d1,
-                         const diff2_vars_t<Tensor<2, data_t>> &d2) const;
+    Vars<data_t> constraint_equations(const vars_t<data_t> &vars,
+                                      const vars_t<Tensor<1, data_t>> &d1,
+                                      const diff2_vars_t<Tensor<2, data_t>> &d2,
+                                      const Tensor<2, data_t> &h_UU,
+                                      const chris_t<data_t> &chris) const;
 
     template <class data_t>
     void store_vars(Vars<data_t> &out, Cell<data_t> &current_cell) const;

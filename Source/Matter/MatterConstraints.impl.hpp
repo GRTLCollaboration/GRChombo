@@ -38,7 +38,7 @@ void MatterConstraints<matter_t>::compute(Cell<data_t> current_cell) const
     // Energy Momentum Tensor
     const auto emtensor = my_matter.compute_emtensor(vars, d1, h_UU, chris.ULL);
 
-    // Hamiltonain constraint
+    // Hamiltonian constraint
     out.Ham += -16.0 * M_PI * m_G_Newton * emtensor.rho;
 
     // Momentum constraints
