@@ -76,6 +76,7 @@ class SimulationParametersBase : public ChomboParameters
             pp.load("extraction_radius", extraction_params.extraction_radii, 1,
                     0.1);
         }
+
         pp.load("num_points_phi", extraction_params.num_points_phi, 2);
         pp.load("num_points_theta", extraction_params.num_points_theta, 5);
         if (extraction_params.num_points_theta % 2 == 0)
@@ -85,6 +86,7 @@ class SimulationParametersBase : public ChomboParameters
                    << "rule so increased by 1.\n";
         }
         pp.load("extraction_center", extraction_params.center, center);
+
         check_radii();
 
         if (pp.contains("modes"))
@@ -139,7 +141,7 @@ class SimulationParametersBase : public ChomboParameters
             if (radius >= *std::min_element(axis_distance_to_boundary.begin(),
                                             axis_distance_to_boundary.end()))
                 MayDay::Error(
-                    "Extraction radii go being the box's upper boundary");
+                    "Extraction radii go beyond the box's upper boundary");
 
             // lower boundary
             FOR1(i)
@@ -155,7 +157,7 @@ class SimulationParametersBase : public ChomboParameters
             if (radius >= *std::min_element(axis_distance_to_boundary.begin(),
                                             axis_distance_to_boundary.end()))
                 MayDay::Error(
-                    "Extraction radii go being the box's lower boundary");
+                    "Extraction radii go beyond the box's lower boundary");
         }
     }
 

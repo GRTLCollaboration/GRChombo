@@ -138,13 +138,12 @@ void AMRInterpolator<InterpAlgo>::interp(InterpolationQuery &query)
         for (typename comps_t::iterator it = comps.begin(); it != comps.end();
              ++it)
         {
-            //            int comp = it->first;
-            //            double *out = it->second;
+            int comp = std::get<0>(*it);
             double *out = std::get<1>(*it);
             for (int point_idx = 0; point_idx < query.m_num_points; ++point_idx)
             {
                 int parity =
-                    get_var_parity(comp_idx, point_idx, query, deriv_it->first);
+                    get_var_parity(comp, point_idx, query, deriv_it->first);
                 out[point_idx] =
                     parity * m_query_data[comp_idx][m_mpi_mapping[point_idx]];
             }
