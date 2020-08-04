@@ -4,6 +4,7 @@
  */
 
 // General includes common to most GR problems
+#include "AMRReductions.hpp"
 #include "ScalarFieldLevel.hpp"
 #include "BoxLoops.hpp"
 #include "ComputePack.hpp"
@@ -60,11 +61,6 @@ void ScalarFieldLevel::initialData()
             m_dx, m_p.center, boosted_bh),
         m_state_new, m_state_new, SKIP_GHOST_CELLS, disable_simd());
 
-    // setup the output file
-    SmallDataIO integral_file(m_p.integral_filename, m_dt, m_time,
-                              m_restart_time, SmallDataIO::APPEND, true);
-    std::vector<std::string> header_strings = {"Source", "xMom"};
-    integral_file.write_header_line(header_strings);
 }
 
 // Things to do before outputting a plot file
@@ -120,16 +116,23 @@ void ScalarFieldLevel::specificPostTimeStep()
     // write out the integral after each coarse timestep
     if (m_level == 0)
     {
+        bool first_step = (m_time == m_dt);
+
         // integrate the densities and write to a file
-        double source_sum = m_gr_amr.compute_sum(c_Source, m_p.coarsest_dx);
-        double xMom_sum = m_gr_amr.compute_sum(c_xMom, m_p.coarsest_dx);
+        AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
+        double source_sum = amr_reductions.sum(c_Source);
+        double xMom_sum = amr_reductions.sum(c_xMom);
 
         SmallDataIO integral_file(m_p.integral_filename, m_dt, m_time,
-                                  m_restart_time, SmallDataIO::APPEND, false);
+                                  m_restart_time, SmallDataIO::APPEND, first_step);
         // remove any duplicate data if this is post restart
         integral_file.remove_duplicate_time_data();
         std::vector<double> data_for_writing = {source_sum, xMom_sum};
         // write data
+        if (first_step)
+        {
+            integral_file.write_header_line({"Source", "x_Mom"});
+        }
         integral_file.write_time_data_line(data_for_writing);
 
         // Now refresh the interpolator and do the interpolation

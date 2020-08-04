@@ -4,6 +4,7 @@
  */
 
 // General includes common to most GR problems
+#include "AMRReductions.hpp"
 #include "ProcaFieldLevel.hpp"
 #include "BoxLoops.hpp"
 #include "ComputePack.hpp"
@@ -66,17 +67,13 @@ void ProcaFieldLevel::initialData()
                        m_dx, m_p.center, kerr_bh, 1.0),
                    m_state_new, m_state_new, EXCLUDE_GHOST_CELLS,
                    disable_simd());
-
-    // setup the output file
-    SmallDataIO integral_file(m_p.integral_filename, m_dt, m_time,
-                              m_restart_time, SmallDataIO::APPEND, true);
-    std::vector<std::string> header_strings = {"rho", "rhoJ"};
-    integral_file.write_header_line(header_strings);
 }
 
 // Things to do after each timestep
 void ProcaFieldLevel::specificPostTimeStep()
 {
+    bool first_step = (m_time == m_dt);
+
     // At any level, but after the coarsest timestep
     double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
     const double diff = remainder(m_time, coarsest_dt);
@@ -106,15 +103,20 @@ void ProcaFieldLevel::specificPostTimeStep()
     if (m_level == 0)
     {
         // integrate the densities and write to a file
-        double rho_sum = m_gr_amr.compute_sum(c_rho, m_p.coarsest_dx);
-        double rho_J_sum = m_gr_amr.compute_sum(c_rhoJ, m_p.coarsest_dx);
+        AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
+        double rho_sum = amr_reductions.sum(c_rho);
+        double rho_J_sum = amr_reductions.sum(c_rhoJ);
 
         SmallDataIO integral_file(m_p.integral_filename, m_dt, m_time,
-                                  m_restart_time, SmallDataIO::APPEND, false);
+                                  m_restart_time, SmallDataIO::APPEND, first_step);
         // remove any duplicate data if this is post restart
         integral_file.remove_duplicate_time_data();
         std::vector<double> data_for_writing = {rho_sum, rho_J_sum};
         // write data
+        if (first_step)
+        {
+            integral_file.write_header_line({"rho", "rhoJ"});
+        }
         integral_file.write_time_data_line(data_for_writing);
 
         // Now refresh the interpolator and do the interpolation
