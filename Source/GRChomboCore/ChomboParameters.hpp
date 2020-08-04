@@ -483,9 +483,6 @@ class ChomboParameters
     std::array<double, CH_SPACEDIM> origin,
         dx; // location of coarsest origin and dx
 
-    std::array<double, CH_SPACEDIM> origin,
-        dx; // location of coarsest origin and dx
-
     // Boundary conditions
     std::array<bool, CH_SPACEDIM> isPeriodic;     // periodicity
     BoundaryConditions::params_t boundary_params; // set boundaries in each dir
