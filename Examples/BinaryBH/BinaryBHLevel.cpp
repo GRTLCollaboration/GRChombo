@@ -4,6 +4,7 @@
  */
 
 #include "BinaryBHLevel.hpp"
+#include "AMRReductions.hpp"
 #include "BinaryBH.hpp"
 #include "BoxLoops.hpp"
 #include "CCZ4.hpp"
@@ -15,6 +16,7 @@
 #include "PositiveChiAndAlpha.hpp"
 #include "PunctureTracker.hpp"
 #include "SetValue.hpp"
+#include "SmallDataIO.hpp"
 #include "TraceARemoval.hpp"
 #include "Weyl4.hpp"
 #include "WeylExtraction.hpp"
@@ -127,6 +129,9 @@ void BinaryBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
 void BinaryBHLevel::specificPostTimeStep()
 {
     CH_TIME("BinaryBHLevel::specificPostTimeStep");
+
+    bool first_step = (m_time == m_dt);
+
     if (m_p.activate_extraction == 1)
     {
         // Populate the Weyl Scalar values on the grid
@@ -141,8 +146,30 @@ void BinaryBHLevel::specificPostTimeStep()
             // Now refresh the interpolator and do the interpolation
             m_gr_amr.m_interpolator->refresh();
             WeylExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
-                                         m_restart_time);
+                                         first_step, m_restart_time);
             my_extraction.execute_query(m_gr_amr.m_interpolator);
+        }
+    }
+
+    if (m_p.calculate_constraint_norms)
+    {
+        fillAllGhosts();
+        BoxLoops::loop(Constraints(m_dx), m_state_new, m_state_diagnostics,
+                       EXCLUDE_GHOST_CELLS);
+        if (m_level == 0)
+        {
+            AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
+            double L2_Ham = amr_reductions.norm(c_Ham);
+            double L2_Mom = amr_reductions.norm(Interval(c_Mom1, c_Mom3));
+            SmallDataIO constraints_file("constraint_norms", m_dt, m_time,
+                                         m_restart_time, SmallDataIO::APPEND,
+                                         first_step);
+            constraints_file.remove_duplicate_time_data();
+            if (first_step)
+            {
+                constraints_file.write_header_line({"L^2_Ham", "L^2_Mom"});
+            }
+            constraints_file.write_time_data_line({L2_Ham, L2_Mom});
         }
     }
 

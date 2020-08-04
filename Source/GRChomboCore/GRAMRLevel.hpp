@@ -32,8 +32,8 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     static const GRAMRLevel *gr_cast(const AMRLevel *const amr_level_ptr);
     static GRAMRLevel *gr_cast(AMRLevel *const amr_level_ptr);
 
-    const GRLevelData &getLevelData() const;
-    const GRLevelData &getDiagnosticsLevelData() const;
+    const GRLevelData &
+    getLevelData(const VariableType var_type = VariableType::evolution) const;
 
     bool contains(const std::array<double, CH_SPACEDIM> &point) const;
 
@@ -156,13 +156,17 @@ class GRAMRLevel : public AMRLevel, public InterpSource
 
     double get_dx() const;
 
-    /// Fill all ghosts cells
-    virtual void fillAllGhosts();
-
-    /// Fill all diagnostics ghost cells
-    virtual void fillAllDiagnosticsGhosts();
+    /// Fill all [either] evolution or diagnostic ghost cells
+    virtual void
+    fillAllGhosts(const VariableType var_type = VariableType::evolution);
 
   protected:
+    /// Fill all evolution ghosts cells (i.e. those in m_state_new)
+    virtual void fillAllEvolutionGhosts();
+
+    /// Fill all diagnostics ghost cells (i.e. those in m_state_diagnostics)
+    virtual void fillAllDiagnosticsGhosts();
+
     /// Fill ghosts cells from boxes on this level only. Do not interpolate
     /// between levels.
     virtual void fillIntralevelGhosts();

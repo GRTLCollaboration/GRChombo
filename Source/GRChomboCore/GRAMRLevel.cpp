@@ -73,11 +73,12 @@ GRAMRLevel *GRAMRLevel::gr_cast(AMRLevel *const amr_level_ptr)
         gr_cast(static_cast<const AMRLevel *const>(amr_level_ptr)));
 }
 
-const GRLevelData &GRAMRLevel::getLevelData() const { return m_state_new; }
-
-const GRLevelData &GRAMRLevel::getDiagnosticsLevelData() const
+const GRLevelData &GRAMRLevel::getLevelData(VariableType var_type) const
 {
-    return m_state_diagnostics;
+    if (var_type == VariableType::evolution)
+        return m_state_new;
+    else
+        return m_state_diagnostics;
 }
 
 bool GRAMRLevel::contains(const std::array<double, CH_SPACEDIM> &point) const
@@ -201,7 +202,8 @@ void GRAMRLevel::tagCells(IntVectSet &a_tags)
     if (m_verbosity)
         pout() << "GRAMRLevel::tagCells " << m_level << endl;
 
-    fillAllGhosts(); // We need filled ghost cells to calculate gradients etc
+    fillAllEvolutionGhosts(); // We need filled ghost cells to calculate
+                              // gradients etc
 
     // Create tags based on undivided gradient of phi
     IntVectSet local_tags;
@@ -983,11 +985,19 @@ void GRAMRLevel::copySolnData(GRLevelData &dest, const GRLevelData &src)
 
 double GRAMRLevel::get_dx() const { return m_dx; }
 
-void GRAMRLevel::fillAllGhosts()
+void GRAMRLevel::fillAllGhosts(const VariableType var_type)
 {
-    CH_TIME("GRAMRLevel::fillAllGhosts()");
+    if (var_type == VariableType::evolution)
+        fillAllEvolutionGhosts();
+    else if (var_type == VariableType::diagnostic)
+        fillAllDiagnosticsGhosts();
+}
+
+void GRAMRLevel::fillAllEvolutionGhosts()
+{
+    CH_TIME("GRAMRLevel::fillAllEvolutionGhosts()");
     if (m_verbosity)
-        pout() << "GRAMRLevel::fillAllGhosts" << endl;
+        pout() << "GRAMRLevel::fillAllEvolutionGhosts" << endl;
 
     // If there is a coarser level then interpolate undefined ghost cells
     if (m_coarser_level_ptr != nullptr)

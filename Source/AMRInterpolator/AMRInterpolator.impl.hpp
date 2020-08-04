@@ -61,9 +61,9 @@ template <typename InterpAlgo> void AMRInterpolator<InterpAlgo>::refresh()
     {
         AMRLevel &level = *levels[level_idx];
         InterpSource &interp_source = dynamic_cast<InterpSource &>(level);
-        interp_source.fillAllGhosts();
+        interp_source.fillAllGhosts(VariableType::evolution);
         if (NUM_DIAGNOSTIC_VARS > 0)
-            interp_source.fillAllDiagnosticsGhosts();
+            interp_source.fillAllGhosts(VariableType::diagnostic);
     }
 }
 
@@ -353,7 +353,8 @@ AMRInterpolator<InterpAlgo>::findBoxes(InterpolationQuery &query)
         const AMRLevel &level = *levels[level_idx];
 
         const LevelData<FArrayBox> &level_data =
-            dynamic_cast<const InterpSource &>(level).getLevelData();
+            dynamic_cast<const InterpSource &>(level).getLevelData(
+                VariableType::evolution);
         const DisjointBoxLayout &box_layout = level_data.disjointBoxLayout();
         const Box &domain_box = level.problemDomain().domainBox();
 
@@ -605,11 +606,12 @@ void AMRInterpolator<InterpAlgo>::calculateAnswers(InterpolationQuery &query)
         const AMRLevel &level = *levels[level_idx];
         const InterpSource &source = dynamic_cast<const InterpSource &>(level);
         const LevelData<FArrayBox> *const evolution_level_data_ptr =
-            &source.getLevelData();
+            &source.getLevelData(VariableType::evolution);
         const LevelData<FArrayBox> *diagnostics_level_data_ptr;
         if (NUM_DIAGNOSTIC_VARS > 0)
         {
-            diagnostics_level_data_ptr = &source.getDiagnosticsLevelData();
+            diagnostics_level_data_ptr =
+                &source.getLevelData(VariableType::diagnostic);
         }
         const DisjointBoxLayout *const evolution_box_layout_ptr =
             &evolution_level_data_ptr->disjointBoxLayout();

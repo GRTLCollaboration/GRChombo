@@ -3,14 +3,14 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef MATTERCONSTRAINTS_HPP_
-#define MATTERCONSTRAINTS_HPP_
+#ifndef NEWMATTERCONSTRAINTS_HPP_
+#define NEWMATTERCONSTRAINTS_HPP_
 
 #include "CCZ4Geometry.hpp"
 #include "Cell.hpp"
-#include "Constraints.hpp"
 #include "FourthOrderDerivatives.hpp"
 #include "GRInterval.hpp"
+#include "NewConstraints.hpp"
 #include "Tensor.hpp"
 #include "simd.hpp"
 #include <array>
@@ -45,14 +45,15 @@ template <class matter_t> class MatterConstraints : public Constraints
         }
     };
 
-    //!  Constructor of class MatterConstraints
+    //! Constructor of class MatterConstraints
     /*!
-         Takes in the grid spacing, and matter object plus
-         optionally the value of Newton's constant, which is set to one by
-       default.
+        Can specify the vars of the constraint vars instead of using the
+        hardcoded ones.
     */
-    MatterConstraints(const matter_t a_matter, double dx,
-                      double G_Newton = 1.0);
+    MatterConstraints(const matter_t a_matter, double dx, double G_Newton,
+                      int a_c_Ham, const Interval &a_c_Moms,
+                      int a_c_Ham_abs_terms = -1,
+                      const Interval &a_c_Moms_abs_terms = Interval());
 
     //! The compute member which calculates the constraints at each point in the
     //! box
@@ -63,6 +64,6 @@ template <class matter_t> class MatterConstraints : public Constraints
     double m_G_Newton;  //!< Newton's constant, set to one by default.
 };
 
-#include "MatterConstraints.impl.hpp"
+#include "NewMatterConstraints.impl.hpp"
 
-#endif /* MATTERCONSTRAINTS_HPP_ */
+#endif /* NEWMATTERCONSTRAINTS_HPP_ */
