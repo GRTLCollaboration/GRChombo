@@ -164,54 +164,6 @@ class ChomboParameters
                 ignore_checkpoint_name_mismatch, false);
 
         pp.load("max_level", max_level, 0);
-        // the reference ratio is hard coded to 2
-        // in principle it can be set to other values, but this is
-        // not recommended since we do not test GRChombo with other
-        // refinement ratios - use other values at your own risk
-        ref_ratios.resize(max_level + 1);
-        ref_ratios.assign(2);
-        pp.getarr("regrid_interval", regrid_interval, 0, max_level + 1);
-
-        // time stepping outputs and regrid data
-        pp.load("checkpoint_interval", checkpoint_interval, 1);
-        pp.load("chk_prefix", checkpoint_prefix);
-        pp.load("plot_interval", plot_interval, 0);
-        pp.load("plot_prefix", plot_prefix);
-        pp.load("stop_time", stop_time, 1.0);
-        pp.load("max_steps", max_steps, 1000000);
-        pp.load("write_plot_ghosts", write_plot_ghosts, false);
-
-        // Chombo already has an error for this, but when applying symmetric BC
-        // this may help the user figure the problem more easily (e.g. N_full=48
-        // with block_factor=16 seems fine, but with symmetric BC it's not, as
-        // the box will use N=24)
-        FOR1(dir)
-        {
-            if (Ni[dir] % block_factor != 0)
-            {
-                if (boundary_params.lo_boundary[dir] ==
-                        BoundaryConditions::REFLECTIVE_BC ||
-                    boundary_params.hi_boundary[dir] ==
-                        BoundaryConditions::REFLECTIVE_BC)
-                {
-                    MayDay::Error(
-                        ("N" + std::to_string(dir + 1) + " (or half of N" +
-                         std::to_string(dir + 1) +
-                         "_full) should be a multiple of block_factor.")
-                            .c_str());
-                }
-                else
-                    MayDay::Error(("N" + std::to_string(dir + 1) +
-                                   " should be a multiple of block_factor")
-                                      .c_str());
-            }
-        }
-
-        // Misc
-        pp.load("ignore_checkpoint_name_mismatch",
-                ignore_checkpoint_name_mismatch, false);
-
-        pp.load("max_level", max_level, 0);
         // the reference ratio is hard coded to 2 on all levels
         // in principle it can be set to other values, but this is
         // not recommended since we do not test GRChombo with other
@@ -252,6 +204,32 @@ class ChomboParameters
         else
         {
             pp.load("min_box_size", block_factor, 8);
+        }
+
+        // Chombo already has an error for this, but when applying symmetric BC
+        // this may help the user figure the problem more easily (e.g. N_full=48
+        // with block_factor=16 seems fine, but with symmetric BC it's not, as
+        // the box will use N=24)
+        FOR1(dir)
+        {
+            if (Ni[dir] % block_factor != 0)
+            {
+                if (boundary_params.lo_boundary[dir] ==
+                        BoundaryConditions::REFLECTIVE_BC ||
+                    boundary_params.hi_boundary[dir] ==
+                        BoundaryConditions::REFLECTIVE_BC)
+                {
+                    MayDay::Error(
+                        ("N" + std::to_string(dir + 1) + " (or half of N" +
+                         std::to_string(dir + 1) +
+                         "_full) should be a multiple of block_factor.")
+                            .c_str());
+                }
+                else
+                    MayDay::Error(("N" + std::to_string(dir + 1) +
+                                   " should be a multiple of block_factor")
+                                      .c_str());
+            }
         }
     }
 
