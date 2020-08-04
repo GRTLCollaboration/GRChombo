@@ -51,12 +51,6 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("track_punctures", track_punctures, false);
         pp.load("puncture_tracking_level", puncture_tracking_level, max_level);
 
-        // hard code num punctures to 2 for now
-        int num_punctures = 2;
-        initial_puncture_coords.resize(num_punctures);
-        initial_puncture_coords[0] = bh1_params.center;
-        initial_puncture_coords[1] = bh2_params.center;
-
         // for scalar
         pp.load("G_Newton", G_Newton, 1.0);
         pp.load("amplitude_scalar", amplitude_scalar);
@@ -66,7 +60,6 @@ class SimulationParameters : public SimulationParametersBase
     // Initial data
     bool activate_extraction, track_punctures;
     int puncture_tracking_level;
-    std::vector<std::array<double, CH_SPACEDIM>> initial_puncture_coords;
     // Collection of parameters necessary for initial conditions
     BoostedBH::params_t bh2_params;
     BoostedBH::params_t bh1_params;

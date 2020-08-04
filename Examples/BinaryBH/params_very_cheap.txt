@@ -11,6 +11,8 @@ N2 = 32
 N3 = 32
 L = 16 #100
 
+track_punctures = 1 # do it on max_level
+
 massA = 1
 offsetA = -2 0 0
 
@@ -35,9 +37,10 @@ tag_buffer_size = 3
 
 checkpoint_interval = 1
 # set to zero to turn off plot files
-plot_interval = 2
-num_plot_vars = 3
-plot_vars = chi Weyl4_Re Weyl4_Im
+plot_interval = 1
+num_plot_vars = 4
+plot_vars = chi Ham Weyl4_Re Weyl4_Im
+
 dt_multiplier = 0.25
 stop_time = 10.0
 
@@ -92,6 +95,10 @@ vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
                          0.0 0.0 0.0 0.0             #Ham and Mom
                          0.0 0.0                     #Weyl
 
+# puncture tracking
+track_punctures = 1
+puncture_tracking_level = 1
+
 # extraction params
 # default of extraction_center is center, uncomment to change
 activate_extraction = 1
@@ -104,4 +111,3 @@ num_modes = 3
 modes = 2 0 # l m for spherical harmonics
         2 1
         2 2
-

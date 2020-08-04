@@ -43,6 +43,9 @@ template <typename InterpAlgo> class AMRInterpolator
     void refresh();
     void limit_num_levels(unsigned int num_levels);
     void interp(InterpolationQuery &query);
+    const AMR &getAMR() const;
+    const std::array<double, CH_SPACEDIM> &get_coarsest_dx();
+    const std::array<double, CH_SPACEDIM> &get_coarsest_origin();
 
   private:
     void computeLevelLayouts();

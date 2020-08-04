@@ -45,17 +45,6 @@ void BinaryBHLevel::initialData()
     // Set up the compute class for the BinaryBH initial data
     BinaryBH binary(m_p.bh1_params, m_p.bh2_params, m_dx);
 
-    // setup initial puncture coords for tracking
-    // do puncture tracking, just set them once, so on level 0
-    if (m_p.track_punctures == 1 && m_level == 0)
-    {
-        const double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
-        PunctureTracker my_punctures(m_time, m_restart_time, coarsest_dt,
-                                     m_p.checkpoint_prefix);
-        my_punctures.set_initial_punctures(m_bh_amr,
-                                           m_p.initial_puncture_coords);
-    }
-
     // set the value of phi - constant over the grid
     SetValue set_phi(m_p.amplitude_scalar, Interval(c_phi, c_phi));
 
@@ -63,23 +52,6 @@ void BinaryBHLevel::initialData()
     // then calculate initial data
     BoxLoops::loop(make_compute_pack(SetValue(0.), set_phi, binary),
                    m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
-}
-
-// Things to do after a restart
-void BinaryBHLevel::postRestart()
-{
-    // do puncture tracking, just set them once, so on the top level
-    if (m_p.track_punctures == 1 && m_level == m_p.max_level)
-    {
-        // need to set a temporary interpolator for finding the shift
-        // as the happens in setupAMRObject() not amr.run()
-        AMRInterpolator<Lagrange<4>> interpolator(m_bh_amr, m_p.origin, m_p.dx,
-                                                  m_p.verbosity);
-        m_bh_amr.set_interpolator(&interpolator);
-        PunctureTracker my_punctures(m_time, m_restart_time, m_dt,
-                                     m_p.checkpoint_prefix);
-        my_punctures.restart_punctures(m_bh_amr, m_p.initial_puncture_coords);
-    }
 }
 
 // Calculate RHS during RK4 substeps
@@ -111,12 +83,11 @@ void BinaryBHLevel::specificUpdateODE(GRLevelData &a_soln,
 void BinaryBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                             const FArrayBox &current_state)
 {
-    if (m_p.track_punctures == true)
+    if (m_p.track_punctures)
     {
         const vector<double> puncture_masses = {m_p.bh1_params.mass,
                                                 m_p.bh2_params.mass};
-        std::vector<std::array<double, CH_SPACEDIM>> puncture_coords =
-            m_bh_amr.get_puncture_coords();
+        auto puncture_coords = m_bh_amr.puncture_tracker.get_puncture_coords();
         // trick tagging to do as if extracting, even though potentially not
         // (just fixes a bug due to insufficient resolution on coarsest level)
         const bool activate_extraction = true;
@@ -140,10 +111,15 @@ void BinaryBHLevel::specificPostTimeStep()
     CH_TIME("BinaryBHLevel::specificPostTimeStep");
     if (m_p.activate_extraction == 1)
     {
-        // Populate the Weyl Scalar values on the grid
-        fillAllGhosts();
-        BoxLoops::loop(Weyl4(m_p.extraction_params.center, m_dx), m_state_new,
+        int min_level = m_p.extraction_params.min_extraction_level();
+        bool calculate_weyl = at_level_timestep_multiple(min_level);
+        if (calculate_weyl)
+        {
+            // Populate the Weyl Scalar values on the grid
+            fillAllGhosts();
+            BoxLoops::loop(Weyl4(m_p.extraction_params.center, m_dx), m_state_new,
                        m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+        }
 
         // Do the extraction on the min extraction level
         if (m_level == m_p.extraction_params.min_extraction_level())
@@ -162,16 +138,11 @@ void BinaryBHLevel::specificPostTimeStep()
     {
         CH_TIME("PunctureTracking");
         // only do the write out for every coarsest level timestep
-        bool write_punctures = false;
-        const double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
-        const double remainder = fmod(m_time, coarsest_dt);
-        PunctureTracker my_punctures(m_time, m_restart_time, m_dt,
-                                     m_p.checkpoint_prefix);
-        if (min(abs(remainder), abs(remainder - coarsest_dt)) < 1.0e-8)
-        {
-            write_punctures = true;
-        }
-        my_punctures.execute_tracking(m_bh_amr, write_punctures);
+        int coarsest_level = 0;
+        bool write_punctures = at_level_timestep_multiple(coarsest_level);
+        m_bh_amr.puncture_tracker.execute_tracking(m_time, m_restart_time, m_dt,
+                                                   write_punctures);
+
     }
 }
 
