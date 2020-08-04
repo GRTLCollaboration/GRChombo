@@ -63,7 +63,7 @@ void ScalarFieldLevel::initialData()
     // setup the output file
     SmallDataIO integral_file(m_p.integral_filename, m_dt, m_time,
                               m_restart_time, SmallDataIO::APPEND, true);
-    std::vector<std::string> header_strings = {"rho", "xMom"};
+    std::vector<std::string> header_strings = {"Source", "xMom"};
     integral_file.write_header_line(header_strings);
 }
 
@@ -112,7 +112,7 @@ void ScalarFieldLevel::specificPostTimeStep()
         // excise within horizon
         BoxLoops::loop(
             ExcisionDiagnostics<ScalarFieldWithPotential, BoostedBHFixedBG>(
-                m_dx, m_p.center, boosted_bh),
+                m_dx, m_p.center, boosted_bh, m_p.inner_r, m_p.outer_r),
             m_state_diagnostics, m_state_diagnostics, SKIP_GHOST_CELLS,
             disable_simd());
     }
@@ -121,14 +121,14 @@ void ScalarFieldLevel::specificPostTimeStep()
     if (m_level == 0)
     {
         // integrate the densities and write to a file
-        double rho_sum = m_gr_amr.compute_sum(c_rho, m_p.coarsest_dx);
+        double source_sum = m_gr_amr.compute_sum(c_Source, m_p.coarsest_dx);
         double xMom_sum = m_gr_amr.compute_sum(c_xMom, m_p.coarsest_dx);
 
         SmallDataIO integral_file(m_p.integral_filename, m_dt, m_time,
                                   m_restart_time, SmallDataIO::APPEND, false);
         // remove any duplicate data if this is post restart
         integral_file.remove_duplicate_time_data();
-        std::vector<double> data_for_writing = {rho_sum, xMom_sum};
+        std::vector<double> data_for_writing = {source_sum, xMom_sum};
         // write data
         integral_file.write_time_data_line(data_for_writing);
 

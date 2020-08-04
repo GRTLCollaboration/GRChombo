@@ -24,13 +24,15 @@ template <class matter_t, class background_t> class ExcisionDiagnostics
     const std::array<double, CH_SPACEDIM> m_center; //!< The BH center
     const FourthOrderDerivatives m_deriv;
     const background_t m_background;
+    const double m_inner_r;
+    const double m_outer_r;
 
   public:
     ExcisionDiagnostics(const double a_dx,
                         const std::array<double, CH_SPACEDIM> a_center,
-                        background_t a_background)
+                        background_t a_background, const double a_inner_r, const double a_outer_r)
         : m_dx(a_dx), m_deriv(m_dx), m_center(a_center),
-          m_background(a_background)
+          m_background(a_background), m_inner_r(a_inner_r), m_outer_r(a_outer_r)
     {
     }
 
@@ -38,7 +40,7 @@ template <class matter_t, class background_t> class ExcisionDiagnostics
     {
         const Coordinates<double> coords(current_cell, m_dx, m_center);
         double horizon_distance = m_background.excise(current_cell);
-        if (coords.get_radius() < 10.0 || coords.get_radius() > 2000.0)
+        if (coords.get_radius() < m_inner_r || coords.get_radius() > m_outer_r)
         {
             current_cell.store_vars(0.0, c_rho);
             current_cell.store_vars(0.0, c_rhoJ);

@@ -97,27 +97,26 @@ template <class matter_t, class background_t> class FixedBGMomentumFlux
 
         // Now the x Momentum density with volume factor
         data_t xMom = emtensor.Si[0] * sqrt(det_gamma);
-/*
-        //How big is the non linear effect?
-        Tensor<1, data_t> nonlinear;
+
+        //How big is the source of i mom?
+        Tensor<1, data_t> source;
         FOR1(i)
         {
-            nonlinear[i] = emtensor.rho * metric_vars.d1_lapse[i];
+            source[i] = - emtensor.rho * metric_vars.d1_lapse[i];
 
             FOR1(j)
             {
-                nonlinear[i] += - emtensor.Si[j] * metric_vars.d1_shift[j][i];
-                FOR1(k)
+                source[i] += emtensor.Si[j] * metric_vars.d1_shift[j][i];
+                FOR2(k,l)
                 {
-                    nonlinear[i] += - emtensor.Si[j] * metric_vars.shift[j] * metric_vars.shift[k]
-                                    / metric_vars.lapse * metric_vars.K_tensor[k][i];
+                    source[i] += gamma_UU[k][l] * emtensor.Sij[k][j] * chris_phys.ULL[j][l][i];
                 }
             }
 
         }
-*/
+
         // assign values of Stress integrand in the output box
-//        current_cell.store_vars(nonlinear[0], c_NL);
+        current_cell.store_vars(source[0], c_Source);
         current_cell.store_vars(Mdot, c_Stress);
         current_cell.store_vars(xMom, c_xMom);
     }

@@ -1,9 +1,9 @@
 #Params for runtime inputs
 
 verbosity = 0
-chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpFieldc_
-plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpFieldp_
-restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpFieldc_000100.3d.hdf5
+chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpFieldc2_
+plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpFieldp2_
+#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpFieldc2_000063.3d.hdf5
 #chk_prefix = /mnt/extraspace/kclough/WarpDrive/WarpFieldLRc_
 #plot_prefix = /mnt/extraspace/kclough/WarpDrive/WarpFieldLRp_
 #restart_file = WarpFieldc_000060.3d.hdf5
@@ -16,7 +16,7 @@ a3 = 1
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
-N1 = 128
+N1 = 256
 N2 = 128
 N3 = 128
 
@@ -30,23 +30,23 @@ regrid_threshold = 0.5
 
 # Level data
 # Maximum number of times you can regrid above coarsest level
-max_level = 6 # There are (max_level+1) grids, so min is zero
+max_level = 5 # There are (max_level+1) grids, so min is zero
 # Frequency of regridding at each level
 # Need one for each level, ie max_level+1 items
 # Generally you do not need to regrid frequently on every level
 regrid_interval = 0 0 0 0 0 0 0 0 0
 tag_buffer_size = 0
 # Max box size
-max_grid_size = 16
+max_grid_size = 32
 # Min box size
-block_factor = 16
+block_factor = 32
 #Periodicity
 isPeriodic = 0 0 0
 # if not periodic, then specify the boundary type
 # 0 = static, 1 = sommerfeld, 2 = reflective
 # (see BoundaryConditions.hpp for details)
 hi_boundary = 1 1 1
-lo_boundary = 1 1 1
+lo_boundary = 1 2 2
 #center = 0.0 0.0 0.0
 # if reflective boundaries selected, must set
 # parity of all vars (in order given by UserVariables.hpp)
@@ -118,7 +118,7 @@ sigma_wall = 0.5
 #extraction_center = 512 512 512
 num_extraction_radii = 3
 extraction_radii = 200.0 300.0 400.0
-extraction_levels = 1 1 1
+extraction_levels = 1 0 0
 num_points_phi = 24
 num_points_theta = 36
 num_modes = 8

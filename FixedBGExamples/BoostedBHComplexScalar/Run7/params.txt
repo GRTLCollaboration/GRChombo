@@ -70,7 +70,7 @@ extrapolation_order = 1
 checkpoint_interval = 50
 plot_interval = 5
 num_plot_vars = 5
-plot_vars = phi_Re Phi_Im rho xMom Stress
+plot_vars = phi_Re rho xMom Stress Source
 dt_multiplier = 0.1
 stop_time = 2500.0
 
@@ -92,9 +92,6 @@ bh_velocity = 0.075 # This is a, so needs to be <= M
 # for extraction
 activate_extraction = 1
 write_extraction = 0
-num_extraction_radii = 2
-extraction_radii = 10.0 2000.0 
-extraction_levels = 0 0
 num_points_phi = 24
 num_points_t = 24
 zaxis_over_xaxis = 1.0
