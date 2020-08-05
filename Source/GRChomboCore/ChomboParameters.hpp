@@ -74,6 +74,110 @@ class ChomboParameters
             BoundaryConditions::write_boundary_conditions(boundary_params);
         }
 
+        // L's, N's and center
+        read_grid_params(pp);
+
+        // Misc
+        pp.load("ignore_checkpoint_name_mismatch",
+                ignore_checkpoint_name_mismatch, false);
+
+        pp.load("max_level", max_level, 0);
+        // the reference ratio is hard coded to 2
+        // in principle it can be set to other values, but this is
+        // not recommended since we do not test GRChombo with other
+        // refinement ratios - use other values at your own risk
+        ref_ratios.resize(max_level + 1);
+        ref_ratios.assign(2);
+        pp.getarr("regrid_interval", regrid_interval, 0, max_level + 1);
+
+        // time stepping outputs and regrid data
+        pp.load("checkpoint_interval", checkpoint_interval, 1);
+        pp.load("chk_prefix", checkpoint_prefix);
+        pp.load("plot_interval", plot_interval, 0);
+        pp.load("plot_prefix", plot_prefix);
+        pp.load("stop_time", stop_time, 1.0);
+        pp.load("max_steps", max_steps, 1000000);
+        pp.load("write_plot_ghosts", write_plot_ghosts, false);
+
+        // load vars to write to plot files
+        pp.load("num_plot_vars", num_plot_vars, 0);
+        std::vector<std::string> plot_var_names(num_plot_vars, "");
+        pp.load("plot_vars", plot_var_names, num_plot_vars, plot_var_names);
+        for (std::string var_name : plot_var_names)
+        {
+            // first assume plot_var is a normal evolution var
+            int var = UserVariables::variable_name_to_enum(var_name);
+            VariableType var_type = VariableType::evolution;
+            if (var < 0)
+            {
+                // if not an evolution var check if it's a diagnostic var
+                var = DiagnosticVariables::variable_name_to_enum(var_name);
+                if (var < 0)
+                {
+                    // it's neither :(
+                    pout() << "Variable with name " << var_name
+                           << " not found.";
+                }
+                else
+                {
+                    var_type = VariableType::diagnostic;
+                }
+            }
+            if (var >= 0)
+            {
+                plot_vars.emplace_back(var, var_type);
+            }
+        }
+        num_plot_vars = plot_vars.size();
+
+        // alias the weird chombo names to something more descriptive
+        // for these box params, and default to some reasonable values
+        if (pp.contains("max_grid_size"))
+        {
+            pp.load("max_grid_size", max_grid_size);
+        }
+        else
+        {
+            pp.load("max_box_size", max_grid_size, 64);
+        }
+        if (pp.contains("block_factor"))
+        {
+            pp.load("block_factor", block_factor);
+        }
+        else
+        {
+            pp.load("min_box_size", block_factor, 8);
+        }
+
+        // Chombo already has an error for this, but when applying symmetric BC
+        // this may help the user figure the problem more easily (e.g. N_full=48
+        // with block_factor=16 seems fine, but with symmetric BC it's not, as
+        // the box will use N=24)
+        FOR1(dir)
+        {
+            if ((ivN[dir] + 1) % block_factor != 0)
+            {
+                if (boundary_params.lo_boundary[dir] ==
+                        BoundaryConditions::REFLECTIVE_BC ||
+                    boundary_params.hi_boundary[dir] ==
+                        BoundaryConditions::REFLECTIVE_BC)
+                {
+                    MayDay::Error(
+                        ("N" + std::to_string(dir + 1) + " (or half of N" +
+                         std::to_string(dir + 1) +
+                         "_full) should be a multiple of block_factor.")
+                            .c_str());
+                }
+                else
+                    MayDay::Error(("N" + std::to_string(dir + 1) +
+                                   " should be a multiple of block_factor")
+                                      .c_str());
+            }
+        }
+    }
+
+    void read_grid_params(GRParmParse &pp)
+    {
         // Grid N
         std::array<int, CH_SPACEDIM> Ni_full;
         std::array<int, CH_SPACEDIM> Ni;
@@ -174,7 +278,7 @@ class ChomboParameters
 
         coarsest_dx = L / max_N;
 
-        // extraction params
+        // grid spacing params
         dx.fill(coarsest_dx);
         origin.fill(coarsest_dx / 2.0);
 
@@ -200,104 +304,6 @@ class ChomboParameters
         pout() << "Center has been set to: ";
         FOR1(idir) { pout() << center[idir] << " "; }
         pout() << endl;
-
-        // Misc
-        pp.load("ignore_checkpoint_name_mismatch",
-                ignore_checkpoint_name_mismatch, false);
-
-        pp.load("max_level", max_level, 0);
-        // the reference ratio is hard coded to 2
-        // in principle it can be set to other values, but this is
-        // not recommended since we do not test GRChombo with other
-        // refinement ratios - use other values at your own risk
-        ref_ratios.resize(max_level + 1);
-        ref_ratios.assign(2);
-        pp.getarr("regrid_interval", regrid_interval, 0, max_level + 1);
-
-        // time stepping outputs and regrid data
-        pp.load("checkpoint_interval", checkpoint_interval, 1);
-        pp.load("chk_prefix", checkpoint_prefix);
-        pp.load("plot_interval", plot_interval, 0);
-        pp.load("plot_prefix", plot_prefix);
-        pp.load("stop_time", stop_time, 1.0);
-        pp.load("max_steps", max_steps, 1000000);
-        pp.load("write_plot_ghosts", write_plot_ghosts, false);
-
-        // load vars to write to plot files
-        pp.load("num_plot_vars", num_plot_vars, 0);
-        std::vector<std::string> plot_var_names(num_plot_vars, "");
-        pp.load("plot_vars", plot_var_names, num_plot_vars, plot_var_names);
-        for (std::string var_name : plot_var_names)
-        {
-            // first assume plot_var is a normal evolution var
-            int var = UserVariables::variable_name_to_enum(var_name);
-            VariableType var_type = VariableType::evolution;
-            if (var < 0)
-            {
-                // if not an evolution var check if it's a diagnostic var
-                var = DiagnosticVariables::variable_name_to_enum(var_name);
-                if (var < 0)
-                {
-                    // it's neither :(
-                    pout() << "Variable with name " << var_name
-                           << " not found.";
-                }
-                else
-                {
-                    var_type = VariableType::diagnostic;
-                }
-            }
-            if (var >= 0)
-            {
-                plot_vars.emplace_back(var, var_type);
-            }
-        }
-        num_plot_vars = plot_vars.size();
-
-        // alias the weird chombo names to something more descriptive
-        // for these box params, and default to some reasonable values
-        if (pp.contains("max_grid_size"))
-        {
-            pp.load("max_grid_size", max_grid_size);
-        }
-        else
-        {
-            pp.load("max_box_size", max_grid_size, 64);
-        }
-        if (pp.contains("block_factor"))
-        {
-            pp.load("block_factor", block_factor);
-        }
-        else
-        {
-            pp.load("min_box_size", block_factor, 8);
-        }
-
-        // Chombo already has an error for this, but when applying symmetric BC
-        // this may help the user figure the problem more easily (e.g. N_full=48
-        // with block_factor=16 seems fine, but with symmetric BC it's not, as
-        // the box will use N=24)
-        FOR1(dir)
-        {
-            if (Ni[dir] % block_factor != 0)
-            {
-                if (boundary_params.lo_boundary[dir] ==
-                        BoundaryConditions::REFLECTIVE_BC ||
-                    boundary_params.hi_boundary[dir] ==
-                        BoundaryConditions::REFLECTIVE_BC)
-                {
-                    MayDay::Error(
-                        ("N" + std::to_string(dir + 1) + " (or half of N" +
-                         std::to_string(dir + 1) +
-                         "_full) should be a multiple of block_factor.")
-                            .c_str());
-                }
-                else
-                    MayDay::Error(("N" + std::to_string(dir + 1) +
-                                   " should be a multiple of block_factor")
-                                      .c_str());
-            }
-        }
     }
 
     // General parameters
