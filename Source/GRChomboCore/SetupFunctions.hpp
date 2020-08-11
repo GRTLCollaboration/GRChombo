@@ -109,7 +109,8 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     // set periodicity
     for (int dir = 0; dir < SpaceDim; dir++)
     {
-        physdomain.setPeriodic(dir, chombo_params.isPeriodic[dir]);
+        physdomain.setPeriodic(dir,
+                               chombo_params.boundary_params.is_periodic[dir]);
     }
 
     // Define the AMR object
