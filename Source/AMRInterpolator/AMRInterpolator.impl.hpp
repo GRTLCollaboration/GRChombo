@@ -18,22 +18,9 @@ template <typename InterpAlgo>
 AMRInterpolator<InterpAlgo>::AMRInterpolator(
     const AMR &amr, const std::array<double, CH_SPACEDIM> &coarsest_origin,
     const std::array<double, CH_SPACEDIM> &coarsest_dx, int verbosity)
-    : m_amr(amr), m_coarsest_origin(coarsest_origin),
-      m_coarsest_dx(coarsest_dx),
-      m_num_levels(const_cast<AMR &>(m_amr).getAMRLevels().size()),
-      m_verbosity(verbosity)
+    : AMRInterpolator(amr, coarsest_origin, coarsest_dx,
+                      BoundaryConditions::params_t(), verbosity)
 {
-    // artificial BC with only periodic BC
-    int bc = BoundaryConditions::STATIC_BC;
-    m_bc_params.hi_boundary = {bc, bc, bc};
-    m_bc_params.lo_boundary = {bc, bc, bc};
-
-    // set defaults
-    m_bc_params.vars_parity.fill(BoundaryConditions::EVEN);
-    m_bc_params.vars_asymptotic_values.fill(0.0);
-    m_bc_params.is_periodic.fill(true);
-
-    set_symmetric_BC();
 }
 
 template <typename InterpAlgo>
@@ -140,10 +127,11 @@ void AMRInterpolator<InterpAlgo>::interp(InterpolationQuery &query)
         {
             int comp = std::get<0>(*it);
             double *out = std::get<1>(*it);
+            VariableType type = std::get<2>(*it);
             for (int point_idx = 0; point_idx < query.m_num_points; ++point_idx)
             {
-                int parity =
-                    get_var_parity(comp, point_idx, query, deriv_it->first);
+                int parity = get_var_parity(comp, type, point_idx, query,
+                                            deriv_it->first);
                 out[point_idx] =
                     parity * m_query_data[comp_idx][m_mpi_mapping[point_idx]];
             }
@@ -779,10 +767,20 @@ void AMRInterpolator<InterpAlgo>::set_symmetric_BC()
 }
 
 template <typename InterpAlgo>
-int AMRInterpolator<InterpAlgo>::get_var_parity(int comp, int point_idx,
+int AMRInterpolator<InterpAlgo>::get_var_parity(int comp,
+                                                const VariableType type,
+                                                int point_idx,
                                                 const InterpolationQuery &query,
                                                 const Derivative &deriv) const
 {
+    // check done every time because only one of the variables may be of
+    // diagnostic type
+    if (type == VariableType::diagnostic &&
+        m_bc_params.vars_parity_diagnostic[comp] == BoundaryConditions::UNDEF &&
+        m_bc_params.symmetric_boundaries_exist)
+        MayDay::Error("Please provide parameter 'vars_parity_diagnostic' if "
+                      "extracting diagnostic variables with reflective BC");
+
     int parity = 1;
     FOR1(dir)
     {
@@ -790,8 +788,9 @@ int AMRInterpolator<InterpAlgo>::get_var_parity(int comp, int point_idx,
         if ((m_lo_boundary_reflective[dir] && coord < 0.) ||
             (m_hi_boundary_reflective[dir] && coord > m_upper_corner[dir]))
         {
-            parity *=
-                BoundaryConditions::get_vars_parity(comp, dir, m_bc_params);
+
+            parity *= BoundaryConditions::get_vars_parity(comp, dir,
+                                                          m_bc_params, type);
             if (deriv[dir] == 1) // invert parity to first derivatives
                 parity *= -1;
         }

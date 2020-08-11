@@ -11,11 +11,120 @@
 #include <map>
 #include <string>
 
+BoundaryConditions::params_t::params_t()
+{
+    // set defaults
+
+    hi_boundary = {STATIC_BC, STATIC_BC, STATIC_BC};
+    lo_boundary = {STATIC_BC, STATIC_BC, STATIC_BC};
+    is_periodic.fill(true);
+    nonperiodic_boundaries_exist = false;
+    symmetric_boundaries_exist = false;
+    sommerfeld_boundaries_exist = false;
+
+    vars_parity.fill(BoundaryConditions::UNDEF);
+    vars_parity_diagnostic.fill(BoundaryConditions::UNDEF);
+    vars_asymptotic_values.fill(0.0);
+}
+
+void BoundaryConditions::params_t::set_is_periodic(
+    const std::array<bool, CH_SPACEDIM> &a_is_periodic)
+{
+    is_periodic = a_is_periodic;
+    FOR1(idir)
+    {
+        if (!is_periodic[idir])
+            nonperiodic_boundaries_exist = true;
+    }
+}
+void BoundaryConditions::params_t::set_hi_boundary(
+    const std::array<int, CH_SPACEDIM> &a_hi_boundary)
+{
+    if (!nonperiodic_boundaries_exist)
+    {
+        MayDay::Error("Can't set BoundaryConditions if only using periodic "
+                      "boundary conditions");
+        return;
+    }
+
+    hi_boundary = a_hi_boundary;
+    FOR1(idir)
+    {
+        if (!is_periodic[idir])
+        {
+            if (hi_boundary[idir] == REFLECTIVE_BC)
+                symmetric_boundaries_exist = true;
+            else if (hi_boundary[idir] == SOMMERFELD_BC)
+                sommerfeld_boundaries_exist = true;
+        }
+    }
+}
+void BoundaryConditions::params_t::set_lo_boundary(
+    const std::array<int, CH_SPACEDIM> &a_lo_boundary)
+{
+    if (!nonperiodic_boundaries_exist)
+    {
+        MayDay::Error("Can't set BoundaryConditions if only using periodic "
+                      "boundary conditions");
+        return;
+    }
+
+    lo_boundary = a_lo_boundary;
+    FOR1(idir)
+    {
+        if (!is_periodic[idir])
+        {
+            if (lo_boundary[idir] == REFLECTIVE_BC)
+                symmetric_boundaries_exist = true;
+            else if (lo_boundary[idir] == SOMMERFELD_BC)
+                sommerfeld_boundaries_exist = true;
+        }
+    }
+}
+
+void BoundaryConditions::params_t::read_params(GRParmParse &pp)
+{
+    if (pp.contains("isPeriodic"))
+    {
+        std::array<bool, CH_SPACEDIM> isPeriodic;
+        pp.load("isPeriodic", isPeriodic);
+        set_is_periodic(isPeriodic);
+    }
+    if (pp.contains("hi_boundary"))
+    {
+        std::array<int, CH_SPACEDIM> hi_boundary;
+        pp.load("hi_boundary", hi_boundary);
+        set_hi_boundary(hi_boundary);
+    }
+    if (pp.contains("lo_boundary"))
+    {
+        std::array<int, CH_SPACEDIM> lo_boundary;
+        pp.load("lo_boundary", lo_boundary);
+        set_lo_boundary(lo_boundary);
+    }
+    if (symmetric_boundaries_exist)
+    {
+        pp.load("vars_parity", vars_parity);
+        if (pp.contains("vars_parity_diagnostic"))
+            pp.load("vars_parity_diagnostic", vars_parity_diagnostic);
+    }
+    if (sommerfeld_boundaries_exist)
+    {
+        pp.load("vars_asymptotic_values", vars_asymptotic_values);
+    }
+    if (nonperiodic_boundaries_exist)
+    {
+        // write out boundary conditions where non periodic - useful for
+        // debug
+        write_boundary_conditions(*this);
+    }
+}
+
 /// define function sets members and is_defined set to true
 void BoundaryConditions::define(double a_dx,
                                 std::array<double, CH_SPACEDIM> a_center,
-                                params_t a_params, ProblemDomain a_domain,
-                                int a_num_ghosts)
+                                const params_t &a_params,
+                                ProblemDomain a_domain, int a_num_ghosts)
 {
     m_dx = a_dx;
     m_params = a_params;
@@ -35,7 +144,7 @@ void BoundaryConditions::set_vars_asymptotic_values(
 }
 
 void BoundaryConditions::write_reflective_conditions(int idir,
-                                                     params_t a_params)
+                                                     const params_t &a_params)
 {
     pout() << "The variables that are parity odd in this direction are : "
            << endl;
@@ -47,10 +156,19 @@ void BoundaryConditions::write_reflective_conditions(int idir,
             pout() << UserVariables::variable_names[icomp] << "    ";
         }
     }
+    for (int icomp = 0; icomp < NUM_DIAGNOSTIC_VARS; icomp++)
+    {
+        int parity =
+            get_vars_parity(icomp, idir, a_params, VariableType::diagnostic);
+        if (parity == -1)
+        {
+            pout() << DiagnosticVariables::variable_names[icomp] << "    ";
+        }
+    }
 }
 
 void BoundaryConditions::write_sommerfeld_conditions(int idir,
-                                                     params_t a_params)
+                                                     const params_t &a_params)
 {
     pout() << "The non zero asymptotic values of the variables "
               "in this direction are : "
@@ -63,10 +181,11 @@ void BoundaryConditions::write_sommerfeld_conditions(int idir,
                    << a_params.vars_asymptotic_values[icomp] << "    ";
         }
     }
+    // not done for diagnostics
 }
 
 /// write out boundary params (used during setup for debugging)
-void BoundaryConditions::write_boundary_conditions(params_t a_params)
+void BoundaryConditions::write_boundary_conditions(const params_t &a_params)
 {
     pout() << "You are using non periodic boundary conditions." << endl;
     pout() << "The boundary params chosen are:  " << endl;
@@ -113,33 +232,36 @@ void BoundaryConditions::write_boundary_conditions(params_t a_params)
 /// UserVariables.hpp The parity should be defined in the params file, and
 /// will be output to the pout files for checking at start/restart of
 /// simulation (It is only required for reflective boundary conditions.)
-int BoundaryConditions::get_vars_parity(int a_comp, int a_dir) const
+int BoundaryConditions::get_vars_parity(int a_comp, int a_dir,
+                                        const VariableType var_type) const
 {
-    int vars_parity = get_vars_parity(a_comp, a_dir, m_params);
+    int vars_parity = get_vars_parity(a_comp, a_dir, m_params, var_type);
 
     return vars_parity;
 }
 
 /// static version used for initial output of boundary values
 int BoundaryConditions::get_vars_parity(int a_comp, int a_dir,
-                                        params_t a_params)
+                                        const params_t &a_params,
+                                        const VariableType var_type)
 {
+    int comp_parity = (var_type == VariableType::evolution
+                           ? a_params.vars_parity[a_comp]
+                           : a_params.vars_parity_diagnostic[a_comp]);
+
     int vars_parity = 1;
-    if ((a_dir == 0) && (a_params.vars_parity[a_comp] == ODD_X ||
-                         a_params.vars_parity[a_comp] == ODD_XY ||
-                         a_params.vars_parity[a_comp] == ODD_XZ))
+    if ((a_dir == 0) && (comp_parity == ODD_X || comp_parity == ODD_XY ||
+                         comp_parity == ODD_XZ || comp_parity == ODD_XYZ))
     {
         vars_parity = -1;
     }
-    else if ((a_dir == 1) && (a_params.vars_parity[a_comp] == ODD_Y ||
-                              a_params.vars_parity[a_comp] == ODD_XY ||
-                              a_params.vars_parity[a_comp] == ODD_YZ))
+    else if ((a_dir == 1) && (comp_parity == ODD_Y || comp_parity == ODD_XY ||
+                              comp_parity == ODD_YZ || comp_parity == ODD_XYZ))
     {
         vars_parity = -1;
     }
-    else if ((a_dir == 2) && (a_params.vars_parity[a_comp] == ODD_Z ||
-                              a_params.vars_parity[a_comp] == ODD_XZ ||
-                              a_params.vars_parity[a_comp] == ODD_YZ))
+    else if ((a_dir == 2) && (comp_parity == ODD_Z || comp_parity == ODD_XZ ||
+                              comp_parity == ODD_YZ || comp_parity == ODD_XYZ))
     {
         vars_parity = -1;
     }
@@ -258,7 +380,7 @@ void BoundaryConditions::fill_reflective_cell(FArrayBox &rhs_box,
     // replace value at iv with value at iv_copy
     for (int icomp = 0; icomp < NUM_VARS; icomp++)
     {
-        int parity = get_vars_parity(icomp, dir);
+        int parity = get_vars_parity(icomp, dir); // evolution variable
         rhs_box(iv, icomp) = parity * rhs_box(iv_copy, icomp);
     }
 }

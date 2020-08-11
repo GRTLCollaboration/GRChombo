@@ -54,9 +54,11 @@ template <typename InterpAlgo> class AMRInterpolator
     void calculateAnswers(InterpolationQuery &query);
     void exchangeMPIAnswer();
 
-    /// set values of member 'm_lo_boundary' and 'm_hi_boundary'
+    /// set values of member 'm_lo_boundary_reflective' and
+    /// 'm_hi_boundary_reflective'
     void set_symmetric_BC();
-    int get_var_parity(int comp, int point_idx, const InterpolationQuery &query,
+    int get_var_parity(int comp, const VariableType type, int point_idx,
+                       const InterpolationQuery &query,
                        const Derivative &deriv) const;
     /// reflect coordinates if BC set to reflective in that direction
     double apply_symmetric_BC_on_coord(const InterpolationQuery &query,
