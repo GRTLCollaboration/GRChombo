@@ -56,13 +56,13 @@ template <typename InterpAlgo> class AMRInterpolator
 
     /// set values of member 'm_lo_boundary_reflective' and
     /// 'm_hi_boundary_reflective'
-    void set_symmetric_BC();
+    void set_reflective_BC();
     int get_var_parity(int comp, const VariableType type, int point_idx,
                        const InterpolationQuery &query,
                        const Derivative &deriv) const;
     /// reflect coordinates if BC set to reflective in that direction
-    double apply_symmetric_BC_on_coord(const InterpolationQuery &query,
-                                       double dir, int point_idx) const;
+    double apply_reflective_BC_on_coord(const InterpolationQuery &query,
+                                        double dir, int point_idx) const;
 
     const AMR &m_amr;
 
@@ -99,7 +99,7 @@ template <typename InterpAlgo> class AMRInterpolator
     // Identifies the printout as originating from this class.
     const static string TAG;
 
-    // Variables for symmetric BC
+    // Variables for reflective BC
     // m_bc_params can't be a 'const' reference as we need a
     // constructor with backward compatibility that builds an artificial
     // 'BoundaryConditions::params_t'
