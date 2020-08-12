@@ -419,8 +419,8 @@ void BoundaryConditions::fill_boundary_cells_dir(
 }
 
 void BoundaryConditions::fill_sommerfeld_cell(
-    FArrayBox &rhs_box, const FArrayBox &soln_box,
-    const IntVect iv, const std::vector<int> &sommerfeld_comps) const
+    FArrayBox &rhs_box, const FArrayBox &soln_box, const IntVect iv,
+    const std::vector<int> &sommerfeld_comps) const
 {
     // assumes an asymptotic value + radial waves and permits them
     // to exit grid with minimal reflections
