@@ -18,7 +18,7 @@
 
 /// Class which deals with the boundaries at the edge of the physical domain in
 /// cases where they are not periodic. Currently only options are static BCs,
-/// sommerfeld (outgoing radiation) and symmetric. The conditions can differ in
+/// sommerfeld (outgoing radiation) and reflective. The conditions can differ in
 /// the high and low directions.
 /// In cases where different variables/boundaries are required, the user should
 /// (usually) write their own conditions class which inherits from this one.
@@ -47,7 +47,7 @@ class BoundaryConditions
         ODD_YZ,
         ODD_XZ,
         ODD_XYZ,
-        UNDEF
+        UNDEFINED
     };
 
     /// Structure containing the boundary condition params
@@ -57,7 +57,9 @@ class BoundaryConditions
         std::array<int, CH_SPACEDIM> lo_boundary;
         std::array<bool, CH_SPACEDIM> is_periodic;
         bool nonperiodic_boundaries_exist;
-        bool symmetric_boundaries_exist;
+        bool boundary_solution_enforced;
+        bool boundary_rhs_enforced;
+        bool reflective_boundaries_exist;
         bool sommerfeld_boundaries_exist;
 
         std::array<int, NUM_VARS> vars_parity;
@@ -119,18 +121,18 @@ class BoundaryConditions
 
     /// Fill the boundary values appropriately based on the params set
     /// in the direction dir
-    void fill_boundary_rhs_dir(const Side::LoHiSide a_side,
-                               const GRLevelData &a_soln, GRLevelData &a_rhs,
-                               const int dir);
+    void fill_boundary_cells_dir(const Side::LoHiSide a_side,
+                                 const GRLevelData &a_soln, GRLevelData &a_rhs,
+                                 const int dir, const bool filling_rhs = true);
 
     /// Copy the boundary values from src to dest
     /// NB assumes same box layout of input and output data
     void copy_boundary_cells(const Side::LoHiSide a_side,
                              const GRLevelData &a_src, GRLevelData &a_dest);
 
-    /// enforce symmetric boundary conditions, e.g. after interpolation
-    void enforce_symmetric_boundaries(const Side::LoHiSide a_side,
-                                      GRLevelData &a_state);
+    /// enforce solution boundary conditions, e.g. after interpolation
+    void enforce_solution_boundaries(const Side::LoHiSide a_side,
+                                     GRLevelData &a_state);
 
     /// Fill the fine boundary values in a_state
     /// Required for interpolating onto finer levels at boundaries

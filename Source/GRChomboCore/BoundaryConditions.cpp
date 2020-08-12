@@ -14,16 +14,16 @@
 BoundaryConditions::params_t::params_t()
 {
     // set defaults
-
     hi_boundary = {STATIC_BC, STATIC_BC, STATIC_BC};
     lo_boundary = {STATIC_BC, STATIC_BC, STATIC_BC};
     is_periodic.fill(true);
     nonperiodic_boundaries_exist = false;
-    symmetric_boundaries_exist = false;
+    boundary_solution_enforced = false;
+    boundary_rhs_enforced = false;
+    reflective_boundaries_exist = false;
     sommerfeld_boundaries_exist = false;
-
-    vars_parity.fill(BoundaryConditions::UNDEF);
-    vars_parity_diagnostic.fill(BoundaryConditions::UNDEF);
+    vars_parity.fill(BoundaryConditions::UNDEFINED);
+    vars_parity_diagnostic.fill(BoundaryConditions::UNDEFINED);
     vars_asymptotic_values.fill(0.0);
 }
 
@@ -40,44 +40,42 @@ void BoundaryConditions::params_t::set_is_periodic(
 void BoundaryConditions::params_t::set_hi_boundary(
     const std::array<int, CH_SPACEDIM> &a_hi_boundary)
 {
-    if (!nonperiodic_boundaries_exist)
-    {
-        MayDay::Error("Can't set BoundaryConditions if only using periodic "
-                      "boundary conditions");
-        return;
-    }
-
     hi_boundary = a_hi_boundary;
     FOR1(idir)
     {
         if (!is_periodic[idir])
         {
             if (hi_boundary[idir] == REFLECTIVE_BC)
-                symmetric_boundaries_exist = true;
+            {
+                boundary_solution_enforced = true;
+                reflective_boundaries_exist = true;
+            }
             else if (hi_boundary[idir] == SOMMERFELD_BC)
+            {
+                boundary_rhs_enforced = true;
                 sommerfeld_boundaries_exist = true;
+            }
         }
     }
 }
 void BoundaryConditions::params_t::set_lo_boundary(
     const std::array<int, CH_SPACEDIM> &a_lo_boundary)
 {
-    if (!nonperiodic_boundaries_exist)
-    {
-        MayDay::Error("Can't set BoundaryConditions if only using periodic "
-                      "boundary conditions");
-        return;
-    }
-
     lo_boundary = a_lo_boundary;
     FOR1(idir)
     {
         if (!is_periodic[idir])
         {
             if (lo_boundary[idir] == REFLECTIVE_BC)
-                symmetric_boundaries_exist = true;
+            {
+                boundary_solution_enforced = true;
+                reflective_boundaries_exist = true;
+            }
             else if (lo_boundary[idir] == SOMMERFELD_BC)
+            {
+                boundary_rhs_enforced = true;
                 sommerfeld_boundaries_exist = true;
+            }
         }
     }
 }
@@ -102,7 +100,7 @@ void BoundaryConditions::params_t::read_params(GRParmParse &pp)
         pp.load("lo_boundary", lo_boundary);
         set_lo_boundary(lo_boundary);
     }
-    if (symmetric_boundaries_exist)
+    if (reflective_boundaries_exist)
     {
         pp.load("vars_parity", vars_parity);
         if (pp.contains("vars_parity_diagnostic"))
@@ -282,7 +280,7 @@ void BoundaryConditions::fill_boundary_rhs(const Side::LoHiSide a_side,
         // only do something if this direction is not periodic
         if (!m_params.is_periodic[idir])
         {
-            fill_boundary_rhs_dir(a_side, a_soln, a_rhs, idir);
+            fill_boundary_cells_dir(a_side, a_soln, a_rhs, idir);
         }
     }
 }
@@ -357,7 +355,7 @@ void BoundaryConditions::fill_sommerfeld_cell(FArrayBox &rhs_box,
     }
 }
 
-void BoundaryConditions::fill_reflective_cell(FArrayBox &rhs_box,
+void BoundaryConditions::fill_reflective_cell(FArrayBox &out_box,
                                               const IntVect iv,
                                               const Side::LoHiSide a_side,
                                               const int dir) const
@@ -381,27 +379,28 @@ void BoundaryConditions::fill_reflective_cell(FArrayBox &rhs_box,
     for (int icomp = 0; icomp < NUM_VARS; icomp++)
     {
         int parity = get_vars_parity(icomp, dir); // evolution variable
-        rhs_box(iv, icomp) = parity * rhs_box(iv_copy, icomp);
+        out_box(iv, icomp) = parity * out_box(iv_copy, icomp);
     }
 }
 
 /// Fill the boundary values appropriately based on the params set
 /// in the direction dir
-void BoundaryConditions::fill_boundary_rhs_dir(const Side::LoHiSide a_side,
-                                               const GRLevelData &a_soln,
-                                               GRLevelData &a_rhs,
-                                               const int dir)
+void BoundaryConditions::fill_boundary_cells_dir(const Side::LoHiSide a_side,
+                                                 const GRLevelData &a_soln,
+                                                 GRLevelData &a_out,
+                                                 const int dir,
+                                                 const bool filling_rhs_cells)
 {
     // iterate through the boxes, shared amongst threads
-    DataIterator dit = a_rhs.dataIterator();
+    DataIterator dit = a_out.dataIterator();
     int nbox = dit.size();
 #pragma omp parallel for default(shared)
     for (int ibox = 0; ibox < nbox; ++ibox)
     {
         DataIndex dind = dit[ibox];
-        FArrayBox &rhs_box = a_rhs[dind];
+        FArrayBox &out_box = a_out[dind];
         const FArrayBox &soln_box = a_soln[dind];
-        Box this_box = rhs_box.box();
+        Box this_box = out_box.box();
         IntVect offset_lo = -this_box.smallEnd() + m_domain_box.smallEnd();
         IntVect offset_hi = +this_box.bigEnd() - m_domain_box.bigEnd();
 
@@ -425,18 +424,18 @@ void BoundaryConditions::fill_boundary_rhs_dir(const Side::LoHiSide a_side,
             {
                 for (int icomp = 0; icomp < NUM_VARS; icomp++)
                 {
-                    rhs_box(iv, icomp) = 0.0;
+                    out_box(iv, icomp) = 0.0;
                 }
                 break;
             }
             case SOMMERFELD_BC:
             {
-                fill_sommerfeld_cell(rhs_box, soln_box, iv);
+                fill_sommerfeld_cell(out_box, soln_box, iv);
                 break;
             }
             case REFLECTIVE_BC:
             {
-                fill_reflective_cell(rhs_box, iv, a_side, dir);
+                fill_reflective_cell(out_box, iv, a_side, dir);
                 break;
             }
             default:
@@ -501,26 +500,29 @@ void BoundaryConditions::copy_boundary_cells(const Side::LoHiSide a_side,
     }                 // end test for same box layout
 }
 
-/// enforce symmetric boundary conditions, e.g. after interpolation
-void BoundaryConditions::enforce_symmetric_boundaries(
+/// enforce solution boundary conditions, e.g. after interpolation
+void BoundaryConditions::enforce_solution_boundaries(
     const Side::LoHiSide a_side, GRLevelData &a_state)
 {
     CH_assert(is_defined);
-    CH_TIME("BoundaryConditions::enforce_symmetric_boundaries");
+    CH_TIME("BoundaryConditions::enforce_solution_boundaries");
 
     // cycle through the directions
     FOR1(idir)
     {
-        // only do something if this direction is not periodic and symmetric
+        // only do something if this direction is not periodic and solution
+        // boundary enforced
         if (!m_params.is_periodic[idir])
         {
             int boundary_condition = get_boundary_condition(a_side, idir);
 
-            // as a bit of a hack, just use the rhs update, since it is the
-            // same copying of cells which we require for the solution
+            // same copying of cells which we require for the rhs solution
+            // but tell it we are not filling the rhs in case required
             if (boundary_condition == REFLECTIVE_BC)
             {
-                fill_boundary_rhs_dir(a_side, a_state, a_state, idir);
+                const bool filling_rhs_cells = false;
+                fill_boundary_cells_dir(a_side, a_state, a_state, idir,
+                                        filling_rhs_cells);
             }
         }
     }

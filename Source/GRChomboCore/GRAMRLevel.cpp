@@ -158,7 +158,7 @@ Real GRAMRLevel::advance()
     }
 
     specificAdvance();
-    // enforce symmetric BCs - in case of updates in specificAdvance
+    // enforce solution BCs - in case of updates in specificAdvance
     fillBdyGhosts(m_state_new);
 
     m_time += m_dt;
@@ -182,7 +182,7 @@ void GRAMRLevel::postTimeStep()
 
     specificPostTimeStep();
 
-    // enforce symmetric BCs - this is required after the averaging
+    // enforce solution BCs - this is required after the averaging
     // and postentially after specificPostTimeStep actions
     fillBdyGhosts(m_state_new);
 
@@ -326,7 +326,7 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
     // interpolated)
     copyBdyGhosts(m_state_old, m_state_new);
 
-    // enforce symmetric BCs (overwriting any interpolation)
+    // enforce solution BCs (overwriting any interpolation)
     fillBdyGhosts(m_state_new);
 
     m_state_old.define(level_domain, NUM_VARS, iv_ghosts);
@@ -1016,11 +1016,11 @@ void GRAMRLevel::fillIntralevelGhosts()
 
 void GRAMRLevel::fillBdyGhosts(GRLevelData &a_state)
 {
-    // enforce symmetric BCs after filling ghosts
-    if (m_p.boundary_params.symmetric_boundaries_exist)
+    // enforce solution BCs after filling ghosts
+    if (m_p.boundary_params.boundary_solution_enforced)
     {
-        m_boundaries.enforce_symmetric_boundaries(Side::Hi, a_state);
-        m_boundaries.enforce_symmetric_boundaries(Side::Lo, a_state);
+        m_boundaries.enforce_solution_boundaries(Side::Hi, a_state);
+        m_boundaries.enforce_solution_boundaries(Side::Lo, a_state);
     }
 }
 
