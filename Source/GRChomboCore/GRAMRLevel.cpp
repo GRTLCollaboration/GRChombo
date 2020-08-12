@@ -924,8 +924,8 @@ void GRAMRLevel::evalRHS(GRLevelData &rhs, GRLevelData &soln,
     // evolution of the boundaries according to conditions
     if (m_p.boundary_params.nonperiodic_boundaries_exist)
     {
-        m_boundaries.fill_boundary_rhs(Side::Lo, soln, rhs);
-        m_boundaries.fill_boundary_rhs(Side::Hi, soln, rhs);
+        m_boundaries.fill_rhs_boundaries(Side::Lo, soln, rhs);
+        m_boundaries.fill_rhs_boundaries(Side::Hi, soln, rhs);
     }
 }
 
@@ -1006,6 +1006,14 @@ void GRAMRLevel::fillAllDiagnosticsGhosts()
             0, 0, NUM_DIAGNOSTIC_VARS);
     }
     m_state_diagnostics.exchange(m_exchange_copier);
+
+    // We should always fill the boundary ghosts to avoid nans
+    // if we have non periodic directions
+    if (m_p.boundary_params.nonperiodic_boundaries_exist)
+    {
+        m_boundaries.fill_diagnostic_boundaries(Side::Hi, m_state_diagnostics);
+        m_boundaries.fill_diagnostic_boundaries(Side::Lo, m_state_diagnostics);
+    }
 }
 
 void GRAMRLevel::fillIntralevelGhosts()
@@ -1019,8 +1027,8 @@ void GRAMRLevel::fillBdyGhosts(GRLevelData &a_state)
     // enforce solution BCs after filling ghosts
     if (m_p.boundary_params.boundary_solution_enforced)
     {
-        m_boundaries.enforce_solution_boundaries(Side::Hi, a_state);
-        m_boundaries.enforce_solution_boundaries(Side::Lo, a_state);
+        m_boundaries.fill_solution_boundaries(Side::Hi, a_state);
+        m_boundaries.fill_solution_boundaries(Side::Lo, a_state);
     }
 }
 

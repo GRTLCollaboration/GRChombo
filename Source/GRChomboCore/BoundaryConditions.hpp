@@ -77,12 +77,15 @@ class BoundaryConditions
 
   protected:
     // Member values
-    double m_dx;            // The grid spacing
-    int m_num_ghosts;       // the number of ghosts (usually 3)
-    params_t m_params;      // the boundary params
-    RealVect m_center;      // the position of the center of the grid
-    ProblemDomain m_domain; // the problem domain (excludes boundary cells)
-    Box m_domain_box;       // The box representing the domain
+    double m_dx;              // The grid spacing
+    int m_num_ghosts;         // the number of ghosts (usually 3)
+    params_t m_params;        // the boundary params
+    RealVect m_center;        // the position of the center of the grid
+    ProblemDomain m_domain;   // the problem domain (excludes boundary cells)
+    Box m_domain_box;         // The box representing the domain
+    std::vector<int> m_comps; // a vector of c_nums for all the evolution vars
+    std::vector<int>
+        m_diagnostic_comps; // a vector of c_nums for all the diagnostic vars
     bool is_defined; // whether the BoundaryConditions class members are defined
 
   public:
@@ -116,23 +119,28 @@ class BoundaryConditions
                     const VariableType var_type = VariableType::evolution);
 
     /// Fill the rhs boundary values appropriately based on the params set
-    void fill_boundary_rhs(const Side::LoHiSide a_side,
-                           const GRLevelData &a_soln, GRLevelData &a_rhs);
+    void fill_rhs_boundaries(const Side::LoHiSide a_side,
+                             const GRLevelData &a_soln, GRLevelData &a_rhs);
+
+    /// enforce solution boundary conditions, e.g. after interpolation
+    void fill_solution_boundaries(const Side::LoHiSide a_side,
+                                  GRLevelData &a_state);
+
+    /// enforce solution boundary conditions, e.g. after interpolation
+    void fill_diagnostic_boundaries(const Side::LoHiSide a_side,
+                                    GRLevelData &a_state);
 
     /// Fill the boundary values appropriately based on the params set
     /// in the direction dir
-    void fill_boundary_cells_dir(const Side::LoHiSide a_side,
-                                 const GRLevelData &a_soln, GRLevelData &a_rhs,
-                                 const int dir, const bool filling_rhs = true);
+    void fill_boundary_cells_dir(
+        const Side::LoHiSide a_side, const GRLevelData &a_soln,
+        GRLevelData &a_rhs, const int dir, const int boundary_condition,
+        const VariableType var_type = VariableType::evolution);
 
     /// Copy the boundary values from src to dest
     /// NB assumes same box layout of input and output data
     void copy_boundary_cells(const Side::LoHiSide a_side,
                              const GRLevelData &a_src, GRLevelData &a_dest);
-
-    /// enforce solution boundary conditions, e.g. after interpolation
-    void enforce_solution_boundaries(const Side::LoHiSide a_side,
-                                     GRLevelData &a_state);
 
     /// Fill the fine boundary values in a_state
     /// Required for interpolating onto finer levels at boundaries
@@ -166,9 +174,12 @@ class BoundaryConditions
     static void write_sommerfeld_conditions(int idir, const params_t &a_params);
 
     void fill_sommerfeld_cell(FArrayBox &rhs_box, const FArrayBox &soln_box,
-                              const IntVect iv) const;
-    void fill_reflective_cell(FArrayBox &rhs_box, const IntVect iv,
-                              const Side::LoHiSide a_side, const int dir) const;
+                              const IntVect iv,
+                              const std::vector<int> &sommerfeld_comps) const;
+    void fill_reflective_cell(
+        FArrayBox &rhs_box, const IntVect iv, const Side::LoHiSide a_side,
+        const int dir, const std::vector<int> &reflective_comps,
+        const VariableType var_type = VariableType::evolution) const;
 };
 
 /// This derived class is used by expand_grids_to_boundaries to grow the
