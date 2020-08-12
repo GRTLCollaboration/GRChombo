@@ -33,7 +33,7 @@ AMRInterpolator<InterpAlgo>::AMRInterpolator(
       m_num_levels(const_cast<AMR &>(m_amr).getAMRLevels().size()),
       m_verbosity(verbosity), m_bc_params(a_bc_params)
 {
-    set_symmetric_BC();
+    set_reflective_BC();
 }
 
 template <typename InterpAlgo> void AMRInterpolator<InterpAlgo>::refresh()
@@ -375,7 +375,7 @@ AMRInterpolator<InterpAlgo>::findBoxes(InterpolationQuery &query)
                     for (int i = 0; i < CH_SPACEDIM; ++i)
                     {
                         double coord =
-                            apply_symmetric_BC_on_coord(query, i, point_idx);
+                            apply_reflective_BC_on_coord(query, i, point_idx);
                         grid_coord[i] = (coord - m_origin[level_idx][i]) /
                                         m_dx[level_idx][i];
 
@@ -498,7 +498,7 @@ void AMRInterpolator<InterpAlgo>::prepareMPI(InterpolationQuery &query,
         {
             // m_query_coords[i][idx] = query.m_coords[i][point_idx];
             m_query_coords[i][idx] =
-                apply_symmetric_BC_on_coord(query, i, point_idx);
+                apply_reflective_BC_on_coord(query, i, point_idx);
         }
 
         m_mpi_mapping[point_idx] = idx;
@@ -749,7 +749,7 @@ void AMRInterpolator<InterpAlgo>::exchangeMPIAnswer()
 }
 
 template <typename InterpAlgo>
-void AMRInterpolator<InterpAlgo>::set_symmetric_BC()
+void AMRInterpolator<InterpAlgo>::set_reflective_BC()
 {
     const IntVect &big_end = const_cast<AMR &>(m_amr)
                                  .getAMRLevels()[0]
@@ -778,8 +778,9 @@ int AMRInterpolator<InterpAlgo>::get_var_parity(int comp,
     // check done every time because only one of the variables may be of
     // diagnostic type
     if (type == VariableType::diagnostic &&
-        m_bc_params.vars_parity_diagnostic[comp] == BoundaryConditions::UNDEF &&
-        m_bc_params.symmetric_boundaries_exist)
+        m_bc_params.vars_parity_diagnostic[comp] ==
+            BoundaryConditions::UNDEFINED &&
+        m_bc_params.reflective_boundaries_exist)
         MayDay::Error("Please provide parameter 'vars_parity_diagnostic' if "
                       "extracting diagnostic variables with reflective BC");
 
@@ -801,7 +802,7 @@ int AMRInterpolator<InterpAlgo>::get_var_parity(int comp,
 }
 
 template <typename InterpAlgo>
-double AMRInterpolator<InterpAlgo>::apply_symmetric_BC_on_coord(
+double AMRInterpolator<InterpAlgo>::apply_reflective_BC_on_coord(
     const InterpolationQuery &query, double dir, int point_idx) const
 {
     double coord = query.m_coords[dir][point_idx];
