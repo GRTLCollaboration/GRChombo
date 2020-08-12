@@ -525,7 +525,7 @@ void BoundaryConditions::copy_boundary_cells(const Side::LoHiSide a_side,
     CH_TIME("BoundaryConditions::copy_boundary_cells");
 
     CH_assert(is_defined);
-    CH_assert(a_src.size() == NUM_VARS);
+    CH_assert(a_src.nComp() == NUM_VARS);
     if (a_src.boxLayout() == a_dest.boxLayout())
     {
         // cycle through the directions
@@ -578,8 +578,8 @@ void BoundaryConditions::interp_boundaries(GRLevelData &a_fine_state,
                                            const Side::LoHiSide a_side)
 {
     CH_assert(is_defined);
-    CH_assert(a_fine_state.size() == NUM_VARS);
-    CH_assert(a_coarse_state.size() == NUM_VARS);
+    CH_assert(a_fine_state.nComp() == NUM_VARS);
+    CH_assert(a_coarse_state.nComp() == NUM_VARS);
     CH_TIME("BoundaryConditions::interp_boundaries");
 
     // cycle through the directions

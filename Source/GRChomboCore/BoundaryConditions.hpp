@@ -126,7 +126,7 @@ class BoundaryConditions
     void fill_solution_boundaries(const Side::LoHiSide a_side,
                                   GRLevelData &a_state);
 
-    /// enforce solution boundary conditions, e.g. after interpolation
+    /// fill diagnostic boundaries - used in AMRInterpolator
     void fill_diagnostic_boundaries(const Side::LoHiSide a_side,
                                     GRLevelData &a_state);
 
@@ -134,7 +134,7 @@ class BoundaryConditions
     /// in the direction dir
     void fill_boundary_cells_dir(
         const Side::LoHiSide a_side, const GRLevelData &a_soln,
-        GRLevelData &a_rhs, const int dir, const int boundary_condition,
+        GRLevelData &a_out, const int dir, const int boundary_condition,
         const VariableType var_type = VariableType::evolution);
 
     /// Copy the boundary values from src to dest
