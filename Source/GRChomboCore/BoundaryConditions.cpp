@@ -270,7 +270,7 @@ void BoundaryConditions::write_sommerfeld_conditions(int idir,
     // not done for diagnostics
 }
 
-void BoundaryConditions::write_mixed_conditions(int idir, params_t a_params)
+void BoundaryConditions::write_mixed_conditions(int idir, const params_t &a_params)
 {
     // check all the vars have been assigned a BC - this should always be the
     // case because of how the params are assigned

@@ -183,19 +183,19 @@ class BoundaryConditions
     static void write_sommerfeld_conditions(int idir, const params_t &a_params);
 
     /// write out mixed conditions
-    static void write_mixed_conditions(int idir, params_t a_params);
+    static void write_mixed_conditions(int idir, const params_t &a_params);
 
     void fill_sommerfeld_cell(FArrayBox &rhs_box, const FArrayBox &soln_box,
                               const IntVect iv,
                               const std::vector<int> &sommerfeld_comps) const;
 
-    void fill_extrapolating_cell(FArrayBox &rhs_box, const IntVect iv,
+    void fill_extrapolating_cell(FArrayBox &out_box, const IntVect iv,
                                  const Side::LoHiSide a_side, const int dir,
                                  const std::vector<int> &extrapolating_comps,
                                  const int order = 1) const;
 
     void fill_reflective_cell(
-        FArrayBox &rhs_box, const IntVect iv, const Side::LoHiSide a_side,
+        FArrayBox &out_box, const IntVect iv, const Side::LoHiSide a_side,
         const int dir, const std::vector<int> &reflective_comps,
         const VariableType var_type = VariableType::evolution) const;
 
