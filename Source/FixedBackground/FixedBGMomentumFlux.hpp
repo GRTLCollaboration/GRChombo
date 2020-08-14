@@ -65,12 +65,16 @@ template <class matter_t, class background_t> class FixedBGMomentumFlux
             vars, metric_vars, d1, gamma_UU, chris_phys.ULL);
         const data_t det_gamma = compute_determinant_sym(metric_vars.gamma);
 
-        // The unit vector in the radial direction N^i in cartesian coords
-        Tensor<1, data_t> Ni;
+        // The covector in the radial direction N_i in cartesian coords
+        // (normal to surfaces of constant r)
+        Tensor<1, data_t> Ni_L;
         data_t R = coords.get_radius();
-        Ni[0] = coords.x / R;
-        Ni[1] = coords.y / R;
-        Ni[2] = coords.z / R;
+        Ni_L[0] = coords.x / R;
+        Ni_L[1] = coords.y / R;
+        Ni_L[2] = coords.z / R;
+        // the unit vector in the radial direction
+        Tensor<1, data_t> Ni;
+        FOR2(i,j) {Ni[i] = gamma_UU[i][j] * Ni_L[j];}
         data_t mod_N2 = 0.0;
         FOR2(i, j) { mod_N2 += metric_vars.gamma[i][j] * Ni[i] * Ni[j]; }
         FOR1(i) { Ni[i] = Ni[i] / sqrt(mod_N2); }
