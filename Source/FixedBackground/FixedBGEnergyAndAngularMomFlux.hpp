@@ -80,60 +80,57 @@ class FixedBGEnergyAndAngularMomFlux
         FOR1(i)
         {
             Ni[i] = 0.0;
-            {
-                FOR1(j) { Ni[i] += gamma_UU[i][j] * Ni_L[j]; }
-            }
-            data_t mod_N2 = 0.0;
-            FOR2(i, j) { mod_N2 += metric_vars.gamma[i][j] * Ni[i] * Ni[j]; }
-            FOR1(i) { Ni[i] = Ni[i] / sqrt(mod_N2); }
-
-            // the area element of the sphere - should be spheroid, but approx
-            // ok this just corrects for the determinant of Sigma
-            data_t rho2 =
-                simd_max(coords.x * coords.x + coords.y * coords.y, 1e-12);
-            data_t r2sintheta = sqrt(rho2) * R;
-            data_t det_Sigma =
-                CoordinateTransformations::get_det_spherical_area(
-                    metric_vars.gamma, coords.x, coords.y, coords.z);
-
-            // dxdphi to convert tensor components to spherical polar
-            Tensor<1, data_t> dxdphi;
-            dxdphi[0] = -coords.y;
-            dxdphi[1] = coords.x;
-            dxdphi[2] = 0;
-
-            // The integrand for the energy flux out of a radial
-            // shell at the current position
-            data_t Edot = 0.0;
-            FOR1(i)
-            {
-                Edot += metric_vars.lapse * metric_vars.lapse * emtensor.Si[i] *
-                        Ni[i];
-                FOR1(j)
-                {
-                    Edot += -metric_vars.lapse * metric_vars.shift[j] *
-                            emtensor.Sij[i][j] * Ni[i];
-                }
-            }
-            // This factor of det_Sigma takes care of the surface element
-            // The r2sintheta part is counted in the coordinate integration
-            // so remove it here
-            Edot *= sqrt(det_Sigma) / r2sintheta;
-
-            // The integrand for the angular momentum flux out of a radial
-            // shell at the current position
-            data_t Jdot = 0;
-            FOR2(i, j)
-            {
-                Jdot +=
-                    metric_vars.lapse * emtensor.Sij[i][j] * dxdphi[i] * Ni[j];
-            }
-            Jdot *= sqrt(det_Sigma) / r2sintheta;
-
-            // assign values of fluxes in output box
-            current_cell.store_vars(Edot, c_Edot);
-            current_cell.store_vars(Jdot, c_Jdot);
+            FOR1(j) { Ni[i] += gamma_UU[i][j] * Ni_L[j]; }
         }
-    };
+        data_t mod_N2 = 0.0;
+        FOR2(i, j) { mod_N2 += metric_vars.gamma[i][j] * Ni[i] * Ni[j]; }
+        FOR1(i) { Ni[i] = Ni[i] / sqrt(mod_N2); }
+
+        // the area element of the sphere - should be spheroid, but approx
+        // ok this just corrects for the determinant of Sigma
+        data_t rho2 =
+            simd_max(coords.x * coords.x + coords.y * coords.y, 1e-12);
+        data_t r2sintheta = sqrt(rho2) * R;
+        data_t det_Sigma = CoordinateTransformations::get_det_spherical_area(
+            metric_vars.gamma, coords.x, coords.y, coords.z);
+
+        // dxdphi to convert tensor components to spherical polar
+        Tensor<1, data_t> dxdphi;
+        dxdphi[0] = -coords.y;
+        dxdphi[1] = coords.x;
+        dxdphi[2] = 0;
+
+        // The integrand for the energy flux out of a radial
+        // shell at the current position
+        data_t Edot = 0.0;
+        FOR1(i)
+        {
+            Edot +=
+                metric_vars.lapse * metric_vars.lapse * emtensor.Si[i] * Ni[i];
+            FOR1(j)
+            {
+                Edot += -metric_vars.lapse * metric_vars.shift[j] *
+                        emtensor.Sij[i][j] * Ni[i];
+            }
+        }
+        // This factor of det_Sigma takes care of the surface element
+        // The r2sintheta part is counted in the coordinate integration
+        // so remove it here
+        Edot *= sqrt(det_Sigma) / r2sintheta;
+
+        // The integrand for the angular momentum flux out of a radial
+        // shell at the current position
+        data_t Jdot = 0;
+        FOR2(i, j)
+        {
+            Jdot += metric_vars.lapse * emtensor.Sij[i][j] * dxdphi[i] * Ni[j];
+        }
+        Jdot *= sqrt(det_Sigma) / r2sintheta;
+
+        // assign values of fluxes in output box
+        current_cell.store_vars(Edot, c_Edot);
+        current_cell.store_vars(Jdot, c_Jdot);
+    }
+};
 
 #endif /* FIXEDBGENERGYANDANGULARMOMFLUX_HPP_ */
