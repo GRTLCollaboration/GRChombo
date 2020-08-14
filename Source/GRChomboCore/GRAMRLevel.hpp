@@ -156,7 +156,6 @@ class GRAMRLevel : public AMRLevel, public InterpSource
 
     double get_dx() const;
 
-
     /// Fill all [either] evolution or diagnostic ghost cells
     virtual void
     fillAllGhosts(const VariableType var_type = VariableType::evolution);

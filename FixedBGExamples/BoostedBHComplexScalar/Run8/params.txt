@@ -68,7 +68,7 @@ extrapolation_order = 1
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 50
-plot_interval = 5
+plot_interval = 1
 num_plot_vars = 5
 plot_vars = phi_Re rho xMom Stress Source
 dt_multiplier = 0.1

@@ -117,8 +117,9 @@ void BinaryBHLevel::specificPostTimeStep()
         {
             // Populate the Weyl Scalar values on the grid
             fillAllGhosts();
-            BoxLoops::loop(Weyl4(m_p.extraction_params.center, m_dx), m_state_new,
-                       m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+            BoxLoops::loop(Weyl4(m_p.extraction_params.center, m_dx),
+                           m_state_new, m_state_diagnostics,
+                           EXCLUDE_GHOST_CELLS);
         }
 
         // Do the extraction on the min extraction level
@@ -142,7 +143,6 @@ void BinaryBHLevel::specificPostTimeStep()
         bool write_punctures = at_level_timestep_multiple(coarsest_level);
         m_bh_amr.puncture_tracker.execute_tracking(m_time, m_restart_time, m_dt,
                                                    write_punctures);
-
     }
 }
 

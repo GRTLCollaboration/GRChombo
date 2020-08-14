@@ -4,8 +4,8 @@
  */
 
 // General includes common to most GR problems
-#include "AMRReductions.hpp"
 #include "ScalarFieldLevel.hpp"
+#include "AMRReductions.hpp"
 #include "BoxLoops.hpp"
 #include "ComputePack.hpp"
 #include "NanCheck.hpp"
@@ -60,7 +60,6 @@ void ScalarFieldLevel::initialData()
         ExcisionEvolution<ScalarFieldWithPotential, BoostedBHFixedBG>(
             m_dx, m_p.center, boosted_bh),
         m_state_new, m_state_new, SKIP_GHOST_CELLS, disable_simd());
-
 }
 
 // Things to do before outputting a plot file
@@ -124,7 +123,8 @@ void ScalarFieldLevel::specificPostTimeStep()
         double xMom_sum = amr_reductions.sum(c_xMom);
 
         SmallDataIO integral_file(m_p.integral_filename, m_dt, m_time,
-                                  m_restart_time, SmallDataIO::APPEND, first_step);
+                                  m_restart_time, SmallDataIO::APPEND,
+                                  first_step);
         // remove any duplicate data if this is post restart
         integral_file.remove_duplicate_time_data();
         std::vector<double> data_for_writing = {source_sum, xMom_sum};

@@ -81,8 +81,8 @@ static Tensor<2, data_t> jacobian_dxdr(const data_t x, const double y,
 // coords
 template <class data_t>
 static Tensor<2, data_t>
-spherical_to_cartesian_LL(Tensor<2, data_t> spherical_g, data_t x, double y,
-                          double z)
+    spherical_to_cartesian_LL(Tensor<2, data_t> spherical_g, data_t x, double y,
+                              double z)
 {
     // The output - g in cartesian coords
     Tensor<2, data_t> cartesian_g;
@@ -106,8 +106,8 @@ spherical_to_cartesian_LL(Tensor<2, data_t> spherical_g, data_t x, double y,
 // coords
 template <class data_t>
 static Tensor<2, data_t>
-cartesian_to_spherical_LL(Tensor<2, data_t> cartesian_g, data_t x, double y,
-                          double z)
+    cartesian_to_spherical_LL(Tensor<2, data_t> cartesian_g, data_t x, double y,
+                              double z)
 {
     // The output - g in spherical coords
     Tensor<2, data_t> spherical_g;
@@ -180,8 +180,8 @@ data_t get_det_spherical_area(Tensor<2, data_t> cartesian_g, data_t x, double y,
         cartesian_to_spherical_LL(cartesian_g, x, y, z);
 
     // the r components should now be zero in this adapted basis, so
-    const data_t det_Sigma =
-        spherical_g[1][1] * spherical_g[2][2] - spherical_g[1][2] * spherical_g[2][1];
+    const data_t det_Sigma = spherical_g[1][1] * spherical_g[2][2] -
+                             spherical_g[1][2] * spherical_g[2][1];
 
     return det_Sigma;
 }

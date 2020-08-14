@@ -39,7 +39,8 @@ class SimulationParameters : public ChomboParameters
         pp.load("field_amplitude_im", field_amplitude_im);
         pp.load("scalar_mass", potential_params.scalar_mass);
         pp.load("inner_r", inner_r, 5.0);
-        pp.load("outer_r", outer_r, 2.0/ bg_params.velocity / potential_params.scalar_mass);
+        pp.load("outer_r", outer_r,
+                2.0 / bg_params.velocity / potential_params.scalar_mass);
 
         // Extraction params
         pp.load("num_extraction_radii", extraction_params.num_extraction_radii,

@@ -4,8 +4,8 @@
  */
 
 // General includes common to most GR problems
-#include "AMRReductions.hpp"
 #include "ProcaFieldLevel.hpp"
+#include "AMRReductions.hpp"
 #include "BoxLoops.hpp"
 #include "ComputePack.hpp"
 #include "NanCheck.hpp"
@@ -95,8 +95,8 @@ void ProcaFieldLevel::specificPostTimeStep()
                        m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
         BoxLoops::loop(ExcisionProcaDiagnostics<ProcaField, KerrSchildFixedBG>(
                            m_dx, m_p.center, kerr_bh, 1.0),
-                       m_state_new, m_state_diagnostics,
-                       SKIP_GHOST_CELLS, disable_simd());
+                       m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS,
+                       disable_simd());
     }
 
     // write out the integral after each coarse timestep
@@ -108,7 +108,8 @@ void ProcaFieldLevel::specificPostTimeStep()
         double rho_J_sum = amr_reductions.sum(c_rhoJ);
 
         SmallDataIO integral_file(m_p.integral_filename, m_dt, m_time,
-                                  m_restart_time, SmallDataIO::APPEND, first_step);
+                                  m_restart_time, SmallDataIO::APPEND,
+                                  first_step);
         // remove any duplicate data if this is post restart
         integral_file.remove_duplicate_time_data();
         std::vector<double> data_for_writing = {rho_sum, rho_J_sum};

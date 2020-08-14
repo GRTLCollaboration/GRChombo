@@ -1,28 +1,30 @@
 #Params for runtime inputs
 
 verbosity = 0
-chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpFieldc2_
-plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpFieldp2_
-#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpFieldc2_000063.3d.hdf5
-#chk_prefix = /mnt/extraspace/kclough/WarpDrive/WarpFieldLRc_
-#plot_prefix = /mnt/extraspace/kclough/WarpDrive/WarpFieldLRp_
-#restart_file = WarpFieldc_000060.3d.hdf5
-write_plot_ghosts = 0
+chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpField1c_
+plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpField1p_
+#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpField1c_000063.3d.hdf5
 
 # warp field params
 a1 = -1
 a2 = 1
 a3 = 1
 
+# Warp Bubble Initial data
+warp_acceleration = 0.0
+warp_speed = 0.25
+bubble_size = 5.0
+sigma_wall = 0.5
+
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
-N1 = 256
-N2 = 128
-N3 = 128
+N1 = 128
+N2 = 64
+N3 = 64
 
 # Length of longest box side, dx_coarsest = L/N(max)
 # NB if non cubic, this determines dx for all sides
-L =  1024
+L = 512
 
 # Regridding
 # Thresholds on the change across a cell which prompts regrid
@@ -30,16 +32,16 @@ regrid_threshold = 0.5
 
 # Level data
 # Maximum number of times you can regrid above coarsest level
-max_level = 4 # There are (max_level+1) grids, so min is zero
+max_level = 5 # There are (max_level+1) grids, so min is zero
 # Frequency of regridding at each level
 # Need one for each level, ie max_level+1 items
 # Generally you do not need to regrid frequently on every level
 regrid_interval = 0 0 0 0 0 0 0 0 0
 tag_buffer_size = 0
 # Max box size
-max_grid_size = 32
+max_grid_size = 16
 # Min box size
-block_factor = 32
+block_factor = 16
 #Periodicity
 isPeriodic = 0 0 0
 # if not periodic, then specify the boundary type
@@ -57,7 +59,7 @@ vars_parity            = 0 0 4 6 0 5 0    #chi and hij
                          0 0 4 6 0 5 0    #K and Aij
                          0 1 2 3          #Theta and Gamma
                          0 1 2 3 1 2 3    #lapse shift and B
-                         0 0 0 0 0 0 0 0 0 0  #Tmunu
+                         0 1 2 3 0 4 6 0 5 0  #Tmunu
 
 # if sommerfeld boundaries selected, must select
 # asymptotic values (in order given by UserVariables.hpp)
@@ -76,6 +78,7 @@ checkpoint_interval = 100
 plot_interval = 1
 num_plot_vars = 3
 plot_vars = chi rho Ham
+write_plot_ghosts = 0
 
 #Lapse evolution
 lapse_power = 1.0
@@ -96,28 +99,17 @@ kappa3 = 1
 covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
 
 # coefficient for KO numerical dissipation
-# NB must be less than 0.5 for stability
-sigma = 2.0
+sigma = 4.0
 
 # Change the gravitational constant of the Universe!
 # Default is 1.0, for standard geometric units
-# G_Newton = 1.0
-
-# Warp Bubble Initial data
-warp_acceleration = 0.0
-warp_speed = 0.2
-bubble_size = 8.0
-#bubble_size = 10.0
-sigma_wall = 0.5
-# parameter for bubble centre - defaulted to center of grid
-# so only uncomment if you want to place it off center
-#bubble_center = 128 128 128
+G_Newton = 1.0
 
 #extraction params
 #default center to grid center, uncomment to change
 #extraction_center = 512 512 512
 num_extraction_radii = 3
-extraction_radii = 200.0 300.0 400.0
+extraction_radii = 100.0 150.0 200.0
 extraction_levels = 1 0 0
 num_points_phi = 24
 num_points_theta = 36
