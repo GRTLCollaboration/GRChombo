@@ -74,56 +74,63 @@ template <class matter_t, class background_t> class FixedBGMomentumFlux
         Ni_L[2] = coords.z / R;
         // the unit vector in the radial direction
         Tensor<1, data_t> Ni;
-        FOR2(i,j) {Ni[i] = gamma_UU[i][j] * Ni_L[j];}
-        data_t mod_N2 = 0.0;
-        FOR2(i, j) { mod_N2 += metric_vars.gamma[i][j] * Ni[i] * Ni[j]; }
-        FOR1(i) { Ni[i] = Ni[i] / sqrt(mod_N2); }
-
-        // the area element of the sphere
-        data_t rho2 =
-            simd_max(coords.x * coords.x + coords.y * coords.y, 1e-12);
-        data_t r2sintheta = sqrt(rho2) * R;
-        data_t det_Sigma = CoordinateTransformations::get_det_spherical_area(
-            metric_vars.gamma, coords.x, coords.y, coords.z);
-
-        // The integrand for the x-momentum flux out of a radial
-        // shell at the current position
-        data_t Mdot = 0;
-        FOR1(i) { Mdot += - metric_vars.lapse * emtensor.Sij[0][i] * Ni[i];}
-        FOR2(i,j)
-        {
-            Mdot += metric_vars.gamma[i][j]* metric_vars.shift[j] * Ni[i] * emtensor.Si[0];
-        }
-
-        // the r2sintheta is taken care of by the integration of the flux
-        // so just need the dA relating to the metric
-        Mdot *= sqrt(det_Sigma) / r2sintheta;
-
-        // Now the x Momentum density with volume factor
-        data_t xMom = emtensor.Si[0] * sqrt(det_gamma);
-
-        //How big is the source of i mom?
-        Tensor<1, data_t> source;
         FOR1(i)
         {
-            source[i] = - emtensor.rho * metric_vars.d1_lapse[i];
-
-            FOR1(j)
+            Ni[i] = 0.0;
             {
-                source[i] += emtensor.Si[j] * metric_vars.d1_shift[j][i];
-                FOR2(k,l)
+                FOR1(j) { Ni[i] += gamma_UU[i][j] * Ni_L[j]; }
+            }
+            data_t mod_N2 = 0.0;
+            FOR2(i, j) { mod_N2 += metric_vars.gamma[i][j] * Ni[i] * Ni[j]; }
+            FOR1(i) { Ni[i] = Ni[i] / sqrt(mod_N2); }
+
+            // the area element of the sphere
+            data_t rho2 =
+                simd_max(coords.x * coords.x + coords.y * coords.y, 1e-12);
+            data_t r2sintheta = sqrt(rho2) * R;
+            data_t det_Sigma =
+                CoordinateTransformations::get_det_spherical_area(
+                    metric_vars.gamma, coords.x, coords.y, coords.z);
+
+            // The integrand for the x-momentum flux out of a radial
+            // shell at the current position
+            data_t Mdot = 0;
+            FOR1(i) { Mdot += -metric_vars.lapse * emtensor.Sij[0][i] * Ni[i]; }
+            FOR2(i, j)
+            {
+                Mdot += metric_vars.gamma[i][j] * metric_vars.shift[j] * Ni[i] *
+                        emtensor.Si[0];
+            }
+
+            // the r2sintheta is taken care of by the integration of the flux
+            // so just need the dA relating to the metric
+            Mdot *= sqrt(det_Sigma) / r2sintheta;
+
+            // Now the x Momentum density with volume factor
+            data_t xMom = emtensor.Si[0] * sqrt(det_gamma);
+
+            // How big is the source of i mom?
+            Tensor<1, data_t> source;
+            FOR1(i)
+            {
+                source[i] = -emtensor.rho * metric_vars.d1_lapse[i];
+
+                FOR1(j)
                 {
-                    source[i] += gamma_UU[k][l] * emtensor.Sij[k][j] * chris_phys.ULL[j][l][i];
+                    source[i] += emtensor.Si[j] * metric_vars.d1_shift[j][i];
+                    FOR2(k, l)
+                    {
+                        source[i] += gamma_UU[k][l] * emtensor.Sij[k][j] *
+                                     chris_phys.ULL[j][l][i];
+                    }
                 }
             }
 
+            // assign values of Stress integrand in the output box
+            current_cell.store_vars(source[0], c_Source);
+            current_cell.store_vars(Mdot, c_Stress);
+            current_cell.store_vars(xMom, c_xMom);
         }
-
-        // assign values of Stress integrand in the output box
-        current_cell.store_vars(source[0], c_Source);
-        current_cell.store_vars(Mdot, c_Stress);
-        current_cell.store_vars(xMom, c_xMom);
-    }
-};
+    };
 
 #endif /* FIXEDBGMOMENTUMFLUX_HPP_ */
