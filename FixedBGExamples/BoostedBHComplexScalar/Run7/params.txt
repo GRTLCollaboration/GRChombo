@@ -51,7 +51,7 @@ lo_boundary = 0 2 2
 # 1,2,3 = odd x, y, z
 # 4,5,6 = odd xy, yz, xz
 vars_parity            = 0 0 0 0   #phi and Pi
-vars_parity_diagnostic = 0 0 0 0 0 0    #chi and rho rhoJ
+vars_parity_diagnostic = 0 0 0 0 0 0 0 0    #chi and rho rhoJ
 
 # specify non zero asympotitic vars
 num_nonzero_asymptotic_vars = 1

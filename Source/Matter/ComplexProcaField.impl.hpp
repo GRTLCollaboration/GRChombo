@@ -60,9 +60,9 @@ emtensor_t<data_t> ComplexProcaField::compute_emtensor(
                         0.5 * vars.h[i][j] / vars.chi * vars.Avec0_Re *
                             vars.Avec0_Re) +
             // Im part
-            msquared *
-                (vars.Avec_Im[i] * vars.Avec_Im[j] +
-                 0.5 * vars.h[i][j] / vars.chi * vars.Avec0_Im * vars.Avec0_Im);
+            msquared * (vars.Avec_Im[i] * vars.Avec_Im[j] +
+                        0.5 * vars.h[i][j] / vars.chi * vars.Avec0_Im * 
+                            vars.Avec0_Im);
 
         FOR2(k, l)
         {

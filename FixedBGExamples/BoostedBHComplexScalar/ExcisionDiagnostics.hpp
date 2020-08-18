@@ -46,6 +46,7 @@ template <class matter_t, class background_t> class ExcisionDiagnostics
             current_cell.store_vars(0.0, c_rho);
             current_cell.store_vars(0.0, c_rhoJ);
             current_cell.store_vars(0.0, c_xMom);
+            current_cell.store_vars(0.0, c_Source);
         } // else do nothing
     }
 };

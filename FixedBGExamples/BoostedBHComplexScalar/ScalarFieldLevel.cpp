@@ -21,6 +21,7 @@
 #include "ExcisionDiagnostics.hpp"
 #include "ExcisionEvolution.hpp"
 #include "FixedBGComplexScalarField.hpp"
+#include "FixedBGEnergyAndAngularMomFlux.hpp"
 #include "FixedBGDensityAndAngularMom.hpp"
 #include "FixedBGEvolution.hpp"
 #include "FixedBGMomentumFlux.hpp"
@@ -100,9 +101,11 @@ void ScalarFieldLevel::specificPostTimeStep()
         BoostedBHFixedBG boosted_bh(m_p.bg_params, m_dx);
         FixedBGDensityAndAngularMom<ScalarFieldWithPotential, BoostedBHFixedBG>
             densities(scalar_field, boosted_bh, m_dx, m_p.center);
-        FixedBGMomentumFlux<ScalarFieldWithPotential, BoostedBHFixedBG> fluxes(
+        FixedBGEnergyAndAngularMomFlux<ScalarFieldWithPotential, BoostedBHFixedBG>
+            energy_fluxes(scalar_field, boosted_bh, m_dx, m_p.center);
+        FixedBGMomentumFlux<ScalarFieldWithPotential, BoostedBHFixedBG> mom_fluxes(
             scalar_field, boosted_bh, m_dx, m_p.center);
-        BoxLoops::loop(make_compute_pack(densities, fluxes), m_state_new,
+        BoxLoops::loop(make_compute_pack(densities, mom_fluxes, energy_fluxes), m_state_new,
                        m_state_diagnostics, SKIP_GHOST_CELLS);
         // excise within horizon
         BoxLoops::loop(
@@ -121,17 +124,18 @@ void ScalarFieldLevel::specificPostTimeStep()
         AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
         double source_sum = amr_reductions.sum(c_Source);
         double xMom_sum = amr_reductions.sum(c_xMom);
+        double rho_sum = amr_reductions.sum(c_rho);
 
         SmallDataIO integral_file(m_p.integral_filename, m_dt, m_time,
                                   m_restart_time, SmallDataIO::APPEND,
                                   first_step);
         // remove any duplicate data if this is post restart
         integral_file.remove_duplicate_time_data();
-        std::vector<double> data_for_writing = {source_sum, xMom_sum};
+        std::vector<double> data_for_writing = {source_sum, xMom_sum, rho_sum};
         // write data
         if (first_step)
         {
-            integral_file.write_header_line({"Source", "x_Mom"});
+            integral_file.write_header_line({"Source", "x_Mom", "rho"});
         }
         integral_file.write_time_data_line(data_for_writing);
 
