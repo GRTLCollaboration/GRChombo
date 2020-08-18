@@ -72,7 +72,7 @@ plot_interval = 1
 num_plot_vars = 6
 plot_vars = phi_Re rho Edot xMom Stress Source
 dt_multiplier = 0.1
-stop_time = 500.0
+stop_time = 100.0
 
 # coefficient for KO numerical dissipation
 # NB must be less than 0.5 for stability
