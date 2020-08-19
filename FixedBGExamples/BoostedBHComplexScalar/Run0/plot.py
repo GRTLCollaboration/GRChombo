@@ -28,10 +28,11 @@ Fdata = data2[:,4] - data2[:,2]
 deltaE = np.zeros_like(Fdata)
 for i, F in enumerate(Fdata) :
    if i==0 :
-      deltaE[i] = F * timedata[0]
+      deltaE[i] = 0.0;
    else :
       deltaE[i] = deltaE[i-1] + F * (timedata[i] - timedata[i-1])
 plt.plot(timedata, deltaE, '-', lw = 1.0, label=labelstring)
+#plt.plot(timedata, Fdata, '-', lw = 1.0, label=labelstring)
 
 # make the plot look nice
 plt.xlabel("time")

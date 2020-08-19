@@ -21,8 +21,8 @@
 #include "ExcisionDiagnostics.hpp"
 #include "ExcisionEvolution.hpp"
 #include "FixedBGComplexScalarField.hpp"
-#include "FixedBGEnergyAndAngularMomFlux.hpp"
 #include "FixedBGDensityAndAngularMom.hpp"
+#include "FixedBGEnergyAndAngularMomFlux.hpp"
 #include "FixedBGEvolution.hpp"
 #include "FixedBGMomentumFlux.hpp"
 #include "ForceExtraction.hpp"
@@ -101,12 +101,13 @@ void ScalarFieldLevel::specificPostTimeStep()
         BoostedBHFixedBG boosted_bh(m_p.bg_params, m_dx);
         FixedBGDensityAndAngularMom<ScalarFieldWithPotential, BoostedBHFixedBG>
             densities(scalar_field, boosted_bh, m_dx, m_p.center);
-        FixedBGEnergyAndAngularMomFlux<ScalarFieldWithPotential, BoostedBHFixedBG>
+        FixedBGEnergyAndAngularMomFlux<ScalarFieldWithPotential,
+                                       BoostedBHFixedBG>
             energy_fluxes(scalar_field, boosted_bh, m_dx, m_p.center);
-        FixedBGMomentumFlux<ScalarFieldWithPotential, BoostedBHFixedBG> mom_fluxes(
-            scalar_field, boosted_bh, m_dx, m_p.center);
-        BoxLoops::loop(make_compute_pack(densities, mom_fluxes, energy_fluxes), m_state_new,
-                       m_state_diagnostics, SKIP_GHOST_CELLS);
+        FixedBGMomentumFlux<ScalarFieldWithPotential, BoostedBHFixedBG>
+            mom_fluxes(scalar_field, boosted_bh, m_dx, m_p.center);
+        BoxLoops::loop(make_compute_pack(densities, mom_fluxes, energy_fluxes),
+                       m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
         // excise within horizon
         BoxLoops::loop(
             ExcisionDiagnostics<ScalarFieldWithPotential, BoostedBHFixedBG>(

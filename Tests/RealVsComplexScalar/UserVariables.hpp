@@ -94,9 +94,7 @@ static constexpr char const *variable_names[NUM_VARS] = {
 
     "rho",    "S",
 
-    "S1",     "S2",     "S3",
-    "S11",     "S12",     "S13",
-    "S22",     "S23",     "S33",
+    "S1",     "S2",     "S3",     "S11", "S12", "S13", "S22", "S23", "S33",
 
     "phi",    "Pi",
 

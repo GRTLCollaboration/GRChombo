@@ -72,16 +72,15 @@ template <class matter_t, class background_t> class FixedBGMomentumFlux
         Ni_L[0] = coords.x / R;
         Ni_L[1] = coords.y / R;
         Ni_L[2] = coords.z / R;
-        // the unit vector in the radial direction
-        Tensor<1, data_t> Ni;
-        FOR1(i)
-        {
-            Ni[i] = 0.0;
-            FOR1(j) { Ni[i] += gamma_UU[i][j] * Ni_L[j]; }
-        }
+        // normalise this
         data_t mod_N2 = 0.0;
-        FOR2(i, j) { mod_N2 += metric_vars.gamma[i][j] * Ni[i] * Ni[j]; }
-        FOR1(i) { Ni[i] = Ni[i] / sqrt(mod_N2); }
+        FOR2(i, j)
+        {
+            mod_N2 += gamma_UU[i][j] * Ni_L[i] * Ni_L[j] -
+                      metric_vars.shift[i] * metric_vars.shift[j] * Ni_L[i] *
+                          Ni_L[j] / metric_vars.lapse / metric_vars.lapse;
+        }
+        FOR1(i) { Ni_L[i] = Ni_L[i] / sqrt(mod_N2); }
 
         // the area element of the sphere
         data_t rho2 =
@@ -93,11 +92,15 @@ template <class matter_t, class background_t> class FixedBGMomentumFlux
         // The integrand for the x-momentum flux out of a radial
         // shell at the current position
         data_t Mdot = 0;
-        FOR1(i) { Mdot += -metric_vars.lapse * emtensor.Sij[0][i] * Ni[i]; }
-        FOR2(i, j)
+
+        FOR1(i)
         {
-            Mdot += metric_vars.gamma[i][j] * metric_vars.shift[j] * Ni[i] *
-                    emtensor.Si[0];
+            Mdot += -metric_vars.shift[i] * Ni_L[i] * emtensor.Si[0];
+            FOR1(j)
+            {
+                Mdot += metric_vars.lapse * gamma_UU[i][j] *
+                        emtensor.Sij[0][j] * Ni_L[i];
+            }
         }
 
         // the r2sintheta is taken care of by the integration of the flux

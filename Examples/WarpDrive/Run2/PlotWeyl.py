@@ -13,7 +13,7 @@ R1 = 2.0 #300
 # Total ADM mass
 M = 1.0
 # The mode, as text
-mode = "20"
+mode = "22"
 # output data from running merger
 data = np.loadtxt("Weyl_integral_" + mode + ".dat")
 

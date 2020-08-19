@@ -203,8 +203,7 @@ class BoundaryConditions
     static void load_values_to_array(
         GRParmParse &pp, const char *a_values_vector_string,
         const std::vector<std::pair<int, VariableType>> &a_vars_vector,
-        std::array<double, NUM_VARS> &a_values_array,
-        const T a_default_value);
+        std::array<double, NUM_VARS> &a_values_array, const T a_default_value);
 
     static void load_vars_to_vector(
         GRParmParse &pp, const char *a_vars_vector_string,

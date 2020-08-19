@@ -10,8 +10,8 @@
 #include "ChomboParameters.hpp"
 #include "GRParmParse.hpp"
 // Problem specific includes:
-#include "KerrSchildFixedBG.hpp"
 #include "ComplexScalarPotential.hpp"
+#include "KerrSchildFixedBG.hpp"
 #include "SpheroidalExtraction.hpp"
 
 class SimulationParameters : public ChomboParameters
@@ -33,8 +33,8 @@ class SimulationParameters : public ChomboParameters
 
         // Initial and Kerr data
         pp.load("bh_mass", bg_params.mass, 1.0);
-//        pp.load("bh_velocity", bg_params.velocity, 0.0);
-        pp.load("bh_spin", bg_params.spin, 0.0 );
+        //        pp.load("bh_velocity", bg_params.velocity, 0.0);
+        pp.load("bh_spin", bg_params.spin, 0.0);
         pp.load("bh_center", bg_params.center, center);
         pp.load("field_amplitude_re", field_amplitude_re);
         pp.load("field_amplitude_im", field_amplitude_im);

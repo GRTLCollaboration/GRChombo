@@ -12,9 +12,9 @@ a3 = 1
 
 # Warp Bubble Initial data
 warp_acceleration = 0.0
-warp_speed = 0.10
+warp_speed = 0.05
 bubble_size = 5.0
-sigma_wall = 0.5
+sigma_wall = 0.25
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
@@ -39,9 +39,9 @@ max_level = 6 # There are (max_level+1) grids, so min is zero
 regrid_interval = 0 0 0 0 0 0 0 0 0
 tag_buffer_size = 0
 # Max box size
-max_grid_size = 32
+max_grid_size = 16
 # Min box size
-block_factor = 32
+block_factor = 16
 #Periodicity
 isPeriodic = 0 0 0
 # if not periodic, then specify the boundary type

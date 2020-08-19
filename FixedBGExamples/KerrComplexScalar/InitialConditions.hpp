@@ -7,9 +7,9 @@
 #define INITIALCONDITIONS_HPP_
 
 #include "ADMFixedBGVars.hpp"
-#include "KerrSchildFixedBG.hpp"
 #include "Cell.hpp"
 #include "Coordinates.hpp"
+#include "KerrSchildFixedBG.hpp"
 #include "Tensor.hpp"
 #include "UserVariables.hpp" //This files needs NUM_VARS - total no. components
 #include "VarsTools.hpp"

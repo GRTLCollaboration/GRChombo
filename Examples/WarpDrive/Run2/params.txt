@@ -1,9 +1,9 @@
 #Params for runtime inputs
 
 verbosity = 0
-chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpField1c_
-plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpField1p_
-#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpField1c_000063.3d.hdf5
+chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpField0c_
+plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpField0p_
+#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpField0c_000063.3d.hdf5
 
 # warp field params
 a1 = -1
@@ -12,15 +12,15 @@ a3 = 1
 
 # Warp Bubble Initial data
 warp_acceleration = 0.0
-warp_speed = 0.10
+warp_speed = 0.05
 bubble_size = 5.0
-sigma_wall = 0.5
+sigma_wall = 0.1
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
 N1 = 128
-N2 = 128
-N3 = 128
+N2 = 64
+N3 = 64
 
 # Length of longest box side, dx_coarsest = L/N(max)
 # NB if non cubic, this determines dx for all sides
@@ -39,16 +39,16 @@ max_level = 6 # There are (max_level+1) grids, so min is zero
 regrid_interval = 0 0 0 0 0 0 0 0 0
 tag_buffer_size = 0
 # Max box size
-max_grid_size = 32
+max_grid_size = 16
 # Min box size
-block_factor = 32
+block_factor = 16
 #Periodicity
 isPeriodic = 0 0 0
 # if not periodic, then specify the boundary type
 # 0 = static, 1 = sommerfeld, 2 = reflective
 # (see BoundaryConditions.hpp for details)
 hi_boundary = 1 1 1
-lo_boundary = 1 1 1
+lo_boundary = 1 2 2
 #center = 0.0 0.0 0.0
 # if reflective boundaries selected, must set
 # parity of all vars (in order given by UserVariables.hpp)
