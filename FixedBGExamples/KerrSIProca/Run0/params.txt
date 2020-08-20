@@ -2,8 +2,8 @@
 
 verbosity = 0
 integral_filename = ProcaDensities
-chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Proca/Realmu0.5A0.01c0.0_chk
-plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Proca/Realmu0.5A0.01c0.0_plt
+chk_prefix =  /hppfs/scratch/09/di39wem2/Proca/Realmu0.5A0.01c0.0_chk
+plot_prefix = /hppfs/scratch/09/di39wem2/Proca/Realmu0.5A0.01c0.0_plt
 #restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Proca/Realmu0.5A0.01c0.0_chk000040.3d.hdf5
 write_plot_ghosts = 0
 
@@ -27,9 +27,9 @@ max_level = 8 # There are (max_level+1) grids, so min is zero
 regrid_interval = 0 0 0 0 0 0 0 0 0 0
 
 # Max box size
-max_grid_size = 32
+max_grid_size = 16
 # Min box size
-block_factor = 32
+block_factor = 16
 tag_buffer_size = 0
 
 #boundaries and periodicity of grid

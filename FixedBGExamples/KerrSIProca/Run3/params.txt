@@ -2,9 +2,9 @@
 
 verbosity = 0
 integral_filename = ProcaDensities
-chk_prefix = /hppfs/scratch/09/di39wem2/Proca/Realmu0.5A0.01c1.0_chk
-plot_prefix = /hppfs/scratch/09/di39wem2/Proca/Realmu0.5A0.01c1.0_plt
-#restart_file = /hppfs/scratch/09/di39wem2/Proca/Realmu0.5A0.01c1.0_chk000040.3d.hdf5
+chk_prefix = /hppfs/scratch/09/di39wem2/Proca/Realmu0.5A0.01c100.0_chk
+plot_prefix = /hppfs/scratch/09/di39wem2/Proca/Realmu0.5A0.01c100.0_plt
+#restart_file = /hppfs/scratch/09/di39wem2/Proca/Realmu0.5A0.01c100.0_chk000040.3d.hdf5
 write_plot_ghosts = 0
 
 # Set up grid spacings and regrid params
@@ -15,7 +15,7 @@ N3 = 128
 
 # Length of longest box side, dx_coarsest = L/N(max)
 # NB if non cubic, this determines dx for all sides
-L = 1280
+L = 640
 #center = 320.0 320.0 0.0
 
 # Level data
@@ -72,7 +72,7 @@ sigma = 2.0
 
 # PF Initial data
 proca_mass = 0.5
-proca_self_interaction = 1.0
+proca_self_interaction = 100.0
 proca_damping = 2.0
 field_amplitude = 0.01
 excision_width = 0.8
