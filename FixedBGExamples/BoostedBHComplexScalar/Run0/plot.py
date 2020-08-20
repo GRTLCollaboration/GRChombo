@@ -26,11 +26,15 @@ labelstring = "integral Flux dt$"
 timedata = data2[:,0]
 Fdata = data2[:,4] - data2[:,2]
 deltaE = np.zeros_like(Fdata)
+size = np.size(Fdata)
 for i, F in enumerate(Fdata) :
-   if i==0 :
-      deltaE[i] = 0.0;
+   if (i==0) :
+      deltaE[i] = 0.0
+   elif (i == (size-1)):
+      deltaE[i] = deltaE[i-1]
    else :
-      deltaE[i] = deltaE[i-1] + F * (timedata[i] - timedata[i-1])
+      deltaE[i] = deltaE[i-1] + (0.5 * (Fdata[i+1] + Fdata[i-1]) 
+                                     * (timedata[i] - timedata[i-1]))
 plt.plot(timedata, deltaE, '-', lw = 1.0, label=labelstring)
 #plt.plot(timedata, Fdata, '-', lw = 1.0, label=labelstring)
 

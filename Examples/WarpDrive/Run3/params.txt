@@ -1,9 +1,9 @@
 #Params for runtime inputs
 
 verbosity = 0
-chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpField0c_
-plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpField0p_
-#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpField0c_000063.3d.hdf5
+chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpField3c_
+plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpField3p_
+#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpField3c_000063.3d.hdf5
 
 # warp field params
 a1 = -1
@@ -12,7 +12,7 @@ a3 = 1
 
 # Warp Bubble Initial data
 warp_acceleration = 0.0
-warp_speed = 0.05
+warp_speed = 0.5
 bubble_size = 5.0
 sigma_wall = 0.1
 
@@ -73,10 +73,10 @@ vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-dt_multiplier = 0.2
+dt_multiplier = 0.1
 stop_time = 1000.0
-checkpoint_interval = 50
-plot_interval = 1
+checkpoint_interval = 0
+plot_interval = 0
 num_plot_vars = 5
 plot_vars = chi rho Ham Weyl4_Re Weyl4_Im
 write_plot_ghosts = 0
@@ -100,7 +100,7 @@ kappa3 = 0
 covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
 
 # coefficient for KO numerical dissipation
-sigma = 4.0
+sigma = 5.0
 
 # Change the gravitational constant of the Universe!
 # Default is 1.0, for standard geometric units

@@ -22,7 +22,7 @@ regrid_length = 2048
 
 # Level data
 # Maximum number of times you can regrid above coarsest level
-max_level = 6 # There are (max_level+1) grids, so min is zero
+max_level = 8 # There are (max_level+1) grids, so min is zero
 # Frequency of regridding at each level
 # Need one for each level, ie max_level+1 items
 # Generally you do not need to regrid frequently on every level
@@ -94,6 +94,6 @@ outer_r = 500.0
 # for extraction
 activate_extraction = 1
 write_extraction = 0
-num_points_phi = 36
-num_points_t = 24
+num_points_phi = 64
+num_points_t = 64
 zaxis_over_xaxis = 1.0

@@ -8,7 +8,7 @@ plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost1_plt
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
-N1 = 64
+N1 = 128
 N2 = 64
 N3 = 64
 
@@ -22,7 +22,7 @@ regrid_length = 2048
 
 # Level data
 # Maximum number of times you can regrid above coarsest level
-max_level = 8 # There are (max_level+1) grids, so min is zero
+max_level = 7 # There are (max_level+1) grids, so min is zero
 # Frequency of regridding at each level
 # Need one for each level, ie max_level+1 items
 # Generally you do not need to regrid frequently on every level
@@ -42,7 +42,7 @@ isPeriodic = 0 0 0
 # 0 = static, 1 = sommerfeld, 2 = reflective, 3 = extrapolating
 # (see BoundaryConditions.hpp for details)
 hi_boundary = 3 3 3
-lo_boundary = 3 3 3
+lo_boundary = 3 2 2
 #center = 512.0 512.0 0.0
 
 # if reflective boundaries selected, must select 
@@ -54,7 +54,7 @@ vars_parity            = 0 0 0 0   #phi and Pi
 vars_parity_diagnostic = 0 0 0 0 0 0 0 0    #chi and rho rhoJ
 
 # specify non zero asympotitic vars
-num_nonzero_asymptotic_vars = 1
+num_nonzero_asymptotic_vars = 0
 nonzero_asymptotic_vars = chi
 nonzero_asymptotic_values = 1.0
 
@@ -72,7 +72,7 @@ plot_interval = 1
 num_plot_vars = 6
 plot_vars = phi_Re rho Edot xMom Stress Source
 dt_multiplier = 0.1
-stop_time = 200.0
+stop_time = 500.0
 
 # coefficient for KO numerical dissipation
 # NB must be less than 0.5 for stability
@@ -87,7 +87,7 @@ f_axion = 0.0
 
 # Boosted BH initial data, boost in x direction, spin in z direction
 bh_mass = 1.0
-bh_velocity = 0.0 # This is a, so needs to be <= M
+bh_velocity = 0.1 # This is a, so needs to be <= M
 inner_r = 5.0
 outer_r = 500.0
 
