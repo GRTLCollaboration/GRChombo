@@ -38,36 +38,17 @@ class SimulationParameters : public ChomboParameters
         pp.load("field_amplitude_re", field_amplitude_re);
         pp.load("field_amplitude_im", field_amplitude_im);
         pp.load("scalar_mass", potential_params.scalar_mass);
-
-        // extraction params
-        //        dx.fill(coarsest_dx);
-        //        origin.fill(coarsest_dx / 2.0);
+        pp.load("inner_r", inner_r, 5.0);
+        pp.load("outer_r", outer_r,
+                2.0 / bg_params.velocity / potential_params.scalar_mass);
 
         // Extraction params
         pp.load("num_extraction_radii", extraction_params.num_extraction_radii,
-                1);
+                2);
         // Check for multiple extraction radii, otherwise load single
         // radius/level (for backwards compatibility).
-        if (pp.contains("extraction_levels"))
-        {
-            pp.load("extraction_levels", extraction_params.extraction_levels,
-                    extraction_params.num_extraction_radii);
-        }
-        else
-        {
-            pp.load("extraction_level", extraction_params.extraction_levels, 1,
-                    0);
-        }
-        if (pp.contains("extraction_radii"))
-        {
-            pp.load("extraction_radii", extraction_params.extraction_radii,
-                    extraction_params.num_extraction_radii);
-        }
-        else
-        {
-            pp.load("extraction_radius", extraction_params.extraction_radii, 1,
-                    0.1);
-        }
+        extraction_params.extraction_levels = {0, 0};
+        extraction_params.extraction_radii = {inner_r, outer_r};
         pp.load("num_points_phi", extraction_params.num_points_phi, 2);
         pp.load("num_points_t", extraction_params.num_points_t, 5);
         if (extraction_params.num_points_t % 2 == 0)
@@ -85,6 +66,7 @@ class SimulationParameters : public ChomboParameters
     double field_amplitude_re, field_amplitude_im, regrid_length;
     double sigma, proca_mass, proca_damping, excision_width;
     int nan_check;
+    double inner_r, outer_r;
     //    std::array<double, CH_SPACEDIM> origin,
     //        dx; // location of coarsest origin and dx
     std::string integral_filename;

@@ -281,7 +281,7 @@ int main()
                     out_fab(iv, i + 2 * NUM_REAL_VARS) -= out_fab(iv, i);
                 }
                 // EM in real field half that of complex
-                for (int i = c_rho; i <= c_S3; ++i)
+                for (int i = c_rho; i <= c_S33; ++i)
                 {
                     out_fab(iv, i) -= 2.0 * in_fab(iv, i);
                 }
@@ -294,7 +294,7 @@ int main()
     {
         double max_err_re = out_fab.norm(0, i + NUM_REAL_VARS, 1);
         double max_err_im = out_fab.norm(0, i + 2 * NUM_REAL_VARS, 1);
-        if (max_err_re > 1e-10 || max_err_im > 1e-10)
+        if (max_err_re > 1e-8 || max_err_im > 1e-8)
         {
             std::cout << "RE COMPONENT " << i
                       << " DOES NOT AGREE: MAX ERROR = " << max_err_re
@@ -305,10 +305,10 @@ int main()
             failed = -1;
         }
     }
-    for (int i = c_rho; i <= c_S3; ++i)
+    for (int i = c_rho; i <= c_S33; ++i)
     {
         double max_err = out_fab.norm(0, i, 1);
-        if (max_err > 1e-10)
+        if (max_err > 1e-8)
         {
             std::cout << "EM COMPONENT " << i
                       << " DOES NOT AGREE: MAX ERROR = " << max_err

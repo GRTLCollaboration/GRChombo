@@ -3,7 +3,7 @@
 verbosity = 0
 chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpFieldc_
 plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpFieldp_
-restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpFieldc_000063.3d.hdf5
+restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/WarpDrive/WarpFieldc_000100.3d.hdf5
 #chk_prefix = /mnt/extraspace/kclough/WarpDrive/WarpFieldLRc_
 #plot_prefix = /mnt/extraspace/kclough/WarpDrive/WarpFieldLRp_
 #restart_file = WarpFieldc_000060.3d.hdf5
@@ -58,7 +58,6 @@ vars_parity            = 0 0 4 6 0 5 0    #chi and hij
                          0 1 2 3          #Theta and Gamma
                          0 1 2 3 1 2 3    #lapse shift and B
                          0 0 0 0 0 0 0 0 0 0  #Tmunu
-                         0 0 0 1 2 3          #Ham Weyl and Mom
 
 # if sommerfeld boundaries selected, must select
 # asymptotic values (in order given by UserVariables.hpp)
@@ -67,17 +66,16 @@ vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
                          0.0 0.0 0.0 0.0             #Theta and Gamma
                          1.0 0.0 0.0 0.0 0.0 0.0 0.0 #lapse shift and B
                          0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0  #Tmunu
-                         0.0 0.0 0.0 0.0 0.0 0.0     #Ham Weyl and Mom
 
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 dt_multiplier = 0.2
-stop_time = 250.0
-checkpoint_interval = 50
-plot_interval = 5
-num_plot_vars = 2
-plot_vars = chi rho
+stop_time = 1000.0
+checkpoint_interval = 100
+plot_interval = 1
+num_plot_vars = 3
+plot_vars = chi rho Ham
 
 #Lapse evolution
 lapse_power = 1.0
@@ -99,7 +97,7 @@ covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
 
 # coefficient for KO numerical dissipation
 # NB must be less than 0.5 for stability
-sigma = 1.0
+sigma = 2.0
 
 # Change the gravitational constant of the Universe!
 # Default is 1.0, for standard geometric units
@@ -118,8 +116,17 @@ sigma_wall = 0.5
 #extraction params
 #default center to grid center, uncomment to change
 #extraction_center = 512 512 512
-num_extraction_radii = 2
-extraction_radii = 150.0 200.0
-extraction_levels = 1 1
-num_points_phi = 16
-num_points_theta = 32
+num_extraction_radii = 3
+extraction_radii = 200.0 300.0 400.0
+extraction_levels = 1 1 1
+num_points_phi = 24
+num_points_theta = 36
+num_modes = 8
+modes = 2 0 # l m for spherical harmonics
+        2 1
+        2 2
+        4 0
+        4 1
+        4 2
+        4 3
+        4 4

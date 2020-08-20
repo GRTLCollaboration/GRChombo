@@ -5,6 +5,7 @@
 
 // General includes common to most GR problems
 #include "ScalarFieldLevel.hpp"
+#include "AMRReductions.hpp"
 #include "BoxLoops.hpp"
 #include "ComputePack.hpp"
 #include "NanCheck.hpp"
@@ -21,6 +22,7 @@
 #include "ExcisionEvolution.hpp"
 #include "FixedBGComplexScalarField.hpp"
 #include "FixedBGDensityAndAngularMom.hpp"
+#include "FixedBGEnergyAndAngularMomFlux.hpp"
 #include "FixedBGEvolution.hpp"
 #include "FixedBGMomentumFlux.hpp"
 #include "ForceExtraction.hpp"
@@ -59,12 +61,6 @@ void ScalarFieldLevel::initialData()
         ExcisionEvolution<ScalarFieldWithPotential, BoostedBHFixedBG>(
             m_dx, m_p.center, boosted_bh),
         m_state_new, m_state_new, SKIP_GHOST_CELLS, disable_simd());
-
-    // setup the output file
-    SmallDataIO integral_file(m_p.integral_filename, m_dt, m_time,
-                              m_restart_time, SmallDataIO::APPEND, true);
-    std::vector<std::string> header_strings = {"rho", "xMom"};
-    integral_file.write_header_line(header_strings);
 }
 
 // Things to do before outputting a plot file
@@ -105,14 +101,17 @@ void ScalarFieldLevel::specificPostTimeStep()
         BoostedBHFixedBG boosted_bh(m_p.bg_params, m_dx);
         FixedBGDensityAndAngularMom<ScalarFieldWithPotential, BoostedBHFixedBG>
             densities(scalar_field, boosted_bh, m_dx, m_p.center);
-        FixedBGMomentumFlux<ScalarFieldWithPotential, BoostedBHFixedBG> fluxes(
-            scalar_field, boosted_bh, m_dx, m_p.center);
-        BoxLoops::loop(make_compute_pack(densities, fluxes), m_state_new,
-                       m_state_diagnostics, SKIP_GHOST_CELLS);
+        FixedBGEnergyAndAngularMomFlux<ScalarFieldWithPotential,
+                                       BoostedBHFixedBG>
+            energy_fluxes(scalar_field, boosted_bh, m_dx, m_p.center);
+        FixedBGMomentumFlux<ScalarFieldWithPotential, BoostedBHFixedBG>
+            mom_fluxes(scalar_field, boosted_bh, m_dx, m_p.center);
+        BoxLoops::loop(make_compute_pack(densities, mom_fluxes, energy_fluxes),
+                       m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
         // excise within horizon
         BoxLoops::loop(
             ExcisionDiagnostics<ScalarFieldWithPotential, BoostedBHFixedBG>(
-                m_dx, m_p.center, boosted_bh),
+                m_dx, m_p.center, boosted_bh, m_p.inner_r, m_p.outer_r),
             m_state_diagnostics, m_state_diagnostics, SKIP_GHOST_CELLS,
             disable_simd());
     }
@@ -120,16 +119,25 @@ void ScalarFieldLevel::specificPostTimeStep()
     // write out the integral after each coarse timestep
     if (m_level == 0)
     {
+        bool first_step = (m_time == m_dt);
+
         // integrate the densities and write to a file
-        double rho_sum = m_gr_amr.compute_sum(c_rho, m_p.coarsest_dx);
-        double xMom_sum = m_gr_amr.compute_sum(c_xMom, m_p.coarsest_dx);
+        AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
+        double source_sum = amr_reductions.sum(c_Source);
+        double xMom_sum = amr_reductions.sum(c_xMom);
+        double rho_sum = amr_reductions.sum(c_rho);
 
         SmallDataIO integral_file(m_p.integral_filename, m_dt, m_time,
-                                  m_restart_time, SmallDataIO::APPEND, false);
+                                  m_restart_time, SmallDataIO::APPEND,
+                                  first_step);
         // remove any duplicate data if this is post restart
         integral_file.remove_duplicate_time_data();
-        std::vector<double> data_for_writing = {rho_sum, xMom_sum};
+        std::vector<double> data_for_writing = {source_sum, xMom_sum, rho_sum};
         // write data
+        if (first_step)
+        {
+            integral_file.write_header_line({"Source", "x_Mom", "rho"});
+        }
         integral_file.write_time_data_line(data_for_writing);
 
         // Now refresh the interpolator and do the interpolation

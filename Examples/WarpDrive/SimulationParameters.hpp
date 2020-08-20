@@ -28,8 +28,7 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("G_Newton", G_Newton, 1.0);
         pp.load("warp_speed", warp_params.warp_speed, 0.5);
         pp.load("warp_acceleration", warp_params.acceleration, 0.0);
-        pp.load("bubble_center", warp_params.bubble_center,
-                {0.5 * L, 0.5 * L, 0.5 * L}); // default to grid center
+        pp.load("bubble_center", warp_params.bubble_center, center);
         pp.load("bubble_size", warp_params.bubble_size, 10.0);
         pp.load("sigma_wall", warp_params.sigma_wall, 1.0);
         pp.load("a1", warpfield_params.a1, 0.0);

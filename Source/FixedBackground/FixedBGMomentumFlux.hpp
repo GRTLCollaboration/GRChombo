@@ -65,15 +65,22 @@ template <class matter_t, class background_t> class FixedBGMomentumFlux
             vars, metric_vars, d1, gamma_UU, chris_phys.ULL);
         const data_t det_gamma = compute_determinant_sym(metric_vars.gamma);
 
-        // The unit vector in the radial direction N^i in cartesian coords
-        Tensor<1, data_t> Ni;
+        // The covector in the radial direction N_i in cartesian coords
+        // (normal to surfaces of constant r)
+        Tensor<1, data_t> Ni_L;
         data_t R = coords.get_radius();
-        Ni[0] = coords.x / R;
-        Ni[1] = coords.y / R;
-        Ni[2] = coords.z / R;
+        Ni_L[0] = coords.x / R;
+        Ni_L[1] = coords.y / R;
+        Ni_L[2] = coords.z / R;
+        // normalise this
         data_t mod_N2 = 0.0;
-        FOR2(i, j) { mod_N2 += metric_vars.gamma[i][j] * Ni[i] * Ni[j]; }
-        FOR1(i) { Ni[i] = Ni[i] / sqrt(mod_N2); }
+        FOR2(i, j)
+        {
+            mod_N2 += gamma_UU[i][j] * Ni_L[i] * Ni_L[j] -
+                      metric_vars.shift[i] * metric_vars.shift[j] * Ni_L[i] *
+                          Ni_L[j] / metric_vars.lapse / metric_vars.lapse;
+        }
+        FOR1(i) { Ni_L[i] = Ni_L[i] / sqrt(mod_N2); }
 
         // the area element of the sphere
         data_t rho2 =
@@ -85,39 +92,43 @@ template <class matter_t, class background_t> class FixedBGMomentumFlux
         // The integrand for the x-momentum flux out of a radial
         // shell at the current position
         data_t Mdot = 0;
-        FOR1(i) { Mdot += - metric_vars.lapse * emtensor.Sij[0][i] * Ni[i];}
-        FOR2(i,j)
+
+        FOR1(i)
         {
-            Mdot += metric_vars.gamma[i][j]* metric_vars.shift[j] * Ni[i] * emtensor.Si[0];
+            Mdot += -metric_vars.shift[i] * Ni_L[i] * emtensor.Si[0];
+            FOR1(j)
+            {
+                Mdot += metric_vars.lapse * gamma_UU[i][j] *
+                        emtensor.Sij[0][j] * Ni_L[i];
+            }
         }
 
         // the r2sintheta is taken care of by the integration of the flux
         // so just need the dA relating to the metric
         Mdot *= sqrt(det_Sigma) / r2sintheta;
 
-        // Now the x Momentum density with volume factor
-        data_t xMom = emtensor.Si[0] * sqrt(det_gamma);
-/*
-        //How big is the non linear effect?
-        Tensor<1, data_t> nonlinear;
+        // Now (minus) the x Momentum density with volume factor
+        data_t xMom = -emtensor.Si[0] * sqrt(det_gamma);
+
+        // How big is the source of i mom?
+        Tensor<1, data_t> source;
         FOR1(i)
         {
-            nonlinear[i] = emtensor.rho * metric_vars.d1_lapse[i];
+            source[i] = -emtensor.rho * metric_vars.d1_lapse[i];
 
             FOR1(j)
             {
-                nonlinear[i] += - emtensor.Si[j] * metric_vars.d1_shift[j][i];
-                FOR1(k)
+                source[i] += emtensor.Si[j] * metric_vars.d1_shift[j][i];
+                FOR2(k, l)
                 {
-                    nonlinear[i] += - emtensor.Si[j] * metric_vars.shift[j] * metric_vars.shift[k]
-                                    / metric_vars.lapse * metric_vars.K_tensor[k][i];
+                    source[i] += metric_vars.lapse * gamma_UU[k][l] *
+                                 emtensor.Sij[k][j] * chris_phys.ULL[j][l][i];
                 }
             }
-
         }
-*/
+
         // assign values of Stress integrand in the output box
-//        current_cell.store_vars(nonlinear[0], c_NL);
+        current_cell.store_vars(source[0], c_Source);
         current_cell.store_vars(Mdot, c_Stress);
         current_cell.store_vars(xMom, c_xMom);
     }

@@ -255,7 +255,7 @@ int main()
                     out_fab(iv, i + 2 * NUM_REAL_VARS) -= out_fab(iv, i);
                 }
                 // EM in real field half that of complex
-                for (int i = c_rho; i <= c_S3; ++i)
+                for (int i = c_rho; i <= c_S33; ++i)
                 {
                     out_fab(iv, i) -= 2.0 * in_fab(iv, i);
                 }
@@ -279,7 +279,7 @@ int main()
             failed = -1;
         }
     }
-    for (int i = c_rho; i <= c_S3; ++i)
+    for (int i = c_rho; i <= c_S33; ++i)
     {
         double max_err = out_fab.norm(0, i, 1);
         if (max_err > 1e-10)

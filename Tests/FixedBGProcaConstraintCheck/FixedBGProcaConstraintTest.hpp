@@ -62,7 +62,7 @@ class FixedBGProcaConstraintTest
         const MetricVars<data_t>
             &metric_vars, //!< the value of the metric variables
         const vars_t<Tensor<1, data_t>> &d1 //!< the value of 1st derivatives
-    ) const;
+        ) const;
 };
 
 #include "FixedBGProcaConstraintTest.impl.hpp"

@@ -111,7 +111,7 @@ class FixedBGComplexProcaField
         const vars_t<Tensor<1, data_t>> &d1,    //!< the 1st derivs
         const Tensor<2, data_t> &gamma_UU,      //!< the inverse metric (raised)
         const Tensor<3, data_t> &chris_phys_ULL //!< the conformal christoffel
-    ) const;
+        ) const;
 
     //! The function which adds in the matter field RHS, given the vars and
     //! derivatives

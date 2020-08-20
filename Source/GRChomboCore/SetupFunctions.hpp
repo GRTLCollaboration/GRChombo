@@ -109,7 +109,8 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     // set periodicity
     for (int dir = 0; dir < SpaceDim; dir++)
     {
-        physdomain.setPeriodic(dir, chombo_params.isPeriodic[dir]);
+        physdomain.setPeriodic(dir,
+                               chombo_params.boundary_params.is_periodic[dir]);
     }
 
     // Define the AMR object
@@ -147,6 +148,14 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
 
     // Set verbosity
     gr_amr.verbosity(chombo_params.verbosity);
+
+    // Set timeEps to half of finest level dt
+    // Chombo sets it to 1.e-6 by default (AMR::setDefaultValues in AMR.cpp)
+    // This is only not enough for >~20 levels
+    double eps = 1.;
+    for (int ilevel = 0; ilevel < chombo_params.max_level; ++ilevel)
+        eps /= chombo_params.ref_ratios[ilevel];
+    gr_amr.timeEps(std::min(1.e-6, eps / 2.));
 
     // Set up input files
     if (!pp.contains("restart_file"))

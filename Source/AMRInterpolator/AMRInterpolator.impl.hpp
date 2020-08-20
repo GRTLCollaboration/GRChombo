@@ -18,22 +18,9 @@ template <typename InterpAlgo>
 AMRInterpolator<InterpAlgo>::AMRInterpolator(
     const AMR &amr, const std::array<double, CH_SPACEDIM> &coarsest_origin,
     const std::array<double, CH_SPACEDIM> &coarsest_dx, int verbosity)
-    : m_amr(amr), m_coarsest_origin(coarsest_origin),
-      m_coarsest_dx(coarsest_dx),
-      m_num_levels(const_cast<AMR &>(m_amr).getAMRLevels().size()),
-      m_verbosity(verbosity)
+    : AMRInterpolator(amr, coarsest_origin, coarsest_dx,
+                      BoundaryConditions::params_t(), verbosity)
 {
-    // artificial BC with only periodic BC
-    int bc = BoundaryConditions::STATIC_BC;
-    m_bc_params.hi_boundary = {bc, bc, bc};
-    m_bc_params.lo_boundary = {bc, bc, bc};
-
-    // set defaults
-    m_bc_params.vars_parity.fill(BoundaryConditions::EVEN);
-    m_bc_params.vars_asymptotic_values.fill(0.0);
-    m_bc_params.is_periodic.fill(true);
-
-    set_symmetric_BC();
 }
 
 template <typename InterpAlgo>
@@ -46,11 +33,13 @@ AMRInterpolator<InterpAlgo>::AMRInterpolator(
       m_num_levels(const_cast<AMR &>(m_amr).getAMRLevels().size()),
       m_verbosity(verbosity), m_bc_params(a_bc_params)
 {
-    set_symmetric_BC();
+    set_reflective_BC();
 }
 
 template <typename InterpAlgo> void AMRInterpolator<InterpAlgo>::refresh()
 {
+    CH_TIME("AMRInterpolator::refresh");
+
     const Vector<AMRLevel *> &levels = const_cast<AMR &>(m_amr).getAMRLevels();
     m_num_levels = levels.size();
 
@@ -61,15 +50,36 @@ template <typename InterpAlgo> void AMRInterpolator<InterpAlgo>::refresh()
     {
         AMRLevel &level = *levels[level_idx];
         InterpSource &interp_source = dynamic_cast<InterpSource &>(level);
-        interp_source.fillAllGhosts();
+        interp_source.fillAllGhosts(VariableType::evolution);
         if (NUM_DIAGNOSTIC_VARS > 0)
-            interp_source.fillAllDiagnosticsGhosts();
+            interp_source.fillAllGhosts(VariableType::diagnostic);
     }
+}
+
+template <typename InterpAlgo>
+const AMR &AMRInterpolator<InterpAlgo>::getAMR() const
+{
+    return m_amr;
+}
+
+template <typename InterpAlgo>
+const std::array<double, CH_SPACEDIM> &
+AMRInterpolator<InterpAlgo>::get_coarsest_dx()
+{
+    return m_coarsest_dx;
+}
+template <typename InterpAlgo>
+const std::array<double, CH_SPACEDIM> &
+AMRInterpolator<InterpAlgo>::get_coarsest_origin()
+{
+    return m_coarsest_origin;
 }
 
 template <typename InterpAlgo>
 void AMRInterpolator<InterpAlgo>::limit_num_levels(unsigned int num_levels)
 {
+    CH_TIME("AMRInterpolator::limit_num_levels");
+
     int max_num_levels = const_cast<AMR &>(m_amr).getAMRLevels().size();
     if (num_levels > max_num_levels || num_levels == 0)
     {
@@ -88,6 +98,8 @@ void AMRInterpolator<InterpAlgo>::limit_num_levels(unsigned int num_levels)
 template <typename InterpAlgo>
 void AMRInterpolator<InterpAlgo>::interp(InterpolationQuery &query)
 {
+    CH_TIME("AMRInterpolator::interp");
+
     if (m_verbosity)
     {
         pout() << TAG << "\x1b[32;1mInterpolating data\x1b[0m" << endl;
@@ -138,13 +150,13 @@ void AMRInterpolator<InterpAlgo>::interp(InterpolationQuery &query)
         for (typename comps_t::iterator it = comps.begin(); it != comps.end();
              ++it)
         {
-            //            int comp = it->first;
-            //            double *out = it->second;
+            int comp = std::get<0>(*it);
             double *out = std::get<1>(*it);
+            VariableType type = std::get<2>(*it);
             for (int point_idx = 0; point_idx < query.m_num_points; ++point_idx)
             {
-                int parity =
-                    get_var_parity(comp_idx, point_idx, query, deriv_it->first);
+                int parity = get_var_parity(comp, type, point_idx, query,
+                                            deriv_it->first);
                 out[point_idx] =
                     parity * m_query_data[comp_idx][m_mpi_mapping[point_idx]];
             }
@@ -157,6 +169,8 @@ void AMRInterpolator<InterpAlgo>::interp(InterpolationQuery &query)
 template <typename InterpAlgo>
 void AMRInterpolator<InterpAlgo>::computeLevelLayouts()
 {
+    CH_TIME("AMRInterpolator::computeLevelLayouts");
+
     ostream &_pout = pout();
 
     if (m_verbosity)
@@ -236,6 +250,8 @@ template <typename InterpAlgo>
 InterpolationLayout
 AMRInterpolator<InterpAlgo>::findBoxes(InterpolationQuery &query)
 {
+    CH_TIME("AMRInterpolator::findBoxes");
+
     ostream &_pout = pout();
 
     if (m_verbosity)
@@ -354,7 +370,8 @@ AMRInterpolator<InterpAlgo>::findBoxes(InterpolationQuery &query)
         const AMRLevel &level = *levels[level_idx];
 
         const LevelData<FArrayBox> &level_data =
-            dynamic_cast<const InterpSource &>(level).getLevelData();
+            dynamic_cast<const InterpSource &>(level).getLevelData(
+                VariableType::evolution);
         const DisjointBoxLayout &box_layout = level_data.disjointBoxLayout();
         const Box &domain_box = level.problemDomain().domainBox();
 
@@ -387,7 +404,7 @@ AMRInterpolator<InterpAlgo>::findBoxes(InterpolationQuery &query)
                     for (int i = 0; i < CH_SPACEDIM; ++i)
                     {
                         double coord =
-                            apply_symmetric_BC_on_coord(query, i, point_idx);
+                            apply_reflective_BC_on_coord(query, i, point_idx);
                         grid_coord[i] = (coord - m_origin[level_idx][i]) /
                                         m_dx[level_idx][i];
 
@@ -469,6 +486,8 @@ template <typename InterpAlgo>
 void AMRInterpolator<InterpAlgo>::prepareMPI(InterpolationQuery &query,
                                              const InterpolationLayout layout)
 {
+    CH_TIME("AMRInterpolator::prepareMPI");
+
     ostream &_pout = pout();
 
     if (m_verbosity)
@@ -510,7 +529,7 @@ void AMRInterpolator<InterpAlgo>::prepareMPI(InterpolationQuery &query,
         {
             // m_query_coords[i][idx] = query.m_coords[i][point_idx];
             m_query_coords[i][idx] =
-                apply_symmetric_BC_on_coord(query, i, point_idx);
+                apply_reflective_BC_on_coord(query, i, point_idx);
         }
 
         m_mpi_mapping[point_idx] = idx;
@@ -547,6 +566,8 @@ void AMRInterpolator<InterpAlgo>::prepareMPI(InterpolationQuery &query,
 template <typename InterpAlgo>
 void AMRInterpolator<InterpAlgo>::exchangeMPIQuery()
 {
+    CH_TIME("AMRInterpolator::exchangeMPIQuery");
+
     ostream &_pout = pout();
 
     if (m_verbosity)
@@ -583,6 +604,8 @@ void AMRInterpolator<InterpAlgo>::exchangeMPIQuery()
 template <typename InterpAlgo>
 void AMRInterpolator<InterpAlgo>::calculateAnswers(InterpolationQuery &query)
 {
+    CH_TIME("AMRInterpolator::calculateAnswers");
+
     ostream &_pout = pout();
 
     if (m_verbosity)
@@ -606,11 +629,12 @@ void AMRInterpolator<InterpAlgo>::calculateAnswers(InterpolationQuery &query)
         const AMRLevel &level = *levels[level_idx];
         const InterpSource &source = dynamic_cast<const InterpSource &>(level);
         const LevelData<FArrayBox> *const evolution_level_data_ptr =
-            &source.getLevelData();
+            &source.getLevelData(VariableType::evolution);
         const LevelData<FArrayBox> *diagnostics_level_data_ptr;
         if (NUM_DIAGNOSTIC_VARS > 0)
         {
-            diagnostics_level_data_ptr = &source.getDiagnosticsLevelData();
+            diagnostics_level_data_ptr =
+                &source.getLevelData(VariableType::diagnostic);
         }
         const DisjointBoxLayout *const evolution_box_layout_ptr =
             &evolution_level_data_ptr->disjointBoxLayout();
@@ -729,6 +753,8 @@ void AMRInterpolator<InterpAlgo>::calculateAnswers(InterpolationQuery &query)
 template <typename InterpAlgo>
 void AMRInterpolator<InterpAlgo>::exchangeMPIAnswer()
 {
+    CH_TIME("AMRInterpolator::exchangeMPIAnswer");
+
     if (m_verbosity)
     {
         pout() << TAG << "Entering exchangeMPIAnswer" << endl;
@@ -760,7 +786,7 @@ void AMRInterpolator<InterpAlgo>::exchangeMPIAnswer()
 }
 
 template <typename InterpAlgo>
-void AMRInterpolator<InterpAlgo>::set_symmetric_BC()
+void AMRInterpolator<InterpAlgo>::set_reflective_BC()
 {
     const IntVect &big_end = const_cast<AMR &>(m_amr)
                                  .getAMRLevels()[0]
@@ -780,10 +806,21 @@ void AMRInterpolator<InterpAlgo>::set_symmetric_BC()
 }
 
 template <typename InterpAlgo>
-int AMRInterpolator<InterpAlgo>::get_var_parity(int comp, int point_idx,
+int AMRInterpolator<InterpAlgo>::get_var_parity(int comp,
+                                                const VariableType type,
+                                                int point_idx,
                                                 const InterpolationQuery &query,
                                                 const Derivative &deriv) const
 {
+    // check done every time because only one of the variables may be of
+    // diagnostic type
+    if (type == VariableType::diagnostic &&
+        m_bc_params.vars_parity_diagnostic[comp] ==
+            BoundaryConditions::UNDEFINED &&
+        m_bc_params.reflective_boundaries_exist)
+        MayDay::Error("Please provide parameter 'vars_parity_diagnostic' if "
+                      "extracting diagnostic variables with reflective BC");
+
     int parity = 1;
     FOR1(dir)
     {
@@ -791,8 +828,9 @@ int AMRInterpolator<InterpAlgo>::get_var_parity(int comp, int point_idx,
         if ((m_lo_boundary_reflective[dir] && coord < 0.) ||
             (m_hi_boundary_reflective[dir] && coord > m_upper_corner[dir]))
         {
-            parity *=
-                BoundaryConditions::get_vars_parity(comp, dir, m_bc_params);
+
+            parity *= BoundaryConditions::get_vars_parity(comp, dir,
+                                                          m_bc_params, type);
             if (deriv[dir] == 1) // invert parity to first derivatives
                 parity *= -1;
         }
@@ -801,7 +839,7 @@ int AMRInterpolator<InterpAlgo>::get_var_parity(int comp, int point_idx,
 }
 
 template <typename InterpAlgo>
-double AMRInterpolator<InterpAlgo>::apply_symmetric_BC_on_coord(
+double AMRInterpolator<InterpAlgo>::apply_reflective_BC_on_coord(
     const InterpolationQuery &query, double dir, int point_idx) const
 {
     double coord = query.m_coords[dir][point_idx];

@@ -54,6 +54,12 @@ template <class matter_t> class EMTensor
         current_cell.store_vars(emtensor.Si[0], c_S1);
         current_cell.store_vars(emtensor.Si[1], c_S2);
         current_cell.store_vars(emtensor.Si[2], c_S3);
+        current_cell.store_vars(emtensor.Sij[0][0], c_S11);
+        current_cell.store_vars(emtensor.Sij[0][1], c_S12);
+        current_cell.store_vars(emtensor.Sij[0][2], c_S13);
+        current_cell.store_vars(emtensor.Sij[1][1], c_S22);
+        current_cell.store_vars(emtensor.Sij[1][2], c_S23);
+        current_cell.store_vars(emtensor.Sij[2][2], c_S33);
     }
 };
 

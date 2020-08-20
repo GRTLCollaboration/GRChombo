@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef SIMULATIONPARAMETERS_HPP_
-#define SIMULATIONPARAMETERS_HPP_
+#ifndef SIMULATIONPARAMETERS_HPP
+#define SIMULATIONPARAMETERS_HPP
 
 // General includes
 #include "GRParmParse.hpp"
@@ -45,25 +45,21 @@ class SimulationParameters : public SimulationParametersBase
             bh2_params.center[idir] = centerB[idir] + offsetB[idir];
         }
 
-        // Do we want Weyl extraction and puncture tracking?
+        // Do we want Weyl extraction, puncture tracking and constraint norm
+        // calculation?
         pp.load("activate_extraction", activate_extraction, false);
         pp.load("track_punctures", track_punctures, false);
         pp.load("puncture_tracking_level", puncture_tracking_level, max_level);
-
-        // hard code num punctures to 2 for now
-        int num_punctures = 2;
-        initial_puncture_coords.resize(num_punctures);
-        initial_puncture_coords[0] = bh1_params.center;
-        initial_puncture_coords[1] = bh2_params.center;
+        pp.load("calculate_constraint_norms", calculate_constraint_norms,
+                false);
     }
 
     // Initial data
-    bool activate_extraction, track_punctures;
+    bool activate_extraction, track_punctures, calculate_constraint_norms;
     int puncture_tracking_level;
-    std::vector<std::array<double, CH_SPACEDIM>> initial_puncture_coords;
     // Collection of parameters necessary for initial conditions
     BoostedBH::params_t bh2_params;
     BoostedBH::params_t bh1_params;
 };
 
-#endif /* SIMULATIONPARAMETERS_HPP_ */
+#endif /* SIMULATIONPARAMETERS_HPP */

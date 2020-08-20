@@ -73,11 +73,12 @@ GRAMRLevel *GRAMRLevel::gr_cast(AMRLevel *const amr_level_ptr)
         gr_cast(static_cast<const AMRLevel *const>(amr_level_ptr)));
 }
 
-const GRLevelData &GRAMRLevel::getLevelData() const { return m_state_new; }
-
-const GRLevelData &GRAMRLevel::getDiagnosticsLevelData() const
+const GRLevelData &GRAMRLevel::getLevelData(VariableType var_type) const
 {
-    return m_state_diagnostics;
+    if (var_type == VariableType::evolution)
+        return m_state_new;
+    else
+        return m_state_diagnostics;
 }
 
 bool GRAMRLevel::contains(const std::array<double, CH_SPACEDIM> &point) const
@@ -201,7 +202,8 @@ void GRAMRLevel::tagCells(IntVectSet &a_tags)
     if (m_verbosity)
         pout() << "GRAMRLevel::tagCells " << m_level << endl;
 
-    fillAllGhosts(); // We need filled ghost cells to calculate gradients etc
+    fillAllEvolutionGhosts(); // We need filled ghost cells to calculate
+                              // gradients etc
 
     // Create tags based on undivided gradient of phi
     IntVectSet local_tags;
@@ -313,7 +315,7 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
                                    coarser_gr_amr_level_ptr->m_state_new);
 
         // also interpolate fine boundary cells
-        if (m_p.nonperiodic_boundaries_exist)
+        if (m_p.boundary_params.nonperiodic_boundaries_exist)
         {
             m_boundaries.interp_boundaries(
                 m_state_new, coarser_gr_amr_level_ptr->m_state_new, Side::Hi);
@@ -506,7 +508,7 @@ void GRAMRLevel::writeCheckpointLevel(HDF5Handle &a_handle) const
 
     // only need to write ghosts when non periodic BCs exist
     IntVect ghost_vector = IntVect::Zero;
-    if (m_p.nonperiodic_boundaries_exist)
+    if (m_p.boundary_params.nonperiodic_boundaries_exist)
     {
         ghost_vector = m_num_ghosts * IntVect::Unit;
     }
@@ -930,10 +932,10 @@ void GRAMRLevel::evalRHS(GRLevelData &rhs, GRLevelData &soln,
     m_RK_stage += 1;                  // Increment RK stage info
 
     // evolution of the boundaries according to conditions
-    if (m_p.nonperiodic_boundaries_exist)
+    if (m_p.boundary_params.nonperiodic_boundaries_exist)
     {
-        m_boundaries.fill_boundary_rhs(Side::Lo, soln, rhs);
-        m_boundaries.fill_boundary_rhs(Side::Hi, soln, rhs);
+        m_boundaries.fill_rhs_boundaries(Side::Lo, soln, rhs);
+        m_boundaries.fill_rhs_boundaries(Side::Hi, soln, rhs);
     }
 }
 
@@ -963,7 +965,7 @@ void GRAMRLevel::defineRHSData(GRLevelData &newRHS,
 {
     // only need ghosts for non periodic boundary case
     IntVect ghost_vector = IntVect::Zero;
-    if (m_p.nonperiodic_boundaries_exist)
+    if (m_p.boundary_params.nonperiodic_boundaries_exist)
     {
         ghost_vector = m_num_ghosts * IntVect::Unit;
     }
@@ -983,11 +985,32 @@ void GRAMRLevel::copySolnData(GRLevelData &dest, const GRLevelData &src)
 
 double GRAMRLevel::get_dx() const { return m_dx; }
 
-void GRAMRLevel::fillAllGhosts()
+bool GRAMRLevel::at_level_timestep_multiple(int a_level) const
 {
-    CH_TIME("GRAMRLevel::fillAllGhosts()");
+    const double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
+    double target_dt = coarsest_dt;
+    for (int ilevel = 0; ilevel < a_level; ++ilevel)
+    {
+        target_dt /= m_p.ref_ratios[ilevel];
+    }
+    // get difference to nearest multiple of target_dt
+    const double time_remainder = remainder(m_time, target_dt);
+    return (abs(time_remainder) < m_gr_amr.timeEps() * coarsest_dt);
+}
+
+void GRAMRLevel::fillAllGhosts(const VariableType var_type)
+{
+    if (var_type == VariableType::evolution)
+        fillAllEvolutionGhosts();
+    else if (var_type == VariableType::diagnostic)
+        fillAllDiagnosticsGhosts();
+}
+
+void GRAMRLevel::fillAllEvolutionGhosts()
+{
+    CH_TIME("GRAMRLevel::fillAllEvolutionGhosts()");
     if (m_verbosity)
-        pout() << "GRAMRLevel::fillAllGhosts" << endl;
+        pout() << "GRAMRLevel::fillAllEvolutionGhosts" << endl;
 
     // If there is a coarser level then interpolate undefined ghost cells
     if (m_coarser_level_ptr != nullptr)
@@ -1014,6 +1037,14 @@ void GRAMRLevel::fillAllDiagnosticsGhosts()
             0, 0, NUM_DIAGNOSTIC_VARS);
     }
     m_state_diagnostics.exchange(m_exchange_copier);
+
+    // We should always fill the boundary ghosts to avoid nans
+    // if we have non periodic directions
+    if (m_p.boundary_params.nonperiodic_boundaries_exist)
+    {
+        m_boundaries.fill_diagnostic_boundaries(Side::Hi, m_state_diagnostics);
+        m_boundaries.fill_diagnostic_boundaries(Side::Lo, m_state_diagnostics);
+    }
 }
 
 void GRAMRLevel::fillIntralevelGhosts()
@@ -1024,11 +1055,11 @@ void GRAMRLevel::fillIntralevelGhosts()
 
 void GRAMRLevel::fillBdyGhosts(GRLevelData &a_state)
 {
-    // enforce solution BCs after filling ghosts, e.g. if symmetric
-    if (m_p.boundary_solution_enforced)
+    // enforce solution BCs after filling ghosts
+    if (m_p.boundary_params.boundary_solution_enforced)
     {
-        m_boundaries.enforce_solution_boundaries(Side::Hi, a_state);
-        m_boundaries.enforce_solution_boundaries(Side::Lo, a_state);
+        m_boundaries.fill_solution_boundaries(Side::Hi, a_state);
+        m_boundaries.fill_solution_boundaries(Side::Lo, a_state);
     }
 }
 
@@ -1036,7 +1067,7 @@ void GRAMRLevel::copyBdyGhosts(const GRLevelData &a_src, GRLevelData &a_dest)
 {
     // Specifically copy boundary cells if non periodic as
     // cells outside the domain are not copied by default
-    if (m_p.nonperiodic_boundaries_exist)
+    if (m_p.boundary_params.nonperiodic_boundaries_exist)
     {
         m_boundaries.copy_boundary_cells(Side::Hi, a_src, a_dest);
         m_boundaries.copy_boundary_cells(Side::Lo, a_src, a_dest);
@@ -1046,7 +1077,7 @@ void GRAMRLevel::copyBdyGhosts(const GRLevelData &a_src, GRLevelData &a_dest)
 void GRAMRLevel::defineExchangeCopier(const DisjointBoxLayout &a_level_grids)
 {
     // if there are Sommerfeld BCs, expand boxes along those sides
-    if (m_p.nonperiodic_boundaries_exist)
+    if (m_p.boundary_params.nonperiodic_boundaries_exist)
     {
         m_boundaries.expand_grids_to_boundaries(m_grown_grids, a_level_grids);
     }

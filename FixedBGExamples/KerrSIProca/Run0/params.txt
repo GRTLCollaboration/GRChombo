@@ -49,6 +49,7 @@ lo_boundary = 1 1 2
 # 4,5,6 = odd xy, yz, xz
 vars_parity            = 0 1 2 3    #phi Avec
                          1 2 3 0      #Evec Z
+vars_parity_diagnostic = 0 0 0 0 0 0   #rho rhoJ etc
 
 # if sommerfeld boundaries selected, must specify any
 # nonzero asymptotic values
