@@ -7,34 +7,17 @@ import matplotlib.pyplot as plt;
 # output data from running merger
 M = 1.0
 mu = 0.05
-v = 0.0
+v = 0.1
 r = 500
+symmetry = 4
 data1 = np.loadtxt("RhoIntegral.dat")
 data2 = np.loadtxt("Force_integrals.dat")
 
 # make the plot
 fig = plt.figure()
 
-# first dataset
-labelstring = "M-M0, v = " + str(v) + " mu = " + str(mu) + " r = " + str(r)
-timedata = data1[:,0]
-Mdata = data1[:,2] - data1[0,2]
-#plt.plot(timedata, Mdata, '-', lw = 1.0, label=labelstring)
-
-# second dataset net
-labelstring = "integral net Flux dt$"
-timedata = data2[:,0]
-Fdata = (data2[:,3] - data2[:,1])
-deltaE = np.zeros_like(Fdata)
-for i, F in enumerate(Fdata) :
-   if i==0 :
-      deltaE[i] = 0.0
-   else :
-      deltaE[i] = deltaE[i-1] + F * (timedata[i] - timedata[i-1])
-plt.plot(timedata, deltaE, '-', lw = 1.0, label=labelstring)
-
-# second dataset out
-labelstring = "integral out Flux dt$"
+# flux dataset out
+labelstring = "integral outer Flux dt"
 timedata = data2[:,0]
 Fdata = data2[:,3]
 deltaE = np.zeros_like(Fdata)
@@ -43,10 +26,18 @@ for i, F in enumerate(Fdata) :
       deltaE[i] = 0.0
    else :
       deltaE[i] = deltaE[i-1] + F * (timedata[i] - timedata[i-1])
-plt.plot(timedata, deltaE, '-', lw = 1.0, label=labelstring)
+plt.plot(timedata, deltaE, '--', lw = 1.0, label=labelstring)
+OuterFluxData = deltaE
 
-# second dataset in
-labelstring = "integral in Flux dt$"
+# mass dataset
+labelstring = "M-M0, v = " + str(v) + " mu = " + str(mu) + " r = " + str(r)
+timedata = data1[:,0]
+Mdata = data1[:,2] - data1[0,2]
+Mdata = symmetry * Mdata
+plt.plot(timedata, Mdata, '--', lw = 1.0, label=labelstring)
+
+# flux dataset in
+labelstring = "integral inner Flux dt"
 timedata = data2[:,0]
 Fdata = data2[:,1]
 deltaE = np.zeros_like(Fdata)
@@ -55,10 +46,11 @@ for i, F in enumerate(Fdata) :
       deltaE[i] = 0.0
    else :
       deltaE[i] = deltaE[i-1] + F * (timedata[i] - timedata[i-1])
-plt.plot(timedata, deltaE, '-', lw = 1.0, label=labelstring)
+plt.plot(timedata, deltaE, '--', lw = 1.0, label=labelstring)
+InnerFluxData = deltaE
 
-# third dataset
-labelstring = "integral Source + DeltaM dt$"
+# mass dataset - source
+labelstring = "integral Source dt"
 timedata = data1[:,0]
 Fdata = data1[:,1]
 deltaE = np.zeros_like(Fdata)
@@ -67,14 +59,20 @@ for i, F in enumerate(Fdata) :
       deltaE[i] = 0.0
    else :
       deltaE[i] = deltaE[i-1] + F * (timedata[i] - timedata[i-1])
-plt.plot(timedata, deltaE + Mdata, '-', lw = 1.0, label=labelstring)
+SourceData = deltaE * symmetry
+plt.plot(timedata, SourceData, '--', lw = 1.0, label=labelstring)
+
+# combine check
+labelstring = "Outerflux = DeltaM (+?) Source - InnerFlux"
+Fdata = 1.0 * Mdata + 1.0 * SourceData - 1.0 * InnerFluxData
+plt.plot(timedata, Fdata, '-', lw = 1.0, label=labelstring)
 
 # make the plot look nice
 plt.xlabel("time")
 plt.ylabel("xMom")
 #plt.xlim(0, 1000)
 #plt.ylim(1e-1, 1e2)
-plt.legend()
+plt.legend(loc=2)
 
 # save as png image
 filename = "EvsT" + "_mu" + str(mu) + ".png"
