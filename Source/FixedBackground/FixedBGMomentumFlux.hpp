@@ -76,9 +76,9 @@ template <class matter_t, class background_t> class FixedBGMomentumFlux
         data_t mod_N2 = 0.0;
         FOR2(i, j)
         {
-            mod_N2 += gamma_UU[i][j] * Ni_L[i] * Ni_L[j] -
-                      metric_vars.shift[i] * metric_vars.shift[j] * Ni_L[i] *
-                          Ni_L[j] / metric_vars.lapse / metric_vars.lapse;
+            mod_N2 += gamma_UU[i][j] * Ni_L[i] * Ni_L[j];
+//                      - metric_vars.shift[i] * metric_vars.shift[j] * Ni_L[i] *
+//                          Ni_L[j] / metric_vars.lapse / metric_vars.lapse;
         }
         FOR1(i) { Ni_L[i] = Ni_L[i] / sqrt(mod_N2); }
 

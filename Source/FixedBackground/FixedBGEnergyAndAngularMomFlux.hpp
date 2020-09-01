@@ -82,6 +82,7 @@ class FixedBGEnergyAndAngularMomFlux
             mod_N2 += gamma_UU[i][j] * Ni_L[i] * Ni_L[j];
 //                    -  metric_vars.shift[i] * metric_vars.shift[j] * Ni_L[i] *
 //                          Ni_L[j] / metric_vars.lapse / metric_vars.lapse;
+
         }
         FOR1(i) { Ni_L[i] = Ni_L[i] / sqrt(mod_N2); }
 

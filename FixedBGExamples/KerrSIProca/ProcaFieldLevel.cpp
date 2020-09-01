@@ -75,9 +75,8 @@ void ProcaFieldLevel::specificPostTimeStep()
     bool first_step = (m_time == m_dt);
 
     // At any level, but after the coarsest timestep
-    double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
-    const double diff = remainder(m_time, coarsest_dt);
-    if (abs(diff) < 1.0e-8)
+    bool calculate_fluxes = at_level_timestep_multiple(0);
+    if (calculate_fluxes)
     {
         // calculate the density of the PF, but excise the BH region completely
         fillAllGhosts();
