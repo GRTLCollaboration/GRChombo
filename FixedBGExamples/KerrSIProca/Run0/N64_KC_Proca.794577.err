@@ -1,0 +1,15 @@
+slurmstepd: error: slurm_get_node_energy: Socket timed out on send/recv operation
+slurmstepd: error: _get_joules_task: can't get info from slurmd
+slurmstepd: error: slurm_get_node_energy: Socket timed out on send/recv operation
+slurmstepd: error: _get_joules_task: can't get info from slurmd
+slurmstepd: error: slurm_get_node_energy: Socket timed out on send/recv operation
+slurmstepd: error: _get_joules_task: can't get info from slurmd
+slurmstepd: error: Detected 1 oom-kill event(s) in step 794577.0 cgroup. Some of your processes may have been killed by the cgroup out-of-memory handler.
+srun: error: i02r06c06s04: task 92: Out Of Memory
+srun: Terminating job step 794577.0
+slurmstepd: error: *** STEP 794577.0 ON i02r05c03s02 CANCELLED AT 2020-09-01T07:14:37 ***
+srun: error: i02r05c05s06: task 28: Terminated
+srun: error: i02r06c03s12: task 77: Terminated
+srun: error: i02r07c01s02: task 102: Terminated
+srun: error: i02r05c05s01: task 23: Terminated
+srun: Force Terminated job step 794577.0

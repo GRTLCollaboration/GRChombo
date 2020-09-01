@@ -65,18 +65,18 @@ checkpoint_interval = 0
 plot_interval = 1
 num_plot_vars = 4
 plot_vars = phi Z rho Xsquared
-dt_multiplier = 0.2
+dt_multiplier = 0.1
 stop_time = 10000.0
 
 # coefficient for KO numerical dissipation
-sigma = 2.0
+sigma = 5.0
 
 # PF Initial data
 proca_mass = 0.5
 proca_self_interaction = 0.0
-proca_damping = 2.0
+proca_damping = 3.0
 field_amplitude = 0.01
-excision_width = 0.8
+excision_width = 0.9
 
 # Boosted BH initial data, boost in x direction, spin in z direction
 bh_mass = 1.0
@@ -86,7 +86,7 @@ bh_spin = 0.99 # This is a, so needs to be <= M
 activate_extraction = 1
 write_extraction = 0
 num_extraction_radii = 3
-extraction_radii = 1.10 1.15 1.20
+extraction_radii = 1.20 1.5 2.0
 extraction_levels = 0 0 0
 num_points_phi = 24
 num_points_t = 24
