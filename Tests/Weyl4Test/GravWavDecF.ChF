@@ -84,7 +84,9 @@ c ----- Rchi - (Rfull - R)
 c ----- Rfull - Ricci tensor on the slice from full metric
 c ----- Gamma1d - BSSN evolution variable, conformal
 c                 christoffelsymbol, 2nd and 3rd index contracted
-c ----- dGamma1dx - derivative of Gamma1d
+c ----- dGamma1dx - derivative of Gamma
+c ----- dGamma1ddx - derivative of Gamma calculated from definition
+c                    (not from evolved)
 c ----- d2chidxdy - 2nd derivative of the conformal factor chi
 c ----- dchidx - 1st derivative of the conformal factor chi
 c ----- chi1 - conformal factor
@@ -135,7 +137,8 @@ c ----- IDX - maps indices from matrix to vector
       REAL_T R(0:CH_SPACEDIM-1,0:CH_SPACEDIM-1)
       REAL_T Rchi(0:CH_SPACEDIM-1,0:CH_SPACEDIM-1)
       REAL_T Rfull(0:CH_SPACEDIM-1,0:CH_SPACEDIM-1)
-      REAL_T Gamma1d(0:2), dGamma1dx(0:2,0:CH_SPACEDIM-1)
+      REAL_T Gamma1d(0:2), dGamma1dx(0:2,0:CH_SPACEDIM-1), dGamma1ddx(0:2,0:CH_SPACEDIM-1)
+      REAL_T dGamma1d1terms
       REAL_T d2chidxdy(0:CH_SPACEDIM-1,0:CH_SPACEDIM-1)
       REAL_T dchidx(0:CH_SPACEDIM-1)
       REAL_T chi2, chi1
@@ -170,7 +173,7 @@ c ----- IDX - maps indices from matrix to vector
       REAL_T null
 
 
-      integer d0, d1, d2, d3, d4, d5
+      integer d0, d1, d2, d3, d4, d5, d6
 
       integer IDX(0:2, 0:2)
       data IDX / _11, _12, _13, _12, _22, _23, _13, _23, _33  /
@@ -477,14 +480,32 @@ c --- Contracted Christoffel symbol, part of BSSN evolution variables
            enddo; enddo
          enddo
 
-         do d0 = 0,2
-           Gamma1d(d0) = Gamma1(CHF_AUTOIX[i],d0)
+c         do d0 = 0,2
+c         enddo
+
+c --- Derivative of contracted Christoffel symbol
+         dGamma1ddx = 0
+         do d0 = 0, 2
+           do d1 = 0, 2
+             do d2 = 0, 2
+               do d3 = 0, 2
+                 do d4 = 0, 2
+                   dGamma1d1terms = 0
+                   do d5 = 0, 2
+                     do d6 = 0, 2
+                       dGamma1d1terms = dGamma1d1terms - gu(d5,d6)*(dgammadx(d3,d5,d1)*dgammadx(d2,d4,d6) + dgammadx(d2,d3,d1)*dgammadx(d4,d5,d6))
+                     enddo
+                   enddo
+                   dGamma1ddx(d0,d1) = dGamma1ddx(d0,d1) + gu(d0,d2)*gu(d3,d4)*(d2gammadxdy(d2,d3,d1,d4) + dGamma1d1terms)
+                 enddo
+               enddo
+             enddo
+           enddo
          enddo
 
 
-
 c -----------------------------------------------------------------
-c        R is the Riemann tensor corresponding to the confromal metric
+c        R is the Ricci tensor corresponding to the conformal metric
 c -----------------------------------------------------------------
 
 
@@ -496,18 +517,19 @@ c -----------------------------------------------------------------
 
            do d2 = 0,2
              if (d1 .lt. CH_SPACEDIM) then
-               R(d0,d1) = R(d0,d1) + half*g(d2,d0)*dGamma1dx(d2,d1)
+               R(d0,d1) = R(d0,d1) + half*g(d2,d0)*dGamma1ddx(d2,d1)
              endif
 
              if (d0 .lt. CH_SPACEDIM) then
-               R(d0,d1) = R(d0,d1) + half*g(d2,d1)*dGamma1dx(d2,d0)
+               R(d0,d1) = R(d0,d1) + half*g(d2,d1)*dGamma1ddx(d2,d0)
              endif
            enddo
 
            do d2 = 0,2
-             R(d0,d1) = R(d0,d1)
-     &       + half*Gamma1d(d2)*chris1st(d0,d1,d2)
-     &       + half*Gamma1d(d2)*chris1st(d1,d0,d2)
+             R(d0,d1) = R(d0,d1) + half*Gamma1d(d2)*dgammadx(d0,d1,d2)
+c            switch to dgammadx rather than symmetrizing chris1st
+c     &       + half*Gamma1d(d2)*chris1st(d0,d1,d2)
+c     &       + half*Gamma1d(d2)*chris1st(d1,d0,d2)
              do d3 = 0,2; do d4 = 0,2
                R(d0,d1) = R(d0,d1)
      &         + gu(d3,d4)*chris(d2,d3,d0)*chris1st(d1,d2,d4)
@@ -785,7 +807,7 @@ c -----------------------------------------------------------
 c ---- Calculating Weyl tensor
 c ---- Weyl1 - ReWeyl , Weyl2 - ImWeyl
 c -----------------------------------------------------------
-c ----- tetrat calculation
+c ----- tetrad calculation
 
         xx = dx*(i0+0.5) - centerx
         yy = dx*(i1+0.5) - centery
@@ -823,7 +845,7 @@ c ----- tetrat calculation
         etheta(1)= cosph
         etheta(2)= 0
 
-c ------Alternative tetrats-------
+c ------Alternative tetrads-------
         x = (dx*(i0+0.5) - centerx)
         y = (dx*(i1+0.5) - centery)
         z = (dx*(i2+0.5) - centerz)

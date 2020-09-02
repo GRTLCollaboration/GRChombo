@@ -230,6 +230,8 @@ int main()
     // to use the calculated Gamma^i, not the evolved one. In theory they would
     // be the same, but in this test The Gamma^i data is random, so it won't
     // work, so I changed it to match the new form
+    // (MR): I changed it back to reflect the changes I have made to the
+    // calculation of the Ricci tensor
 
     FORT_GRAVWAVDEC(
         CHF_FRA1(out_fab_chf, c_Weyl4_Re), CHF_FRA1(out_fab_chf, c_Weyl4_Im),
