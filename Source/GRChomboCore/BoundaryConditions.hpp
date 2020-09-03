@@ -109,14 +109,14 @@ class BoundaryConditions
     /// UserVariables.hpp The parity should be defined in the params file, and
     /// will be output to the pout files for checking at start/restart of
     /// simulation (It is only required for reflective boundary conditions.)
-    int get_vars_parity(
-        int a_comp, int a_dir,
-        const VariableType var_type = VariableType::evolution) const;
+    int
+    get_var_parity(int a_comp, int a_dir,
+                   const VariableType var_type = VariableType::evolution) const;
 
     /// static version used for initial output of boundary values
     static int
-    get_vars_parity(int a_comp, int a_dir, const params_t &a_params,
-                    const VariableType var_type = VariableType::evolution);
+    get_var_parity(int a_comp, int a_dir, const params_t &a_params,
+                   const VariableType var_type = VariableType::evolution);
 
     /// Fill the rhs boundary values appropriately based on the params set
     void fill_rhs_boundaries(const Side::LoHiSide a_side,

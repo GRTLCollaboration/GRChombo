@@ -792,8 +792,8 @@ int AMRInterpolator<InterpAlgo>::get_var_parity(int comp,
             (m_hi_boundary_reflective[dir] && coord > m_upper_corner[dir]))
         {
 
-            parity *= BoundaryConditions::get_vars_parity(comp, dir,
-                                                          m_bc_params, type);
+            parity *= BoundaryConditions::get_var_parity(comp, dir, m_bc_params,
+                                                         type);
             if (deriv[dir] == 1) // invert parity to first derivatives
                 parity *= -1;
         }
