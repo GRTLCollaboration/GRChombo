@@ -94,11 +94,11 @@ template <class data_t> class Cell
 
     /// Return the number of variables in the input FAB
     ALWAYS_INLINE
-    int get_num_in_vars() const { return m_box_pointers.m_in_num_comps; }
+    int get_num_in_vars() const { return m_box_pointers.m_out_ptr.size(); }
 
     /// Returns the number of variables in the output FAB
     ALWAYS_INLINE
-    int get_num_out_vars() const { return m_box_pointers.m_out_num_comps; }
+    int get_num_out_vars() const { return m_box_pointers.m_out_ptr.size(); }
 
     /// Loads the variable of a given variable from the Chombo grid
     ALWAYS_INLINE
