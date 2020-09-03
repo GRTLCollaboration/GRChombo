@@ -6,10 +6,8 @@ plot_prefix = BinaryBHPlot_
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
 
-N1 = 32
-N2 = 32
-N3 = 32
-L = 16 #100
+N_full = 32
+L_full = 16
 
 massA = 1
 offsetA = -2 0 0

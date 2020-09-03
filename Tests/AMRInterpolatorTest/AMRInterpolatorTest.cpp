@@ -67,14 +67,15 @@ int runInterpolatorTest(int argc, char *argv[])
 
     double extract_radius = sim_params.L / 4;
 
-    for (int iPhi = 0; iPhi < num_points; ++iPhi)
+    for (int ipoint = 0; ipoint < num_points; ++ipoint)
     {
-        double extract_angle = iPhi * M_PI / num_points;
-        interp_x[iPhi] =
-            sim_params.center[0] + extract_radius * cos(extract_angle);
-        interp_y[iPhi] =
-            sim_params.center[1] + extract_radius * sin(extract_angle);
-        interp_z[iPhi] = sim_params.center[2];
+        double phi = ipoint * 2. * M_PI / num_points;
+        double theta = ipoint * M_PI / num_points;
+        interp_x[ipoint] =
+            sim_params.center[0] + extract_radius * cos(phi) * sin(theta);
+        interp_y[ipoint] =
+            sim_params.center[1] + extract_radius * sin(phi) * sin(theta);
+        interp_z[ipoint] = sim_params.center[2] + extract_radius * cos(theta);
     }
 
     InterpolationQuery query(num_points);
@@ -98,9 +99,7 @@ int runInterpolatorTest(int argc, char *argv[])
         double y = interp_y[ipoint] - sim_params.center[1];
         double z = interp_z[ipoint] - sim_params.center[2];
 
-        double value_A =
-            42. + x * x +
-            (y - sim_params.center[1]) * (y - sim_params.center[1]) * z * z;
+        double value_A = 42. + x * x + y * y * z * z;
         double value_B = pow(x, 3);
         double value_B_dx = 3. * pow(x, 2);
 

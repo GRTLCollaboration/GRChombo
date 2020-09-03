@@ -9,15 +9,15 @@ chk_prefix = BinaryBHChk_
 plot_prefix = BinaryBHPlot_
 #restart_file = BinaryBHChk_000000.3d.hdf5
 
-# Set up coarsest level number of grid points in each dir
-# NB - the values need to be multiples of block_factor
-N1 = 64
-N2 = 64
-N3 = 64
-
-# Length of the longest N side
-# (This sets dx in all directions)
-L = 512
+# 'N' is the number of subdivisions in each direction of a cubic box
+# 'L' is the length of the longest side of the box, dx_coarsest = L/N
+# NB - If you use reflective BC and want to specify the subdivisions and side
+# of the box were there are no symmetries, specify 'N_full' and 'L_full' instead
+# NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full', 
+# 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
+# NB - the N values need to be multiples of the block_factor
+N_full = 64
+L_full = 512
 
 # Defaults to center of grid L/2
 # uncomment to change
@@ -62,7 +62,7 @@ isPeriodic = 0 0 0
 # 0 = static, 1 = sommerfeld, 2 = reflective
 # (see BoundaryConditions.hpp for details)
 hi_boundary = 1 1 1
-lo_boundary = 1 1 1
+lo_boundary = 1 1 2
 
 # if reflective boundaries selected, must set
 # parity of all vars (in order given by UserVariables.hpp)

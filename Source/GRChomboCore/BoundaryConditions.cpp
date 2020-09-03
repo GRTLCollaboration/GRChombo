@@ -40,11 +40,11 @@ void BoundaryConditions::params_t::set_is_periodic(
 void BoundaryConditions::params_t::set_hi_boundary(
     const std::array<int, CH_SPACEDIM> &a_hi_boundary)
 {
-    hi_boundary = a_hi_boundary;
     FOR1(idir)
     {
         if (!is_periodic[idir])
         {
+            hi_boundary[idir] = a_hi_boundary[idir];
             if (hi_boundary[idir] == REFLECTIVE_BC)
             {
                 boundary_solution_enforced = true;
@@ -61,11 +61,11 @@ void BoundaryConditions::params_t::set_hi_boundary(
 void BoundaryConditions::params_t::set_lo_boundary(
     const std::array<int, CH_SPACEDIM> &a_lo_boundary)
 {
-    lo_boundary = a_lo_boundary;
     FOR1(idir)
     {
         if (!is_periodic[idir])
         {
+            lo_boundary[idir] = a_lo_boundary[idir];
             if (lo_boundary[idir] == REFLECTIVE_BC)
             {
                 boundary_solution_enforced = true;
@@ -82,24 +82,23 @@ void BoundaryConditions::params_t::set_lo_boundary(
 
 void BoundaryConditions::params_t::read_params(GRParmParse &pp)
 {
+    // still load even if not contained, to ensure printout saying parameters
+    // were set to their default values
+    std::array<bool, CH_SPACEDIM> isPeriodic;
+    pp.load("isPeriodic", isPeriodic, is_periodic);
     if (pp.contains("isPeriodic"))
-    {
-        std::array<bool, CH_SPACEDIM> isPeriodic;
-        pp.load("isPeriodic", isPeriodic);
         set_is_periodic(isPeriodic);
-    }
+
+    std::array<int, CH_SPACEDIM> hiBoundary;
+    pp.load("hi_boundary", hiBoundary, hi_boundary);
     if (pp.contains("hi_boundary"))
-    {
-        std::array<int, CH_SPACEDIM> hi_boundary;
-        pp.load("hi_boundary", hi_boundary);
-        set_hi_boundary(hi_boundary);
-    }
+        set_hi_boundary(hiBoundary);
+
+    std::array<int, CH_SPACEDIM> loBoundary;
+    pp.load("lo_boundary", loBoundary, lo_boundary);
     if (pp.contains("lo_boundary"))
-    {
-        std::array<int, CH_SPACEDIM> lo_boundary;
-        pp.load("lo_boundary", lo_boundary);
-        set_lo_boundary(lo_boundary);
-    }
+        set_lo_boundary(loBoundary);
+
     if (reflective_boundaries_exist)
     {
         pp.load("vars_parity", vars_parity);
@@ -158,7 +157,7 @@ void BoundaryConditions::write_reflective_conditions(int idir,
            << endl;
     for (int icomp = 0; icomp < NUM_VARS; icomp++)
     {
-        int parity = get_vars_parity(icomp, idir, a_params);
+        int parity = get_var_parity(icomp, idir, a_params);
         if (parity == -1)
         {
             pout() << UserVariables::variable_names[icomp] << "    ";
@@ -167,7 +166,7 @@ void BoundaryConditions::write_reflective_conditions(int idir,
     for (int icomp = 0; icomp < NUM_DIAGNOSTIC_VARS; icomp++)
     {
         int parity =
-            get_vars_parity(icomp, idir, a_params, VariableType::diagnostic);
+            get_var_parity(icomp, idir, a_params, VariableType::diagnostic);
         if (parity == -1)
         {
             pout() << DiagnosticVariables::variable_names[icomp] << "    ";
@@ -240,18 +239,18 @@ void BoundaryConditions::write_boundary_conditions(const params_t &a_params)
 /// UserVariables.hpp The parity should be defined in the params file, and
 /// will be output to the pout files for checking at start/restart of
 /// simulation (It is only required for reflective boundary conditions.)
-int BoundaryConditions::get_vars_parity(int a_comp, int a_dir,
-                                        const VariableType var_type) const
+int BoundaryConditions::get_var_parity(int a_comp, int a_dir,
+                                       const VariableType var_type) const
 {
-    int vars_parity = get_vars_parity(a_comp, a_dir, m_params, var_type);
+    int vars_parity = get_var_parity(a_comp, a_dir, m_params, var_type);
 
     return vars_parity;
 }
 
 /// static version used for initial output of boundary values
-int BoundaryConditions::get_vars_parity(int a_comp, int a_dir,
-                                        const params_t &a_params,
-                                        const VariableType var_type)
+int BoundaryConditions::get_var_parity(int a_comp, int a_dir,
+                                       const params_t &a_params,
+                                       const VariableType var_type)
 {
     int comp_parity = (var_type == VariableType::evolution
                            ? a_params.vars_parity[a_comp]
@@ -358,7 +357,7 @@ void BoundaryConditions::fill_boundary_cells_dir(
     const Side::LoHiSide a_side, const GRLevelData &a_soln, GRLevelData &a_out,
     const int dir, const int boundary_condition, const VariableType var_type)
 {
-    std::vector<int> a_comps =
+    const std::vector<int> &comps =
         (var_type == VariableType::evolution ? m_comps : m_diagnostic_comps);
 
     // iterate through the boxes, shared amongst threads
@@ -391,7 +390,7 @@ void BoundaryConditions::fill_boundary_cells_dir(
             // simplest case - boundary values are set to zero
             case STATIC_BC:
             {
-                for (int icomp : a_comps)
+                for (int icomp : comps)
                 {
                     out_box(iv, icomp) = 0.0;
                 }
@@ -400,14 +399,13 @@ void BoundaryConditions::fill_boundary_cells_dir(
             // Sommerfeld is outgoing radiation - only applies to rhs
             case SOMMERFELD_BC:
             {
-                fill_sommerfeld_cell(out_box, soln_box, iv, a_comps);
+                fill_sommerfeld_cell(out_box, soln_box, iv, comps);
                 break;
             }
             // Enforce a reflective symmetry in some direction
             case REFLECTIVE_BC:
             {
-                fill_reflective_cell(out_box, iv, a_side, dir, a_comps,
-                                     var_type);
+                fill_reflective_cell(out_box, iv, a_side, dir, comps, var_type);
                 break;
             }
             default:
@@ -511,7 +509,7 @@ void BoundaryConditions::fill_reflective_cell(
     // replace value at iv with value at iv_copy
     for (int icomp : reflective_comps)
     {
-        int parity = get_vars_parity(icomp, dir, var_type);
+        int parity = get_var_parity(icomp, dir, var_type);
         out_box(iv, icomp) = parity * out_box(iv_copy, icomp);
     }
 }

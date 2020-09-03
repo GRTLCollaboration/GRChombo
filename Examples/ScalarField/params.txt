@@ -5,15 +5,15 @@ chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
 #restart_file = ScalarField_000000.3d.hdf5
 
-# Set up grid spacings and regrid params
-# NB - the N values need to be multiples of block_factor
-N1 = 32
-N2 = 32
-N3 = 32
-
-# Length of longest box side, dx_coarsest = L/N(max)
-# NB if non cubic, this determines dx for all sides
-L =  16
+# 'N' is the number of subdivisions in each direction of a cubic box
+# 'L' is the length of the longest side of the box, dx_coarsest = L/N
+# NB - If you use reflective BC and want to specify the subdivisions and side
+# of the box were there are no symmetries, specify 'N_full' and 'L_full' instead
+# NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full', 
+# 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
+# NB - the N values need to be multiples of the block_factor
+N_full = 64
+L_full =  32
 
 # Regridding
 # Thresholds on the change across a cell which prompts regrid
@@ -81,7 +81,7 @@ lapse_advec_coeff = 1 # 1 makes the lapse gauge 1+log slicing
 # Shift evolution coefficients
 shift_advec_coeff = 0 # Usually no advection for beta
 shift_Gamma_coeff = 0.75 #
-eta = 1.0 # This is beta_driver, usually of order 1/M_ADM of spacetime
+eta = 1.0 # This is gamma driver, usually of order 1/M_ADM of spacetime
 
 # CCZ4 parameters
 # if using BSSN the kappa values should be zero

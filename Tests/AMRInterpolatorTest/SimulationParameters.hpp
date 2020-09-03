@@ -13,10 +13,8 @@
 class SimulationParameters : public ChomboParameters
 {
   public:
-    // For the Interpolator test we don't need any parameters
     SimulationParameters(GRParmParse &pp) : ChomboParameters(pp)
     {
-
         pp.load("num_points", num_points, 2);
     }
 
