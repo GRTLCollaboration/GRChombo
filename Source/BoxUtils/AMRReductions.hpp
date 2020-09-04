@@ -22,6 +22,7 @@ template <VariableType var_t> class AMRReductions
             : static_cast<int>(NUM_DIAGNOSTIC_VARS);
     const int m_base_level;
     const double m_coarsest_dx;
+    double m_domain_volume;
     Vector<LevelData<FArrayBox> *> m_level_data_ptrs;
     Vector<int> m_ref_ratios;
 
@@ -30,6 +31,10 @@ template <VariableType var_t> class AMRReductions
 
     //! gets the vector of refinement ratios and stores them
     void set_ref_ratios_vect(const GRAMR &a_gramr);
+
+    //! Sets m_domain_volume which is used in norm() if a_normalize_by_volume
+    //! is true. Must be called after set_level_data_vect
+    void set_domain_volume();
 
   public:
     //! Constructor
@@ -49,17 +54,22 @@ template <VariableType var_t> class AMRReductions
 
     //! returns the volume-weighted p-norm of an interval of variables
     //! p = a_norm_exponent
-    Real norm(const Interval &a_vars, const int a_norm_exponent = 2) const;
+    Real norm(const Interval &a_vars, const int a_norm_exponent = 2,
+              const bool a_normalize_by_volume = false) const;
 
     //! returns the volume weighted p-norm of a single variable
     //! p = a_norm_exponent
-    Real norm(const int a_var, const int a_norm_exponent = 2) const;
+    Real norm(const int a_var, const int a_norm_exponent = 2,
+              const bool a_normalize_by_volume = false) const;
 
     //! returns the volume-weighted sum (integral) of an interval of variables
     Real sum(const Interval &a_vars) const;
 
     //! returns the volume-weighted sum (integral of a single variable);
     Real sum(const int a_var) const;
+
+    //! returns the m_domain_volume member
+    Real get_domain_volume() const;
 };
 
 #include "AMRReductions.impl.hpp"
