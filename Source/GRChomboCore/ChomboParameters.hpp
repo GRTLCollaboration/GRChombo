@@ -155,7 +155,7 @@ class ChomboParameters
                 {
                     // it's neither :(
                     pout() << "Variable with name " << var_name
-                           << " not found.";
+                           << " not found.\n";
                 }
                 else
                 {
