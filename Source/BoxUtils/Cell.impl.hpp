@@ -27,9 +27,10 @@ ALWAYS_INLINE void Cell<data_t>::load_vars(data_t &out, const int ivar) const
 }
 
 template <class data_t>
-void Cell<data_t>::load_vars(data_t (&out)[NUM_VARS]) const
+template <int num_vars>
+void Cell<data_t>::load_vars(data_t (&out)[num_vars]) const
 {
-    for (int ivar = 0; ivar < NUM_VARS; ++ivar)
+    for (int ivar = 0; ivar < num_vars; ++ivar)
     {
         out[ivar] = load_vars(ivar);
     }
@@ -71,10 +72,11 @@ ALWAYS_INLINE void Cell<data_t>::store_vars(
 }
 
 template <class data_t>
+template <int num_vars>
 ALWAYS_INLINE void
-Cell<data_t>::store_vars(const std::array<data_t, NUM_VARS> &values) const
+Cell<data_t>::store_vars(const std::array<data_t, num_vars> &values) const
 {
-    for (int ivar = 0; ivar < NUM_VARS; ++ivar)
+    for (int ivar = 0; ivar < num_vars; ++ivar)
     {
         store_vars(values[ivar], ivar);
     }
