@@ -13,7 +13,7 @@
 #include "SmallDataIO.hpp"
 
 // For tag cells
-#include "FixedGridsTaggingCriterion.hpp"
+#include "FixedGridsTaggingCriterionBH.hpp"
 
 // Problem specific includes
 #include "ExcisionProcaDiagnostics.hpp"
@@ -34,7 +34,7 @@ void ProcaFieldLevel::specificAdvance()
 {
     // Check for nan's
     if (m_p.nan_check)
-        BoxLoops::loop(NanCheck(), m_state_new, m_state_new, SKIP_GHOST_CELLS,
+        BoxLoops::loop(NanCheck(m_dx), m_state_new, m_state_new, SKIP_GHOST_CELLS,
                        disable_simd());
 }
 
@@ -151,6 +151,7 @@ void ProcaFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
 void ProcaFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                               const FArrayBox &current_state)
 {
-    BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L, m_p.center),
+    const double radius_bh = 1.75;
+    BoxLoops::loop(FixedGridsTaggingCriterionBH(m_dx, m_level, m_p.max_level, m_p.L, m_p.center, radius_bh),
                    current_state, tagging_criterion, disable_simd());
 }

@@ -16,15 +16,16 @@ class NanCheck
   protected:
     const std::string m_error_info = "NanCheck";
     const double m_max_abs = 1e20;
+    const double m_dx;
 
   public:
-    NanCheck() {}
+    NanCheck(const double a_dx = 1.0) : m_dx(a_dx) {}
 
     /// This constructor takes a string which will be displayed when nans happen
-    NanCheck(const std::string a_error_info) : m_error_info(a_error_info) {}
+    NanCheck(const std::string a_error_info, const double a_dx = 1.0) : m_error_info(a_error_info), m_dx(a_dx) {}
 
-    NanCheck(const std::string a_error_info, const double a_max_abs)
-        : m_error_info(a_error_info), m_max_abs(a_max_abs)
+    NanCheck(const std::string a_error_info, const double a_max_abs, const double a_dx = 1.0)
+        : m_error_info(a_error_info), m_max_abs(a_max_abs), m_dx(a_dx)
     {
     }
 
@@ -51,6 +52,8 @@ class NanCheck
                            << current_cell.load_vars(ivar) << std::endl;
                 }
                 pout() << "Integer coordinates: " << current_cell.get_int_vect()
+                       << std::endl;
+                pout() << "m_dx: " << m_dx
                        << std::endl;
             }
             MayDay::Error("Values have become nan.");
