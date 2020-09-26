@@ -55,7 +55,7 @@ inverse_spherical_jacobian(const data_t x, const double y, const double z)
     data_t r = sqrt(r2);
 
     // And the sines and cosines of phi and theta
-    //data_t sin_theta = rho / r;
+    // data_t sin_theta = rho / r;
     data_t cos_phi = x / rho;
     data_t sin_phi = y / rho;
 
@@ -197,8 +197,9 @@ spherical_to_cartesian_U(const Tensor<1, data_t> &spherical_v_U, data_t x,
 // Convert a vector (with one lower index) in spherical coords to cartesian
 // coords
 template <class data_t>
-Tensor<1, data_t> spherical_to_cartesian_L(const Tensor<1, data_t> &spherical_v_L,
-                                           data_t x, double y, double z)
+Tensor<1, data_t>
+spherical_to_cartesian_L(const Tensor<1, data_t> &spherical_v_L, data_t x,
+                         double y, double z)
 {
     Tensor<1, data_t> cartesian_v_L;
 
@@ -217,8 +218,9 @@ Tensor<1, data_t> spherical_to_cartesian_L(const Tensor<1, data_t> &spherical_v_
 // Convert a vector (with one upper index) in cartesian coords to spherical
 // coords
 template <class data_t>
-Tensor<1, data_t> cartesian_to_spherical_U(const Tensor<1, data_t> &cartesian_v_U,
-                                           data_t x, double y, double z)
+Tensor<1, data_t>
+cartesian_to_spherical_U(const Tensor<1, data_t> &cartesian_v_U, data_t x,
+                         double y, double z)
 {
     Tensor<1, data_t> spherical_v_U;
 
@@ -236,10 +238,11 @@ Tensor<1, data_t> cartesian_to_spherical_U(const Tensor<1, data_t> &cartesian_v_
 
 // Convert a vector (with one lower index) in cartesian coords to spherical
 // coords
-  template <class data_t>
-  Tensor<1, data_t> cartesian_to_spherical_L(const Tensor<1, data_t> &cartesian_v_L,
-					     data_t x, double y, double z)
-  {
+template <class data_t>
+Tensor<1, data_t>
+cartesian_to_spherical_L(const Tensor<1, data_t> &cartesian_v_L, data_t x,
+                         double y, double z)
+{
     Tensor<1, data_t> spherical_v_L;
 
     // derivatives for inverse jacobian matrix - drdx etc
@@ -248,11 +251,11 @@ Tensor<1, data_t> cartesian_to_spherical_U(const Tensor<1, data_t> &cartesian_v_
     // transform the vector to cartesian coords
     FOR1(i)
     {
-      spherical_v_L[i] = 0.0;
-      FOR1(j) { spherical_v_L[i] += cartesian_v_L[j] * inv_jac[i][j]; }
+        spherical_v_L[i] = 0.0;
+        FOR1(j) { spherical_v_L[i] += cartesian_v_L[j] * inv_jac[i][j]; }
     }
     return spherical_v_L;
-  }
+}
 
 // The area element of a sphere
 template <class data_t>

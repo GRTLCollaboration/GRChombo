@@ -29,7 +29,7 @@ bool check_tensor(const Tensor<2, double> &tensor,
     bool failed = false;
     FOR2(i, j)
     {
-      if (!almost_equal(tensor[i][j], correct_tensor[i][j], ulp))
+        if (!almost_equal(tensor[i][j], correct_tensor[i][j], ulp))
         {
             std::cout << "Failed " << test_name << " in component [" << i
                       << "][" << j << "]\n";
@@ -45,10 +45,10 @@ bool check_vector(const Tensor<1, double> &vector,
                   const Tensor<1, double> &correct_vector,
                   const std::string &test_name)
 {
-  bool failed = false;
-  FOR1(i)
+    bool failed = false;
+    FOR1(i)
     {
-      if (!almost_equal(vector[i], correct_vector[i], ulp))
+        if (!almost_equal(vector[i], correct_vector[i], ulp))
         {
             std::cout << "Failed " << test_name << " in component [" << i
                       << "]\n";
@@ -57,7 +57,7 @@ bool check_vector(const Tensor<1, double> &vector,
             failed = true;
         }
     }
-  return failed;
+    return failed;
 }
 
 int main()
@@ -125,7 +125,7 @@ int main()
         cartesian_to_spherical_UU(compute_inverse_sym(Mij_cart), x, y, z);
     Mij_spher_UU = compute_inverse_sym(Mij_spher);
     failed |= check_tensor(Mij_spher_UU_check, Mij_spher_UU,
-                          "cartesian_to_spherical_UU");
+                           "cartesian_to_spherical_UU");
 
     // Test spherical_to_cartesian_UU
     Tensor<2, double> Mij_cart_UU;
@@ -134,7 +134,7 @@ int main()
         spherical_to_cartesian_UU(compute_inverse_sym(Mij_spher), x, y, z);
     Mij_cart_UU = compute_inverse_sym(Mij_cart);
     failed |= check_tensor(Mij_cart_UU_check, Mij_cart_UU,
-                          "spherical_to_cartesian_UU");
+                           "spherical_to_cartesian_UU");
 
     // Test vector transformations
     Tensor<1, double> si_cart_U;
@@ -171,13 +171,13 @@ int main()
     }
 
     if (failed)
-      {
+    {
         std::cout << "Coordinate transformations test failed..." << std::endl;
-	return failed;
-      }
+        return failed;
+    }
     else
-      {
+    {
         std::cout << "Coordinate transformations test passed..." << std::endl;
-	return 0;
-      }
+        return 0;
+    }
 }
