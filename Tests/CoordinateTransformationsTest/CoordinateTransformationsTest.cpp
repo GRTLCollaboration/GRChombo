@@ -15,55 +15,54 @@ constexpr int ulp = 15; /* units in the last place */
 bool almost_equal(double value, double correct_value,
                   int a_ulp /* units in the last place */)
 {
-    double diff = abs(value - correct_value);
+    double diff = fabs(value - correct_value);
     double epsilon = std::numeric_limits<double>::epsilon();
     return (diff <
             std::max(epsilon * std::abs(correct_value + value), epsilon) *
                 a_ulp);
 }
 
-int check_tensor(const Tensor<2, double> &tensor,
-                 const Tensor<2, double> &correct_tensor,
-                 const std::string &test_name)
+bool check_tensor(const Tensor<2, double> &tensor,
+                  const Tensor<2, double> &correct_tensor,
+                  const std::string &test_name)
 {
-    int failed = 0;
+    bool failed = false;
     FOR2(i, j)
     {
-        if (!almost_equal(tensor[i][j], correct_tensor[i][j], ulp))
+      if (!almost_equal(tensor[i][j], correct_tensor[i][j], ulp))
         {
             std::cout << "Failed " << test_name << " in component [" << i
                       << "][" << j << "]\n";
             std::cout << "value: " << tensor[i][j] << "\n";
             std::cout << "correct_value: " << correct_tensor[i][j] << std::endl;
-            failed = -1;
+            failed = true;
         }
     }
     return failed;
 }
 
-int check_vector(const Tensor<1, double> &vector,
-                 const Tensor<1, double> &correct_vector,
-                 const std::string &test_name)
+bool check_vector(const Tensor<1, double> &vector,
+                  const Tensor<1, double> &correct_vector,
+                  const std::string &test_name)
 {
-    int failed = 0;
-    FOR1(i)
+  bool failed = false;
+  FOR1(i)
     {
-        if (!almost_equal(vector[i], correct_vector[i], ulp))
+      if (!almost_equal(vector[i], correct_vector[i], ulp))
         {
             std::cout << "Failed " << test_name << " in component [" << i
                       << "]\n";
             std::cout << "value: " << vector[i] << "\n";
             std::cout << "correct_value: " << correct_vector[i] << std::endl;
-            failed = -1;
+            failed = true;
         }
     }
-    return failed;
+  return failed;
 }
 
 int main()
 {
-    int failed = 0;
-
+    bool failed = false;
     const double dx = 0.1;
     IntVect iv;
     iv[0] = 0;
@@ -92,7 +91,7 @@ int main()
     Tensor<2, double> jac = spherical_jacobian(x, y, z);
     Tensor<2, double> inv_jac = inverse_spherical_jacobian(x, y, z);
     Tensor<2, double> inv_jac_check = compute_inverse(jac);
-    failed = check_tensor(inv_jac, inv_jac_check, "inverse_jacobian");
+    failed |= check_tensor(inv_jac, inv_jac_check, "inverse_jacobian");
 
     // Test tensor transformations
     Tensor<2, double> Mij_cart;
@@ -110,13 +109,13 @@ int main()
     // Test cartesian_to_spherical_LL
     Tensor<2, double> Mij_spher_check;
     Mij_spher_check = cartesian_to_spherical_LL(Mij_cart, x, y, z);
-    failed =
+    failed |=
         check_tensor(Mij_spher_check, Mij_spher, "cartesian_to_spherical_LL");
 
     // Test spherical_to_cartesian_LL
     Tensor<2, double> Mij_cart_check;
     Mij_cart_check = spherical_to_cartesian_LL(Mij_spher, x, y, z);
-    failed =
+    failed |=
         check_tensor(Mij_cart_check, Mij_cart, "spherical_to_cartesian_LL");
 
     // Test cartesian_to_spherical_UU
@@ -125,7 +124,7 @@ int main()
     Mij_spher_UU_check =
         cartesian_to_spherical_UU(compute_inverse_sym(Mij_cart), x, y, z);
     Mij_spher_UU = compute_inverse_sym(Mij_spher);
-    failed = check_tensor(Mij_spher_UU_check, Mij_spher_UU,
+    failed |= check_tensor(Mij_spher_UU_check, Mij_spher_UU,
                           "cartesian_to_spherical_UU");
 
     // Test spherical_to_cartesian_UU
@@ -134,7 +133,7 @@ int main()
     Mij_cart_UU_check =
         spherical_to_cartesian_UU(compute_inverse_sym(Mij_spher), x, y, z);
     Mij_cart_UU = compute_inverse_sym(Mij_cart);
-    failed = check_tensor(Mij_cart_UU_check, Mij_cart_UU,
+    failed |= check_tensor(Mij_cart_UU_check, Mij_cart_UU,
                           "spherical_to_cartesian_UU");
 
     // Test vector transformations
@@ -151,13 +150,13 @@ int main()
     // Test cartesian_to_spherical_U
     Tensor<1, double> si_spher_U_check;
     si_spher_U_check = cartesian_to_spherical_U(si_cart_U, x, y, z);
-    failed =
+    failed |=
         check_vector(si_spher_U_check, si_spher_U, "cartesian_to_spherical_U");
 
     // Test spherical_to_cartesian_U
     Tensor<1, double> si_cart_U_check;
-    si_cart_U_check = spherical_to_cartesian_L(si_spher_U, x, y, z);
-    failed =
+    si_cart_U_check = spherical_to_cartesian_U(si_spher_U, x, y, z);
+    failed |=
         check_vector(si_cart_U_check, si_cart_U, "spherical_to_cartesian_U");
 
     // Test area_element_sphere
@@ -168,13 +167,17 @@ int main()
         std::cout << "Failed area_element\n";
         std::cout << "value: " << area_element << "\n";
         std::cout << "correct_value: " << area_element_check << std::endl;
-        failed = -1;
+        failed = true;
     }
 
-    if (failed == 0)
-        std::cout << "Coordinate transformations test passed..." << std::endl;
-    else
+    if (failed)
+      {
         std::cout << "Coordinate transformations test failed..." << std::endl;
-
-    return failed;
+	return failed;
+      }
+    else
+      {
+        std::cout << "Coordinate transformations test passed..." << std::endl;
+	return 0;
+      }
 }
