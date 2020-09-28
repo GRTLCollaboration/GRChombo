@@ -9,7 +9,7 @@
 #include "ADMFixedBGVars.hpp"
 #include "Cell.hpp"
 #include "Coordinates.hpp"
-#include "FixedBGProcaFieldTest.hpp"
+#include "FixedBGProcaField.hpp"
 #include "IsotropicKerrFixedBG.hpp"
 #include "Potential.hpp"
 #include "Tensor.hpp"
@@ -31,7 +31,7 @@ class XSquared
 
     // The evolution vars
     template <class data_t>
-    using Vars = FixedBGProcaFieldTest<Potential>::template Vars<data_t>;
+    using Vars = FixedBGProcaField<Potential>::template Vars<data_t>;
 
   public:
     //! The constructor for the class

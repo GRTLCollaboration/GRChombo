@@ -9,7 +9,7 @@
 #include "DefaultLevelFactory.hpp"
 #include "GRAMRLevel.hpp"
 // Problem specific includes
-#include "FixedBGProcaFieldTest.hpp"
+#include "FixedBGProcaField.hpp"
 #include "Potential.hpp"
 
 //!  A class for the evolution of a proca field, minimally coupled to gravity
@@ -24,7 +24,7 @@ class ProcaFieldLevel : public GRAMRLevel
     using GRAMRLevel::GRAMRLevel;
 
     // Typedef for proca field
-    typedef FixedBGProcaFieldTest<Potential> ProcaField;
+    typedef FixedBGProcaField<Potential> ProcaField;
 
     //! Things to do at the end of the advance step, after RK4 calculation
     virtual void specificAdvance();

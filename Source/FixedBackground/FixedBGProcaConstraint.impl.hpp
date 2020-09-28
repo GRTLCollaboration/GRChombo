@@ -3,17 +3,17 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#if !defined(FIXEDBGPROCACONSTRAINTTEST_HPP_)
+#if !defined(FIXEDBGPROCACONSTRAINT_HPP_)
 #error                                                                         \
-    "This file should only be included through FixedBGProcaConstraintTest.hpp"
+    "This file should only be included through FixedBGProcaConstraint.hpp"
 #endif
 
-#ifndef FIXEDBGPROCACONSTRAINTTEST_IMPL_HPP_
-#define FIXEDBGPROCACONSTRAINTTEST_IMPL_HPP_
+#ifndef FIXEDBGPROCACONSTRAINT_IMPL_HPP_
+#define FIXEDBGPROCACONSTRAINT_IMPL_HPP_
 
 template <class potential_t, class background_t>
-FixedBGProcaConstraintTest<potential_t, background_t>::
-    FixedBGProcaConstraintTest(background_t a_background, double dx,
+FixedBGProcaConstraint<potential_t, background_t>::
+    FixedBGProcaConstraint(background_t a_background, double dx,
                                double a_vector_mass, double a_vector_damping,
                                const potential_t potential)
     : m_background(a_background), m_deriv(dx), m_vector_mass(a_vector_mass),
@@ -23,7 +23,7 @@ FixedBGProcaConstraintTest<potential_t, background_t>::
 
 template <class potential_t, class background_t>
 template <class data_t>
-void FixedBGProcaConstraintTest<potential_t, background_t>::compute(
+void FixedBGProcaConstraint<potential_t, background_t>::compute(
     Cell<data_t> current_cell) const
 {
     // get the metric vars
@@ -41,7 +41,7 @@ void FixedBGProcaConstraintTest<potential_t, background_t>::compute(
 template <class potential_t, class background_t>
 template <class data_t, template <typename> class vars_t>
 data_t
-FixedBGProcaConstraintTest<potential_t, background_t>::constraint_equations(
+FixedBGProcaConstraint<potential_t, background_t>::constraint_equations(
     const vars_t<data_t> &vars, const MetricVars<data_t> &metric_vars,
     const vars_t<Tensor<1, data_t>> &d1) const
 {
@@ -73,4 +73,4 @@ FixedBGProcaConstraintTest<potential_t, background_t>::constraint_equations(
     return gauss_constraint;
 }
 
-#endif /* FIXEDBGPROCACONSTRAINTTEST_IMPL_HPP_ */
+#endif /* FIXEDBGPROCACONSTRAINT_IMPL_HPP_ */

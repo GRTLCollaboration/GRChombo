@@ -23,8 +23,8 @@
 // Problem specific for tests
 #include "ExcisionProcaTest.hpp"
 #include "FixedBGEvolution.hpp"
-#include "FixedBGProcaConstraintTest.hpp"
-#include "FixedBGProcaFieldTest.hpp"
+#include "FixedBGProcaConstraint.hpp"
+#include "FixedBGProcaField.hpp"
 #include "InitialConditions.hpp"
 #include "KerrSchildFixedBG.hpp"
 #include "Potential.hpp"
@@ -59,16 +59,16 @@ int main()
 
     // Just make it easier to write the Proca Field class
     // by using an alias
-    typedef FixedBGProcaFieldTest<Potential> ProcaField;
+    typedef FixedBGProcaField<Potential> ProcaField;
     // Proca field potential params
     const double proca_mass = 0.5;
     const double proca_self_interaction = 0.5;
     const double proca_damping = 0.1;
     Potential::params_t potential_params;
-    potential_params.proca_mass = proca_mass;
-    potential_params.proca_self_interaction = proca_self_interaction;
+    potential_params.mass = proca_mass;
+    potential_params.self_interaction = proca_self_interaction;
     Potential potential(potential_params);
-    ProcaField proca_field(proca_mass, proca_damping, potential);
+    ProcaField proca_field(potential, proca_damping);
     const double sigma = 0.0; // kreiss oliger dissipation off for test
 
     // metric background
@@ -136,7 +136,7 @@ int main()
 
         // Calculating gauss constraint after the timestep
         // excise region in BH as usually big errors there
-        FixedBGProcaConstraintTest<Potential, KerrSchildFixedBG> my_constraint(
+        FixedBGProcaConstraint<Potential, KerrSchildFixedBG> my_constraint(
             kerr_metric, dx, proca_mass, proca_damping, potential);
         ExcisionProcaTest<ProcaField, KerrSchildFixedBG> excision(
             dx, center_vector, kerr_metric);

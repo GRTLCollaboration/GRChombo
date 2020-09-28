@@ -21,7 +21,7 @@
 #include "FixedBGDensityAndAngularMom.hpp"
 #include "FixedBGEnergyAndAngularMomFlux.hpp"
 #include "FixedBGEvolution.hpp"
-#include "FixedBGProcaFieldTest.hpp"
+#include "FixedBGProcaField.hpp"
 #include "FluxExtraction.hpp"
 #include "InitialConditions.hpp"
 #include "KerrSchildFixedBG.hpp"

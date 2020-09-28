@@ -25,14 +25,13 @@ template <class matter_t, class background_t> class ExcisionProcaTest
   protected:
     const double m_dx;                              //!< The grid spacing
     const std::array<double, CH_SPACEDIM> m_center; //!< The BH center
-    const FourthOrderDerivatives m_deriv;
     const background_t m_background;
 
   public:
     ExcisionProcaTest(const double a_dx,
                       const std::array<double, CH_SPACEDIM> a_center,
                       background_t a_background)
-        : m_dx(a_dx), m_deriv(m_dx), m_center(a_center),
+        : m_dx(a_dx), m_center(a_center),
           m_background(a_background)
     {
     }

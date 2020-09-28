@@ -16,11 +16,10 @@ class Potential
   public:
     struct params_t
     {
-        double proca_mass;
-        double proca_self_interaction;
+        double mass;
+        double self_interaction;
     };
 
-  private:
     // class params
     params_t m_params;
 
@@ -46,7 +45,7 @@ class Potential
             compute_christoffel(metric_vars.d1_gamma, gamma_UU);
 
         // for ease of reading
-        double c4 = m_params.proca_self_interaction;
+        double c4 = m_params.self_interaction;
 
         // Here we are defining often used terms
         // DA[i][j] = D_i A_j
@@ -75,7 +74,7 @@ class Potential
         }
 
         // dVdA = mu^2 ( 1 + 4 c4 (A^k A_k - phi^2))
-        dVdA = pow(m_params.proca_mass, 2.0) * (1.0 + 4.0 * c4 * Xsquared);
+        dVdA = pow(m_params.mass, 2.0) * (1.0 + 4.0 * c4 * Xsquared);
 
         // dphidt - for now the whole thing is here since it depends mainly
         // on the form of the potential - except the advection term which is in

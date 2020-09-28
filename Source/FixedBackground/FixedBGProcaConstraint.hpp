@@ -3,12 +3,12 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef FIXEDBGPROCACONSTRAINTTEST_HPP_
-#define FIXEDBGPROCACONSTRAINTTEST_HPP_
+#ifndef FIXEDBGPROCACONSTRAINT_HPP_
+#define FIXEDBGPROCACONSTRAINT_HPP_
 
 #include "ADMFixedBGVars.hpp"
 #include "CCZ4Geometry.hpp"
-#include "FixedBGProcaFieldTest.hpp"
+#include "FixedBGProcaField.hpp"
 #include "FourthOrderDerivatives.hpp"
 #include "Potential.hpp"
 #include "Tensor.hpp"
@@ -24,21 +24,21 @@
 
 */
 template <class potential_t, class background_t>
-class FixedBGProcaConstraintTest
+class FixedBGProcaConstraint
 {
   public:
     // Use the variable definition in the proca matter class
     template <class data_t>
     using MatterVars =
-        typename FixedBGProcaFieldTest<potential_t>::template Vars<data_t>;
+        typename FixedBGProcaField<potential_t>::template Vars<data_t>;
 
     // Now the non grid ADM vars
     template <class data_t>
     using MetricVars = typename ADMFixedBGVars::template Vars<data_t>;
 
-    //!  Constructor of class FixedBGProcaConstraintTest, inputs are the matter
+    //!  Constructor of class FixedBGProcaConstraint, inputs are the matter
     //!  parameters.
-    FixedBGProcaConstraintTest(background_t a_background, double dx,
+    FixedBGProcaConstraint(background_t a_background, double dx,
                                double a_vector_mass, double a_vector_damping,
                                const potential_t potential);
 
@@ -65,6 +65,6 @@ class FixedBGProcaConstraintTest
         ) const;
 };
 
-#include "FixedBGProcaConstraintTest.impl.hpp"
+#include "FixedBGProcaConstraint.impl.hpp"
 
-#endif /* FIXEDBGPROCACONSTRAINTTEST_HPP_ */
+#endif /* FIXEDBGPROCACONSTRAINT_HPP_ */

@@ -11,8 +11,9 @@
 #define FIXEDBGPROCAFIELD_IMPL_HPP_
 
 // Calculate the stress energy tensor elements
+template <class potential_t>
 template <class data_t, template <typename> class vars_t>
-emtensor_t<data_t> FixedBGProcaField::compute_emtensor(
+emtensor_t<data_t> FixedBGProcaField<potential_t>::compute_emtensor(
     const vars_t<data_t> &vars, const MetricVars<data_t> &metric_vars,
     const vars_t<Tensor<1, data_t>> &d1, const Tensor<2, data_t> &gamma_UU,
     const Tensor<3, data_t> &chris_phys_ULL) const
@@ -20,7 +21,7 @@ emtensor_t<data_t> FixedBGProcaField::compute_emtensor(
     emtensor_t<data_t> out;
 
     // Some useful quantities
-    const double msquared = pow(m_vector_mass, 2.0);
+    const double msquared = pow(m_potential.m_params.mass, 2.0);
 
     // D_i A_j
     Tensor<2, data_t> DA;
@@ -38,9 +39,9 @@ emtensor_t<data_t> FixedBGProcaField::compute_emtensor(
     // S_ij = T_ij
     FOR2(i, j)
     {
-        out.Sij[i][j] = msquared * (vars.Avec[i] * vars.Avec[j] +
-                                    0.5 * metric_vars.gamma[i][j] * vars.Avec0 *
-                                        vars.Avec0);
+        out.Sij[i][j] =
+            msquared * (vars.Avec[i] * vars.Avec[j] +
+                        0.5 * metric_vars.gamma[i][j] * vars.phi * vars.phi);
 
         FOR2(k, l)
         {
@@ -68,13 +69,13 @@ emtensor_t<data_t> FixedBGProcaField::compute_emtensor(
     // S_i (note lower index) = n^a T_a0
     FOR1(i)
     {
-        out.Si[i] = msquared * vars.Avec0 * vars.Avec[i];
+        out.Si[i] = msquared * vars.phi * vars.Avec[i];
 
         FOR1(j) { out.Si[i] += vars.Evec[j] * diff_DA[i][j]; }
     }
 
     // rho = n^a n^b T_ab
-    out.rho = 0.5 * msquared * (vars.Avec0 * vars.Avec0);
+    out.rho = 0.5 * msquared * (vars.phi * vars.phi);
     FOR2(i, j)
     {
         out.rho +=
@@ -83,7 +84,6 @@ emtensor_t<data_t> FixedBGProcaField::compute_emtensor(
 
         FOR2(k, l)
         {
-            // This is 0.5 * B_i B^i
             out.rho += 0.5 * gamma_UU[i][k] * gamma_UU[j][l] * DA[k][l] *
                        diff_DA[i][j];
         }
@@ -93,44 +93,36 @@ emtensor_t<data_t> FixedBGProcaField::compute_emtensor(
 }
 
 // Adds VF evolution to the RHS
+template <class potential_t>
 template <class data_t, template <typename> class vars_t,
           template <typename> class diff2_vars_t,
           template <typename> class rhs_vars_t>
-void FixedBGProcaField::matter_rhs(rhs_vars_t<data_t> &total_rhs,
-                                   const vars_t<data_t> &vars,
-                                   const MetricVars<data_t> &metric_vars,
-                                   const vars_t<Tensor<1, data_t>> &d1,
-                                   const diff2_vars_t<Tensor<2, data_t>> &d2,
-                                   const vars_t<data_t> &advec) const
+void FixedBGProcaField<potential_t>::matter_rhs(
+    rhs_vars_t<data_t> &total_rhs, const vars_t<data_t> &vars,
+    const MetricVars<data_t> &metric_vars, const vars_t<Tensor<1, data_t>> &d1,
+    const diff2_vars_t<Tensor<2, data_t>> &d2,
+    const vars_t<data_t> &advec) const
 {
     // calculate full spatial christoffel symbols
     using namespace TensorAlgebra;
     const auto gamma_UU = compute_inverse(metric_vars.gamma);
     const auto chris_phys = compute_christoffel(metric_vars.d1_gamma, gamma_UU);
 
-    // evolution equations for vector fields A_0, A_i (note indices down) and
+    // compute terms which are affected by potential
+    // dphidt = phi time derivative excluding shift advection terms
+    // dVdA = mu^2 ( 1 + 4 c4 (A^k A_k - phi^2))
+    data_t dVdA = 0;
+    data_t dphidt = 0;
+    m_potential.compute_potential(dVdA, dphidt, vars, d1, metric_vars);
+
+    // evolution equations for vector fields phi, A_i (note indices down) and
     // the conjugate momentum E^i (index up)
-    total_rhs.Avec0 = metric_vars.lapse * metric_vars.K * vars.Avec0 +
-                      advec.Avec0 - metric_vars.lapse * vars.Zvec;
-
-    FOR2(i, j)
-    {
-        total_rhs.Avec0 +=
-            -gamma_UU[i][j] * (vars.Avec[i] * metric_vars.d1_lapse[j] +
-                               metric_vars.lapse * d1.Avec[i][j]);
-
-        FOR1(k)
-        {
-            total_rhs.Avec0 += gamma_UU[i][j] * metric_vars.lapse *
-                               chris_phys.ULL[k][i][j] * vars.Avec[k];
-        }
-    }
+    total_rhs.phi = dphidt + advec.phi;
 
     FOR1(i)
     {
-        total_rhs.Avec[i] = -metric_vars.lapse * d1.Avec0[i] -
-                            vars.Avec0 * metric_vars.d1_lapse[i] +
-                            advec.Avec[i];
+        total_rhs.Avec[i] = -metric_vars.lapse * d1.phi[i] -
+                            vars.phi * metric_vars.d1_lapse[i] + advec.Avec[i];
         FOR1(j)
         {
             total_rhs.Avec[i] +=
@@ -152,10 +144,10 @@ void FixedBGProcaField::matter_rhs(rhs_vars_t<data_t> &total_rhs,
             metric_vars.lapse * metric_vars.K * vars.Evec[i] + advec.Evec[i];
         FOR1(j)
         {
+            // dVdA = mu^2 ( 1 + 4 c4 (A^k A_k - phi^2))
             total_rhs.Evec[i] +=
-                gamma_UU[i][j] * (metric_vars.lapse * d1.Zvec[j] +
-                                  metric_vars.lapse * pow(m_vector_mass, 2.0) *
-                                      vars.Avec[j]) -
+                gamma_UU[i][j] * (metric_vars.lapse * d1.Z[j] +
+                                  metric_vars.lapse * dVdA * vars.Avec[j]) -
                 vars.Evec[j] * metric_vars.d1_shift[i][j];
         }
 
@@ -176,17 +168,19 @@ void FixedBGProcaField::matter_rhs(rhs_vars_t<data_t> &total_rhs,
         }
     }
 
-    // evolution equations for vector field Avec and its conjugate momentum Evec
-    total_rhs.Zvec = metric_vars.lapse * (pow(m_vector_mass, 2.0) * vars.Avec0 -
-                                          m_vector_damping * vars.Zvec) +
-                     advec.Zvec;
+    // evolution equation for the damping term Z
+    // dVdA = mu^2 ( 1 + 4 c4 A^k A_k - 12 c4 phi^2)
+    // (ie the second part of the constraint, eqn 27)
+    total_rhs.Z =
+        metric_vars.lapse * (dVdA * vars.phi - m_vector_damping * vars.Z) +
+        advec.Z;
 
     FOR1(i)
     {
-        total_rhs.Zvec += metric_vars.lapse * d1.Evec[i][i];
+        total_rhs.Z += metric_vars.lapse * d1.Evec[i][i];
         FOR1(j)
         {
-            total_rhs.Zvec +=
+            total_rhs.Z +=
                 metric_vars.lapse * chris_phys.ULL[i][i][j] * vars.Evec[j];
         }
     }

@@ -9,6 +9,7 @@
 #include "ADMFixedBGVars.hpp"
 #include "CCZ4Geometry.hpp"
 #include "FourthOrderDerivatives.hpp"
+#include "Potential.hpp"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"
 #include "UserVariables.hpp" //This files needs NUM_VARS
@@ -22,23 +23,22 @@
    type specific elements for the RHS update and the evaluation of the
    constraints. This includes the Energy Momentum Tensor, and the matter
    evolution terms. In this case, a vector field, the matter elements are the
-   vector field A_\mu, which is decomposed into Avec0 and Avec, and (minus) the
+   vector field A_\mu, which is decomposed into phi and Avec, and (minus) the
    conjugate momentum of Avec, Evec. It assumes minimal coupling of the field to
    gravity. \sa CCZ4Matter(), ConstraintsMatter()
 */
-
-class FixedBGProcaField
+template <class potential_t> class FixedBGProcaField
 {
   protected:
-    double m_vector_mass;    //!< The local copy of the matter param - the mass
-    double m_vector_damping; //!< The local copy of the matter param - the
-                             //!< damping param
+    double m_vector_damping;       //!< The local copy of the matter param - the
+                                   //!< damping param
+    const potential_t m_potential; //!< The potential params - mass, c4
 
   public:
     //!  Constructor of class FixedBGProcaField, inputs are the matter
     //!  parameters.
-    FixedBGProcaField(double a_vector_mass, double a_vector_damping)
-        : m_vector_mass(a_vector_mass), m_vector_damping(a_vector_damping)
+    FixedBGProcaField(const potential_t potential, double a_vector_damping)
+        : m_vector_damping(a_vector_damping), m_potential(potential)
     {
     }
 
@@ -46,8 +46,8 @@ class FixedBGProcaField
     template <class data_t> struct Vars
     {
         // Vector fields
-        data_t Avec0;
-        data_t Zvec; // Auxilliary variable
+        data_t phi;
+        data_t Z; // Auxilliary variable
         Tensor<1, data_t> Avec;
         Tensor<1, data_t> Evec;
 
@@ -58,8 +58,8 @@ class FixedBGProcaField
         {
             using namespace VarsTools; // define_enum_mapping is part of
                                        // VarsTools
-            define_enum_mapping(mapping_function, c_Avec0, Avec0);
-            define_enum_mapping(mapping_function, c_Zvec, Zvec);
+            define_enum_mapping(mapping_function, c_phi, phi);
+            define_enum_mapping(mapping_function, c_Z, Z);
             define_enum_mapping(mapping_function,
                                 GRInterval<c_Avec1, c_Avec3>(), Avec);
             define_enum_mapping(mapping_function,
