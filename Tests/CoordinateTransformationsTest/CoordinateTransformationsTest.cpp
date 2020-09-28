@@ -137,27 +137,39 @@ int main()
                            "spherical_to_cartesian_UU");
 
     // Test vector transformations
-    Tensor<1, double> si_cart_U;
-    si_cart_U[0] = x / r;
-    si_cart_U[1] = y / r;
-    si_cart_U[2] = z / r;
+    Tensor<1, double> si_cart;
+    si_cart[0] = x / r;
+    si_cart[1] = y / r;
+    si_cart[2] = z / r;
 
-    Tensor<1, double> si_spher_U;
-    si_spher_U[0] = 1.0;
-    si_spher_U[1] = 0.0;
-    si_spher_U[2] = 0.0;
+    Tensor<1, double> si_spher;
+    si_spher[0] = 1.0;
+    si_spher[1] = 0.0;
+    si_spher[2] = 0.0;
 
     // Test cartesian_to_spherical_U
     Tensor<1, double> si_spher_U_check;
-    si_spher_U_check = cartesian_to_spherical_U(si_cart_U, x, y, z);
+    si_spher_U_check = cartesian_to_spherical_U(si_cart, x, y, z);
     failed |=
-        check_vector(si_spher_U_check, si_spher_U, "cartesian_to_spherical_U");
+        check_vector(si_spher_U_check, si_spher, "cartesian_to_spherical_U");
 
     // Test spherical_to_cartesian_U
     Tensor<1, double> si_cart_U_check;
-    si_cart_U_check = spherical_to_cartesian_U(si_spher_U, x, y, z);
+    si_cart_U_check = spherical_to_cartesian_U(si_spher, x, y, z);
     failed |=
-        check_vector(si_cart_U_check, si_cart_U, "spherical_to_cartesian_U");
+        check_vector(si_cart_U_check, si_cart, "spherical_to_cartesian_U");
+
+    // Test cartesian_to_spherical_L
+    Tensor<1, double> si_spher_L_check;
+    si_spher_L_check = cartesian_to_spherical_L(si_cart, x, y, z);
+    failed |=
+        check_vector(si_spher_L_check, si_spher, "cartesian_to_spherical_L");
+
+    // Test spherical_to_cartesian_L
+    Tensor<1, double> si_cart_L_check;
+    si_cart_L_check = spherical_to_cartesian_L(si_spher, x, y, z);
+    failed |=
+        check_vector(si_cart_L_check, si_cart, "spherical_to_cartesian_L");
 
     // Test area_element_sphere
     double area_element = r * sqrt(rho2);

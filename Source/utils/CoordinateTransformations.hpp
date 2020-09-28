@@ -183,7 +183,6 @@ spherical_to_cartesian_U(const Tensor<1, data_t> &spherical_v_U, data_t x,
 
     // derivatives for inverse jacobian matrix - drdx etc
     Tensor<2, data_t> inv_jac = inverse_spherical_jacobian(x, y, z);
-    Tensor<2, data_t> jac = spherical_jacobian(x, y, z);
 
     // transform the vector to cartesian coords
     FOR1(i)
@@ -252,7 +251,7 @@ cartesian_to_spherical_L(const Tensor<1, data_t> &cartesian_v_L, data_t x,
     FOR1(i)
     {
         spherical_v_L[i] = 0.0;
-        FOR1(j) { spherical_v_L[i] += cartesian_v_L[j] * inv_jac[i][j]; }
+        FOR1(j) { spherical_v_L[i] += cartesian_v_L[j] * inv_jac[j][i]; }
     }
     return spherical_v_L;
 }
