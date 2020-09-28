@@ -20,7 +20,7 @@ L = 1280
 
 # Level data
 # Maximum number of times you can regrid above coarsest level
-max_level = 9 # There are (max_level+1) grids, so min is zero
+max_level = 10 # There are (max_level+1) grids, so min is zero
 # Frequency of regridding at each level
 # Need one for each level, ie max_level+1 items
 # Generally you do not need to regrid frequently on every level
@@ -74,16 +74,16 @@ sigma = 1.0
 # PF Initial data
 proca_mass = 0.5
 proca_self_interaction = 0.0
-proca_damping = 0.5
+proca_damping = 1.0
 field_amplitude = 0.01
-excision_width = 0.1
+excision_width = 0.5
 
 # Boosted BH initial data, boost in x direction, spin in z direction
 bh_mass = 1.0
 bh_spin = 0.99 # This is a, so needs to be <= M
 
 # for extraction
-activate_extraction = 1
+activate_extraction = 0
 write_extraction = 0
 num_extraction_radii = 3
 extraction_radii = 1.20 1.5 2.0
