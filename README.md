@@ -14,7 +14,7 @@ of arbitrary shape and topology.
 Please visit www.grchombo.org for the full list of developers and their
 institutions, a list of publications using GRChombo, and some videos.
 
-## Getting started
+## Commencement
 Detailed installation instructions and usage examples are available in
 our [wiki](https://github.com/GRChombo/GRChombo/wiki).
 
