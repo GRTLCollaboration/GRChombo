@@ -32,8 +32,8 @@ class SphericalExtraction : public SurfaceExtraction<SphericalGeometry>
         // copy constructor defined due to references pointing to the wrong
         // things with the default copy constructor
         params_t(const params_t &params)
-            : center(params.center), num_modes(params.num_modes),
-              modes(params.modes), SurfaceExtraction::params_t(params)
+            : SurfaceExtraction::params_t(params), center(params.center),
+              num_modes(params.num_modes), modes(params.modes)
         {
         }
     };
