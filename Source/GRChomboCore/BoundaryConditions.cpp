@@ -74,6 +74,12 @@ void BoundaryConditions::params_t::set_hi_boundary(
                 extrapolating_boundaries_exist = true;
                 mixed_boundaries_exist = true;
             }
+            else if (hi_boundary[idir] == FUDGE_BC)
+            {
+                boundary_rhs_enforced = true;
+                boundary_solution_enforced = true;
+                extrapolating_boundaries_exist = true;
+            }
         }
     }
 }
@@ -108,6 +114,12 @@ void BoundaryConditions::params_t::set_lo_boundary(
                 sommerfeld_boundaries_exist = true;
                 extrapolating_boundaries_exist = true;
                 mixed_boundaries_exist = true;
+            }
+            else if (lo_boundary[idir] == FUDGE_BC)
+            {
+                boundary_rhs_enforced = true;
+                boundary_solution_enforced = true;
+                extrapolating_boundaries_exist = true;
             }
         }
     }
@@ -309,7 +321,8 @@ void BoundaryConditions::write_boundary_conditions(const params_t &a_params)
                                            {SOMMERFELD_BC, "Sommerfeld"},
                                            {REFLECTIVE_BC, "Reflective"},
                                            {EXTRAPOLATING_BC, "Extrapolating"},
-                                           {MIXED_BC, "Mixed"}};
+                                           {MIXED_BC, "Mixed"},
+                                           {FUDGE_BC, "Fudge"}};
     FOR1(idir)
     {
         if (!a_params.is_periodic[idir])
@@ -433,7 +446,8 @@ void BoundaryConditions::fill_solution_boundaries(const Side::LoHiSide a_side,
             // but tell it we are not filling the rhs for mixed condition
             if ((boundary_condition == REFLECTIVE_BC) ||
                 (boundary_condition == EXTRAPOLATING_BC) ||
-                (boundary_condition == MIXED_BC))
+                (boundary_condition == MIXED_BC) ||
+                (boundary_condition == FUDGE_BC))
             {
                 const bool filling_rhs = false;
                 fill_boundary_cells_dir(a_side, a_state, a_state, idir,
@@ -549,6 +563,25 @@ void BoundaryConditions::fill_boundary_cells_dir(
                                          m_params.mixed_bc_sommerfeld_vars);
                 }
                 break;
+            }
+            case FUDGE_BC:
+            {
+                if (a_side == Side::Lo || !filling_rhs)
+                {
+                    fill_extrapolating_cell(out_box, iv, a_side, dir,
+                                        m_params.mixed_bc_extrapolating_vars,
+                                        m_params.extrapolation_order);
+                }
+                else if (a_side == Side::Hi && filling_rhs)
+                {
+                    double lapse = 1.0;
+                    double mass = 0.05;
+                    out_box(iv, 0) = lapse * soln_box(iv, 1); //phi_re
+                    out_box(iv, 1) = lapse * lapse * mass * mass * soln_box(iv, 0); //Pi_re
+                    out_box(iv, 2) = lapse * soln_box(iv, 3); //phi_im
+                    out_box(iv, 3) = lapse * lapse * mass * mass * soln_box(iv, 2); //Pi_im
+                    break;
+                }
             }
             default:
                 MayDay::Error(
@@ -1044,7 +1077,9 @@ Box ExpandGridsToBoundaries::operator()(const Box &a_in_box)
             if ((m_boundaries.get_boundary_condition(Side::Lo, idir) ==
                      BoundaryConditions::SOMMERFELD_BC ||
                  m_boundaries.get_boundary_condition(Side::Lo, idir) ==
-                     BoundaryConditions::MIXED_BC) &&
+                     BoundaryConditions::MIXED_BC ||
+                 m_boundaries.get_boundary_condition(Side::Lo, idir) ==
+                     BoundaryConditions::FUDGE_BC) &&
                 offset_lo[idir] == 0)
             {
                 out_box.growLo(idir, m_boundaries.m_num_ghosts);
@@ -1052,7 +1087,9 @@ Box ExpandGridsToBoundaries::operator()(const Box &a_in_box)
             if ((m_boundaries.get_boundary_condition(Side::Hi, idir) ==
                      BoundaryConditions::SOMMERFELD_BC ||
                  m_boundaries.get_boundary_condition(Side::Hi, idir) ==
-                     BoundaryConditions::MIXED_BC) &&
+                     BoundaryConditions::MIXED_BC ||
+                 m_boundaries.get_boundary_condition(Side::Hi, idir) ==
+                     BoundaryConditions::FUDGE_BC) &&
                 offset_hi[idir] == 0)
             {
                 out_box.growHi(idir, m_boundaries.m_num_ghosts);
@@ -1082,12 +1119,14 @@ void BoundaryConditions::expand_grids_to_boundaries(
         if (!m_params.is_periodic[idir])
         {
             if ((get_boundary_condition(Side::Lo, idir) == SOMMERFELD_BC) ||
-                (get_boundary_condition(Side::Lo, idir) == MIXED_BC))
+                (get_boundary_condition(Side::Lo, idir) == MIXED_BC) ||
+                (get_boundary_condition(Side::Lo, idir) == FUDGE_BC))
             {
                 domain_with_boundaries.growLo(idir, m_num_ghosts);
             }
             if ((get_boundary_condition(Side::Hi, idir) == SOMMERFELD_BC) ||
-                (get_boundary_condition(Side::Hi, idir) == MIXED_BC))
+                (get_boundary_condition(Side::Hi, idir) == MIXED_BC) ||
+                (get_boundary_condition(Side::Hi, idir) == FUDGE_BC))
             {
                 domain_with_boundaries.growHi(idir, m_num_ghosts);
             }
