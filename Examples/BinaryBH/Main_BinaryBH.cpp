@@ -43,7 +43,7 @@ int runGRChombo(int argc, char *argv[])
     // call this after amr object setup so grids known
     // and need it to stay in scope throughout run
     AMRInterpolator<Lagrange<4>> interpolator(
-        gr_amr, sim_params.origin, sim_params.dx, sim_params.boundary_params,
+        bh_amr, sim_params.origin, sim_params.dx, sim_params.boundary_params,
         sim_params.verbosity);
     bh_amr.set_interpolator(&interpolator);
 

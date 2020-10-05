@@ -52,12 +52,6 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("puncture_tracking_level", puncture_tracking_level, max_level);
         pp.load("calculate_constraint_norms", calculate_constraint_norms,
                 false);
-
-        // hard code num punctures to 2 for now
-        int num_punctures = 2;
-        initial_puncture_coords.resize(num_punctures);
-        initial_puncture_coords[0] = bh1_params.center;
-        initial_puncture_coords[1] = bh2_params.center;
     }
 
     // Initial data

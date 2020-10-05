@@ -213,7 +213,7 @@ template <class SurfaceGeometry>
 void SurfaceExtraction<SurfaceGeometry>::integrate()
 {
     CH_assert(m_done_extraction);
-    CH_assert(m_integrands.size() == m_integration_methods.size() ==
+    CH_assert(m_integrands.size() == m_integration_methods.size() &&
               m_integrals.size() > 0);
     int num_integrals = m_integrals.size();
 

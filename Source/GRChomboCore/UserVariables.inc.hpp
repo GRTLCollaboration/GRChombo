@@ -36,7 +36,7 @@ static int variable_name_to_enum(const std::string &a_var_name)
     }
 }
 
-}; // namespace UserVariables
+} // namespace UserVariables
 
 namespace DiagnosticVariables
 {
@@ -57,6 +57,6 @@ static int variable_name_to_enum(const std::string &a_var_name)
     }
 }
 
-}; // namespace DiagnosticVariables
+} // namespace DiagnosticVariables
 
 #endif /* USERVARIABLES_INC_HPP_ */
