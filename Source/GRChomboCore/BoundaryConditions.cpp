@@ -574,14 +574,17 @@ void BoundaryConditions::fill_boundary_cells_dir(
                 }
                 else if (a_side == Side::Hi && filling_rhs)
                 {
+                    RealVect loc(iv + 0.5 * RealVect::Unit);
+                    loc *= m_dx;
+                    loc -= m_center;
                     double lapse = 1.0;
                     double mass = 0.05;
                     out_box(iv, 0) = lapse * soln_box(iv, 1); //phi_re
                     out_box(iv, 1) = lapse * lapse * mass * mass * soln_box(iv, 0); //Pi_re
                     out_box(iv, 2) = lapse * soln_box(iv, 3); //phi_im
                     out_box(iv, 3) = lapse * lapse * mass * mass * soln_box(iv, 2); //Pi_im
-                    break;
                 }
+                break;
             }
             default:
                 MayDay::Error(
