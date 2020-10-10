@@ -580,9 +580,9 @@ void BoundaryConditions::fill_boundary_cells_dir(
                     double lapse = 1.0;
                     double mass = 0.05;
                     out_box(iv, 0) = lapse * soln_box(iv, 1); //phi_re
-                    out_box(iv, 1) = lapse * lapse * mass * mass * soln_box(iv, 0); //Pi_re
+                    out_box(iv, 1) = - lapse * lapse * mass * mass * soln_box(iv, 0); //Pi_re
                     out_box(iv, 2) = lapse * soln_box(iv, 3); //phi_im
-                    out_box(iv, 3) = lapse * lapse * mass * mass * soln_box(iv, 2); //Pi_im
+                    out_box(iv, 3) = - lapse * lapse * mass * mass * soln_box(iv, 2); //Pi_im
                 }
                 break;
             }

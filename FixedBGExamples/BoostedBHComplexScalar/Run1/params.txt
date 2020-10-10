@@ -4,7 +4,7 @@ verbosity = 0
 integral_filename = RhoIntegral
 chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost1_chk
 plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost1_plt
-#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost1_chk000850.3d.hdf5
+restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost1_chk008000.3d.hdf5
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
@@ -14,19 +14,19 @@ N3 = 64
 
 # Length of longest box side, dx_coarsest = L/N(max)
 # NB if non cubic, this determines dx for all sides
-L = 2048
+L = 8192
 
 # Regridding
 tag_buffer_size = 0
-regrid_length = 2048
+regrid_length = 8192
 
 # Level data
 # Maximum number of times you can regrid above coarsest level
-max_level = 7 # There are (max_level+1) grids, so min is zero
+max_level = 9 # There are (max_level+1) grids, so min is zero
 # Frequency of regridding at each level
 # Need one for each level, ie max_level+1 items
 # Generally you do not need to regrid frequently on every level
-regrid_interval = 0 0 0 0 0 0 0 0 0 0 0
+regrid_interval = 0 0 0 0 0 0 0 0 0 0 0 0 0
 
 # Max box size
 max_grid_size = 16
@@ -40,6 +40,7 @@ isPeriodic = 0 0 0
 
 # if not periodic, then specify the boundary type
 # 0 = static, 1 = sommerfeld, 2 = reflective, 3 = extrapolating
+# 4 = mixed, 5 = fudge
 # (see BoundaryConditions.hpp for details)
 hi_boundary = 3 3 3
 lo_boundary = 3 2 2
@@ -67,12 +68,12 @@ extrapolation_order = 1
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 50
-plot_interval = 1
-num_plot_vars = 6
-plot_vars = phi_Re rho Edot xMom Stress Source
-dt_multiplier = 0.1
-stop_time = 500.0
+checkpoint_interval = 500
+plot_interval = 5
+num_plot_vars = 5
+plot_vars = phi_Re Pi_Re rho xMom Stress
+dt_multiplier = 0.05
+stop_time = 60000.0
 
 # coefficient for KO numerical dissipation
 # NB must be less than 0.5 for stability
@@ -87,12 +88,12 @@ f_axion = 0.0
 
 # Boosted BH initial data, boost in x direction, spin in z direction
 bh_mass = 1.0
-bh_velocity = 0.1 # This is a, so needs to be <= M
+bh_velocity = 0.1
 inner_r = 5.0
-outer_r = 500.0
+outer_r = 1000.0
 
 # for extraction
-activate_extraction = 1
+activate_extraction = 0
 write_extraction = 0
 num_points_phi = 36
 num_points_t = 24

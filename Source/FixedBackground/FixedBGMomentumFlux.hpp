@@ -125,6 +125,7 @@ template <class matter_t, class background_t> class FixedBGMomentumFlux
                                  emtensor.Sij[k][j] * chris_phys.ULL[j][l][i];
                 }
             }
+            source[i] = source[i] * sqrt(det_gamma);
         }
 
         // assign values of Stress integrand in the output box
