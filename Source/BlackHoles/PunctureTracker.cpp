@@ -22,11 +22,8 @@ void PunctureTracker::initial_setup(
     m_puncture_coords = initial_puncture_coords;
 }
 
-void PunctureTracker::set_interpolator(
-    AMRInterpolator<Lagrange<4>> *a_interpolator)
+void PunctureTracker::restart_punctures()
 {
-    change_interpolator(a_interpolator);
-
     int current_step = m_interpolator->getAMR().s_step;
 
     if (current_step == 0)
