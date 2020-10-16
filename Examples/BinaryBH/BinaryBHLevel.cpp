@@ -81,7 +81,8 @@ void BinaryBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
     {
         const vector<double> puncture_masses = {m_p.bh1_params.mass,
                                                 m_p.bh2_params.mass};
-        auto puncture_coords = m_bh_amr.puncture_tracker.get_puncture_coords();
+        auto puncture_coords =
+            m_bh_amr.m_puncture_tracker.get_puncture_coords();
         BoxLoops::loop(ChiPunctureExtractionTaggingCriterion(
                            m_dx, m_level, m_p.max_level, m_p.extraction_params,
                            puncture_coords, m_p.activate_extraction,
@@ -157,8 +158,8 @@ void BinaryBHLevel::specificPostTimeStep()
         // only do the write out for every coarsest level timestep
         int coarsest_level = 0;
         bool write_punctures = at_level_timestep_multiple(coarsest_level);
-        m_bh_amr.puncture_tracker.execute_tracking(m_time, m_restart_time, m_dt,
-                                                   write_punctures);
+        m_bh_amr.m_puncture_tracker.execute_tracking(m_time, m_restart_time,
+                                                     m_dt, write_punctures);
     }
 }
 
