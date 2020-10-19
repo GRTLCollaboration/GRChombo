@@ -7,11 +7,13 @@
 #include "AMRReductions.hpp"
 #include "BinaryBH.hpp"
 #include "BoxLoops.hpp"
-#include "CCZ4.hpp"
 #include "ChiExtractionTaggingCriterion.hpp"
 #include "ChiPunctureExtractionTaggingCriterion.hpp"
 #include "ComputePack.hpp"
 #include "Constraints.hpp"
+#include "FixedGridsTaggingCriterion.hpp"
+#include "InitialScalarData.hpp"
+#include "MatterCCZ4.hpp"
 #include "NanCheck.hpp"
 #include "PositiveChiAndAlpha.hpp"
 #include "PunctureTracker.hpp"
@@ -56,10 +58,12 @@ void BinaryBHLevel::initialData()
                                            m_p.initial_puncture_coords);
     }
 
+    InitialScalarData my_scalar_data(m_p.initial_scalar_params, m_dx);
+
     // First set everything to zero (to avoid undefinded values in constraints)
     // then calculate initial data
-    BoxLoops::loop(make_compute_pack(SetValue(0.), binary), m_state_new,
-                   m_state_new, INCLUDE_GHOST_CELLS);
+    BoxLoops::loop(make_compute_pack(SetValue(0.), binary, my_scalar_data), 
+                   m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
 }
 
 // Things to do after a restart
@@ -87,10 +91,13 @@ void BinaryBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     BoxLoops::loop(make_compute_pack(TraceARemoval(), PositiveChiAndAlpha()),
                    a_soln, a_soln, INCLUDE_GHOST_CELLS);
 
-    // Calculate CCZ4 right hand side and set constraints to zero to avoid
-    // undefined values
-    BoxLoops::loop(CCZ4(m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
-                   a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    // Calculate CCZ4 right hand side, note that for now G_Newton=0.0
+    Potential potential(m_p.potential_params);
+    ScalarFieldWithPotential scalar_field(potential);
+    MatterCCZ4<ScalarFieldWithPotential> my_ccz4_matter(
+        scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
+        m_p.G_Newton);
+    BoxLoops::loop(my_ccz4_matter, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
 }
 
 // enforce trace removal during RK4 substeps
@@ -105,10 +112,18 @@ void BinaryBHLevel::specificUpdateODE(GRLevelData &a_soln,
 void BinaryBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                             const FArrayBox &current_state)
 {
+    // set the fixed levels - should only happen on first timestep
+    if (m_time==0.0 && m_level < 4)
+    {
+        BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L,
+                          m_p.center), current_state, tagging_criterion, 
+                          disable_simd());
+    }
+
     if (m_p.track_punctures == true)
     {
-        const vector<double> puncture_masses = {m_p.bh1_params.mass,
-                                                m_p.bh2_params.mass};
+        const vector<double> puncture_masses = {2.0 * m_p.bh1_params.mass,
+                                                2.0 * m_p.bh2_params.mass};
         std::vector<std::array<double, CH_SPACEDIM>> puncture_coords =
             m_bh_amr.get_puncture_coords();
         BoxLoops::loop(ChiPunctureExtractionTaggingCriterion(

@@ -9,6 +9,8 @@
 #include "BHAMR.hpp"
 #include "DefaultLevelFactory.hpp"
 #include "GRAMRLevel.hpp"
+#include "ScalarField.hpp"
+#include "Potential.hpp"
 
 class BinaryBHLevel : public GRAMRLevel
 {
@@ -17,6 +19,9 @@ class BinaryBHLevel : public GRAMRLevel
     using GRAMRLevel::GRAMRLevel;
 
     BHAMR &m_bh_amr = dynamic_cast<BHAMR &>(m_gr_amr);
+
+    // Typedef for scalar field
+    typedef ScalarField<Potential> ScalarFieldWithPotential;
 
     /// Things to do at every full timestep
     ///(might include several substeps, e.g. in RK4)

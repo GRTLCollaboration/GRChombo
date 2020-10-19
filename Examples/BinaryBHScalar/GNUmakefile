@@ -15,6 +15,7 @@ LibNames := AMRTimeDependent AMRTools BoxTools
 src_dirs := $(GRCHOMBO_SOURCE)/utils \
             $(GRCHOMBO_SOURCE)/simd  \
             $(GRCHOMBO_SOURCE)/CCZ4  \
+            $(GRCHOMBO_SOURCE)/Matter  \
             $(GRCHOMBO_SOURCE)/BoxUtils  \
             $(GRCHOMBO_SOURCE)/GRChomboCore  \
             $(GRCHOMBO_SOURCE)/AMRInterpolator  \
