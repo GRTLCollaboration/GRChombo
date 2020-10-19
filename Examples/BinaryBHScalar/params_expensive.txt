@@ -1,0 +1,79 @@
+verbosity = 0
+chk_prefix = BinaryBH_
+plot_prefix = BinaryBHPlot_
+#restart_file = BinaryBH_000360.3d.hdf5
+
+# Set up grid spacings and regrid params
+# NB - the N values need to be multiples of block_factor
+
+N1 = 256
+N2 = 256
+N3 = 256
+L = 192
+
+massA = 0.5
+offsetA = 3 0 0
+
+massB = 0.5
+offsetB = -3 0 0
+
+momentumA = 0. -0.1 0.0
+momentumB = 0. 0.1 0.0
+
+regrid_threshold = 0.20
+max_level = 5
+regrid_interval = 512 256 32 16 8 4 2 2 2
+isPeriodic = 1 1 1
+
+#Max and min box sizes
+max_grid_size = 32
+block_factor = 16
+tag_buffer_size = 3
+
+# Set up time steps
+# dt will be dx*dt_multiplier on each grid level
+# HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
+
+checkpoint_interval = 4
+# set to zero to turn off plot files
+plot_interval = 0
+num_plot_vars = 3
+plot_vars = chi Weyl4_Re Weyl4_Im
+dt_multiplier = 0.25
+stop_time = 1.0
+max_steps = 2
+
+nan_check = 1
+
+#Lapse evolution
+lapse_advec_coeff = 0.0
+lapse_coeff = 2.0
+lapse_power = 1.0
+
+# Shift evolution
+shift_advec_coeff = 0.0
+shift_Gamma_coeff = 0.75
+eta = 1.82
+
+# CCZ4 parameters
+kappa1 = 0.1
+kappa2 = 0
+kappa3 = 1.
+covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
+
+#coefficient for KO numerical dissipation
+sigma = 0.3
+
+#extraction params
+#default center to grid center, uncomment to change
+#extraction_center = 64 64 64
+activate_extraction = 1
+num_extraction_radii = 3
+extraction_radii = 10. 30. 50.
+extraction_levels = 2 1 1
+num_points_phi = 16
+num_points_theta = 24
+num_modes = 3
+modes = 2 0 # l m for spherical harmonics
+        2 1
+        2 2
