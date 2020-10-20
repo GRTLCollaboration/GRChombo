@@ -8,9 +8,9 @@
 
 // General includes
 #include "GRParmParse.hpp"
-#include "SimulationParametersBase.hpp"
 #include "InitialScalarData.hpp"
 #include "Potential.hpp"
+#include "SimulationParametersBase.hpp"
 
 // Problem specific includes:
 #include "BoostedBH.hpp"
@@ -33,8 +33,8 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("momentumB", bh2_params.momentum);
         pp.load("scalar_mass", potential_params.scalar_mass, 0.0);
         pp.load("scalar_amplitude", initial_scalar_params.amplitude, 0.0);
-        pp.load("scalar_omega", initial_scalar_params.omega, 
-                                potential_params.scalar_mass);
+        pp.load("scalar_omega", initial_scalar_params.omega,
+                potential_params.scalar_mass);
         pp.load("scalar_center", initial_scalar_params.center, center);
         pp.load("G_Newton", G_Newton, 0.0);
 
@@ -71,7 +71,7 @@ class SimulationParameters : public SimulationParametersBase
     // Initial data
     double G_Newton;
     Potential::params_t potential_params;
-    InitialScalarData::params_t initial_scalar_params; 
+    InitialScalarData::params_t initial_scalar_params;
     bool activate_extraction, track_punctures, calculate_constraint_norms;
     int puncture_tracking_level;
     std::vector<std::array<double, CH_SPACEDIM>> initial_puncture_coords;

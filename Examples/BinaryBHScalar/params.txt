@@ -19,7 +19,7 @@ plot_prefix = BinaryBHPlot_
 N1 = 256
 N2 = 256
 N3 = 256
-L = 512
+L = 1024
 
 # Defaults to center of grid L/2
 # uncomment to change
@@ -40,23 +40,24 @@ momentumB =  0.0841746  0.000510846 0.0
 # so need max_level + 1 entries for interval
 regrid_threshold = 0.05
 max_level = 9
-regrid_interval = 0 0 0 0 64 64 64 64 64 0
+regrid_interval = 0 0 0 0 0 32 64 128 256 0
 
 # Max and min box sizes
-max_grid_size = 32
-block_factor = 32
-tag_buffer_cells = 0
+max_grid_size = 16
+block_factor = 16
+tag_buffer_size = 0
 
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 1
+checkpoint_interval = 0
 # set to zero to turn off plot files, comps defined in BinaryBHLevel.cpp
 plot_interval = 0
-num_plot_vars = 1
-plot_vars = chi
+num_plot_vars = 3
+plot_vars = chi phi Pi
+write_plot_ghosts = 0
 dt_multiplier = 0.25
-stop_time = 2200.0
+stop_time = 20.0
 
 # boundaries and periodicity of grid
 # Periodic directions - 0 = false, 1 = true

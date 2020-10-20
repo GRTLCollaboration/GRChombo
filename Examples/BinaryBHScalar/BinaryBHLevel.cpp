@@ -62,7 +62,7 @@ void BinaryBHLevel::initialData()
 
     // First set everything to zero (to avoid undefinded values in constraints)
     // then calculate initial data
-    BoxLoops::loop(make_compute_pack(SetValue(0.), binary, my_scalar_data), 
+    BoxLoops::loop(make_compute_pack(SetValue(0.), binary, my_scalar_data),
                    m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
 }
 
@@ -112,18 +112,10 @@ void BinaryBHLevel::specificUpdateODE(GRLevelData &a_soln,
 void BinaryBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                             const FArrayBox &current_state)
 {
-    // set the fixed levels - should only happen on first timestep
-    if (m_time==0.0 && m_level < 4)
-    {
-        BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L,
-                          m_p.center), current_state, tagging_criterion, 
-                          disable_simd());
-    }
-
     if (m_p.track_punctures == true)
     {
-        const vector<double> puncture_masses = {2.0 * m_p.bh1_params.mass,
-                                                2.0 * m_p.bh2_params.mass};
+        const vector<double> puncture_masses = {m_p.bh1_params.mass,
+                                                m_p.bh2_params.mass};
         std::vector<std::array<double, CH_SPACEDIM>> puncture_coords =
             m_bh_amr.get_puncture_coords();
         BoxLoops::loop(ChiPunctureExtractionTaggingCriterion(
@@ -138,6 +130,14 @@ void BinaryBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                            m_dx, m_level, m_p.max_level, m_p.extraction_params,
                            m_p.activate_extraction),
                        current_state, tagging_criterion);
+    }
+
+    // set the fixed levels - should only happen on first timestep
+    if (m_time == 0.0 && m_level < 6)
+    {
+        BoxLoops::loop(
+            FixedGridsTaggingCriterion(m_dx, m_level, m_p.L, m_p.center),
+            current_state, tagging_criterion, disable_simd());
     }
 }
 

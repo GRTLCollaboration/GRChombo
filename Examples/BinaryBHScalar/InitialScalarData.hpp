@@ -25,9 +25,9 @@ class InitialScalarData
     struct params_t
     {
         double amplitude; //!< Amplitude of bump in initial SF bubble
-        double omega; // oscillation frequency of scalar
+        double omega;     // oscillation frequency of scalar
         std::array<double, CH_SPACEDIM>
-            center;   //!< Centre of perturbation in initial SF bubble
+            center; //!< Centre of perturbation in initial SF bubble
     };
 
   protected:
@@ -38,13 +38,14 @@ class InitialScalarData
     //! The constructor
     InitialScalarData(params_t a_params, double a_dx)
         : m_dx(a_dx), m_params(a_params)
-    {}
+    {
+    }
 
     //! Function to compute the value of all the initial vars on the grid
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {
 
-        //where am I?
+        // where am I?
         Coordinates<data_t> coords(current_cell, m_dx, m_params.center);
         const data_t R = coords.get_radius();
         const data_t rho2 =
@@ -69,8 +70,8 @@ class InitialScalarData
         data_t Theta_of_theta =
             0.86 * exp(0.9 * 0.0969013 * cos_theta) * sin_theta;
         data_t phi = m_params.amplitude * R_of_r * Theta_of_theta * cos_phi;
-        data_t Pi = -m_params.omega * m_params.amplitude * R_of_r * 
-                     Theta_of_theta * sin_phi;
+        data_t Pi = -m_params.omega * m_params.amplitude * R_of_r *
+                    Theta_of_theta * sin_phi;
 
         // Store the initial values of the variables
         current_cell.store_vars(phi, c_phi);

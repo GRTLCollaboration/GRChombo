@@ -9,8 +9,8 @@
 #include "BHAMR.hpp"
 #include "DefaultLevelFactory.hpp"
 #include "GRAMRLevel.hpp"
-#include "ScalarField.hpp"
 #include "Potential.hpp"
+#include "ScalarField.hpp"
 
 class BinaryBHLevel : public GRAMRLevel
 {

@@ -102,7 +102,7 @@ class ChiPunctureExtractionTaggingCriterion
         // which regrid (ie, max_level - 1 to max_level - 2)
         // (just the top level would be ok, but doing two ensures
         // the top levels are well spaced)
-        if ((m_level > (m_max_level - 3)) && (m_track_punctures == 1))
+        if ((m_level > (m_max_level - 4)) && (m_track_punctures == 1))
         {
             // we want each level to be double the innermost one in size
             const double factor = pow(2.0, m_max_level - m_level - 1);
@@ -115,9 +115,9 @@ class ChiPunctureExtractionTaggingCriterion
                                                  m_puncture_coords[ipuncture]);
                 const data_t r = coords.get_radius();
                 // decide whether to tag based on distance to horizon
-                // plus a fudge factor of 1.5
+                // plus a fudge factor of 1.7
                 auto regrid = simd_compare_lt(
-                    r, 1.5 * factor * m_puncture_masses[ipuncture]);
+                    r, 1.7 * factor * m_puncture_masses[ipuncture]);
                 criterion = simd_conditional(regrid, 100.0, criterion);
             }
         }
