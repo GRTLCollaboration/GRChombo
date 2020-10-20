@@ -115,9 +115,9 @@ class ChiPunctureExtractionTaggingCriterion
                                                  m_puncture_coords[ipuncture]);
                 const data_t r = coords.get_radius();
                 // decide whether to tag based on distance to horizon
-                // plus a fudge factor of 1.7
+                // plus a fudge factor of 1.64
                 auto regrid = simd_compare_lt(
-                    r, 1.7 * factor * m_puncture_masses[ipuncture]);
+                    r, 1.64 * factor * m_puncture_masses[ipuncture]);
                 criterion = simd_conditional(regrid, 100.0, criterion);
             }
         }
