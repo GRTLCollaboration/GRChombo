@@ -235,7 +235,8 @@ void GRAMRLevel::tagCells(IntVectSet &a_tags)
                 for (int ix = xmin; ix <= xmax; ++ix)
                 {
                     IntVect iv(ix, iy, iz);
-                    if (tagging_criterion(iv, 0) >= m_p.regrid_threshold)
+                    if (tagging_criterion(iv, 0) >=
+                        m_p.regrid_thresholds[m_level])
                     {
 // local_tags |= is not thread safe.
 #pragma omp critical

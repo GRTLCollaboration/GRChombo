@@ -22,7 +22,6 @@ class ChomboParameters
     {
         pp.load("verbosity", verbosity, 0);
         // Grid setup
-        pp.load("regrid_threshold", regrid_threshold, 0.5);
         pp.load("num_ghosts", num_ghosts, 3);
         pp.load("tag_buffer_size", tag_buffer_size, 3);
         pp.load("dt_multiplier", dt_multiplier, 0.25);
@@ -46,6 +45,19 @@ class ChomboParameters
         ref_ratios.resize(max_level + 1);
         ref_ratios.assign(2);
         pp.getarr("regrid_interval", regrid_interval, 0, max_level + 1);
+
+        if (pp.contains("regrid_thresholds"))
+        {
+            pout() << "Using multiple regrid thresholds." << std::endl;
+            pp.getarr("regrid_thresholds", regrid_thresholds, 0, max_level + 1);
+        }
+        else
+        {
+            pout() << "Using single regrid threshold." << std::endl;
+            double regrid_threshold;
+            pp.load("regrid_threshold", regrid_threshold, 0.5);
+            regrid_thresholds = Vector<double>(max_level + 1, regrid_threshold);
+        }
 
         // time stepping outputs and regrid data
         pp.load("checkpoint_interval", checkpoint_interval, 1);
@@ -241,9 +253,15 @@ class ChomboParameters
 
         // Grid center
         // now that L is surely set, get center
+#if CH_SPACEDIM == 3
         pp.load("center", center,
                 {0.5 * Ni[0] * coarsest_dx, 0.5 * Ni[1] * coarsest_dx,
                  0.5 * Ni[2] * coarsest_dx}); // default to center
+#elif CH_SPACEDIM == 2
+        pp.load("center", center,
+                {0.5 * Ni[0] * coarsest_dx,
+                 0.5 * Ni[1] * coarsest_dx}); // default to center
+#endif
 
         FOR1(idir)
         {
@@ -294,7 +312,7 @@ class ChomboParameters
     BoundaryConditions::params_t boundary_params; // set boundaries in each dir
 
     // For tagging
-    double regrid_threshold;
+    Vector<double> regrid_thresholds;
 };
 
 #endif /* CHOMBOPARAMETERS_HPP_ */

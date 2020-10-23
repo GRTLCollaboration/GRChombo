@@ -14,8 +14,8 @@
 BoundaryConditions::params_t::params_t()
 {
     // set defaults
-    hi_boundary = {STATIC_BC, STATIC_BC, STATIC_BC};
-    lo_boundary = {STATIC_BC, STATIC_BC, STATIC_BC};
+    hi_boundary.fill(STATIC_BC);
+    lo_boundary.fill(STATIC_BC);
     is_periodic.fill(true);
     nonperiodic_boundaries_exist = false;
     boundary_solution_enforced = false;
