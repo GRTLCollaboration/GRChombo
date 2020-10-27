@@ -34,8 +34,8 @@ void ProcaFieldLevel::specificAdvance()
 {
     // Check for nan's
     if (m_p.nan_check)
-        BoxLoops::loop(NanCheck(m_dx), m_state_new, m_state_new, SKIP_GHOST_CELLS,
-                       disable_simd());
+        BoxLoops::loop(NanCheck(m_dx), m_state_new, m_state_new,
+                       SKIP_GHOST_CELLS, disable_simd());
 }
 
 // Initial data for field and metric variables
@@ -92,10 +92,10 @@ void ProcaFieldLevel::specificPostTimeStep()
                               m_dx);
         BoxLoops::loop(make_compute_pack(densities, fluxes, set_xsquared),
                        m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
-        BoxLoops::loop(ExcisionProcaDiagnostics<ProcaField, IsotropicKerrFixedBG>(
-                           m_dx, m_p.center, kerr_bh, 1.0),
-                       m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS,
-                       disable_simd());
+        BoxLoops::loop(
+            ExcisionProcaDiagnostics<ProcaField, IsotropicKerrFixedBG>(
+                m_dx, m_p.center, kerr_bh, 1.0),
+            m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS, disable_simd());
     }
 
     // write out the integral after each coarse timestep
@@ -120,12 +120,12 @@ void ProcaFieldLevel::specificPostTimeStep()
         integral_file.write_time_data_line(data_for_writing);
 
         // Now refresh the interpolator and do the interpolation
-/*
-        m_gr_amr.m_interpolator->refresh();
-        FluxExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
-                                     m_restart_time);
-        my_extraction.execute_query(m_gr_amr.m_interpolator);
-*/
+        /*
+                m_gr_amr.m_interpolator->refresh();
+                FluxExtraction my_extraction(m_p.extraction_params, m_dt,
+           m_time, m_restart_time);
+                my_extraction.execute_query(m_gr_amr.m_interpolator);
+        */
     }
 }
 
@@ -154,6 +154,7 @@ void ProcaFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                               const FArrayBox &current_state)
 {
     const double radius_bh = 0.5;
-    BoxLoops::loop(FixedGridsTaggingCriterionBH(m_dx, m_level, m_p.max_level, m_p.L, m_p.center, radius_bh),
+    BoxLoops::loop(FixedGridsTaggingCriterionBH(m_dx, m_level, m_p.max_level,
+                                                m_p.L, m_p.center, radius_bh),
                    current_state, tagging_criterion, disable_simd());
 }

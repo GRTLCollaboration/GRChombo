@@ -39,7 +39,7 @@ template <class matter_t, class background_t> class ExcisionTest
     void compute(Cell<double> current_cell) const
     {
         double horizon_distance = m_background.excise(current_cell);
-        if (horizon_distance < 0.8)
+        if (horizon_distance < 1.1)
         {
             // the matter rhs vars within the excision zone
             // recalculate them - for now set to zero

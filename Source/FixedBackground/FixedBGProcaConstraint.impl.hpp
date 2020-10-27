@@ -4,18 +4,16 @@
  */
 
 #if !defined(FIXEDBGPROCACONSTRAINT_HPP_)
-#error                                                                         \
-    "This file should only be included through FixedBGProcaConstraint.hpp"
+#error "This file should only be included through FixedBGProcaConstraint.hpp"
 #endif
 
 #ifndef FIXEDBGPROCACONSTRAINT_IMPL_HPP_
 #define FIXEDBGPROCACONSTRAINT_IMPL_HPP_
 
 template <class potential_t, class background_t>
-FixedBGProcaConstraint<potential_t, background_t>::
-    FixedBGProcaConstraint(background_t a_background, double dx,
-                               double a_vector_mass, double a_vector_damping,
-                               const potential_t potential)
+FixedBGProcaConstraint<potential_t, background_t>::FixedBGProcaConstraint(
+    background_t a_background, double dx, double a_vector_mass,
+    double a_vector_damping, const potential_t potential)
     : m_background(a_background), m_deriv(dx), m_vector_mass(a_vector_mass),
       m_vector_damping(a_vector_damping), m_potential(potential)
 {
@@ -40,8 +38,7 @@ void FixedBGProcaConstraint<potential_t, background_t>::compute(
 
 template <class potential_t, class background_t>
 template <class data_t, template <typename> class vars_t>
-data_t
-FixedBGProcaConstraint<potential_t, background_t>::constraint_equations(
+data_t FixedBGProcaConstraint<potential_t, background_t>::constraint_equations(
     const vars_t<data_t> &vars, const MetricVars<data_t> &metric_vars,
     const vars_t<Tensor<1, data_t>> &d1) const
 {

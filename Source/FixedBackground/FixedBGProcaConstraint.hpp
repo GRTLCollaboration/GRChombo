@@ -23,8 +23,7 @@
     calculates the constraint violation from it.
 
 */
-template <class potential_t, class background_t>
-class FixedBGProcaConstraint
+template <class potential_t, class background_t> class FixedBGProcaConstraint
 {
   public:
     // Use the variable definition in the proca matter class
@@ -39,8 +38,8 @@ class FixedBGProcaConstraint
     //!  Constructor of class FixedBGProcaConstraint, inputs are the matter
     //!  parameters.
     FixedBGProcaConstraint(background_t a_background, double dx,
-                               double a_vector_mass, double a_vector_damping,
-                               const potential_t potential);
+                           double a_vector_mass, double a_vector_damping,
+                           const potential_t potential);
 
     template <class data_t> void compute(Cell<data_t> current_cell) const;
 

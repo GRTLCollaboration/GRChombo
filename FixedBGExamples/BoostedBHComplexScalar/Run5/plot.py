@@ -72,7 +72,7 @@ plt.xlabel("time")
 plt.ylabel("xMom")
 #plt.xlim(0, 1000)
 #plt.ylim(1e-1, 1e2)
-plt.legend(loc=2)
+plt.legend(loc=3)
 
 # save as png image
 filename = "EvsT" + "_mu" + str(mu) + ".png"

@@ -23,6 +23,7 @@
 // Problem specific for tests
 #include "AssignFixedBGtoBSSNVars.hpp"
 #include "BoostedBHFixedBG.hpp"
+//#include "BoostedKerrSchildFixedBG.hpp"
 #include "Constraints.hpp"
 #include "ExcisionTest.hpp"
 #include "FixedBGEvolution.hpp"
@@ -40,7 +41,7 @@ int main()
 #endif
 
     int failed = 0;
-    const bool debug_plots_on = false;
+    const bool debug_plots_on = true; //false;
     const int num_resolutions = 2;
 
     // setup a vector of norms for checking convergence
@@ -78,11 +79,14 @@ int main()
 
         // Test the fixed BG - first assign the fixed bg vars to the BSSN vars
         BoostedBHFixedBG::params_t bg_params;
+//        BoostedKerrSchildFixedBG::params_t bg_params;
         bg_params.mass = 1.0;
         bg_params.velocity = 0.5;
         bg_params.center = center_vector;
         BoostedBHFixedBG boosted_bh(bg_params, dx);
+        //BoostedKerrSchildFixedBG boosted_bh(bg_params, dx);
         BoxLoops::loop(AssignFixedBGtoBSSNVars<BoostedBHFixedBG>(boosted_bh, dx,
+        //BoxLoops::loop(AssignFixedBGtoBSSNVars<BoostedKerrSchildFixedBG>(boosted_bh, dx,
                                                                  center_vector),
                        fixedbg_fab, fixedbg_fab); //, disable_simd());
         // used temp single ghosted box to avoid nans at boundaries in Gamma^i
@@ -114,6 +118,7 @@ int main()
         // Calculate the Matter RHS using the analytic derivatives
         FixedBGScalarField<Potential> fixed_scalar_field(potential);
         FixedBGEvolution<FixedBGScalarField<Potential>, BoostedBHFixedBG>
+        //FixedBGEvolution<FixedBGScalarField<Potential>, BoostedKerrSchildFixedBG>
             my_evolution(fixed_scalar_field, boosted_bh, sigma, dx,
                          center_vector);
         BoxLoops::loop(make_compute_pack(my_evolution), fixedbg_fab,
@@ -126,6 +131,7 @@ int main()
         // values
         BoxLoops::loop(
             ExcisionTest<FixedBGScalarField<Potential>, BoostedBHFixedBG>(
+            //ExcisionTest<FixedBGScalarField<Potential>, BoostedKerrSchildFixedBG>(
                 dx, center_vector, boosted_bh),
             rhs_fab, rhs_fab, disable_simd());
 
@@ -148,8 +154,8 @@ int main()
                 {
                     double x = dx * (iv[0] + 0.5);
                     double z = dx * (iv[2] + 0.5);
-                    double out1 = fixedbg_fab(iv, c_lapse);
-                    double out2 = fixedbg_fab(iv, c_shift1);
+                    double out1 = fixedbg_fab(iv, c_phi);
+                    double out2 = rhs_fab(iv, c_phi);
 
                     outfile << std::setw(20) << x << std::setw(20) << z;
                     outfile << std::setw(20) << out1 << std::setw(20) << out2;
@@ -163,13 +169,14 @@ int main()
         const int max_norm = 0;
         const int L1_norm = 1;
         const int num_comps = 1;
+        const double error_limit = 0.1;
         // check that you have zero Ham and Mom with the initial data
         // such that it satisfies the constraints
         for (int i = c_Ham; i <= c_Mom3; ++i)
         {
             // first check for large non zero values outside horizon
             double max_err = rhs_fab.norm(max_norm, i, num_comps);
-            if (max_err > 0.1)
+            if (max_err > error_limit)
             {
                 std::cout << "CONSTRAINT " << UserVariables::variable_names[i]
                           << " IS NON ZERO: MAX ERROR = " << max_err
@@ -189,7 +196,7 @@ int main()
         {
             // first check for large non zero values outside horizon
             double max_err = rhs_fab.norm(max_norm, i, num_comps);
-            if (max_err > 0.1)
+            if (max_err > error_limit)
             {
                 std::cout
                     << "ANALYTIC MATTER VARS RHS FOR "
@@ -210,7 +217,7 @@ int main()
         {
             // first check for large non zero values outside horizon
             double max_err = rhs_fab.norm(max_norm, i, num_comps);
-            if (max_err > 0.1)
+            if (max_err > error_limit)
             {
                 std::cout << "RHS FOR COMPONENT "
                           << UserVariables::variable_names[i]
@@ -234,7 +241,7 @@ int main()
             double hi_res_norm = error_norms[ires + 1][i];
             double lo_res_norm = error_norms[ires][i];
             // ignore the exact zero values
-            if (hi_res_norm < 1e-16 && lo_res_norm < 1e-16)
+            if (abs(hi_res_norm) < 1e-16 && abs(lo_res_norm) < 1e-16)
             {
                 lo_res_norm = 1e-8;
                 hi_res_norm = 1e-10;
@@ -253,6 +260,7 @@ int main()
                 std::cout << "CONVERGENCE FACTOR FOR COMPONENT "
                           << UserVariables::variable_names[i] << " ON LEVEL "
                           << ires << " IS LOW: VALUE = " << convergence_factor
+                          << " " << hi_res_norm << " " << lo_res_norm
                           << std::endl;
             }
         }
@@ -267,6 +275,8 @@ int main()
     }
     else
     {
+        std::cout << "The minimum convergence factor was "
+                  << min_convergence_factor << std::endl;
         std::cout << "Fixed Background test failed..." << std::endl;
     }
     return failed;

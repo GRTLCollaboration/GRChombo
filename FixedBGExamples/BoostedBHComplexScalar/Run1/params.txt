@@ -4,7 +4,7 @@ verbosity = 0
 integral_filename = RhoIntegral
 chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost1_chk
 plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost1_plt
-restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost1_chk008000.3d.hdf5
+restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost1_chk009500.3d.hdf5
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor

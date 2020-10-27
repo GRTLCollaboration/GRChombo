@@ -317,12 +317,10 @@ void BoundaryConditions::write_boundary_conditions(const params_t &a_params)
     pout() << "The boundary params chosen are:  " << endl;
     pout() << "---------------------------------" << endl;
 
-    std::map<int, std::string> bc_names = {{STATIC_BC, "Static"},
-                                           {SOMMERFELD_BC, "Sommerfeld"},
-                                           {REFLECTIVE_BC, "Reflective"},
-                                           {EXTRAPOLATING_BC, "Extrapolating"},
-                                           {MIXED_BC, "Mixed"},
-                                           {FUDGE_BC, "Fudge"}};
+    std::map<int, std::string> bc_names = {
+        {STATIC_BC, "Static"},         {SOMMERFELD_BC, "Sommerfeld"},
+        {REFLECTIVE_BC, "Reflective"}, {EXTRAPOLATING_BC, "Extrapolating"},
+        {MIXED_BC, "Mixed"},           {FUDGE_BC, "Fudge"}};
     FOR1(idir)
     {
         if (!a_params.is_periodic[idir])
@@ -568,9 +566,10 @@ void BoundaryConditions::fill_boundary_cells_dir(
             {
                 if (a_side == Side::Lo || !filling_rhs)
                 {
-                    fill_extrapolating_cell(out_box, iv, a_side, dir,
-                                        m_params.mixed_bc_extrapolating_vars,
-                                        m_params.extrapolation_order);
+                    fill_extrapolating_cell(
+                        out_box, iv, a_side, dir,
+                        m_params.mixed_bc_extrapolating_vars,
+                        m_params.extrapolation_order);
                 }
                 else if (a_side == Side::Hi && filling_rhs)
                 {
@@ -579,10 +578,12 @@ void BoundaryConditions::fill_boundary_cells_dir(
                     loc -= m_center;
                     double lapse = 1.0;
                     double mass = 0.05;
-                    out_box(iv, 0) = lapse * soln_box(iv, 1); //phi_re
-                    out_box(iv, 1) = - lapse * lapse * mass * mass * soln_box(iv, 0); //Pi_re
-                    out_box(iv, 2) = lapse * soln_box(iv, 3); //phi_im
-                    out_box(iv, 3) = - lapse * lapse * mass * mass * soln_box(iv, 2); //Pi_im
+                    out_box(iv, 0) = lapse * soln_box(iv, 1); // phi_re
+                    out_box(iv, 1) =
+                        -lapse * lapse * mass * mass * soln_box(iv, 0); // Pi_re
+                    out_box(iv, 2) = lapse * soln_box(iv, 3); // phi_im
+                    out_box(iv, 3) =
+                        -lapse * lapse * mass * mass * soln_box(iv, 2); // Pi_im
                 }
                 break;
             }

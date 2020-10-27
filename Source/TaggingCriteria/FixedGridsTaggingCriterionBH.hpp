@@ -25,10 +25,11 @@ class FixedGridsTaggingCriterionBH
 
   public:
     FixedGridsTaggingCriterionBH(const double dx, const int a_level,
-                               const int a_max_level, const double a_L,
-                               const std::array<double, CH_SPACEDIM> a_center, const double a_radius = 1.75)
-        : m_dx(dx), m_deriv(dx), m_level(a_level), m_max_level(a_max_level), m_L(a_L),
-          m_center(a_center), m_radius(a_radius){};
+                                 const int a_max_level, const double a_L,
+                                 const std::array<double, CH_SPACEDIM> a_center,
+                                 const double a_radius = 1.75)
+        : m_dx(dx), m_deriv(dx), m_level(a_level), m_max_level(a_max_level),
+          m_L(a_L), m_center(a_center), m_radius(a_radius){};
 
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {
@@ -49,7 +50,10 @@ class FixedGridsTaggingCriterionBH
         if (m_level == m_max_level - 1)
         {
             if (abs(coords.x) < m_radius && abs(coords.y) < m_radius &&
-                abs(coords.z) < m_radius) {criterion = 100.0;}
+                abs(coords.z) < m_radius)
+            {
+                criterion = 100.0;
+            }
         }
         // Write back into the flattened Chombo box
         current_cell.store_vars(criterion, 0);

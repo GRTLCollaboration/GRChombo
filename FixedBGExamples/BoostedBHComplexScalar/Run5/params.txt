@@ -70,8 +70,8 @@ extrapolation_order = 1
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 1000
 plot_interval = 1
-num_plot_vars = 5
-plot_vars = phi_Re Pi_Re rho xMom Stress
+num_plot_vars = 3
+plot_vars = phi_Re Pi_Re Source
 dt_multiplier = 0.05
 stop_time = 11000.0
 
