@@ -16,11 +16,11 @@ enum
     // Note that it is important that the first enum value is set to 1 more than
     // the last CCZ4 var enum
     c_phi = NUM_CCZ4_VARS, // matter field added
-    c_Pi, 
-    c_Ham, 
-    c_Mom1,                  //(minus) conjugate momentum
-    c_Mom2,                  //(minus) conjugate momentum
-    c_Mom3,                  //(minus) conjugate momentum
+    c_Pi,
+    c_Ham,
+    c_Mom1, //(minus) conjugate momentum
+    c_Mom2, //(minus) conjugate momentum
+    c_Mom3, //(minus) conjugate momentum
 
     NUM_VARS
 };

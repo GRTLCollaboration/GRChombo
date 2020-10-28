@@ -17,9 +17,10 @@
 #include "simd.hpp"
 
 //! Class which computes the initial conditions for a boosted BH
-// starting with isotropic Schwazschild coords and boosting to
+// starting with isotropic Schwazschild coords
+// ds^2 = -Adt + B dx^2 and boosting to
 // primed coords using x = \gamma (x' - vt')
-// t = \gamma (t' - v*x'), and then adding a constant shift \beta^x = v
+// t = \gamma (t' - v*x'), and then adding a shift
 // so that the solution is stationary (x' = \tilde x + v \tilde t, t' = \tilde
 // t)
 class BoostedBHFixedBG
@@ -91,54 +92,56 @@ class BoostedBHFixedBG
         const double y = coords.y;
         const double z = coords.z;
 
-        // the Kerr Schild radius (boosted)
+        // the isotropic radius (boosted)
         const data_t r2 = x_p * x_p + y * y + z * z;
         const data_t r = sqrt(r2);
 
         // useful quantities H, A, B,
         const data_t H = 0.5 * M / r;
-        const data_t A = (1.0 - H) / (1.0 + H);
-        const data_t A2 = A * A;
-        const data_t B = 1.0 + H;
-        const data_t B4 = pow(B, 4.0);
+        const data_t sqrtA = (1.0 - H) / (1.0 + H);
+        const data_t A = sqrtA * sqrtA;
+        const data_t B = pow(1.0 + H, 4.0);
 
         // Calculate the gradients of these
         Tensor<1, data_t> dAdx, dBdx;
         get_metric_derivs(dAdx, dBdx, coords);
 
         // populate ADM vars
-        vars.lapse = boost * sqrt(abs(A2 - v2 * B4));
-        // fudge within horizon if r < M/2?
+        // fudge within horizon if r < M/2
+        data_t sign_lapse = (r - 0.5 * M) / abs(r - 0.5 * M);
+        vars.lapse = sign_lapse / boost * sqrt(A * B / (B - A * v2));
 
         using namespace TensorAlgebra;
-        FOR2(i, j) { vars.gamma[i][j] = delta(i, j) * B4; }
-        vars.gamma[0][0] = boost2 * (vars.gamma[0][0] - A2 * v2);
+        FOR2(i, j) { vars.gamma[i][j] = delta(i, j) * B; }
+        vars.gamma[0][0] = boost2 * (vars.gamma[0][0] - A * v2);
         const auto gamma_UU = compute_inverse_sym(vars.gamma);
 
         // this adjustment gives the shift which achieves x' = x - vt
-        FOR1(i) { vars.shift[i] = delta(i, 0) * v; }
+        FOR1(i) { vars.shift[i] = delta(i, 0) * A * v / boost2 / (B - A * v2); }
 
         // Calculate partial derivative of spatial metric
-        FOR3(i, j, k)
-        {
-            vars.d1_gamma[i][j][k] = delta(i, j) * 4.0 * dBdx[k] * B4 / B;
-        }
+        FOR3(i, j, k) { vars.d1_gamma[i][j][k] = delta(i, j) * dBdx[k]; }
         FOR1(i)
         {
             vars.d1_gamma[0][0][i] =
-                (vars.d1_gamma[0][0][i] - 2.0 * dAdx[i] * A * v2) * boost2;
+                (vars.d1_gamma[0][0][i] - dAdx[i] * v2) * boost2;
         }
 
         // calculate derivs of lapse and shift
         FOR1(i)
         {
-            vars.d1_lapse[i] =
-                0.5 * boost2 * (2.0 * A * dAdx[i] - v2 * 4.0 * dBdx[i] * B4 / B)
-                       / vars.lapse;
+            vars.d1_lapse[i] = 0.5 * vars.lapse *
+                               (dAdx[i] / A + dBdx[i] / B -
+                                (dBdx[i] - v2 * dAdx[i]) / (B - v2 * A));
         }
 
         // v is a constant
-        FOR2(i, j) { vars.d1_shift[i][j] = 0.0; }
+        FOR2(i, j)
+        {
+            vars.d1_shift[i][j] =
+                delta(i, 0) * vars.shift[0] *
+                (dAdx[j] / A - (dBdx[j] - dAdx[j] * v2) / (B - A * v2));
+        }
 
         // calculate the extrinsic curvature, using the fact that
         // 2 * lapse * K_ij = D_i \beta_j + D_j \beta_i - dgamma_ij dt
@@ -191,8 +194,9 @@ class BoostedBHFixedBG
 
         // useful quantities H, A, B,
         const data_t H = 0.5 * M / r;
-        const data_t A = (1.0 - H) / (1.0 + H);
-        const data_t B = 1.0 + H;
+        const data_t sqrtA = (1.0 - H) / (1.0 + H);
+        const data_t A = sqrtA * sqrtA;
+        const data_t B = pow(1.0 + H, 4.0);
 
         using namespace TensorAlgebra;
         // derivatives of r wrt actual grid coords
@@ -201,10 +205,12 @@ class BoostedBHFixedBG
         drdx[0] *= boost * boost;
 
         // derivs of quantities
+        Tensor<1, data_t> dHdx;
         FOR1(i)
         {
-            dBdx[i] = -H / r * drdx[i];
-            dAdx[i] = -(1.0 + A) / (1.0 + H) * dBdx[i];
+            dHdx[i] = -H / r * drdx[i];
+            dAdx[i] = -4.0 * pow(1.0 + H, -3.0) * (1.0 - H) * dHdx[i];
+            dBdx[i] = 4.0 * pow(1.0 + H, 3.0) * dHdx[i];
         }
     }
 

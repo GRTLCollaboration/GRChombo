@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-N = 64
+N = 128
 data = np.loadtxt("output.txt")
 
 x = np.zeros(N)

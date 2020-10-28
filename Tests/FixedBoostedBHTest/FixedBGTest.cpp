@@ -41,7 +41,7 @@ int main()
 #endif
 
     int failed = 0;
-    const bool debug_plots_on = true; //false;
+    const bool debug_plots_on = true; // false;
     const int num_resolutions = 2;
 
     // setup a vector of norms for checking convergence
@@ -52,7 +52,7 @@ int main()
     {
         error_norms[ires].fill(0.0);
         // set up the array boxes for the vars inputs/outputs
-        const int N_GRID = 64 * pow(2, ires);
+        const int N_GRID = 128 * pow(2, ires);
         Box box(IntVect(0, 0, 0), IntVect(N_GRID - 1, N_GRID - 1, N_GRID - 1));
         Box ghosted_box(IntVect(-3, -3, -3),
                         IntVect(N_GRID + 2, N_GRID + 2, N_GRID + 2));
@@ -79,14 +79,15 @@ int main()
 
         // Test the fixed BG - first assign the fixed bg vars to the BSSN vars
         BoostedBHFixedBG::params_t bg_params;
-//        BoostedKerrSchildFixedBG::params_t bg_params;
+        //        BoostedKerrSchildFixedBG::params_t bg_params;
         bg_params.mass = 1.0;
-        bg_params.velocity = 0.5;
+        bg_params.velocity = 0.9;
         bg_params.center = center_vector;
         BoostedBHFixedBG boosted_bh(bg_params, dx);
-        //BoostedKerrSchildFixedBG boosted_bh(bg_params, dx);
+        // BoostedKerrSchildFixedBG boosted_bh(bg_params, dx);
         BoxLoops::loop(AssignFixedBGtoBSSNVars<BoostedBHFixedBG>(boosted_bh, dx,
-        //BoxLoops::loop(AssignFixedBGtoBSSNVars<BoostedKerrSchildFixedBG>(boosted_bh, dx,
+                                                                 // BoxLoops::loop(AssignFixedBGtoBSSNVars<BoostedKerrSchildFixedBG>(boosted_bh,
+                                                                 // dx,
                                                                  center_vector),
                        fixedbg_fab, fixedbg_fab); //, disable_simd());
         // used temp single ghosted box to avoid nans at boundaries in Gamma^i
@@ -118,9 +119,10 @@ int main()
         // Calculate the Matter RHS using the analytic derivatives
         FixedBGScalarField<Potential> fixed_scalar_field(potential);
         FixedBGEvolution<FixedBGScalarField<Potential>, BoostedBHFixedBG>
-        //FixedBGEvolution<FixedBGScalarField<Potential>, BoostedKerrSchildFixedBG>
-            my_evolution(fixed_scalar_field, boosted_bh, sigma, dx,
-                         center_vector);
+            // FixedBGEvolution<FixedBGScalarField<Potential>,
+            // BoostedKerrSchildFixedBG>
+                my_evolution(fixed_scalar_field, boosted_bh, sigma, dx,
+                             center_vector);
         BoxLoops::loop(make_compute_pack(my_evolution), fixedbg_fab,
                        fixedbg_rhs_fab);
 
@@ -131,7 +133,8 @@ int main()
         // values
         BoxLoops::loop(
             ExcisionTest<FixedBGScalarField<Potential>, BoostedBHFixedBG>(
-            //ExcisionTest<FixedBGScalarField<Potential>, BoostedKerrSchildFixedBG>(
+                // ExcisionTest<FixedBGScalarField<Potential>,
+                // BoostedKerrSchildFixedBG>(
                 dx, center_vector, boosted_bh),
             rhs_fab, rhs_fab, disable_simd());
 
@@ -154,8 +157,8 @@ int main()
                 {
                     double x = dx * (iv[0] + 0.5);
                     double z = dx * (iv[2] + 0.5);
-                    double out1 = fixedbg_fab(iv, c_phi);
-                    double out2 = rhs_fab(iv, c_phi);
+                    double out1 = fixedbg_fab(iv, c_lapse);
+                    double out2 = fixedbg_fab(iv, c_shift1);
 
                     outfile << std::setw(20) << x << std::setw(20) << z;
                     outfile << std::setw(20) << out1 << std::setw(20) << out2;
