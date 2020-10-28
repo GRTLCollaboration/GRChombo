@@ -85,11 +85,13 @@ int main()
         bg_params.center = center_vector;
         BoostedBHFixedBG boosted_bh(bg_params, dx);
         // BoostedKerrSchildFixedBG boosted_bh(bg_params, dx);
-        BoxLoops::loop(AssignFixedBGtoBSSNVars<BoostedBHFixedBG>(boosted_bh, dx,
-                                                                 // BoxLoops::loop(AssignFixedBGtoBSSNVars<BoostedKerrSchildFixedBG>(boosted_bh,
-                                                                 // dx,
-                                                                 center_vector),
-                       fixedbg_fab, fixedbg_fab); //, disable_simd());
+        BoxLoops::loop(
+            AssignFixedBGtoBSSNVars<BoostedBHFixedBG>(
+                boosted_bh, dx,
+                // BoxLoops::loop(AssignFixedBGtoBSSNVars<BoostedKerrSchildFixedBG>(boosted_bh,
+                // dx,
+                center_vector),
+            fixedbg_fab, fixedbg_fab); //, disable_simd());
         // used temp single ghosted box to avoid nans at boundaries in Gamma^i
         BoxLoops::loop(GammaCalculator(dx), fixedbg_fab, deriv_fixedbg_fab);
         fixedbg_fab += deriv_fixedbg_fab;
@@ -121,8 +123,8 @@ int main()
         FixedBGEvolution<FixedBGScalarField<Potential>, BoostedBHFixedBG>
             // FixedBGEvolution<FixedBGScalarField<Potential>,
             // BoostedKerrSchildFixedBG>
-                my_evolution(fixed_scalar_field, boosted_bh, sigma, dx,
-                             center_vector);
+            my_evolution(fixed_scalar_field, boosted_bh, sigma, dx,
+                         center_vector);
         BoxLoops::loop(make_compute_pack(my_evolution), fixedbg_fab,
                        fixedbg_rhs_fab);
 

@@ -194,11 +194,10 @@ class IsotropicKerrFixedBG
         }
 
         // populate ADM vars - lapse and shift
-        vars.lapse = sqrt(Delta * Sigma / AA);
         // use analytic continuation for lapse within horizon
-        data_t horizon = 0.25 * r_plus;
-        auto inside = simd_compare_lt(R, horizon);
-        vars.lapse = simd_conditional(inside, -vars.lapse, vars.lapse);
+        data_t sign_lapse = (R - 0.25 * r_plus) / abs(R - 0.25 * r_plus);
+        vars.lapse = sign_lapse * sqrt(Delta * Sigma / AA);
+
         // now the shift
         const data_t beta_phi = -2.0 * M * a * r_BL / AA;
         FOR1(i) { vars.shift[i] = 0.0; }

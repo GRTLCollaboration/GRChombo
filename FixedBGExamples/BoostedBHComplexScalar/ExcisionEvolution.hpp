@@ -41,7 +41,7 @@ template <class matter_t, class background_t> class ExcisionEvolution
     {
         const Coordinates<double> coords(current_cell, m_dx, m_center);
         double horizon_distance = m_background.excise(current_cell);
-        if (horizon_distance < 0.25)
+        if (horizon_distance < 0.5)
         {
             // the matter rhs vars within the excision zone
             // recalculate them - for now set to decay to zero
