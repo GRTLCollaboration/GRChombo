@@ -8,6 +8,8 @@
 
 #include <algorithm>
 #include <array>
+#include <iostream>
+#include <iterator>
 
 /// A place for tools that operate on std::arrays
 namespace ArrayTools
