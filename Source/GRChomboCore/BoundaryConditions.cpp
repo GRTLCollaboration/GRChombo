@@ -46,8 +46,8 @@ void BoundaryConditions::params_t::set_hi_boundary(
 {
     FOR1(idir)
     {
-        hi_boundary[idir] = a_hi_boundary[idir];
         if (!is_periodic[idir])
+            hi_boundary[idir] = a_hi_boundary[idir];
         {
             if (hi_boundary[idir] == REFLECTIVE_BC)
             {
@@ -82,8 +82,8 @@ void BoundaryConditions::params_t::set_lo_boundary(
 {
     FOR1(idir)
     {
-        lo_boundary[idir] = a_lo_boundary[idir];
         if (!is_periodic[idir])
+            lo_boundary[idir] = a_lo_boundary[idir];
         {
             if (lo_boundary[idir] == REFLECTIVE_BC)
             {
@@ -484,7 +484,7 @@ void BoundaryConditions::fill_boundary_cells_dir(
     const int dir, const int boundary_condition, const VariableType var_type,
     const bool filling_rhs)
 {
-    const std::vector<int> comps =
+    const std::vector<int> &comps =
         (var_type == VariableType::evolution ? m_comps : m_diagnostic_comps);
 
     // iterate through the boxes, shared amongst threads
