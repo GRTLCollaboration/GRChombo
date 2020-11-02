@@ -96,10 +96,7 @@ class NewtonianBHFixedBG
         const data_t r = coords.get_radius();
 
         // find the potential
-        const auto inside_horizon = simd_compare_lt(r, 2 * M);
         data_t Phi = -M / r;
-        const data_t Phi_in = -0.25 * r;
-        Phi = simd_conditional(inside_horizon, Phi_in, Phi);
 
         // Calculate the gradients in el and H
         Tensor<1, data_t> dPhidx;
@@ -107,8 +104,8 @@ class NewtonianBHFixedBG
 
         // populate ADM vars
         using namespace TensorAlgebra;
-        vars.lapse = sqrt(abs(1.0 + 2.0 * Phi));
-        vars.lapse = simd_conditional(inside_horizon, -vars.lapse, vars.lapse);
+        const data_t sign = (r -  2.0 * M) / abs(r - 2.0 * M);
+        vars.lapse = sign * sqrt(abs(1.0 + 2.0 * Phi));
 
         FOR2(i, j) { vars.gamma[i][j] = (1.0 - 2.0 * Phi) * delta(i, j); }
         FOR1(i) { vars.shift[i] = 0; }
@@ -150,7 +147,6 @@ class NewtonianBHFixedBG
 
         // derivatives of Phi wrt grid coords
         data_t dPhidr = -Phi / r;
-        dPhidr = simd_conditional(inside_horizon, -dPhidr, dPhidr);
         FOR1(i) { dPhidx[i] = dPhidr * x[i] / r; }
     }
 
@@ -177,7 +173,7 @@ class NewtonianBHFixedBG
         // the coordinate radius (boosted)
         const double r = coords.get_radius();
 
-        // compare this to horizon in kerr schild coords
+        // compare this to horizon coords
         const double r_horizon = 2.0 * M;
 
         return r / r_horizon;

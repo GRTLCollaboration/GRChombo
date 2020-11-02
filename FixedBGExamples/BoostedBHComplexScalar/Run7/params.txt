@@ -2,9 +2,9 @@
 
 verbosity = 0
 integral_filename = RhoIntegral
-chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost5_chk
-plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost5_plt
-restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost5_chk003438.3d.hdf5
+chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost7_chk
+plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost7_plt
+#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost7_chk003125.3d.hdf5
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
@@ -88,7 +88,7 @@ f_axion = 0.0
 
 # Boosted BH initial data, boost in x direction, spin in z direction
 bh_mass = 1.0
-bh_velocity = 0.5 
+bh_velocity = 0.7 # This is a, so needs to be <= M
 inner_r = 1.0
 outer_r = 3000.0
 

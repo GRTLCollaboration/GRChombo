@@ -63,16 +63,16 @@ SourceData = deltaE * symmetry
 plt.plot(timedata, SourceData, '--', lw = 1.0, label=labelstring)
 
 # combine check
-labelstring = "Outerflux = DeltaM + Source + InnerFlux"
-Fdata = 1.0 * Mdata + 1.0 * SourceData + 1.0 * InnerFluxData
+labelstring = "Outerflux = DeltaM (+?) Source - InnerFlux"
+Fdata = 1.0 * Mdata + 1.0 * SourceData - 1.0 * InnerFluxData
 plt.plot(timedata, Fdata, '-', lw = 1.0, label=labelstring)
 
 # make the plot look nice
 plt.xlabel("time")
 plt.ylabel("xMom")
 #plt.xlim(0, 1000)
-plt.ylim(0, 8000)
-plt.legend(loc=1)
+#plt.ylim(1e-1, 1e2)
+plt.legend(loc=2)
 
 # save as png image
 filename = "EvsT" + "_mu" + str(mu) + ".png"

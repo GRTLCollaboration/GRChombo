@@ -143,9 +143,6 @@ Real GRAMRLevel::advance()
         t_coarser_old = t_coarser_new - coarser_gr_amr_level_ptr->m_dt;
     }
 
-    // Reset RK stage to zero
-    m_RK_stage = 0;
-
     if (m_finer_level_ptr != nullptr)
     {
         GRAMRLevel *fine_gr_amr_level_ptr = gr_cast(m_finer_level_ptr);
@@ -238,7 +235,8 @@ void GRAMRLevel::tagCells(IntVectSet &a_tags)
                 for (int ix = xmin; ix <= xmax; ++ix)
                 {
                     IntVect iv(ix, iy, iz);
-                    if (tagging_criterion(iv, 0) >= m_p.regrid_threshold)
+                    if (tagging_criterion(iv, 0) >=
+                        m_p.regrid_thresholds[m_level])
                     {
 // local_tags |= is not thread safe.
 #pragma omp critical
@@ -396,7 +394,7 @@ void GRAMRLevel::initialGrid(const Vector<Box> &a_new_grids)
 }
 
 // things to do after initialization
-void GRAMRLevel::postInitialize() { m_restart_time = 0.0; }
+void GRAMRLevel::postInitialize() { m_restart_time = 0.; }
 
 // compute dt
 Real GRAMRLevel::computeDt()
@@ -824,6 +822,7 @@ void GRAMRLevel::writePlotLevel(HDF5Handle &a_handle) const
                 }
             }
         }
+
         plot_data.exchange(plot_data.interval());
 
         // Write the data for this level
@@ -895,6 +894,7 @@ void GRAMRLevel::evalRHS(GRLevelData &rhs, GRLevelData &soln,
 
     if (oldCrseSoln.isDefined())
     {
+        // "time" falls between the old and the new coarse times
         Real alpha = (time - oldCrseTime) / (newCrseTime - oldCrseTime);
 
         // Assuming RK4, we know that there can only be 5 different alpha so fix
@@ -917,19 +917,13 @@ void GRAMRLevel::evalRHS(GRLevelData &rhs, GRLevelData &soln,
                 "Time interpolation coefficient is incompatible with RK4.");
         }
 
-        // We should perhaps use the RK4 stage data
-        CH_assert(m_RK_stage < 4);
-        // m_patcher.fillRK4Intermediate(soln, alpha, m_RK_stage, 0, 0,
-        // NUM_VARS);
-
-        // Old code - does not use difference in stages 1 and 2
+        // Interpolate ghost cells from next coarser level in space and time
         m_patcher.fillInterp(soln, alpha, 0, 0, NUM_VARS);
     }
 
     fillBdyGhosts(soln);
 
     specificEvalRHS(soln, rhs, time); // Call the problem specific rhs
-    m_RK_stage += 1;                  // Increment RK stage info
 
     // evolution of the boundaries according to conditions
     if (m_p.boundary_params.nonperiodic_boundaries_exist)

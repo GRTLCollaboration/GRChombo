@@ -28,12 +28,6 @@ timedata = data2[:,0]
 Fdata = data2[:,1]
 plt.plot(timedata, Fdata, '--', lw = 1.0, label=labelstring)
 
-# flux dataset in
-labelstring = "Source"
-timedata = data1[:,0]
-Fdata = data1[:,1]
-plt.plot(timedata, Fdata, '--', lw = 1.0, label=labelstring)
-
 # make the plot look nice
 plt.xlabel("time")
 plt.ylabel("Force")

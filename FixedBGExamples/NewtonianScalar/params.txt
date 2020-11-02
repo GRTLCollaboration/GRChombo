@@ -2,27 +2,27 @@
 
 verbosity = 0
 integral_filename = RhoIntegral
-chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost5_chk
-plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost5_plt
-restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost5_chk003438.3d.hdf5
+chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Binary/Newton_chk
+plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Binary/Newton_plt
+#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Binary/Newton_chk003125.3d.hdf5
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
 N1 = 128
-N2 = 64
+N2 = 128
 N3 = 64
 
 # Length of longest box side, dx_coarsest = L/N(max)
 # NB if non cubic, this determines dx for all sides
-L = 8192
+L = 256
 
 # Regridding
 tag_buffer_size = 0
-regrid_length = 8192
+#regrid_length = 2048
 
 # Level data
 # Maximum number of times you can regrid above coarsest level
-max_level = 9 # There are (max_level+1) grids, so min is zero
+max_level = 3 # There are (max_level+1) grids, so min is zero
 # Frequency of regridding at each level
 # Need one for each level, ie max_level+1 items
 # Generally you do not need to regrid frequently on every level
@@ -43,7 +43,7 @@ isPeriodic = 0 0 0
 # 4 = mixed, 5 = fudge
 # (see BoundaryConditions.hpp for details)
 hi_boundary = 3 3 3
-lo_boundary = 3 2 2
+lo_boundary = 3 3 2
 #center = 512.0 512.0 0.0
 
 # if reflective boundaries selected, must select 
@@ -68,33 +68,36 @@ extrapolation_order = 1
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 250
-plot_interval = 0
-num_plot_vars = 3
-plot_vars = phi_Re Source xMom
-dt_multiplier = 0.05
-stop_time = 20000.0
+checkpoint_interval = 1000
+plot_interval = 10
+num_plot_vars = 4
+plot_vars = phi_Re phi_Im rho chi
+dt_multiplier = 0.25
+stop_time = 100000.0
 
 # coefficient for KO numerical dissipation
 # NB must be less than 0.5 for stability
 sigma = 1.0
 
 # SF Initial data
-scalar_mass = 0.05
 field_amplitude_re = 0.1
 field_amplitude_im = 0.1
-# not used
-f_axion = 0.0
+scalar_mass = 0.046
+omega_binary = 0.023
 
-# Boosted BH initial data, boost in x direction, spin in z direction
-bh_mass = 1.0
-bh_velocity = 0.5 
+# Binary BH initial data
+bh_mass_1 = 0.4885
+bh_mass_2 = 0.4885
+separation = 6.1
 inner_r = 1.0
-outer_r = 3000.0
+outer_r = 120.0
 
 # for extraction
 activate_extraction = 0
 write_extraction = 0
+extraction_radius = 120.0
+extraction_level = 0
+num_modes = 1
+modes = 0 0
 num_points_phi = 36
-num_points_t = 24
-zaxis_over_xaxis = 1.0
+num_points_theta = 24
