@@ -106,5 +106,5 @@ void ScalarFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
 {
     BoxLoops::loop(
         FixedGridsTaggingCriterion(m_dx, m_level, 2.0 * m_p.L, m_p.center),
-        current_state, tagging_criterion, disable_simd());
+        current_state, tagging_criterion);
 }

@@ -47,8 +47,8 @@ void BoundaryConditions::params_t::set_hi_boundary(
     FOR1(idir)
     {
         if (!is_periodic[idir])
-            hi_boundary[idir] = a_hi_boundary[idir];
         {
+            hi_boundary[idir] = a_hi_boundary[idir];
             if (hi_boundary[idir] == REFLECTIVE_BC)
             {
                 boundary_rhs_enforced = true;
@@ -83,8 +83,8 @@ void BoundaryConditions::params_t::set_lo_boundary(
     FOR1(idir)
     {
         if (!is_periodic[idir])
-            lo_boundary[idir] = a_lo_boundary[idir];
         {
+            lo_boundary[idir] = a_lo_boundary[idir];
             if (lo_boundary[idir] == REFLECTIVE_BC)
             {
                 boundary_solution_enforced = true;
@@ -213,16 +213,11 @@ void BoundaryConditions::define(double a_dx,
     m_domain_box = a_domain.domainBox();
     m_num_ghosts = a_num_ghosts;
     FOR1(i) { m_center[i] = a_center[i]; }
-    m_comps.resize(NUM_VARS);
-    for (int i = 0; i < NUM_VARS; i++)
-    {
-        m_comps[i] = i;
-    }
+    // make a vector of the vars indices, [0,1,2...NUM_VARS]
+    m_evolution_comps.resize(NUM_VARS);
+    std::iota(m_evolution_comps.begin(), m_evolution_comps.end(), 0);
     m_diagnostic_comps.resize(NUM_DIAGNOSTIC_VARS);
-    for (int i = 0; i < NUM_DIAGNOSTIC_VARS; i++)
-    {
-        m_diagnostic_comps[i] = i;
-    }
+    std::iota(m_diagnostic_comps.begin(), m_diagnostic_comps.end(), 0);
     is_defined = true;
 }
 
@@ -485,7 +480,8 @@ void BoundaryConditions::fill_boundary_cells_dir(
     const bool filling_rhs)
 {
     const std::vector<int> &comps =
-        (var_type == VariableType::evolution ? m_comps : m_diagnostic_comps);
+        (var_type == VariableType::evolution ? m_evolution_comps
+                                             : m_diagnostic_comps);
 
     // iterate through the boxes, shared amongst threads
     DataIterator dit = a_out.dataIterator();
@@ -797,7 +793,7 @@ void BoundaryConditions::copy_boundary_cells(const Side::LoHiSide a_side,
                     for (bit.begin(); bit.ok(); ++bit)
                     {
                         IntVect iv = bit();
-                        for (int icomp : m_comps)
+                        for (int icomp : m_evolution_comps)
                         {
                             m_dest_box(iv, icomp) = a_src[dind](iv, icomp);
                         }
