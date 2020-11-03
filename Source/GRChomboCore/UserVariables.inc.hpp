@@ -70,7 +70,7 @@ template <class T>
 void load_values_to_array(
     GRParmParse &pp, const char *a_values_vector_string,
     const std::vector<std::pair<int, VariableType>> &a_vars_vector,
-    std::array<double, NUM_VARS> &a_values_array, const T a_default_value)
+    std::array<T, NUM_VARS> &a_values_array, const T a_default_value)
 {
     // how many values do I need to get?
     int num_values = a_vars_vector.size();
@@ -106,7 +106,7 @@ load_vars_to_vector(GRParmParse &pp, const char *a_vars_vector_string,
         pp.load(a_vars_vector_string, var_names, num_values, var_names);
         for (std::string var_name : var_names)
         {
-            // first assume plot_var is a normal evolution var
+            // first assume the variable is a normal evolution var
             int var = UserVariables::variable_name_to_enum(var_name);
             VariableType var_type = VariableType::evolution;
             if (var < 0)
