@@ -14,6 +14,11 @@
 #include "SetupFunctions.hpp"
 #include "SimulationParameters.hpp"
 
+#ifdef BENCHMARK
+#include <stdexcept>
+#include "BenchmarkParams.hpp"
+#endif
+
 // Problem specific includes:
 #include "BinaryBHLevel.hpp"
 
@@ -44,7 +49,12 @@ int runGRChombo(int argc, char *argv[])
 
     std::chrono::time_point<Clock> start_time = Clock::now();
 
-    gr_amr.run(sim_params.stop_time, sim_params.max_steps);
+#ifdef BENCHMARK
+    try {
+        gr_amr.run(sim_params.stop_time, sim_params.max_steps);
+    } catch (const std::runtime_error& e) {
+    }
+#endif
 
     auto now = Clock::now();
     auto duration = std::chrono::duration_cast<Minutes>(now - start_time);

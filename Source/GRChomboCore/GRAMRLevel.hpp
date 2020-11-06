@@ -38,6 +38,9 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     bool contains(const std::array<double, CH_SPACEDIM> &point) const;
 
   private:
+#ifdef BENCHMARK
+    int no_steps_level = 0;
+#endif
     // define
     virtual void define(AMRLevel *a_coarser_level_ptr,
                         const Box &a_problem_domain, int a_level,
