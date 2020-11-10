@@ -102,7 +102,8 @@ void BinaryBHLevel::specificPostTimeStep()
 {
     CH_TIME("BinaryBHLevel::specificPostTimeStep");
 
-    bool first_step = (m_time == m_dt);
+    bool first_step = (m_time == 0.); // called at t=0 from Main
+    // bool first_step = (m_time == m_dt); // not called in Main
 
     if (m_p.activate_extraction == 1)
     {
@@ -123,7 +124,8 @@ void BinaryBHLevel::specificPostTimeStep()
                 // Now refresh the interpolator and do the interpolation
                 m_gr_amr.m_interpolator->refresh();
                 WeylExtraction my_extraction(m_p.extraction_params, m_dt,
-                                             m_time, m_restart_time);
+                                             m_time, first_step,
+                                             m_restart_time);
                 my_extraction.execute_query(m_gr_amr.m_interpolator);
             }
         }
@@ -154,12 +156,15 @@ void BinaryBHLevel::specificPostTimeStep()
     // do puncture tracking on requested level
     if (m_p.track_punctures && m_level == m_p.puncture_tracking_level)
     {
-        CH_TIME("PunctureTracking");
-        // only do the write out for every coarsest level timestep
-        int coarsest_level = 0;
-        bool write_punctures = at_level_timestep_multiple(coarsest_level);
-        m_bh_amr.m_puncture_tracker.execute_tracking(m_time, m_restart_time,
-                                                     m_dt, write_punctures);
+        if (m_time != 0) // already done at t=0 in Main
+        {
+            CH_TIME("PunctureTracking");
+            // only do the write out for every coarsest level timestep
+            int coarsest_level = 0;
+            bool write_punctures = at_level_timestep_multiple(coarsest_level);
+            m_bh_amr.m_puncture_tracker.execute_tracking(m_time, m_restart_time,
+                                                         m_dt, write_punctures);
+        }
     }
 }
 
