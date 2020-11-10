@@ -16,7 +16,6 @@
 
 #ifdef BENCHMARK
 #include <stdexcept>
-#include "BenchmarkParams.hpp"
 #endif
 
 // Problem specific includes:

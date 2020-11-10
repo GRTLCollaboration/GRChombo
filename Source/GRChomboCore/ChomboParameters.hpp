@@ -56,6 +56,11 @@ class ChomboParameters
         pp.load("max_steps", max_steps, 1000000);
         pp.load("write_plot_ghosts", write_plot_ghosts, false);
 
+#ifdef BENCHMARK
+        pp.load("benchmark_level", benchmark_level, -1);
+        pp.load("benchmark_steps", benchmark_steps, -1);
+#endif
+
         // load vars to write to plot files
         pp.load("num_plot_vars", num_plot_vars, 0);
         std::vector<std::string> plot_var_names(num_plot_vars, "");
@@ -295,6 +300,11 @@ class ChomboParameters
 
     // For tagging
     double regrid_threshold;
+
+#ifdef BENCHMARK
+    // Number of substeps; used for benchmarking
+    int benchmark_level, benchmark_steps;
+#endif
 };
 
 #endif /* CHOMBOPARAMETERS_HPP_ */

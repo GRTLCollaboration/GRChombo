@@ -50,7 +50,7 @@ tag_buffer_size = 0
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 0
+checkpoint_interval = -1
 # set to zero to turn off plot files, comps defined in BinaryBHLevel.cpp
 plot_interval = 0
 num_plot_vars = 3
@@ -58,6 +58,9 @@ plot_vars = chi phi Pi
 write_plot_ghosts = 0
 dt_multiplier = 0.25
 stop_time = 20.0
+
+benchmark_level=9
+benchmark_steps=8
 
 # boundaries and periodicity of grid
 # Periodic directions - 0 = false, 1 = true

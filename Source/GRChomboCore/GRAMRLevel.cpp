@@ -5,10 +5,6 @@
 
 #include "GRAMRLevel.hpp"
 
-#ifdef BENCHMARK
-#include "BenchmarkParams.hpp"
-#endif
-
 GRAMRLevel::GRAMRLevel(GRAMR &gr_amr, const SimulationParameters &a_p,
                        int a_verbosity)
     : m_gr_amr(gr_amr), m_p(a_p), m_verbosity(a_verbosity),
@@ -170,7 +166,7 @@ Real GRAMRLevel::advance()
     m_time += m_dt;
 #ifdef BENCHMARK
     no_steps_level++;
-    if (m_level == BENCHMARK_LEVEL && no_steps_level == BENCHMARK_STEPS) {
+    if (m_level == m_p.benchmark_level && no_steps_level == m_p.benchmark_steps) {
         throw std::runtime_error("End of benchmark");
     }
 #endif
