@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef BOOSTEDBHFIXEDBG_HPP_
-#define BOOSTEDBHFIXEDBG_HPP_
+#ifndef BOOSTEDKERRSCHILDBHFIXEDBG_HPP_
+#define BOOSTEDKERRSCHILDBHFIXEDBG_HPP_
 
 #include "ADMFixedBGVars.hpp"
 #include "Cell.hpp"
@@ -16,14 +16,8 @@
 #include "UserVariables.hpp" //This files needs NUM_VARS - total number of components
 #include "simd.hpp"
 
-//! Class which computes the initial conditions for a boosted BH
-// starting with isotropic Schwazschild coords
-// ds^2 = -Adt + B dx^2 and boosting to
-// primed coords using x = \gamma (x' - vt')
-// t = \gamma (t' - v*x'), and then adding a shift
-// so that the solution is stationary (x' = \tilde x + v \tilde t, t' = \tilde
-// t)
-class BoostedBHFixedBG
+//! Class which computes the initial conditions per arXiv 1401.1548
+class BoostedKerrSchildBHFixedBG
 {
   public:
     //! Struct for the params of the  BH
@@ -39,7 +33,7 @@ class BoostedBHFixedBG
     const params_t m_params;
     const double m_dx;
 
-    BoostedBHFixedBG(params_t a_params, double a_dx)
+    BoostedKerrSchildBHFixedBG(params_t a_params, double a_dx)
         : m_params(a_params), m_dx(a_dx)
     {
         // check this boost param is sensible
@@ -66,10 +60,12 @@ class BoostedBHFixedBG
         current_cell.store_vars(chi, c_chi);
     }
 
-    /// Schwarzschild boosted solution as above
+    /// Schwarzschild boosted solution per gr-qc 9805023
     /// NB we use x' = x - vt to prevent the movement of the BH
+    /// on the grid
     /// x_p = gamma_boost * x'
     /// but we are in the rest frame of the SF (the BH is boosted)
+    /// NB2 eqn 11 is missing a squared under the sqrt
     template <class data_t, template <typename> class vars_t>
     void compute_metric_background(vars_t<data_t> &vars,
                                    const Cell<data_t> &current_cell) const
@@ -81,9 +77,7 @@ class BoostedBHFixedBG
         // "boost" is the gamma factor for the boost
         const double M = m_params.mass;
         const double v = m_params.velocity;
-        const double v2 = v * v;
-        const double boost2 = 1.0 / (1 - v2);
-        const double boost = sqrt(boost2);
+        const double boost = pow(1 - v * v, -0.5);
 
         // work out where we are on the grid including effect of boost
         // on x direction (length contraction)
@@ -92,55 +86,65 @@ class BoostedBHFixedBG
         const double y = coords.y;
         const double z = coords.z;
 
-        // the isotropic radius (boosted)
+        // the Kerr Schild radius (boosted)
         const data_t r2 = x_p * x_p + y * y + z * z;
         const data_t r = sqrt(r2);
 
-        // useful quantities H, A, B,
-        const data_t H = 0.5 * M / r;
-        const data_t sqrtA = (1.0 - H) / (1.0 + H);
-        const data_t A = sqrtA * sqrtA;
-        const data_t B = pow(1.0 + H, 4.0);
+        // find the H and el quantities (el decomposed into space and time)
+        const data_t H = M / r;
+        const Tensor<1, data_t> el = {boost * (x_p / r - v), y / r, z / r};
+        const data_t el_t = boost * (1.0 - v * x_p / r);
 
-        // Calculate the gradients of these
-        Tensor<1, data_t> dAdx, dBdx;
-        get_metric_derivs(dAdx, dBdx, coords);
+        // Calculate the gradients in el and H
+        Tensor<1, data_t> dHdx;
+        Tensor<1, data_t> dltdx;
+        Tensor<2, data_t> dldx;
+        get_KS_derivs(dHdx, dldx, dltdx, H, coords);
 
         // populate ADM vars
-        // fudge within horizon if r < M/2
-        data_t sign_lapse = (r - 0.5 * M) / abs(r - 0.5 * M);
-        vars.lapse = sign_lapse / boost * sqrt(A * B / (B - A * v2));
-
+        vars.lapse = pow(1.0 + 2.0 * H * el_t * el_t, -0.5);
+        FOR2(i, j)
+        {
+            vars.gamma[i][j] =
+                TensorAlgebra::delta(i, j) + 2.0 * H * el[i] * el[j];
+        }
         using namespace TensorAlgebra;
-        FOR2(i, j) { vars.gamma[i][j] = delta(i, j) * B; }
-        vars.gamma[0][0] = boost2 * (vars.gamma[0][0] - A * v2);
         const auto gamma_UU = compute_inverse_sym(vars.gamma);
-
-        // this adjustment gives the shift which achieves x' = x - vt
-        FOR1(i) { vars.shift[i] = delta(i, 0) * A * v / boost2 / (B - A * v2); }
-
-        // Calculate partial derivative of spatial metric
-        FOR3(i, j, k) { vars.d1_gamma[i][j][k] = delta(i, j) * dBdx[k]; }
         FOR1(i)
         {
-            vars.d1_gamma[0][0][i] =
-                (vars.d1_gamma[0][0][i] - dAdx[i] * v2) * boost2;
+            vars.shift[i] = 0;
+            FOR1(j)
+            {
+                vars.shift[i] += gamma_UU[i][j] * 2.0 * H * el[j] * el_t;
+            }
+        }
+        // this adjustment gives the shift which achieves x' = x - vt
+        vars.shift[0] += v;
+
+        // Calculate partial derivative of spatial metric
+        FOR3(i, j, k)
+        {
+            vars.d1_gamma[i][j][k] =
+                2.0 * (el[i] * el[j] * dHdx[k] + H * el[i] * dldx[j][k] +
+                       H * el[j] * dldx[i][k]);
         }
 
         // calculate derivs of lapse and shift
         FOR1(i)
         {
-            vars.d1_lapse[i] = 0.5 * vars.lapse *
-                               (dAdx[i] / A + dBdx[i] / B -
-                                (dBdx[i] - v2 * dAdx[i]) / (B - v2 * A));
+            vars.d1_lapse[i] = -pow(vars.lapse, 3.0) * el_t *
+                               (el_t * dHdx[i] + 2.0 * H * dltdx[i]);
         }
 
-        // v is a constant
+        // use the fact that shift^i = lapse^2 * shift_i + v^i
+        // and v^i is a constant vector
         FOR2(i, j)
         {
             vars.d1_shift[i][j] =
-                delta(i, 0) * vars.shift[0] *
-                (dAdx[j] / A - (dBdx[j] - dAdx[j] * v2) / (B - A * v2));
+                2.0 * el_t * dHdx[j] * pow(vars.lapse, 2.0) * el[i] +
+                4.0 * el_t * H * vars.lapse * vars.d1_lapse[j] * el[i] +
+                2.0 * el_t * H * pow(vars.lapse, 2.0) * dldx[i][j] +
+                2.0 * dltdx[j] * H * pow(vars.lapse, 2.0) * el[i];
         }
 
         // calculate the extrinsic curvature, using the fact that
@@ -172,8 +176,9 @@ class BoostedBHFixedBG
     /// Work out the gradients of the quantities H and el appearing in the Kerr
     /// Schild solution
     template <class data_t>
-    void get_metric_derivs(Tensor<1, data_t> &dAdx, Tensor<1, data_t> &dBdx,
-                           const Coordinates<data_t> &coords) const
+    void get_KS_derivs(Tensor<1, data_t> &dHdx, Tensor<2, data_t> &dldx,
+                       Tensor<1, data_t> &dltdx, const data_t &H,
+                       const Coordinates<data_t> &coords) const
     {
         // black hole params - mass M and boost v
         const double M = m_params.mass;
@@ -192,25 +197,31 @@ class BoostedBHFixedBG
         const data_t r2 = x_p * x_p + x[1] * x[1] + x[2] * x[2];
         const data_t r = sqrt(r2);
 
-        // useful quantities H, A, B,
-        const data_t H = 0.5 * M / r;
-        const data_t sqrtA = (1.0 - H) / (1.0 + H);
-        const data_t A = sqrtA * sqrtA;
-        const data_t B = pow(1.0 + H, 4.0);
-
         using namespace TensorAlgebra;
+
         // derivatives of r wrt actual grid coords
         Tensor<1, data_t> drdx;
         FOR1(i) { drdx[i] = x[i] / r; }
         drdx[0] *= boost * boost;
 
-        // derivs of quantities
-        Tensor<1, data_t> dHdx;
+        FOR1(i) { dHdx[i] = -H / r * drdx[i]; }
+
+        // note to use convention as in rest of tensors the last index is the
+        // derivative index so these are d_j l_i
+        FOR2(i, j)
+        {
+            dldx[i][j] = -x[i] / r2 * drdx[j] + delta(i, j) / r;
+            if (i == 0)
+            {
+                dldx[i][j] *= boost * boost;
+            }
+        }
+
+        // then dltdi
         FOR1(i)
         {
-            dHdx[i] = -H / r * drdx[i];
-            dAdx[i] = -4.0 * pow(1.0 + H, -3.0) * (1.0 - H) * dHdx[i];
-            dBdx[i] = 4.0 * pow(1.0 + H, 3.0) * dHdx[i];
+            dltdx[i] =
+                v * boost * boost * (-delta(0, i) / r + x[0] / r2 * drdx[i]);
         }
     }
 
@@ -235,11 +246,11 @@ class BoostedBHFixedBG
         // the coordinate radius (boosted)
         const double r2 = x_p * x_p + y * y + z * z;
 
-        // compare this to horizon in isotropic coords
-        const double r_horizon = 0.5 * M;
+        // compare this to horizon in kerr schild coords
+        const double r_horizon = 2.0 * M;
 
         return sqrt(r2) / r_horizon;
     }
 };
 
-#endif /* BOOSTEDBHFIXEDBG_HPP_ */
+#endif /* BOOSTEDKERRSCHILDBHFIXEDBG_HPP_ */

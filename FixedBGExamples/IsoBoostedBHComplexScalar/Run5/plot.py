@@ -32,7 +32,7 @@ OuterFluxData = deltaE
 # S_x dataset
 labelstring = "Delta S_x, v = " + str(v) + " mu = " + str(mu) + " r = " + str(r)
 timedata = data1[:,0]
-Mdata = data1[:,2] - data1[0,2]
+Mdata = data1[:,2] #- data1[0,2]
 Mdata = - symmetry * Mdata
 plt.plot(timedata, Mdata, '--', lw = 1.0, label=labelstring)
 
@@ -72,7 +72,7 @@ plt.xlabel("time")
 plt.ylabel("xMom")
 #plt.xlim(0, 1000)
 #plt.ylim(1e-1, 1e2)
-plt.legend(loc=1)
+plt.legend(loc=0)
 
 # save as png image
 filename = "EvsT" + "_mu" + str(mu) + ".png"

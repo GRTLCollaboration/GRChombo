@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt;
 # output data from running merger
 M = 1.0
 mu = 0.05
-v = 0.1
+v = 0.4
 r = 500
 symmetry = 4
 data1 = np.loadtxt("RhoIntegral.dat")
@@ -63,8 +63,8 @@ SourceData = deltaE * symmetry
 plt.plot(timedata, SourceData, '--', lw = 1.0, label=labelstring)
 
 # combine check
-labelstring = "Outerflux = DeltaM (+?) Source - InnerFlux"
-Fdata = 1.0 * Mdata + 1.0 * SourceData - 1.0 * InnerFluxData
+labelstring = "Outerflux = (+?) DeltaM + Source + InnerFlux"
+Fdata = 1.0 * Mdata + 1.0 * SourceData + 1.0 * InnerFluxData
 plt.plot(timedata, Fdata, '-', lw = 1.0, label=labelstring)
 
 # make the plot look nice

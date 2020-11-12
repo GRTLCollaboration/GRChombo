@@ -2,9 +2,9 @@
 
 verbosity = 0
 integral_filename = RhoIntegral
-chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost3_chk
-plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost3_plt
-#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost3_chk001500.3d.hdf5
+chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost5I_chk
+plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost5I_plt
+restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost5I_chk000500.3d.hdf5
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
@@ -52,7 +52,7 @@ lo_boundary = 3 2 2
 # 1,2,3 = odd x, y, z
 # 4,5,6 = odd xy, yz, xz
 vars_parity            = 0 0 0 0   #phi and Pi
-vars_parity_diagnostic = 0 0 0 0 0 0 0 0    #chi and rho rhoJ
+vars_parity_diagnostic = 0 0 0 0 0 1 1 0 0    #chi and rho rhoJ
 
 # specify non zero asympotitic vars
 num_nonzero_asymptotic_vars = 0
@@ -70,10 +70,10 @@ extrapolation_order = 1
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 500
 plot_interval = 10
-num_plot_vars = 1
-plot_vars = Source
+num_plot_vars = 2
+plot_vars = Source BHMom
 dt_multiplier = 0.05
-stop_time = 20000.0
+stop_time = 10000.0
 
 # coefficient for KO numerical dissipation
 # NB must be less than 0.5 for stability
@@ -88,7 +88,7 @@ f_axion = 0.0
 
 # Boosted BH initial data, boost in x direction, spin in z direction
 bh_mass = 1.0
-bh_velocity = 0.3 # This is a, so needs to be <= M
+bh_velocity = 0.5 # This is a, so needs to be <= M
 inner_r = 3.0
 outer_r = 200.0
 

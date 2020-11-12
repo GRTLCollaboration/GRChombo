@@ -107,24 +107,36 @@ template <class matter_t, class background_t> class FixedBGMomentumFlux
 
         // How big is the source of i mom?
         Tensor<1, data_t> source;
+        Tensor<1, data_t> BHMom;
         FOR1(i)
         {
             source[i] = -emtensor.rho * metric_vars.d1_lapse[i];
+            BHMom[i] = 0.0;
 
             FOR1(j)
             {
                 source[i] += emtensor.Si[j] * metric_vars.d1_shift[j][i];
-                FOR2(k, l)
+                FOR1(k)
                 {
-                    source[i] += metric_vars.lapse * gamma_UU[k][l] *
+                    BHMom[i] += - 1.0/8.0/M_PI * Ni_L[k] * 
+                                  gamma_UU[j][k] * delta(i,j) * metric_vars.K;
+                
+                    FOR1(l)
+                    {
+                        source[i] += metric_vars.lapse * gamma_UU[k][l] *
                                  emtensor.Sij[k][j] * chris_phys.ULL[j][l][i];
+                        BHMom[i] += 1.0/8.0/M_PI * Ni_L[j] * 
+                                  gamma_UU[k][i] * gamma_UU[l][j] * metric_vars.K_tensor[k][l];
+                    }
                 }
             }
             source[i] = source[i] * sqrt(det_gamma);
+            BHMom[i] *= sqrt(det_Sigma) / r2sintheta;
         }
 
         // assign values of Stress integrand in the output box
         current_cell.store_vars(source[0], c_Source);
+        current_cell.store_vars(BHMom[0], c_BHMom);
         current_cell.store_vars(Mdot, c_Stress);
         current_cell.store_vars(xMom, c_xMom);
     }
