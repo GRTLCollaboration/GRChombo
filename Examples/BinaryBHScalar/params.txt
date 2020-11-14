@@ -60,7 +60,7 @@ dt_multiplier = 0.25
 stop_time = 20.0
 
 benchmark_level=9
-benchmark_steps=8
+benchmark_steps=32
 
 # boundaries and periodicity of grid
 # Periodic directions - 0 = false, 1 = true
