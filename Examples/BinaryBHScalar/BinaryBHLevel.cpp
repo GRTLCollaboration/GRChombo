@@ -202,6 +202,7 @@ void BinaryBHLevel::specificPostTimeStep()
         {
             write_punctures = true;
         }
+        write_punctures = false;
         my_punctures.execute_tracking(m_bh_amr, write_punctures);
     }
 }
