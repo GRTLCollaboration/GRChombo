@@ -108,9 +108,13 @@ Real GRAMRLevel::advance()
     const DisjointBoxLayout &level_domain = m_state_new.disjointBoxLayout();
     int nbox = level_domain.dataIterator().size();
     int total_nbox = level_domain.size();
-    pout() << "GRAMRLevel::advance level " << m_level << " at time " << m_time
-           << " (" << speed << " M/hr)"
-           << ". Boxes on this rank: " << nbox << " / " << total_nbox << endl;
+    int m_rank;
+    MPI_Comm_rank(Chombo_MPI::comm, &m_rank);
+    if (m_rank == 0) {
+        pout() << "GRAMRLevel::advance level " << m_level << " at time " << m_time
+               << " (" << speed << " M/hr)"
+               << ". Boxes on this rank: " << nbox << " / " << total_nbox << endl;
+     }
 
     // copy soln to old state to save it
     m_state_new.copyTo(m_state_new.interval(), m_state_old,
