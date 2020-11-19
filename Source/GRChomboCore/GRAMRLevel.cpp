@@ -726,7 +726,7 @@ void GRAMRLevel::writePlotLevel(HDF5Handle &a_handle) const
         m_p.plot_vars;
     int num_states = plot_states.size();
 
-    if (num_states > 0)
+    if (num_states > 0 && m_p.plot_levels[m_level])
     {
         // Setup the level string
         char levelStr[20];

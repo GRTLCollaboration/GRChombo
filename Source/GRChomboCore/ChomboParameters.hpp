@@ -68,6 +68,9 @@ class ChomboParameters
         pp.load("max_steps", max_steps, 1000000);
         pp.load("write_plot_ghosts", write_plot_ghosts, false);
 
+        // load which levels to write to plot levels
+        pp.load("plot_levels", plot_levels, max_level + 1, true);
+
         // load vars to write to plot files
         pp.load("num_plot_vars", num_plot_vars, 0);
         std::vector<std::string> plot_var_names(num_plot_vars, "");
@@ -301,6 +304,8 @@ class ChomboParameters
     double fill_ratio; // determines how fussy the regridding is about tags
     std::string checkpoint_prefix, plot_prefix; // naming of files
     bool write_plot_ghosts;
+    std::vector<bool>
+        plot_levels; // whether or not a level is written to plot files
     int num_plot_vars;
     std::vector<std::pair<int, VariableType>>
         plot_vars; // vars to write to plot file
