@@ -57,7 +57,7 @@ int runGRChombo(int argc, char *argv[])
 
     auto now = Clock::now();
     auto duration = std::chrono::duration_cast<Minutes>(now - start_time);
-    pout() << "Total simulation time (mins): " << duration.count() << ".\n";
+    pout() << "Total simulation time (mins): " << duration.count() << "\n";
 
     gr_amr.conclude();
 
