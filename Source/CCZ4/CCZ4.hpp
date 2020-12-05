@@ -106,7 +106,7 @@ class CCZ4
             &d2, //!< The second derivative the variables
         const vars_t<data_t>
             &advec //!< The advection derivatives of the variables
-        ) const;
+    ) const;
 };
 
 #include "CCZ4.impl.hpp"
