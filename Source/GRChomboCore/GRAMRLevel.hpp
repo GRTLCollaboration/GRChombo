@@ -15,6 +15,7 @@
 #include "InterpSource.hpp"
 #include "LevelFluxRegister.H" //We don't actually use flux conservation but Chombo assumes we do
 #include "LevelRK4.H"
+#include "LoadBalance.H"
 #include "SimulationParameters.hpp"
 #include "UserVariables.hpp" // need NUM_VARS
 #include <fstream>
