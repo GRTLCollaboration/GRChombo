@@ -131,52 +131,59 @@ int runSphericalExtractionTest(int argc, char *argv[])
     int status = 0;
     pout() << std::setprecision(10);
 
-    for (int iradius = 0;
-         iradius < sim_params.extraction_params_lo.num_extraction_radii;
-         ++iradius)
+    if (procID() == 0)
     {
-        double r = sim_params.extraction_params_lo.extraction_radii[iradius];
-        double integral_re_lo_trapezium =
-            (integral_lo_trapezium.first)[iradius];
-        double integral_re_hi_trapezium =
-            (integral_hi_trapezium.first)[iradius];
-        double integral_re_lo_simpson = (integral_lo_simpson.first)[iradius];
-        double integral_re_hi_simpson = (integral_hi_simpson.first)[iradius];
-        double integral_re_lo_boole = (integral_lo_boole.first)[iradius];
-        double integral_re_hi_boole = (integral_hi_boole.first)[iradius];
-        double analytic_integral = 1.0;
+        for (int iradius = 0;
+             iradius < sim_params.extraction_params_lo.num_extraction_radii;
+             ++iradius)
+        {
+            double r =
+                sim_params.extraction_params_lo.extraction_radii[iradius];
+            double integral_re_lo_trapezium =
+                (integral_lo_trapezium.first)[iradius];
+            double integral_re_hi_trapezium =
+                (integral_hi_trapezium.first)[iradius];
+            double integral_re_lo_simpson =
+                (integral_lo_simpson.first)[iradius];
+            double integral_re_hi_simpson =
+                (integral_hi_simpson.first)[iradius];
+            double integral_re_lo_boole = (integral_lo_boole.first)[iradius];
+            double integral_re_hi_boole = (integral_hi_boole.first)[iradius];
+            double analytic_integral = 1.0;
 
-        double convergence_factor_trapezium =
-            std::abs((integral_re_lo_trapezium - analytic_integral) /
-                     (integral_re_hi_trapezium - analytic_integral));
-        double convergence_factor_simpson =
-            std::abs((integral_re_lo_simpson - analytic_integral) /
-                     (integral_re_hi_simpson - analytic_integral));
-        double convergence_factor_boole =
-            std::abs((integral_re_lo_boole - analytic_integral) /
-                     (integral_re_hi_boole - analytic_integral));
+            double convergence_factor_trapezium =
+                std::abs((integral_re_lo_trapezium - analytic_integral) /
+                         (integral_re_hi_trapezium - analytic_integral));
+            double convergence_factor_simpson =
+                std::abs((integral_re_lo_simpson - analytic_integral) /
+                         (integral_re_hi_simpson - analytic_integral));
+            double convergence_factor_boole =
+                std::abs((integral_re_lo_boole - analytic_integral) /
+                         (integral_re_hi_boole - analytic_integral));
 
-        double convergence_order_trapezium =
-            std::log2(convergence_factor_trapezium);
-        double convergence_order_simpson =
-            std::log2(convergence_factor_simpson);
-        double convergence_order_boole = std::log2(convergence_factor_boole);
+            double convergence_order_trapezium =
+                std::log2(convergence_factor_trapezium);
+            double convergence_order_simpson =
+                std::log2(convergence_factor_simpson);
+            double convergence_order_boole =
+                std::log2(convergence_factor_boole);
 
-        // trapezium rule should have second order convergence
-        status |= (convergence_order_trapezium < 1.5);
-        // Simpson's rule should have fourth order convergence
-        status |= (convergence_order_simpson < 3.5);
-        // Boole's rule should have sixth order convergence
-        status |= (convergence_order_boole < 5.5);
+            // trapezium rule should have second order convergence
+            status |= (convergence_order_trapezium < 1.5);
+            // Simpson's rule should have fourth order convergence
+            status |= (convergence_order_simpson < 3.5);
+            // Boole's rule should have sixth order convergence
+            status |= (convergence_order_boole < 5.5);
 
-        pout() << "At r = " << r << ":\n";
-        pout() << "convergence_order_trapezium = "
-               << convergence_order_trapezium << "\n";
-        pout() << "convergence_order_simpson = " << convergence_order_simpson
-               << "\n";
-        pout() << "convergence_order_boole = " << convergence_order_boole
-               << "\n"
-               << endl;
+            pout() << "At r = " << r << ":\n";
+            pout() << "convergence_order_trapezium = "
+                   << convergence_order_trapezium << "\n";
+            pout() << "convergence_order_simpson = "
+                   << convergence_order_simpson << "\n";
+            pout() << "convergence_order_boole = " << convergence_order_boole
+                   << "\n"
+                   << endl;
+        }
     }
 
     return status;

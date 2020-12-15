@@ -8,6 +8,7 @@
 
 // Chombo includes
 #include "CH_assert.H"
+#include "SPMD.H"
 
 // Other inclues
 #include "AMRInterpolator.hpp"
@@ -69,9 +70,10 @@ template <class SurfaceGeometry> class SurfaceExtraction
     const double m_time;
     const bool m_first_step;
     const double m_restart_time;
-    const int m_num_points; //!< the total number of points per surface
-    const double m_du;      //!< the grid spacing in u (used in integrate)
-    const double m_dv;      //!< the grid spacing in v (used in integrate)
+    const int m_num_interp_points; //!< the total number of points this rank
+                                   //!< will extract (0 on ranks > 0)
+    const double m_du; //!< the grid spacing in u (used in integrate)
+    const double m_dv; //!< the grid spacing in v (used in integrate)
 
     std::vector<std::vector<double>> m_interp_data;
     std::array<std::vector<double>, CH_SPACEDIM> m_interp_coords;
@@ -91,7 +93,8 @@ template <class SurfaceGeometry> class SurfaceExtraction
     //! associated to given surface, u and v indices
     int index(int a_isurface, int a_iu, int a_iv) const
     {
-        return a_isurface * m_num_points + a_iu * m_params.num_points_v + a_iv;
+        return a_isurface * m_params.num_points_u * m_params.num_points_v +
+               a_iu * m_params.num_points_v + a_iv;
     }
 
   public:
@@ -117,10 +120,11 @@ template <class SurfaceGeometry> class SurfaceExtraction
 
     //! Alternative constructor with a predefined vector of variables and
     //! derivatives
-    SurfaceExtraction(const SurfaceGeometry &a_geom, const params_t &a_params,
-                      const std::vector<std::pair<int, Derivative>> &a_vars,
-                      double a_dt, double a_time, bool a_first_step,
-                      double a_restart_time = 0.0);
+    SurfaceExtraction(
+        const SurfaceGeometry &a_geom, const params_t &a_params,
+        const std::vector<std::tuple<int, VariableType, Derivative>> &a_vars,
+        double a_dt, double a_time, bool a_first_step,
+        double a_restart_time = 0.0);
 
     //! Another alternative constructor with a predefined vector of variables
     //! no derivatives
