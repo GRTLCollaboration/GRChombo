@@ -72,8 +72,9 @@ class BoundaryConditions
         std::array<int, NUM_DIAGNOSTIC_VARS>
             vars_parity_diagnostic; /* needed only in AMRInterpolator */
         std::array<double, NUM_VARS> vars_asymptotic_values;
-        std::vector<int> mixed_bc_extrapolating_vars;
-        std::vector<int> mixed_bc_sommerfeld_vars;
+        std::map<int, int> mixed_bc_vars_map;
+        // std::vector<int> mixed_bc_extrapolating_vars;
+        // std::vector<int> mixed_bc_sommerfeld_vars;
         int extrapolation_order;
         params_t(); // sets the defaults
         void
@@ -91,8 +92,6 @@ class BoundaryConditions
     RealVect m_center;      // the position of the center of the grid
     ProblemDomain m_domain; // the problem domain (excludes boundary cells)
     Box m_domain_box;       // The box representing the domain
-    std::vector<int>
-        m_evolution_comps; // a vector of c_nums for all the evolution vars
     std::vector<int>
         m_diagnostic_comps; // a vector of c_nums for all the diagnostic vars
     bool is_defined; // whether the BoundaryConditions class members are defined
@@ -132,20 +131,23 @@ class BoundaryConditions
                              const GRLevelData &a_soln, GRLevelData &a_rhs);
 
     /// enforce solution boundary conditions, e.g. after interpolation
-    void fill_solution_boundaries(const Side::LoHiSide a_side,
-                                  GRLevelData &a_state);
+    void fill_solution_boundaries(
+        const Side::LoHiSide a_side, GRLevelData &a_state,
+        const Interval &a_comps = Interval(0, NUM_VARS - 1));
 
     /// fill diagnostic boundaries - used in AMRInterpolator
-    void fill_diagnostic_boundaries(const Side::LoHiSide a_side,
-                                    GRLevelData &a_state);
+    void fill_diagnostic_boundaries(
+        const Side::LoHiSide a_side, GRLevelData &a_state,
+        const Interval &a_comps = Interval(0, NUM_DIAGNOSTIC_VARS - 1));
 
     /// Fill the boundary values appropriately based on the params set
     /// in the direction dir
-    void fill_boundary_cells_dir(
-        const Side::LoHiSide a_side, const GRLevelData &a_soln,
-        GRLevelData &a_out, const int dir, const int boundary_condition,
-        const VariableType var_type = VariableType::evolution,
-        const bool filling_rhs = true);
+    void fill_boundary_cells_dir(const Side::LoHiSide a_side,
+                                 const GRLevelData &a_soln, GRLevelData &a_out,
+                                 const int dir, const int boundary_condition,
+                                 const Interval &a_comps,
+                                 const VariableType var_type,
+                                 const bool filling_rhs);
 
     /// Copy the boundary values from src to dest
     /// NB assumes same box layout of input and output data
