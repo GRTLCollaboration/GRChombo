@@ -269,10 +269,10 @@ void BoundaryConditions::write_mixed_conditions(int idir,
 {
     // check all the vars have been assigned a BC - this should always be the
     // case because of how the params are assigned
-    CH_assert(a_params.mixed_bc_vars_map.size() == NUM_VARS)
+    CH_assert(a_params.mixed_bc_vars_map.size() == NUM_VARS);
 
-        // now do the write out
-        pout()
+    // now do the write out
+    pout()
         << "The variables that use extrapolating bcs in this direction are : "
         << endl;
     for (int icomp = 0; icomp < NUM_VARS; icomp++)

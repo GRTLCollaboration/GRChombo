@@ -73,8 +73,6 @@ class BoundaryConditions
             vars_parity_diagnostic; /* needed only in AMRInterpolator */
         std::array<double, NUM_VARS> vars_asymptotic_values;
         std::map<int, int> mixed_bc_vars_map;
-        // std::vector<int> mixed_bc_extrapolating_vars;
-        // std::vector<int> mixed_bc_sommerfeld_vars;
         int extrapolation_order;
         params_t(); // sets the defaults
         void
@@ -92,8 +90,6 @@ class BoundaryConditions
     RealVect m_center;      // the position of the center of the grid
     ProblemDomain m_domain; // the problem domain (excludes boundary cells)
     Box m_domain_box;       // The box representing the domain
-    std::vector<int>
-        m_diagnostic_comps; // a vector of c_nums for all the diagnostic vars
     bool is_defined; // whether the BoundaryConditions class members are defined
 
   public:
