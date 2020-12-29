@@ -12,6 +12,7 @@
 #include "ChomboParameters.hpp"
 #include "GRParmParse.hpp"
 #include "SphericalExtraction.hpp"
+#include <limits>
 
 // add this type alias here for backwards compatibility
 using extraction_params_t = SphericalExtraction::params_t;
@@ -22,6 +23,7 @@ class SimulationParametersBase : public ChomboParameters
     SimulationParametersBase(GRParmParse &pp) : ChomboParameters(pp)
     {
         read_params(pp);
+        check_params();
     }
 
   private:
@@ -47,7 +49,7 @@ class SimulationParametersBase : public ChomboParameters
         pp.load("sigma", sigma, 0.1);
 
         // Nan Check and min chi and lapse values
-        pp.load("nan_check", nan_check, 1);
+        pp.load("nan_check", nan_check, true);
         pp.load("min_chi", min_chi, 1e-4);
         pp.load("min_lapse", min_lapse, 1e-4);
 
@@ -87,8 +89,6 @@ class SimulationParametersBase : public ChomboParameters
         }
         pp.load("extraction_center", extraction_params.center, center);
 
-        check_radii();
-
         if (pp.contains("modes"))
         {
             pp.load("num_modes", extraction_params.num_modes);
@@ -119,52 +119,136 @@ class SimulationParametersBase : public ChomboParameters
         pp.load("write_extraction", extraction_params.write_extraction, false);
     }
 
-    void check_radii()
+    void check_params()
     {
-        // check center of extraction and extraction radii are compatible with
-        // box size
-        for (auto &radius : extraction_params.extraction_radii)
+        warn_parameter(
+            "sigma", sigma, (sigma >= 0.0) && (sigma <= 2.0 / dt_multiplier),
+            "should be >= 0.0 and <= 2 / dt_multiplier for stability "
+            "(see Alcubierre p344)");
+        warn_parameter("nan_check", nan_check, nan_check,
+                       "should not normally be disabled");
+        // not sure these are necessary hence commented out
+        // check_parameter("min_chi", min_chi, (min_chi >= 0.0), "must be >=
+        // 0.0"); check_parameter("min_lapse", min_lapse, (min_lapse >= 0.0)
+        // "must be >= 0.0");
+        check_parameter("formulation", formulation,
+                        (formulation == CCZ4::USE_CCZ4) ||
+                            (formulation == CCZ4::USE_BSSN),
+                        "must be 0 or 1");
+        if (formulation == CCZ4::USE_CCZ4)
         {
-            std::array<double, CH_SPACEDIM> axis_distance_to_boundary;
+            warn_parameter(
+                "kappa1", ccz4_params.kappa1, ccz4_params.kappa1 > 0.0,
+                "should be greater than 0.0 to damp constraints (see "
+                "arXiv:1106.2254).");
+            warn_parameter("kappa2", ccz4_params.kappa2,
+                           ccz4_params.kappa2 > -1.0,
+                           "should be greater than -1.0 to damp constraints "
+                           "(see arXiv:1106.2254).");
+        }
+        else if (formulation == CCZ4::USE_BSSN)
+        {
+            // maybe we should just set these to zero and print a warning
+            // in the BSSN case
+            check_parameter("kappa1", ccz4_params.kappa1,
+                            ccz4_params.kappa1 == 0.0,
+                            "must equal zero for BSSN.");
+            check_parameter("kappa2", ccz4_params.kappa2,
+                            ccz4_params.kappa2 == 0.0,
+                            "must equal zero for BSSN.");
+            check_parameter("kappa3", ccz4_params.kappa3,
+                            ccz4_params.kappa3 == 0.0,
+                            "must equal zero for BSSN.");
+        }
 
-            // upper boundary
-            FOR1(i)
-            {
-                axis_distance_to_boundary[i] =
-                    (boundary_params.hi_boundary[i] ==
-                             BoundaryConditions::REFLECTIVE_BC
-                         ? 2.
-                         : 1.) *
-                        (ivN[i] + 1) * coarsest_dx -
-                    extraction_params.center[i];
-            }
-            if (radius >= *std::min_element(axis_distance_to_boundary.begin(),
-                                            axis_distance_to_boundary.end()))
-                MayDay::Error(
-                    "Extraction radii go beyond the box's upper boundary");
+        // only warn for gauge parameters as there are legitimate cases you may
+        // want to deviate from the norm
+        warn_parameter("shift_Gamma_coeff", ccz4_params.shift_Gamma_coeff,
+                       abs(ccz4_params.shift_Gamma_coeff - 0.75) <
+                           std::numeric_limits<double>::epsilon(),
+                       "usually set to 0.75");
+        warn_parameter("lapse_advec_coeff", ccz4_params.lapse_advec_coeff,
+                       min(abs(ccz4_params.lapse_advec_coeff),
+                           abs(ccz4_params.lapse_advec_coeff - 1.0)) <
+                           std::numeric_limits<double>::epsilon(),
+                       "usually set to 0.0 or 1.0");
+        warn_parameter("shift_advec_coeff", ccz4_params.shift_advec_coeff,
+                       min(abs(ccz4_params.shift_advec_coeff),
+                           abs(ccz4_params.shift_advec_coeff - 1.0)) <
+                           std::numeric_limits<double>::epsilon(),
+                       "usually set to 0.0 or 1.0");
+        warn_parameter("eta", ccz4_params.eta,
+                       ccz4_params.eta > 0.1 && ccz4_params.eta < 10,
+                       "usually O(1/M_ADM) so typically O(1) in code units");
+        warn_parameter("lapse_power", ccz4_params.lapse_power,
+                       abs(ccz4_params.lapse_power - 1.0) <
+                           std::numeric_limits<double>::epsilon(),
+                       "set to 1.0 for 1+log slicing");
+        warn_parameter("lapse_coeff", ccz4_params.lapse_coeff,
+                       abs(ccz4_params.lapse_coeff - 2.0) <
+                           std::numeric_limits<double>::epsilon(),
+                       "set to 2.0 for 1+log slicing");
+        std::array<double, CH_SPACEDIM> reflective_box_lo, reflective_box_hi;
 
-            // lower boundary
-            FOR1(i)
+        FOR1(idir)
+        {
+            reflective_box_lo[idir] = ((boundary_params.lo_boundary[idir] ==
+                                        BoundaryConditions::REFLECTIVE_BC)
+                                           ? -1.0
+                                           : 0.0) *
+                                      (ivN[idir] + 1) * coarsest_dx;
+            reflective_box_hi[idir] = ((boundary_params.hi_boundary[idir] ==
+                                        BoundaryConditions::REFLECTIVE_BC)
+                                           ? 2.0
+                                           : 1.0) *
+                                      (ivN[idir] + 1) * coarsest_dx;
+        }
+
+        // Now extraction parameters
+        FOR1(idir)
+        {
+            std::string center_name =
+                "extraction_center[" + std::to_string(idir) + "]";
+            double center_in_dir = extraction_params.center[idir];
+            check_parameter(center_name, center_in_dir,
+                            (center_in_dir >= reflective_box_lo[idir]) &&
+                                (center_in_dir <= reflective_box_hi[idir]),
+                            "must be in the computational domain after "
+                            "applying reflective symmetry");
+            for (int iradius = 0;
+                 iradius < extraction_params.num_extraction_radii; ++iradius)
             {
-                axis_distance_to_boundary[i] =
-                    extraction_params.center[i] +
-                    (boundary_params.lo_boundary[i] ==
-                             BoundaryConditions::REFLECTIVE_BC
-                         ? 1.
-                         : 0.) *
-                        (ivN[i] + 1) * coarsest_dx;
+                std::string radius_name =
+                    "extraction_radii[" + std::to_string(iradius) + "]";
+                double radius = extraction_params.extraction_radii[iradius];
+                if (idir == 0)
+                    check_parameter(radius_name, radius, radius >= 0.0,
+                                    "must be >= 0.0");
+                check_parameter(
+                    radius_name, radius,
+                    (center_in_dir - radius >= reflective_box_lo[idir]) &&
+                        (center_in_dir + radius <= reflective_box_hi[idir]),
+                    "extraction sphere must lie within the computational "
+                    "domain after applying reflective symmetry");
             }
-            if (radius >= *std::min_element(axis_distance_to_boundary.begin(),
-                                            axis_distance_to_boundary.end()))
-                MayDay::Error(
-                    "Extraction radii go beyond the box's lower boundary");
+        }
+        for (int imode = 0; imode < extraction_params.num_modes; ++imode)
+        {
+            auto &mode = extraction_params.modes[imode];
+            int l = mode.first;
+            int m = mode.second;
+            std::string mode_name = "modes[" + std::to_string(imode) + "]";
+            std::string value_str = "(" + std::to_string(mode.first) + ", " +
+                                    std::to_string(mode.second) + ")";
+            check_parameter(mode_name, value_str, (l >= 2) && (abs(m) <= l),
+                            "l must be >= 2 and m must satisfy -l <= m <= l");
         }
     }
 
   public:
     double sigma; // Kreiss-Oliger dissipation parameter
 
-    int nan_check;
+    bool nan_check;
 
     double min_chi, min_lapse;
 
