@@ -6,13 +6,19 @@
 #ifndef GRAMR_HPP_
 #define GRAMR_HPP_
 
+// Our includes
 #include "AMR.H"
+
+// Other includes
 #include "AMRInterpolator.hpp"
 #include "Lagrange.hpp"
 #include <algorithm>
 #include <chrono>
 #include <ratio>
 #include <vector>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 /// A child of Chombo's AMR class to interface with tools which require
 /// access to the whole AMR hierarchy (such as the AMRInterpolator)

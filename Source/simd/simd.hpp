@@ -6,9 +6,15 @@
 #ifndef SIMD_HPP_
 #define SIMD_HPP_
 
-#include "AlwaysInline.hpp"
+// Chombo includes
 #include "MayDay.H"
+
+// Other includes
+#include "AlwaysInline.hpp"
 #include <cmath>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 // This struct can be used to switch between simd and non-simd versions of the
 // same function by overloading

@@ -15,6 +15,9 @@
 #include "simd.hpp"
 #include <array>
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 //!  Calculates the Hamiltonian and Momentum constraints with matter fields
 /*!
      The class calculates the Hamiltonian and Momentum constraints at each point

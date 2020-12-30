@@ -6,10 +6,15 @@
 #ifndef DEFAULTLEVELFACTORY_HPP_
 #define DEFAULTLEVELFACTORY_HPP_
 
-// General includes:
+// Chombo includes:
 #include "AMRLevelFactory.H"
+
+// Our includes
 #include "GRAMR.hpp"
 #include "SimulationParameters.hpp"
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 template <class level_t> class DefaultLevelFactory : public AMRLevelFactory
 {

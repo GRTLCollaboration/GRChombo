@@ -13,6 +13,9 @@
  */
 #endif
 
+// Chombo includes
+#include "parstream.H" //Gives us pout()
+
 // General includes:
 #include <algorithm>
 #include <cmath>
@@ -20,7 +23,6 @@
 #include <iostream>
 #include <sys/time.h>
 
-#include "parstream.H" //Gives us pout()
 using std::endl;
 #include "GRAMR.hpp"
 
@@ -39,6 +41,9 @@ using std::endl;
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 int runInterpolatorTest(int argc, char *argv[])
 {

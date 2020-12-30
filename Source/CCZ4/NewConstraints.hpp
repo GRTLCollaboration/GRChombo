@@ -19,6 +19,9 @@
 
 #include <array>
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 class Constraints
 {
   public:

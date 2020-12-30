@@ -14,6 +14,9 @@
 #include "simd.hpp"
 #include <array>
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 enum Lapse
 {
     ONE,

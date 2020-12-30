@@ -11,6 +11,9 @@
 #include "TensorAlgebra.hpp"
 #include "simd.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 namespace CoordinateTransformations
 {
 

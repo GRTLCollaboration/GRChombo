@@ -6,8 +6,12 @@
 #ifndef GRLEVELDATA_HPP_
 #define GRLEVELDATA_HPP_
 
+// Chombo includes
 #include "FArrayBox.H"
 #include "LevelData.H"
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 class GRLevelData : public LevelData<FArrayBox>
 {

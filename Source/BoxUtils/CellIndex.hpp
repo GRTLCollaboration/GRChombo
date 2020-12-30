@@ -8,6 +8,9 @@
 
 #include "AlwaysInline.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 /// Represents an index in the flattened Chombo array
 /** CellIndex only stores one integer (the position in the flattened Chombo
  *array of the cell the CellIndex represents). A CellIndex expects a bool as

@@ -6,10 +6,16 @@
 #ifndef BOXLOOPS_HPP_
 #define BOXLOOPS_HPP_
 
-#include "BoxPointers.hpp"
-#include "ComputePack.hpp"
+// Chombo includes
 #include "FArrayBox.H"
 #include "LevelData.H"
+
+// Our includes
+#include "BoxPointers.hpp"
+#include "ComputePack.hpp"
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 enum
 {

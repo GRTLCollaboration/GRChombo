@@ -9,6 +9,9 @@
 #include "CylindricalGeometry.hpp"
 #include "SurfaceExtraction.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 //! A child class of SurfaceExtraction for extraction on cylindrical shells
 class CylindricalExtraction : public SurfaceExtraction<CylindricalGeometry>
 {

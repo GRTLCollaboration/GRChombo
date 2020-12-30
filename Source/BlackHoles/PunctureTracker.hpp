@@ -10,6 +10,9 @@
 #include "AlwaysInline.hpp"
 #include "Lagrange.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 //!  The class tracks the puncture locations by integrating the shift at
 //!  The puncture position
 class PunctureTracker

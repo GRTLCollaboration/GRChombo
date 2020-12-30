@@ -9,6 +9,9 @@
 #include <array>
 #include <string>
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 class Derivative : public std::array<int, CH_SPACEDIM>
 {
   private:

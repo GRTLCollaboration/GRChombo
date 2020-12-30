@@ -13,6 +13,9 @@
 #include <utility>
 #include <vector>
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 class InterpolationQuery
 {
   public:

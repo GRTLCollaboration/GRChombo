@@ -6,8 +6,11 @@
 #ifndef SURFACEEXTRACTION_HPP_
 #define SURFACEEXTRACTION_HPP_
 
-#include "AMRInterpolator.hpp"
+// Chombo includes
 #include "CH_assert.H"
+
+// Other inclues
+#include "AMRInterpolator.hpp"
 #include "DimensionDefinitions.hpp"
 #include "IntegrationMethod.hpp"
 #include "InterpolationQuery.hpp"
@@ -20,6 +23,9 @@
 #include <tuple>
 #include <utility>
 #include <vector>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 //! This class extracts grid variables on 2 dimensional surfaces each
 //! parameterised by u and v with different surfaces given by level sets of

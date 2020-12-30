@@ -11,6 +11,9 @@
 #include "FourthOrderDerivatives.hpp"
 #include "Tensor.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 class PhiAndKTaggingCriterion
 {
   protected:

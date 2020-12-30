@@ -10,12 +10,18 @@
 #ifndef USERVARIABLES_INC_HPP
 #define USERVARIABLES_INC_HPP
 
+// Chombo includes
+#include "parstream.H"
+
+// Other includes
 #include "GRParmParse.hpp"
 #include "VariableType.hpp"
-#include "parstream.H"
 #include <algorithm>
 #include <array>
 #include <string>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 // This file must be included at the end of UserVariables.hpp
 

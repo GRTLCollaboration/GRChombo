@@ -9,6 +9,9 @@
 #include "FArrayBox.H"
 #include <array>
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 class InterpolationAlgorithm
 {
   public:

@@ -6,6 +6,9 @@
 #include "GRAMR.hpp"
 #include "GRAMRLevel.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 GRAMR::GRAMR() : m_interpolator(nullptr) {}
 
 // Called after AMR object set up

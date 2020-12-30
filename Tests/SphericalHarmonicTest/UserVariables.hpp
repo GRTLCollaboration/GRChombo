@@ -9,6 +9,9 @@
 #include <array>
 #include <string>
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 // assigns number to each variable
 enum
 {

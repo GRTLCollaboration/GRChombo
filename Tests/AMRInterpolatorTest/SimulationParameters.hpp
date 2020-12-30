@@ -10,6 +10,9 @@
 #include "ChomboParameters.hpp"
 #include "GRParmParse.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 class SimulationParameters : public ChomboParameters
 {
   public:

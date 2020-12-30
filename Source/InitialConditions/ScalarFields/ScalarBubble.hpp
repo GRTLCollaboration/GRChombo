@@ -15,6 +15,9 @@
 #include "VarsTools.hpp"
 #include "simd.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 //! Class which creates a bubble of a scalar field given params for initial
 //! matter config
 class ScalarBubble

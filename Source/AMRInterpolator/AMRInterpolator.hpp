@@ -7,14 +7,10 @@
 #define AMRINTERPOLATOR_HPP_
 
 // Chombo includes
-
 #include "AMR.H"
 #include "AMRLevel.H"
 
-#include "UsingNamespace.H"
-
 // Our includes
-
 #include "BoundaryConditions.hpp"
 #include "InterpSource.hpp"
 #include "InterpolationAlgorithm.hpp"
@@ -23,6 +19,10 @@
 
 #include "MPIContext.hpp"
 #include "UserVariables.hpp"
+
+// Chombo namespace
+
+#include "UsingNamespace.H"
 
 // End include
 

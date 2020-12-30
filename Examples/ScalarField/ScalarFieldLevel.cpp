@@ -28,6 +28,9 @@
 #include "ScalarField.hpp"
 #include "SetValue.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 // Things to do at each advance step, after the RK4 is calculated
 void ScalarFieldLevel::specificAdvance()
 {

@@ -8,6 +8,10 @@
 
 #include <array>
 #include <cmath>
+#include <string>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 //! This class, derived from the SurfaceGeometry class, provides cylindrical
 //! shell geometry implementation for the SurfaceExtraction class v = phi

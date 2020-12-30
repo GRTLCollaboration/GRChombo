@@ -12,6 +12,9 @@
 #include "Potential.hpp"
 #include "ScalarField.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 //!  A class for the evolution of a scalar field, minimally coupled to gravity
 /*!
      The class takes some initial data for a scalar field (variables phi and Pi)

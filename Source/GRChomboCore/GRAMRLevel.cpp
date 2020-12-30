@@ -5,6 +5,9 @@
 
 #include "GRAMRLevel.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 GRAMRLevel::GRAMRLevel(GRAMR &gr_amr, const SimulationParameters &a_p,
                        int a_verbosity)
     : m_gr_amr(gr_amr), m_p(a_p), m_verbosity(a_verbosity),

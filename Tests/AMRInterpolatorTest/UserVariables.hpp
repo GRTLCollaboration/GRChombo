@@ -10,6 +10,9 @@
 #include <array>
 #include <string>
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 // assign enum to each variable
 enum
 {

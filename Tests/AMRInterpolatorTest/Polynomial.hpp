@@ -10,6 +10,9 @@
 #include "Coordinates.hpp"
 #include "UserVariables.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 // This compute class sets the grid to a certain polynomial
 class Polynomial
 {

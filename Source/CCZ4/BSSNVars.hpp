@@ -10,6 +10,9 @@
 #include "Tensor.hpp"
 #include "VarsTools.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 /// Namespace for BSSN vars
 /** The structs in this namespace collect all the BSSN variables. It's main use
  *  is to make a local, nicely laid-out, copy of the BSSN variables for the

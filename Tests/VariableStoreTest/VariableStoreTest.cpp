@@ -10,6 +10,9 @@
 #include "UserVariables.hpp"
 #include "VarsTools.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 template <typename data_t> struct Vars
 {
     data_t var;

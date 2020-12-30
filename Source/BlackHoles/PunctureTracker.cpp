@@ -10,6 +10,9 @@
 #include "SmallDataIO.hpp"   // for writing data
 #include "UserVariables.hpp" // for writing data
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 //! Set punctures post restart
 void PunctureTracker::initial_setup(
     const std::vector<std::array<double, CH_SPACEDIM>> &initial_puncture_coords,

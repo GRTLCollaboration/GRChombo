@@ -10,6 +10,9 @@
 #include <array>
 #include <string>
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 enum
 {
     c_h = c_h11,

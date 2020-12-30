@@ -9,6 +9,9 @@
 #include "InterpSource.hpp"
 #include <utility>
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 template <int Order> class Lagrange
 {
     const InterpSource &m_source;

@@ -16,6 +16,9 @@
 #include "VarsTools.hpp"
 #include "simd.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 //!  Calculates RHS for relaxation of the conformal factor, for initial
 //!  conditions
 /*!

@@ -3,6 +3,10 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
+// Chombo includes
+#include "FArrayBox.H"
+
+// Other includes
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -11,11 +15,13 @@
 #include "Cell.hpp"
 #include "ComputePack.hpp"
 #include "DebuggingTools.hpp"
-#include "FArrayBox.H"
 #include "HarmonicTest.hpp"
 #include "SetValue.hpp"
 #include "UserVariables.hpp"
 #include <sys/time.h>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 int main()
 {

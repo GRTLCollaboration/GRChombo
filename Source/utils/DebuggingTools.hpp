@@ -6,12 +6,17 @@
 #ifndef DEBUGGINGTOOLS_HPP_
 #define DEBUGGINGTOOLS_HPP_
 
+// Chombo includes
 #include "parstream.H" //Gives us pout()
-#include <string.h>
-
 #ifdef EQUATION_DEBUG_MODE
 #include "IntVect.H"
 #endif
+
+// Other includes
+#include <string.h>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 /// This file contains a collection of helpful #defines and other definitions
 /// that are hepful for debugging.

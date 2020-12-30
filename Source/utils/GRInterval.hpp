@@ -6,6 +6,9 @@
 #ifndef GRINTERVAL_HPP_
 #define GRINTERVAL_HPP_
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 /// A templated version of Chombo's Interval - allows compile time checking.
 /**Note: iend is included in the interval, i.e. the interval <1,3> has
  * values 1,2,3 and therefore size 3.

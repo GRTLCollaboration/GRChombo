@@ -9,6 +9,9 @@
 #include <utility>
 #include <vector>
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 //! A class to store and return the weights associated to a Newton-Cotes formula
 //! for numerical integration/quadrature which can be closed (i.e. includes the
 //! endpoints) or open (does not include the end points). This is used by

@@ -18,6 +18,9 @@
 #include <algorithm>
 #include <string>
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 class ChomboParameters
 {
   public:

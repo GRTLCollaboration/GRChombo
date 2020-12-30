@@ -11,6 +11,9 @@
 #include "Polynomial.hpp"
 #include "SetValue.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 class InterpolatorTestLevel : public GRAMRLevel
 {
     friend class DefaultLevelFactory<InterpolatorTestLevel>;

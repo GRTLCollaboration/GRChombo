@@ -8,6 +8,10 @@
 
 #include <array>
 #include <cmath>
+#include <string>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 //! This SurfaceGeometry template class provides spherical shell geometry
 //! implementation for the SurfaceExtraction class

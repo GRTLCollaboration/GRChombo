@@ -11,6 +11,9 @@
 #include "UserVariables.hpp"
 #include "simd.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 class PositiveChiAndAlpha
 {
   private:

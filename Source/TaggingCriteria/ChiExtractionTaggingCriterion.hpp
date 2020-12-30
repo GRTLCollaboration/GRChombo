@@ -13,6 +13,9 @@
 #include "SphericalExtraction.hpp"
 #include "Tensor.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 //! This class tags cells based on two criteria - the
 //! value of the second derivs and the extraction regions
 class ChiExtractionTaggingCriterion

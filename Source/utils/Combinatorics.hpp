@@ -6,6 +6,9 @@
 #ifndef COMBINATORICS_HPP_
 #define COMBINATORICS_HPP_
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 namespace Combinatorics
 {
 // Calculate factorials

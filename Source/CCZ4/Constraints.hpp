@@ -10,7 +10,6 @@
 
 #include "BSSNVars.hpp"
 #include "Cell.hpp"
-#include "FArrayBox.H"
 #include "FourthOrderDerivatives.hpp"
 #include "Tensor.hpp"
 #include "simd.hpp"
@@ -18,6 +17,9 @@
 #include "CCZ4Geometry.hpp"
 
 #include <array>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 class Constraints
 {

@@ -9,6 +9,9 @@
 #include "InterpSource.hpp"
 #include <utility>
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 class QuinticConvolution
 {
     const InterpSource &m_source;

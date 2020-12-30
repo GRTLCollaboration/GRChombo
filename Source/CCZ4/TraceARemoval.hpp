@@ -9,11 +9,13 @@
 
 #include "CCZ4Geometry.hpp"
 #include "Cell.hpp"
-#include "Interval.H"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"
 #include "UserVariables.hpp"
 #include "VarsTools.hpp"
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 class TraceARemoval
 {

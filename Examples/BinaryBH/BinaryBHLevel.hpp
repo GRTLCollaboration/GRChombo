@@ -10,6 +10,9 @@
 #include "DefaultLevelFactory.hpp"
 #include "GRAMRLevel.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 class BinaryBHLevel : public GRAMRLevel
 {
     friend class DefaultLevelFactory<BinaryBHLevel>;

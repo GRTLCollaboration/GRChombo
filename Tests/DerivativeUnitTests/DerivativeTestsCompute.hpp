@@ -9,6 +9,9 @@
 #include "FourthOrderDerivatives.hpp"
 #include "VarsTools.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 class DerivativeTestsCompute
 {
   protected:

@@ -19,6 +19,9 @@
 #include "GammaCalculator.hpp"
 #include "KerrBH.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 void KerrBHLevel::specificAdvance()
 {
     // Enforce the trace free A_ij condition and positive chi and alpha
