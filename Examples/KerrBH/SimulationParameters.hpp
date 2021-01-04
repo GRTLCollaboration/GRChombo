@@ -14,9 +14,6 @@
 #include "CCZ4.hpp"
 #include "KerrBH.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 class SimulationParameters : public SimulationParametersBase
 {
   public:

@@ -15,9 +15,6 @@
 #include "UserVariables.hpp" //This files needs NUM_VARS, total num of components
 #include "VarsTools.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 //!  Calculates the matter type specific elements such as the EMTensor and
 //   matter evolution
 /*!

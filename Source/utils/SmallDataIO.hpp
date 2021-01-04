@@ -10,9 +10,6 @@
 #include <string>
 #include <vector>
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 //! A class for reading and writing small data to a file in ASCII format.
 /*!
     A class for reading and writing small data, usually 0D, 1D or 2D, in ASCII

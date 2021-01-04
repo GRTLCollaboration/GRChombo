@@ -13,9 +13,6 @@
 #include "SphericalExtraction.hpp"
 #include "Tensor.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 //! This class tags cells based on three criteria - the
 //! value of the second derivs, the extraction regions
 //! and the puncture horizons (which must be covered to

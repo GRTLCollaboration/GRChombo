@@ -10,9 +10,6 @@
 #include <array>
 #include <string>
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 /// A place for tools that operate on std::arrays
 namespace ArrayTools
 {

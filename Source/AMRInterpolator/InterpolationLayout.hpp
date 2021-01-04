@@ -8,9 +8,6 @@
 
 #include <vector>
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 class InterpolationLayout
 {
   private:

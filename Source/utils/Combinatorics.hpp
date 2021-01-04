@@ -6,6 +6,9 @@
 #ifndef COMBINATORICS_HPP_
 #define COMBINATORICS_HPP_
 
+// Chombo includes
+#include "CH_assert.H"
+
 // Chombo namespace
 #include "UsingNamespace.H"
 

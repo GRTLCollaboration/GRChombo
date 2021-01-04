@@ -10,9 +10,6 @@
 #include "SphericalHarmonics.hpp"
 #include "SurfaceExtraction.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 //! A child class of SurfaceExtraction for extraction on spherical shells
 class SphericalExtraction : public SurfaceExtraction<SphericalGeometry>
 {

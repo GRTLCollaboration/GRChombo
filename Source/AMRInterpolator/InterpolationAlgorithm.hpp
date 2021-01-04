@@ -6,7 +6,10 @@
 #ifndef INTERPOLATIONALGORITHM_HPP_
 #define INTERPOLATIONALGORITHM_HPP_
 
+// Chombo includes
 #include "FArrayBox.H"
+
+// Other includes
 #include <array>
 
 // Chombo namespace

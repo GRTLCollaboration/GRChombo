@@ -21,7 +21,6 @@
 #include "UserVariables.hpp"
 
 // Chombo namespace
-
 #include "UsingNamespace.H"
 
 // End include

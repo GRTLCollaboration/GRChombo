@@ -16,9 +16,6 @@
 #include "VarsTools.hpp"
 #include "simd.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 //! Class which computes the Kerr initial conditions per arXiv 1401.1548
 class KerrBH
 {

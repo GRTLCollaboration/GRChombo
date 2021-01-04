@@ -9,9 +9,6 @@
 #include "ArrayTools.hpp"
 #include "CCZ4UserVariables.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 /// This enum gives the index of every variable stored in the grid
 enum
 {

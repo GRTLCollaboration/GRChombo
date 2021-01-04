@@ -17,9 +17,6 @@
 #include "simd.hpp"
 #include <array>
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 //! Struct for the E and B fields
 template <class data_t> struct EBFields_t
 {

@@ -16,9 +16,6 @@
 #include "VarsTools.hpp"
 #include "simd.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 //!  Calculates RHS using CCZ4 including matter terms, and matter variable
 //!  evolution
 /*!

@@ -13,9 +13,6 @@
 #include "UserVariables.hpp" //This files needs NUM_VARS - total number of components
 #include "simd.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 class HarmonicTest
 {
   public:

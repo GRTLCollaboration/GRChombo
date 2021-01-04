@@ -12,9 +12,6 @@
 #include "SetValue.hpp"
 #include "UserVariables.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 class SphericalExtractionTestLevel : public GRAMRLevel
 {
     friend class DefaultLevelFactory<SphericalExtractionTestLevel>;

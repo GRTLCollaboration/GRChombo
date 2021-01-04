@@ -13,9 +13,6 @@
 #include "ScalarField.hpp"
 #include "Tensor.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 class ChiAndPhiTaggingCriterion
 {
   protected:

@@ -6,9 +6,6 @@
 #ifndef VARIABLETYPE_HPP
 #define VARIABLETYPE_HPP
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 // enum for evolution or diagnostic variables
 enum class VariableType
 {

@@ -18,9 +18,6 @@
 
 #include <array>
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 /// Compute class to calculate the CCZ4 right hand side
 /**
  * This compute class implements the CCZ4 right hand side equations. Use it by

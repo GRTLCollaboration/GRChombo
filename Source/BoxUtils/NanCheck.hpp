@@ -9,9 +9,6 @@
 #include "Cell.hpp"
 #include "UserVariables.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 /// This compute class checks for nans or very large values and aborts the
 /// execution when they appear displying a custom or default error message.
 class NanCheck

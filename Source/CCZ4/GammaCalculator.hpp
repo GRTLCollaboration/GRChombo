@@ -16,9 +16,6 @@
 #include "VarsTools.hpp"
 #include "simd.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 class GammaCalculator
 {
     // Only variables needed are metric

@@ -13,9 +13,6 @@
 // Problem specific includes
 #include "SphericalExtraction.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 class SimulationParameters : public ChomboParameters
 {
   public:

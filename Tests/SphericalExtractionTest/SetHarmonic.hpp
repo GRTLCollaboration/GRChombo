@@ -13,9 +13,6 @@
 #include "UserVariables.hpp" //This files needs NUM_VARS - total number of components
 #include "simd.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 // This compute class sets two vars to the real and imaginary parts of the
 // s = a_es, l = a_el, m = a_em spin-weighted spherical harmonic
 class SetHarmonic

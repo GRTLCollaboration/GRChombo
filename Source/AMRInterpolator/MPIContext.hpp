@@ -9,9 +9,6 @@
 #include "MPILayout.hpp"
 #include <vector>
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 class MPIContext
 {
   public:

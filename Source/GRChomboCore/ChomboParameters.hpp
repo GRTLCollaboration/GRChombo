@@ -7,6 +7,7 @@
 #define CHOMBOPARAMETERS_HPP_
 
 // Chombo includes
+#include "MayDay.H"
 #include "Misc.H"
 
 // General includes

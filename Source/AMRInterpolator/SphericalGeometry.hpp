@@ -6,6 +6,10 @@
 #ifndef SPHERICALGEOMETRY_HPP_
 #define SPHERICALGEOMETRY_HPP_
 
+// Chombo includes
+#include "MayDay.H"
+
+// Other includes
 #include <array>
 #include <cmath>
 #include <string>

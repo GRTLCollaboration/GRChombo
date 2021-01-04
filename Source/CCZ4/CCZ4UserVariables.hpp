@@ -10,9 +10,6 @@
 #include <array>
 #include <string>
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 /// This enum gives the index of the CCZ4 variables on the grid
 enum
 {

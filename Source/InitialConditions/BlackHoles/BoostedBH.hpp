@@ -15,9 +15,6 @@
 #include "Tensor.hpp"
 #include <array>
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 class BoostedBH
 {
 

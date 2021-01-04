@@ -14,9 +14,6 @@
 #include "UserVariables.hpp"
 #include "VarsTools.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 class TraceARemoval
 {
   public:

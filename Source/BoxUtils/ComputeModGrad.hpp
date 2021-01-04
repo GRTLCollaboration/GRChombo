@@ -15,9 +15,6 @@
 
 #include <array>
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 /// Compute class to compute the modulus of the gradient of all variables in the
 /// chombo grid
 class ComputeModGrad

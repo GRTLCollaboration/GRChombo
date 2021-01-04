@@ -6,6 +6,10 @@
 #ifndef CYLINDRICALGEOMETRY_HPP_
 #define CYLINDRICALGEOMETRY_HPP_
 
+// Chombo includes
+#include "MayDay.H"
+
+// Other includes
 #include <array>
 #include <cmath>
 #include <string>

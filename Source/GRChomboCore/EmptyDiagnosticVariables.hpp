@@ -6,8 +6,8 @@
 #ifndef DIAGNOSTICVARIABLES_HPP
 #define DIAGNOSTICVARIABLES_HPP
 
-// Chombo namespace
-#include "UsingNamespace.H"
+#include <array>
+#include <string>
 
 // assign an enum to each variable
 enum

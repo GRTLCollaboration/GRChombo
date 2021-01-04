@@ -21,9 +21,6 @@
 #include "Weyl4.hpp"
 #include "WeylExtraction.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 // Things to do during the advance step after RK4 steps
 void BinaryBHLevel::specificAdvance()
 {

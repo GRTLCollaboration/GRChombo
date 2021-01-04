@@ -9,9 +9,6 @@
 #include "Cell.hpp"
 #include "DebuggingTools.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 /// This class can be use to bundle up several compute classes so that their
 /// tasks can all be done in one loop through box
 template <typename... compute_ts> class ComputePack;

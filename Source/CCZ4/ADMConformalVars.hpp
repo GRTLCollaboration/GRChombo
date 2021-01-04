@@ -10,9 +10,6 @@
 #include "UserVariables.hpp"
 #include "VarsTools.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 /// Namespace for ADM vars in conformally decomposed form
 /** The structs in this namespace collect all the ADM variables. It's main use
  *is to make a local, nicely laid-out, copy of the ADM variables for the

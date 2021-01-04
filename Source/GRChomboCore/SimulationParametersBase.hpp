@@ -14,9 +14,6 @@
 #include "SphericalExtraction.hpp"
 #include <limits>
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 // add this type alias here for backwards compatibility
 using extraction_params_t = SphericalExtraction::params_t;
 

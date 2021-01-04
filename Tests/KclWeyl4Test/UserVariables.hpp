@@ -4,9 +4,6 @@
 #include "ArrayTools.hpp"
 #include "CCZ4UserVariables.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 // TODO: This file can be auto-generated from a list of variable names
 // Also, we should probably scope this enum too...
 //

@@ -10,9 +10,6 @@
 #include "CCZ4UserVariables.hpp"
 #include "DiagnosticVariables.hpp"
 
-// Chombo namespace
-#include "UsingNamespace.H"
-
 // assign an enum to each variable
 enum
 {

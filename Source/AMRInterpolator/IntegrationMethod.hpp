@@ -6,6 +6,10 @@
 #ifndef INTEGRATIONMETHOD_HPP_
 #define INTEGRATIONMETHOD_HPP_
 
+// Chombo includes
+#include "CH_assert.H"
+
+// Other includes
 #include <utility>
 #include <vector>
 
