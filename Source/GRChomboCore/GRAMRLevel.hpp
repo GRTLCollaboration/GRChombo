@@ -62,6 +62,9 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     /// things to do after a timestep
     virtual void postTimeStep();
 
+    /// things to do before tagging cells (e.g. filling ghosts)
+    virtual void preTagCells();
+
     /// tag cells that need to be refined
     virtual void tagCells(IntVectSet &a_tags);
 
