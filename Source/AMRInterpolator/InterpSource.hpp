@@ -25,7 +25,9 @@ class InterpSource
     virtual bool
     contains(const std::array<double, CH_SPACEDIM> &point) const = 0;
     virtual void
-    fillAllGhosts(const VariableType var_type = VariableType::evolution) = 0;
+    fillAllGhosts(const VariableType var_type = VariableType::evolution,
+                  const Interval &a_comps =
+                      Interval(0, std::numeric_limits<int>::max())) = 0;
 };
 
 #endif /* INTERPSOURCE_H_ */

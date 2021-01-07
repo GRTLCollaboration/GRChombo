@@ -36,7 +36,8 @@ AMRInterpolator<InterpAlgo>::AMRInterpolator(
     set_reflective_BC();
 }
 
-template <typename InterpAlgo> void AMRInterpolator<InterpAlgo>::refresh()
+template <typename InterpAlgo>
+void AMRInterpolator<InterpAlgo>::refresh(const bool a_fill_ghosts)
 {
     CH_TIME("AMRInterpolator::refresh");
 
@@ -46,13 +47,28 @@ template <typename InterpAlgo> void AMRInterpolator<InterpAlgo>::refresh()
     m_mem_level.clear();
     m_mem_box.clear();
 
-    for (int level_idx = 0; level_idx < m_num_levels; ++level_idx)
+    if (a_fill_ghosts)
+    {
+        fill_ghosts(VariableType::evolution);
+        if (NUM_DIAGNOSTIC_VARS > 0)
+            fill_ghosts(VariableType::diagnostic);
+    }
+}
+
+template <typename InterpAlgo>
+void AMRInterpolator<InterpAlgo>::fill_ghosts(const VariableType a_var_type,
+                                              const Interval &a_comps,
+                                              const int a_min_level,
+                                              const int a_max_level)
+{
+    int max_level = std::min(m_num_levels - 1, a_max_level);
+    const Vector<AMRLevel *> &levels = const_cast<AMR &>(m_amr).getAMRLevels();
+
+    for (int level_idx = a_min_level; level_idx <= max_level; ++level_idx)
     {
         AMRLevel &level = *levels[level_idx];
         InterpSource &interp_source = dynamic_cast<InterpSource &>(level);
-        interp_source.fillAllGhosts(VariableType::evolution);
-        if (NUM_DIAGNOSTIC_VARS > 0)
-            interp_source.fillAllGhosts(VariableType::diagnostic);
+        interp_source.fillAllGhosts(a_var_type, a_comps);
     }
 }
 
