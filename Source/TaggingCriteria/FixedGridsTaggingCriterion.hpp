@@ -9,7 +9,6 @@
 #include "Cell.hpp"
 #include "Coordinates.hpp"
 #include "DimensionDefinitions.hpp"
-#include "FourthOrderDerivatives.hpp"
 #include "Tensor.hpp"
 
 class FixedGridsTaggingCriterion
@@ -17,7 +16,6 @@ class FixedGridsTaggingCriterion
   protected:
     const double m_dx;
     const double m_L;
-    const FourthOrderDerivatives m_deriv;
     const int m_level;
     const std::array<double, CH_SPACEDIM> m_center;
 
@@ -25,8 +23,7 @@ class FixedGridsTaggingCriterion
     FixedGridsTaggingCriterion(const double dx, const int a_level,
                                const double a_L,
                                const std::array<double, CH_SPACEDIM> a_center)
-        : m_dx(dx), m_deriv(dx), m_level(a_level), m_L(a_L),
-          m_center(a_center){};
+        : m_dx(dx), m_level(a_level), m_L(a_L), m_center(a_center){};
 
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {

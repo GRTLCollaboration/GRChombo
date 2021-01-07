@@ -101,6 +101,12 @@ void ScalarFieldLevel::specificUpdateODE(GRLevelData &a_soln,
     BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
 }
 
+void ScalarFieldLevel::preTagCells()
+{
+    // we don't need any ghosts filled for the fixed grids tagging criterion
+    // used here so don't fill any
+}
+
 void ScalarFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                                const FArrayBox &current_state)
 {

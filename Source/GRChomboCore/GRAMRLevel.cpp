@@ -192,6 +192,14 @@ void GRAMRLevel::postTimeStep()
         pout() << "GRAMRLevel::postTimeStep " << m_level << " finished" << endl;
 }
 
+// things to do before tagging cells
+void GRAMRLevel::preTagCells()
+{
+    CH_TIME("GRAMRLevel::preTagCells");
+    fillAllEvolutionGhosts(); // We need filled ghost cells to calculate
+                              // gradients etc
+}
+
 // create tags
 void GRAMRLevel::tagCells(IntVectSet &a_tags)
 {
@@ -199,10 +207,8 @@ void GRAMRLevel::tagCells(IntVectSet &a_tags)
     if (m_verbosity)
         pout() << "GRAMRLevel::tagCells " << m_level << endl;
 
-    fillAllEvolutionGhosts(); // We need filled ghost cells to calculate
-                              // gradients etc
+    preTagCells();
 
-    // Create tags based on undivided gradient of phi
     IntVectSet local_tags;
 
     const DisjointBoxLayout &level_domain = m_state_new.disjointBoxLayout();
