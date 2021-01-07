@@ -20,7 +20,7 @@ class SimulationParameters : public SimulationParametersBase
     SimulationParameters(GRParmParse &pp) : SimulationParametersBase(pp)
     {
         read_params(pp);
-        check_params;
+        check_params();
     }
 
     /// Read parameters from the parameter file

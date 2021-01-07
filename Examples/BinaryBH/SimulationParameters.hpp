@@ -20,7 +20,7 @@ class SimulationParameters : public SimulationParametersBase
     SimulationParameters(GRParmParse &pp) : SimulationParametersBase(pp)
     {
         read_params(pp);
-        check_params()
+        check_params();
     }
 
     /// Read parameters from the parameter file
@@ -60,7 +60,7 @@ class SimulationParameters : public SimulationParametersBase
     {
         warn_parameter("massA", bh1_params.mass, bh1_params.mass >= 0,
                        "should be >= 0");
-        warn_parameter("massB", bh2_params.mass, bh2_params.mass >= 0 &&,
+        warn_parameter("massB", bh2_params.mass, bh2_params.mass >= 0,
                        "should be >= 0");
         warn_array_parameter(
             "momentumA", bh1_params.momentum,

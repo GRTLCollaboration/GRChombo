@@ -121,10 +121,15 @@ class SimulationParametersBase : public ChomboParameters
 
     void check_params()
     {
-        warn_parameter(
-            "sigma", sigma, (sigma >= 0.0) && (sigma <= 2.0 / dt_multiplier),
-            "should be >= 0.0 and <= 2 / dt_multiplier for stability "
-            "(see Alcubierre p344)");
+        check_parameter("dt_multiplier", dt_multiplier, dt_multiplier < 1.0,
+                        "must be < 1.0 for stability");
+        warn_parameter("dt_multiplier", dt_multiplier, dt_multiplier <= 0.5,
+                       "is unlikely to be stable for > 0.5");
+
+        check_parameter("sigma", sigma,
+                        (sigma >= 0.0) && (sigma <= 2.0 / dt_multiplier),
+                        "must be >= 0.0 and <= 2 / dt_multiplier for stability "
+                        "(see Alcubierre p344)");
         warn_parameter("nan_check", nan_check, nan_check,
                        "should not normally be disabled");
         // not sure these are necessary hence commented out
@@ -144,21 +149,24 @@ class SimulationParametersBase : public ChomboParameters
             warn_parameter("kappa2", ccz4_params.kappa2,
                            ccz4_params.kappa2 > -1.0,
                            "should be greater than -1.0 to damp constraints "
-                           "(see arXiv:1106.2254).");
+                           "(see arXiv:1106.2254)");
         }
         else if (formulation == CCZ4::USE_BSSN)
         {
             // maybe we should just set these to zero and print a warning
             // in the BSSN case
-            check_parameter("kappa1", ccz4_params.kappa1,
-                            ccz4_params.kappa1 == 0.0,
-                            "must equal zero for BSSN.");
-            check_parameter("kappa2", ccz4_params.kappa2,
-                            ccz4_params.kappa2 == 0.0,
-                            "must equal zero for BSSN.");
-            check_parameter("kappa3", ccz4_params.kappa3,
-                            ccz4_params.kappa3 == 0.0,
-                            "must equal zero for BSSN.");
+            warn_parameter("kappa1", ccz4_params.kappa1,
+                           ccz4_params.kappa1 == 0.0,
+                           "setting to 0.0 as required for BSSN");
+            warn_parameter("kappa2", ccz4_params.kappa2,
+                           ccz4_params.kappa2 == 0.0,
+                           "setting to 0.0 as required for BSSN");
+            warn_parameter("kappa3", ccz4_params.kappa3,
+                           ccz4_params.kappa3 == 0.0,
+                           "setting to 0.0 as required for BSSN");
+            ccz4_params.kappa1 = 0.0;
+            ccz4_params.kappa2 = 0.0;
+            ccz4_params.kappa3 = 0.0;
         }
 
         // only warn for gauge parameters as there are legitimate cases you may

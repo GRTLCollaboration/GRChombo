@@ -6,6 +6,9 @@
 #ifndef CHOMBOPARAMETERS_HPP_
 #define CHOMBOPARAMETERS_HPP_
 
+// Chombo includes
+#include "Misc.H"
+
 // General includes
 #include "ArrayTools.hpp"
 #include "BoundaryConditions.hpp"
@@ -50,12 +53,20 @@ class ChomboParameters
         // refinement ratios - use other values at your own risk
         ref_ratios.resize(max_level + 1);
         ref_ratios.assign(2);
-        pp.getarr("regrid_interval", regrid_interval, 0, max_level + 1);
+        pp.getarr("regrid_interval", regrid_interval, 0, max_level);
+        // Regridding on max_level does nothing but Chombo's AMR class
+        // expects this Vector to be of length max_level + 1
+        // so just set the final value to 0.
+        regrid_interval.resize(max_level + 1);
+        regrid_interval[max_level] = 0;
 
         if (pp.contains("regrid_thresholds"))
         {
             pout() << "Using multiple regrid thresholds." << std::endl;
-            pp.getarr("regrid_thresholds", regrid_thresholds, 0, max_level + 1);
+            // As for regrid_interval, the last element is irrelevant
+            pp.getarr("regrid_thresholds", regrid_thresholds, 0, max_level);
+            regrid_thresholds.resize(max_level + 1);
+            regrid_thresholds[max_level] = regrid_thresholds[max_level - 1];
         }
         else
         {
@@ -96,32 +107,6 @@ class ChomboParameters
         {
             pp.load("min_box_size", block_factor, 8);
         }
-
-        // Chombo already has an error for this, but when applying symmetric BC
-        // this may help the user figure the problem more easily (e.g. N_full=48
-        // with block_factor=16 seems fine, but with symmetric BC it's not, as
-        // the box will use N=24)
-        // FOR1(dir)
-        // {
-        //     if ((ivN[dir] + 1) % block_factor != 0)
-        //     {
-        //         if (boundary_params.lo_boundary[dir] ==
-        //                 BoundaryConditions::REFLECTIVE_BC ||
-        //             boundary_params.hi_boundary[dir] ==
-        //                 BoundaryConditions::REFLECTIVE_BC)
-        //         {
-        //             MayDay::Error(
-        //                 ("N" + std::to_string(dir + 1) + " (or half of N" +
-        //                  std::to_string(dir + 1) +
-        //                  "_full) should be a multiple of block_factor.")
-        //                     .c_str());
-        //         }
-        //         else
-        //             MayDay::Error(("N" + std::to_string(dir + 1) +
-        //                            " should be a multiple of block_factor")
-        //                               .c_str());
-        //     }
-        // }
 
         if (pp.contains("check_params"))
             just_check_params = true;
@@ -270,8 +255,9 @@ class ChomboParameters
         check_parameter("max_level", max_level, max_level >= 0, "must be >= 0");
         // the following check assumes you will be taking some fourth (or
         // higher) order one-sided derivatives
-        check_parameter("num_ghosts", num_ghosts, num_ghosts >= 3,
-                        "must be >= 3");
+        check_parameter("num_ghosts", num_ghosts,
+                        (num_ghosts >= 3) && (num_ghosts <= block_factor),
+                        "must be >= 3 and <= block_factor/min_box_size");
         check_parameter("tag_buffer_size", tag_buffer_size,
                         tag_buffer_size >= 0, "must be >= 0");
         check_parameter("dt_multiplier", dt_multiplier, dt_multiplier > 0.0,
@@ -280,6 +266,8 @@ class ChomboParameters
                         max_grid_size >= 0, "must be >= 0");
         check_parameter("block_factor/min_box_size", block_factor,
                         block_factor >= 1, "must be >= 1");
+        check_parameter("block_factor/min_box_size", block_factor,
+                        Misc::isPower2(block_factor), "must be a power of 2");
         // note that this also enforces block_factor <= max_grid_size
         // if max_grid_size > 0
         check_parameter("block_factor/min_box_size", block_factor,
@@ -305,9 +293,9 @@ class ChomboParameters
         // (MR); while this would technically work (any plot files would just
         // overwrite a checkpoint file), I think a user would only ever do
         // this unintentinally
-        warn_parameter("plot_prefix", plot_prefix,
-                       plot_interval <= 0 || plot_prefix != checkpoint_prefix,
-                       "should be different to checkpoint_prefix");
+        check_parameter("plot_prefix", plot_prefix,
+                        plot_interval <= 0 || plot_prefix != checkpoint_prefix,
+                        "should be different to checkpoint_prefix");
 
         if (boundary_params.reflective_boundaries_exist)
         {
@@ -419,7 +407,7 @@ class ChomboParameters
         }
     }
 
-    template <typename T, int N>
+    template <typename T, size_t N>
     void check_array_parameter(const std::string &a_name,
                                const std::array<T, N> &a_value,
                                const bool a_valid,
@@ -429,7 +417,7 @@ class ChomboParameters
         check_parameter(a_name, value_str, a_valid, a_invalid_explanation);
     }
 
-    template <typename T, int N>
+    template <typename T, size_t N>
     void warn_array_parameter(const std::string &a_name,
                               const std::array<T, N> &a_value,
                               const bool a_nowarn,
