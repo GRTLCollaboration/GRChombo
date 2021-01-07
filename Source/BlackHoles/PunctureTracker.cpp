@@ -13,13 +13,15 @@
 //! Set punctures post restart
 void PunctureTracker::initial_setup(
     const std::vector<std::array<double, CH_SPACEDIM>> &initial_puncture_coords,
-    const std::string &a_checkpoint_prefix)
+    const std::string &a_checkpoint_prefix, const int a_min_level)
 {
     m_punctures_filename = a_checkpoint_prefix + "Punctures";
 
     // first set the puncture data
     // m_num_punctures is only set later
     m_puncture_coords = initial_puncture_coords;
+
+    m_min_level = a_min_level;
 }
 
 void PunctureTracker::restart_punctures()
@@ -177,7 +179,11 @@ void PunctureTracker::interp_shift()
     m_puncture_shift.resize(m_num_punctures);
 
     // refresh interpolator
-    m_interpolator->refresh();
+    bool fill_ghosts = false;
+    m_interpolator->refresh(fill_ghosts);
+    // only fill the ghosts we need
+    m_interpolator->fill_ghosts(VariableType::evolution,
+                                Interval(c_shift1, c_shift3), m_min_level);
 
     // set up shift and coordinate holders
     std::vector<double> interp_shift1(m_num_punctures);
