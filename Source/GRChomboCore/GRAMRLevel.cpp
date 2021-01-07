@@ -994,15 +994,24 @@ bool GRAMRLevel::at_level_timestep_multiple(int a_level) const
     return (abs(time_remainder) < m_gr_amr.timeEps() * coarsest_dt);
 }
 
-void GRAMRLevel::fillAllGhosts(const VariableType var_type)
+void GRAMRLevel::fillAllGhosts(const VariableType var_type,
+                               const Interval &a_comps)
 {
     if (var_type == VariableType::evolution)
-        fillAllEvolutionGhosts();
+    {
+        Interval comps(a_comps.begin(),
+                       std::min<int>(NUM_VARS - 1, a_comps.end()));
+        fillAllEvolutionGhosts(comps);
+    }
     else if (var_type == VariableType::diagnostic)
-        fillAllDiagnosticsGhosts();
+    {
+        Interval comps(a_comps.begin(),
+                       std::min<int>(NUM_DIAGNOSTIC_VARS - 1, a_comps.end()));
+        fillAllDiagnosticsGhosts(comps);
+    }
 }
 
-void GRAMRLevel::fillAllEvolutionGhosts()
+void GRAMRLevel::fillAllEvolutionGhosts(const Interval &a_comps)
 {
     CH_TIME("GRAMRLevel::fillAllEvolutionGhosts()");
     if (m_verbosity)
@@ -1013,12 +1022,12 @@ void GRAMRLevel::fillAllEvolutionGhosts()
     {
         GRAMRLevel *coarser_gr_amr_level_ptr = gr_cast(m_coarser_level_ptr);
         m_patcher.fillInterp(m_state_new, coarser_gr_amr_level_ptr->m_state_new,
-                             0, 0, NUM_VARS);
+                             a_comps.begin(), a_comps.begin(), a_comps.size());
     }
-    fillIntralevelGhosts();
+    fillIntralevelGhosts(a_comps);
 }
 
-void GRAMRLevel::fillAllDiagnosticsGhosts()
+void GRAMRLevel::fillAllDiagnosticsGhosts(const Interval &a_comps)
 {
     CH_TIME("GRAMRLevel::fillAllDiagnosticsGhosts");
     if (m_verbosity)
@@ -1030,32 +1039,34 @@ void GRAMRLevel::fillAllDiagnosticsGhosts()
         GRAMRLevel *coarser_gr_amr_level_ptr = gr_cast(m_coarser_level_ptr);
         m_patcher_diagnostics.fillInterp(
             m_state_diagnostics, coarser_gr_amr_level_ptr->m_state_diagnostics,
-            0, 0, NUM_DIAGNOSTIC_VARS);
+            a_comps.begin(), a_comps.begin(), a_comps.size());
     }
-    m_state_diagnostics.exchange(m_exchange_copier);
+    m_state_diagnostics.exchange(a_comps, m_exchange_copier);
 
     // We should always fill the boundary ghosts to avoid nans
     // if we have non periodic directions
     if (m_p.boundary_params.nonperiodic_boundaries_exist)
     {
-        m_boundaries.fill_diagnostic_boundaries(Side::Hi, m_state_diagnostics);
-        m_boundaries.fill_diagnostic_boundaries(Side::Lo, m_state_diagnostics);
+        m_boundaries.fill_diagnostic_boundaries(Side::Hi, m_state_diagnostics,
+                                                a_comps);
+        m_boundaries.fill_diagnostic_boundaries(Side::Lo, m_state_diagnostics,
+                                                a_comps);
     }
 }
 
-void GRAMRLevel::fillIntralevelGhosts()
+void GRAMRLevel::fillIntralevelGhosts(const Interval &a_comps)
 {
-    m_state_new.exchange(m_exchange_copier);
+    m_state_new.exchange(a_comps, m_exchange_copier);
     fillBdyGhosts(m_state_new);
 }
 
-void GRAMRLevel::fillBdyGhosts(GRLevelData &a_state)
+void GRAMRLevel::fillBdyGhosts(GRLevelData &a_state, const Interval &a_comps)
 {
     // enforce solution BCs after filling ghosts
     if (m_p.boundary_params.boundary_solution_enforced)
     {
-        m_boundaries.fill_solution_boundaries(Side::Hi, a_state);
-        m_boundaries.fill_solution_boundaries(Side::Lo, a_state);
+        m_boundaries.fill_solution_boundaries(Side::Hi, a_state, a_comps);
+        m_boundaries.fill_solution_boundaries(Side::Lo, a_state, a_comps);
     }
 }
 

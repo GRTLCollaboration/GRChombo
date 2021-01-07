@@ -22,6 +22,7 @@
 #include "SimulationParameters.hpp"
 #include "UserVariables.hpp" // need NUM_VARS
 #include <fstream>
+#include <limits>
 #include <sys/time.h>
 
 // Chombo namespace
@@ -170,23 +171,29 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     bool at_level_timestep_multiple(int a_level) const;
 
     /// Fill all [either] evolution or diagnostic ghost cells
-    virtual void
-    fillAllGhosts(const VariableType var_type = VariableType::evolution);
+    virtual void fillAllGhosts(
+        const VariableType var_type = VariableType::evolution,
+        const Interval &a_comps = Interval(0, std::numeric_limits<int>::max()));
 
   protected:
     /// Fill all evolution ghosts cells (i.e. those in m_state_new)
-    virtual void fillAllEvolutionGhosts();
+    virtual void
+    fillAllEvolutionGhosts(const Interval &a_comps = Interval(0, NUM_VARS - 1));
 
     /// Fill all diagnostics ghost cells (i.e. those in m_state_diagnostics)
-    virtual void fillAllDiagnosticsGhosts();
+    virtual void fillAllDiagnosticsGhosts(
+        const Interval &a_comps = Interval(0, NUM_DIAGNOSTIC_VARS - 1));
 
     /// Fill ghosts cells from boxes on this level only. Do not interpolate
     /// between levels.
-    virtual void fillIntralevelGhosts();
+    virtual void
+    fillIntralevelGhosts(const Interval &a_comps = Interval(0, NUM_VARS - 1));
 
     /// This function is used to fill ghost cells outside the domain
     /// (for non-periodic boundary conditions, where values depend on state)
-    virtual void fillBdyGhosts(GRLevelData &a_state);
+    virtual void fillBdyGhosts(GRLevelData &a_state,
+                               const Interval &a_comps = Interval(0, NUM_VARS -
+                                                                         1));
 
     /// This function is used to copy ghost cells outside the domain
     /// (for non-periodic boundary conditions, where boundaries evolve via rhs)
