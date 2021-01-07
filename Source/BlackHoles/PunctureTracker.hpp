@@ -19,6 +19,8 @@ class PunctureTracker
     int m_num_punctures;
     std::vector<std::array<double, CH_SPACEDIM>> m_puncture_coords;
     std::vector<std::array<double, CH_SPACEDIM>> m_puncture_shift;
+    int m_min_level; //!< the min level on which punctures will be
+                     //!< (to fill ghosts)
 
     std::string m_punctures_filename;
 
@@ -34,7 +36,8 @@ class PunctureTracker
     //! if the puncture locations are required for Tagging Criteria
     void initial_setup(const std::vector<std::array<double, CH_SPACEDIM>>
                            &initial_puncture_coords,
-                       const std::string &a_checkpoint_prefix);
+                       const std::string &a_checkpoint_prefix,
+                       const int a_min_level = 0);
 
     //! set puncture locations on start (or restart)
     void restart_punctures();

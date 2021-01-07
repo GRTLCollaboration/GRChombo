@@ -40,9 +40,13 @@ int runGRChombo(int argc, char *argv[])
     // must be before 'setupAMRObject' to define punctures for tagging criteria
     if (sim_params.track_punctures)
     {
+        // the tagging criterion used in this example means that the punctures
+        // should be on the max level but let's fill ghosts on the level below
+        // too just in case
+        int puncture_tracker_min_level = sim_params.max_level - 1;
         bh_amr.m_puncture_tracker.initial_setup(
             {sim_params.bh1_params.center, sim_params.bh2_params.center},
-            sim_params.checkpoint_prefix);
+            sim_params.checkpoint_prefix, puncture_tracker_min_level);
     }
 
     // The line below selects the problem that is simulated
