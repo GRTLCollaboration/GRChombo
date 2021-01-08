@@ -34,11 +34,11 @@ massB = 0.48847892320123
 offsetB = 0.0 -6.10679 0.0
 momentumB =  0.0841746  0.000510846 0.0
 
-# regridding control, specify frequency on each level
-# so need max_level + 1 entries for interval
+# regridding control, specify threshold (same on each level)
 regrid_threshold = 0.05
 max_level = 9
-regrid_interval = 0 0 0 64 64 64 64 64 64 0
+# need max_level entries for regrid interval
+regrid_interval = 0 0 0 64 64 64 64 64 64
 
 # Max and min box sizes
 max_grid_size = 16
