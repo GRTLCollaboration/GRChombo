@@ -219,6 +219,21 @@ class ChomboParameters
         dx.fill(coarsest_dx);
         origin.fill(coarsest_dx / 2.0);
 
+        // These aren't parameters but used in parameter checks
+        FOR1(idir)
+        {
+            reflective_domain_lo[idir] = ((boundary_params.lo_boundary[idir] ==
+                                           BoundaryConditions::REFLECTIVE_BC)
+                                              ? -1.0
+                                              : 0.0) *
+                                         (ivN[idir] + 1) * coarsest_dx;
+            reflective_domain_hi[idir] = ((boundary_params.hi_boundary[idir] ==
+                                           BoundaryConditions::REFLECTIVE_BC)
+                                              ? 2.0
+                                              : 1.0) *
+                                         (ivN[idir] + 1) * coarsest_dx;
+        }
+
         // Grid center
         // now that L is surely set, get center
 #if CH_SPACEDIM == 3
@@ -360,8 +375,13 @@ class ChomboParameters
     // GRAMR (or child) object
     bool just_check_params = false;
 
-    // use this error function instead of MayDay::error as this will only print
-    // from rank 0
+  protected:
+    // the low and high corners of the domain taking into account reflective BCs
+    // only used in parameter checks hence protected
+    std::array<double, CH_SPACEDIM> reflective_domain_lo, reflective_domain_hi;
+
+    // use this error function instead of MayDay::error as this will only
+    // print from rank 0
     void error(const std::string &a_error_message)
     {
         if (procID() == 0)

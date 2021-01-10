@@ -196,21 +196,6 @@ class SimulationParametersBase : public ChomboParameters
                        abs(ccz4_params.lapse_coeff - 2.0) <
                            std::numeric_limits<double>::epsilon(),
                        "set to 2.0 for 1+log slicing");
-        std::array<double, CH_SPACEDIM> reflective_box_lo, reflective_box_hi;
-
-        FOR1(idir)
-        {
-            reflective_box_lo[idir] = ((boundary_params.lo_boundary[idir] ==
-                                        BoundaryConditions::REFLECTIVE_BC)
-                                           ? -1.0
-                                           : 0.0) *
-                                      (ivN[idir] + 1) * coarsest_dx;
-            reflective_box_hi[idir] = ((boundary_params.hi_boundary[idir] ==
-                                        BoundaryConditions::REFLECTIVE_BC)
-                                           ? 2.0
-                                           : 1.0) *
-                                      (ivN[idir] + 1) * coarsest_dx;
-        }
 
         // Now extraction parameters
         FOR1(idir)
@@ -219,8 +204,8 @@ class SimulationParametersBase : public ChomboParameters
                 "extraction_center[" + std::to_string(idir) + "]";
             double center_in_dir = extraction_params.center[idir];
             check_parameter(center_name, center_in_dir,
-                            (center_in_dir >= reflective_box_lo[idir]) &&
-                                (center_in_dir <= reflective_box_hi[idir]),
+                            (center_in_dir >= reflective_domain_lo[idir]) &&
+                                (center_in_dir <= reflective_domain_hi[idir]),
                             "must be in the computational domain after "
                             "applying reflective symmetry");
             for (int iradius = 0;
@@ -234,8 +219,8 @@ class SimulationParametersBase : public ChomboParameters
                                     "must be >= 0.0");
                 check_parameter(
                     radius_name, radius,
-                    (center_in_dir - radius >= reflective_box_lo[idir]) &&
-                        (center_in_dir + radius <= reflective_box_hi[idir]),
+                    (center_in_dir - radius >= reflective_domain_lo[idir]) &&
+                        (center_in_dir + radius <= reflective_domain_hi[idir]),
                     "extraction sphere must lie within the computational "
                     "domain after applying reflective symmetry");
             }
