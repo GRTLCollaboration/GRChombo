@@ -6,7 +6,7 @@
 #ifndef GRAMR_HPP_
 #define GRAMR_HPP_
 
-// Our includes
+// Chombo includes
 #include "AMR.H"
 
 // Other includes

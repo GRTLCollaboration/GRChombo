@@ -11,13 +11,13 @@
 #include "Coordinates.hpp"
 #include "Copier.H"
 #include "FourthOrderInterpStencil.H"
+#include "Interval.H"
+#include "RealVect.H"
 
 // Our includes
 #include "DimensionDefinitions.hpp"
 #include "GRLevelData.hpp"
 #include "GRParmParse.hpp"
-#include "Interval.H"
-#include "RealVect.H"
 #include "UserVariables.hpp"
 #include "VariableType.hpp"
 

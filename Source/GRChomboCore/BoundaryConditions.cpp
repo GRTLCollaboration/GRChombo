@@ -8,7 +8,7 @@
 #include "ProblemDomain.H"
 #include "RealVect.H"
 
-// Our includes
+// Other includes
 #include "BoundaryConditions.hpp"
 #include <algorithm>
 #include <array>

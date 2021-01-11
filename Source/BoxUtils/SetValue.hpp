@@ -9,7 +9,7 @@
 // Chombo includes
 #include "Interval.H"
 
-// Our includes
+// Other includes
 #include "Cell.hpp"
 #include <limits>
 

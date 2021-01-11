@@ -9,7 +9,7 @@
 // Chombo includes
 #include "FArrayBox.H"
 
-// Our includes
+// Other includes
 #include "CellIndex.hpp"
 #include "UserVariables.hpp"
 #include <array>
