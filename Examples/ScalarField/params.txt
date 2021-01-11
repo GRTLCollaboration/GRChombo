@@ -22,9 +22,9 @@ tag_buffer_size = 0
 # Maximum number of times you can regrid above coarsest level
 max_level = 6 # There are (max_level+1) grids, so min is zero
 # Frequency of regridding at each level
-# Need one for each level, ie max_level+1 items
-# in this example turn off regridding
-regrid_interval = 0 0 0 0 0 0 0
+# Need one for each level except the top one, ie max_level items
+# in this example turn off regridding on all levels
+regrid_interval = 0 0 0 0 0 0
 # Max and min box size - for load balancing
 max_box_size = 16
 min_box_size = 16

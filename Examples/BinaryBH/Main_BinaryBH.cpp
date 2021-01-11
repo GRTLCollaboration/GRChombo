@@ -25,6 +25,9 @@ int runGRChombo(int argc, char *argv[])
     GRParmParse pp(argc - 2, argv + 2, NULL, in_file);
     SimulationParameters sim_params(pp);
 
+    if (sim_params.just_check_params)
+        return 0;
+
     BHAMR bh_amr;
     // must be before 'setupAMRObject' to define punctures for tagging criteria
     if (sim_params.track_punctures)
