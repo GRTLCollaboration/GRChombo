@@ -15,9 +15,9 @@
 #include "BHAMR.hpp"
 #include "DefaultLevelFactory.hpp"
 #include "GRParmParse.hpp"
+#include "MultiLevelTask.hpp"
 #include "SetupFunctions.hpp"
 #include "SimulationParameters.hpp"
-#include "CallFunctionOverLevels.hpp"
 
 // Problem specific includes:
 #include "BinaryBHLevel.hpp"
@@ -68,12 +68,19 @@ int runGRChombo(int argc, char *argv[])
 
     std::chrono::time_point<Clock> start_time = Clock::now();
 
-    // Add a scheduler to GRAMR to calls specificPostTimeStep on every AMRLevel
-    // at time 0
-    CallFunctionOverLevelsPtr<> call_now(
-        [](GRAMRLevel *level) { level->specificPostTimeStep(); });
-    call_now.execute(bh_amr); // call 'now' really now
-    // bh_amr.schedule(call_now); // or call 'now', after 1st plot level is done
+    // Add a scheduler to call specificPostTimeStep on every AMRLevel at t=0
+    auto task = [](GRAMRLevel *level) {
+        if (level->time() == 0.)
+            level->specificPostTimeStep();
+    };
+    // call 'now' really now
+    MultiLevelTaskPtr<> call_task(task);
+    call_task.execute(bh_amr);
+    // or call at post-plotLevel, at every 'some_interval'
+    // int some_interval = 10;
+    // bool reverse_levels = true;
+    // MultiLevelTaskPtr<> call_task(task, reverse_levels, some_interval);
+    // bh_amr.schedule(call_task);
 
     bh_amr.run(sim_params.stop_time, sim_params.max_steps);
 

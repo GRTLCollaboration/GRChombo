@@ -59,8 +59,7 @@ void BinaryBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     BoxLoops::loop(make_compute_pack(TraceARemoval(), PositiveChiAndAlpha()),
                    a_soln, a_soln, INCLUDE_GHOST_CELLS);
 
-    // Calculate CCZ4 right hand side and set constraints to zero to avoid
-    // undefined values
+    // Calculate CCZ4 right hand side
     BoxLoops::loop(CCZ4(m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
                    a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
 }
@@ -102,8 +101,10 @@ void BinaryBHLevel::specificPostTimeStep()
 {
     CH_TIME("BinaryBHLevel::specificPostTimeStep");
 
-    bool first_step = (m_time == 0.); // called at t=0 from Main
-    // bool first_step = (m_time == m_dt); // not called in Main
+    bool first_step =
+        (m_time == 0.); // this form is used when 'specificPostTimeStep' was
+                        // called during setup at t=0 from Main
+    // bool first_step = (m_time == m_dt); // if not called in Main
 
     if (m_p.activate_extraction == 1)
     {
@@ -156,15 +157,12 @@ void BinaryBHLevel::specificPostTimeStep()
     // do puncture tracking on requested level
     if (m_p.track_punctures && m_level == m_p.puncture_tracking_level)
     {
-        if (m_time != 0) // already done at t=0 in Main
-        {
-            CH_TIME("PunctureTracking");
-            // only do the write out for every coarsest level timestep
-            int coarsest_level = 0;
-            bool write_punctures = at_level_timestep_multiple(coarsest_level);
-            m_bh_amr.m_puncture_tracker.execute_tracking(m_time, m_restart_time,
-                                                         m_dt, write_punctures);
-        }
+        CH_TIME("PunctureTracking");
+        // only do the write out for every coarsest level timestep
+        int coarsest_level = 0;
+        bool write_punctures = at_level_timestep_multiple(coarsest_level);
+        m_bh_amr.m_puncture_tracker.execute_tracking(m_time, m_restart_time,
+                                                     m_dt, write_punctures);
     }
 }
 

@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef CALL_FUCNTION_OVER_LEVELS
-#define CALL_FUCNTION_OVER_LEVELS
+#ifndef MULTI_LEVEL_TASK
+#define MULTI_LEVEL_TASK
 
 #include "AMR.H"
 #include "GRAMRLevel.hpp"
@@ -17,7 +17,7 @@
 //! Satisfies syntax of Chmbo's Scheduler such that it can be passed to GRAMR
 //! and be scheduled
 template <class Level = GRAMRLevel>
-class CallFunctionOverLevels : public Scheduler::PeriodicFunction
+class MultiLevelTask : public Scheduler::PeriodicFunction
 {
     bool m_reverse_levels;
     std::function<void(Level *)> m_func;
@@ -28,8 +28,8 @@ class CallFunctionOverLevels : public Scheduler::PeriodicFunction
     AMR *m_amr_ptr; //! pointer to AMR object
 
   public:
-    CallFunctionOverLevels(std::function<void(Level *)> a_func,
-                           bool a_reverse_levels = true)
+    MultiLevelTask(std::function<void(Level *)> a_func,
+                   bool a_reverse_levels = true)
         : m_func(a_func), m_reverse_levels(a_reverse_levels)
     {
     }
@@ -63,21 +63,22 @@ class CallFunctionOverLevels : public Scheduler::PeriodicFunction
 //! (as GRAMR) by doing gr_amr.schedule(me) (this version will make it be called
 //! only after plot files are written, if that is ever an interest)
 template <class Level = GRAMRLevel>
-class CallFunctionOverLevelsPtr : public RefCountedPtr<Scheduler>
+class MultiLevelTaskPtr : public RefCountedPtr<Scheduler>
 {
-    RefCountedPtr<CallFunctionOverLevels<Level>> m_ptr_to_func;
+    RefCountedPtr<MultiLevelTask<Level>> m_ptr_to_func;
 
   public:
     //! interval defines the frequency with which the scheduler will be called
     //! if added to an AMR
-    CallFunctionOverLevelsPtr(std::function<void(Level *)> a_func,
-                              bool a_reverse_levels = true,
-                              int a_interval = std::numeric_limits<int>::max())
+    MultiLevelTaskPtr(std::function<void(Level *)> a_func,
+                      bool a_reverse_levels = true,
+                      int a_interval = std::numeric_limits<int>::max())
         : RefCountedPtr<Scheduler>(new Scheduler),
-          m_ptr_to_func(
-              new CallFunctionOverLevels<Level>(a_func, a_reverse_levels))
+          m_ptr_to_func(new MultiLevelTask<Level>(a_func, a_reverse_levels))
     // the two 'new' pointers are deleted by RefCountedPtr, no memory leak
     {
+        if (a_interval <= 0) // the user probably means "never again"
+            a_interval = std::numeric_limits<int>::max();
         (*this)->schedule(m_ptr_to_func, a_interval);
     }
 
@@ -89,4 +90,4 @@ class CallFunctionOverLevelsPtr : public RefCountedPtr<Scheduler>
     }
 };
 
-#endif /* CALL_FUCNTION_OVER_LEVELS */
+#endif /* MULTI_LEVEL_TASK */
