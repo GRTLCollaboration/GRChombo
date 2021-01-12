@@ -20,8 +20,8 @@
 #include "GammaCalculator.hpp"
 #include "KerrBH.hpp"
 
-#include "ADMMass.hpp"
-#include "ADMMassExtraction.hpp"
+#include "ADMQuantities.hpp"
+#include "ADMQuantitiesExtraction.hpp"
 
 void KerrBHLevel::specificAdvance()
 {
@@ -118,18 +118,19 @@ void KerrBHLevel::specificPostTimeStep()
         {
             // Populate the ADM Mass and Spin values on the grid
             fillAllGhosts();
-            BoxLoops::loop(
-                ADMMass(m_p.extraction_params.center, m_dx, c_Madm, c_Jadm),
-                m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+            BoxLoops::loop(ADMQuantities(m_p.extraction_params.center, m_dx,
+                                         c_Madm, c_Jadm),
+                           m_state_new, m_state_diagnostics,
+                           EXCLUDE_GHOST_CELLS);
 
             if (m_level == min_level)
             {
                 CH_TIME("ADMExtraction");
                 // Now refresh the interpolator and do the interpolation
                 m_gr_amr.m_interpolator->refresh();
-                ADMMassExtraction my_extraction(m_p.extraction_params, m_dt,
-                                                m_time, m_restart_time, c_Madm,
-                                                c_Jadm);
+                ADMQuantitiesExtraction my_extraction(
+                    m_p.extraction_params, m_dt, m_time, m_restart_time, c_Madm,
+                    c_Jadm);
                 my_extraction.execute_query(m_gr_amr.m_interpolator);
             }
         }

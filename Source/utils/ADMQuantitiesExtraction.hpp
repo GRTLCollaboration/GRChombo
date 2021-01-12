@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef ADMMASSEXTRACTION_HPP_
-#define ADMMASSEXTRACTION_HPP_
+#ifndef ADMQUANTITIESEXTRACTION_HPP_
+#define ADMQUANTITIESEXTRACTION_HPP_
 
 #include "SphericalExtraction.hpp"
 //!  The class allows extraction of the values of the ADM mass and angular
@@ -15,14 +15,14 @@
    angular momentum over spherical shells at specified radii. The values may
    then be written to an output file, or integrated across the surfaces.
 */
-class ADMMassExtraction : public SphericalExtraction
+class ADMQuantitiesExtraction : public SphericalExtraction
 {
   public:
     //! The constructor
-    ADMMassExtraction(SphericalExtraction::params_t &a_params, double a_dt,
-                      double a_time, bool a_first_step,
-                      double a_restart_time = 0.0, int a_c_Madm = -1,
-                      int a_c_Jadm = -1)
+    ADMQuantitiesExtraction(SphericalExtraction::params_t &a_params,
+                            double a_dt, double a_time, bool a_first_step,
+                            double a_restart_time = 0.0, int a_c_Madm = -1,
+                            int a_c_Jadm = -1)
         : SphericalExtraction(a_params, a_dt, a_time, a_first_step,
                               a_restart_time),
           m_c_Madm(a_c_Madm), m_c_Jadm(a_c_Jadm)
@@ -35,11 +35,11 @@ class ADMMassExtraction : public SphericalExtraction
 
     //! The old constructor which assumes it is called in specificPostTimeStep
     //! so the first time step is when m_time == m_dt
-    ADMMassExtraction(SphericalExtraction::params_t a_params, double a_dt,
-                      double a_time, double a_restart_time = 0.0,
-                      int a_c_Madm = -1, int a_c_Jadm = -1)
-        : ADMMassExtraction(a_params, a_dt, a_time, (a_dt == a_time),
-                            a_restart_time, a_c_Madm, a_c_Jadm)
+    ADMQuantitiesExtraction(SphericalExtraction::params_t a_params, double a_dt,
+                            double a_time, double a_restart_time = 0.0,
+                            int a_c_Madm = -1, int a_c_Jadm = -1)
+        : ADMQuantitiesExtraction(a_params, a_dt, a_time, (a_dt == a_time),
+                                  a_restart_time, a_c_Madm, a_c_Jadm)
     {
     }
 
@@ -50,7 +50,7 @@ class ADMMassExtraction : public SphericalExtraction
         extract(a_interpolator);
 
         if (m_params.write_extraction)
-            write_extraction("MadmExtractionOut_");
+            write_extraction("ADMQuantitiesExtractionOut_");
 
         int num_integrals = (m_c_Madm >= 0) + (m_c_Jadm >= 0);
         if (!num_integrals)
@@ -75,7 +75,7 @@ class ADMMassExtraction : public SphericalExtraction
             labels[0] = "M_adm";
         if (m_c_Jadm >= 0)
             labels[J_index] = "J_adm";
-        write_integrals("IntegralADMmass", out_integrals, labels,
+        write_integrals("IntegralADMQuantities", out_integrals, labels,
                         extrapolation_order);
     }
 
@@ -83,4 +83,4 @@ class ADMMassExtraction : public SphericalExtraction
     const int m_c_Madm, m_c_Jadm;
 };
 
-#endif /* ADMMASSEXTRACTION_HPP_ */
+#endif /* ADMQUANTITIESEXTRACTION_HPP_ */

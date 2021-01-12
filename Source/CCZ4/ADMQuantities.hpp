@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef ADMMASS_HPP_
-#define ADMMASS_HPP_
+#ifndef ADMQUANTITIES_HPP_
+#define ADMQUANTITIES_HPP_
 
 #include "ADMConformalVars.hpp"
 #include "CCZ4Geometry.hpp"
@@ -19,7 +19,7 @@
 #include "simd.hpp"
 
 //! Calculates the ADM massa
-class ADMMass
+class ADMQuantities
 {
     // Use the variable definition in ADMConformalVars - only require the key
     // vars
@@ -36,8 +36,8 @@ class ADMMass
         Z
     };
 
-    ADMMass(const std::array<double, CH_SPACEDIM> &a_center, double a_dx,
-            int a_c_Madm = -1, int a_c_Jadm = -1, double a_G_Newton = 1.0)
+    ADMQuantities(const std::array<double, CH_SPACEDIM> &a_center, double a_dx,
+                  int a_c_Madm = -1, int a_c_Jadm = -1, double a_G_Newton = 1.0)
         : m_deriv(a_dx), m_center(a_center), m_G_Newton(a_G_Newton), m_dir(Z),
           m_c_Madm(a_c_Madm), m_c_Jadm(a_c_Jadm)
     {
@@ -89,7 +89,7 @@ class ADMMass
                          (vars.h[l][k] * d1.chi[j] - vars.h[j][k] * d1.chi[l]));
             }
 
-            // assign values of ADMMass in output box
+            // assign values of ADM Mass in output box
             current_cell.store_vars(Madm, m_c_Madm);
         }
 
@@ -116,6 +116,8 @@ class ADMMass
                             (vars.A[l][m] + vars.K * vars.h[l][m] / 3.);
                 }
             }
+
+            // assign values of ADM Momentum in output box
             current_cell.store_vars(Jadm, m_c_Jadm);
         }
     }
@@ -130,4 +132,4 @@ class ADMMass
     DIR m_dir;
 };
 
-#endif /* ADMMASS_HPP_ */
+#endif /* ADMQUANTITIES_HPP_ */
