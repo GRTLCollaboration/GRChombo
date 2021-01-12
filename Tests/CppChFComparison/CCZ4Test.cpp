@@ -7,14 +7,21 @@
 
 //#include <omp.h>
 
+// Chombo includes
 #include "FArrayBox.H"
+
+// Other includes
 #include <iomanip>
 #include <iostream>
 #include <sys/time.h>
 
+// Our includes
 #include "BoxLoops.hpp"
 #include "CCZ4.hpp"
 #include "GRBSSNChomboF_F.H"
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 #define CHF_FRAn(a, n, c)                                                      \
     a.dataPtr(n),                                                              \

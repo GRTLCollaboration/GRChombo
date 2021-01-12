@@ -3,14 +3,20 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#include "BoundaryConditions.hpp"
+// Chombo includes
 #include "FArrayBox.H"
 #include "ProblemDomain.H"
 #include "RealVect.H"
+
+// Other includes
+#include "BoundaryConditions.hpp"
 #include <algorithm>
 #include <array>
 #include <map>
 #include <string>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 BoundaryConditions::params_t::params_t()
 {

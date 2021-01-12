@@ -10,9 +10,6 @@
 #ifndef AMRREDUCTIONS_IMPL_HPP
 #define AMRREDUCTIONS_IMPL_HPP
 
-#include "computeNorm.H"
-#include "computeSum.H"
-
 template <VariableType var_t>
 AMRReductions<var_t>::AMRReductions(const GRAMR &a_gramr,
                                     const int a_base_level)

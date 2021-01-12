@@ -3,12 +3,18 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
+// Chombo includes
 #include "REAL.H"
+
+// Other includes
 #include "simd.hpp"
 #include <cmath>
 #include <iomanip>
 #include <iostream>
 #include <limits>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 //#define DEBUG 1
 

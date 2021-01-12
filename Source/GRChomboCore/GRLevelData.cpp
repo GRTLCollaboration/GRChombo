@@ -3,8 +3,14 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#include "GRLevelData.hpp"
+// Chombo includes
 #include "FArrayBox.H"
+
+// Our includes
+#include "GRLevelData.hpp"
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 GRLevelData::GRLevelData() : LevelData<FArrayBox>() {}
 

@@ -6,12 +6,19 @@
 #ifndef INTERPOLATIONQUERY_HPP_
 #define INTERPOLATIONQUERY_HPP_
 
+// Chombo includes
+#include "CH_assert.H"
+
+// Other includes
 #include "Derivative.hpp"
 #include "VariableType.hpp"
 #include <map>
 #include <tuple>
 #include <utility>
 #include <vector>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 class InterpolationQuery
 {

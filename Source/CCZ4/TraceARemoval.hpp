@@ -9,7 +9,6 @@
 
 #include "CCZ4Geometry.hpp"
 #include "Cell.hpp"
-#include "Interval.H"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"
 #include "UserVariables.hpp"

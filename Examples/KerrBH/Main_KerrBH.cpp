@@ -3,9 +3,13 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
+// Chombo includes
 #include "parstream.H" //Gives us pout()
+
+// System includes
 #include <iostream>
 
+// Our general includes
 #include "DefaultLevelFactory.hpp"
 #include "GRAMR.hpp"
 #include "GRParmParse.hpp"
@@ -14,6 +18,9 @@
 
 // Problem specific includes:
 #include "KerrBHLevel.hpp"
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 int runGRChombo(int argc, char *argv[])
 {

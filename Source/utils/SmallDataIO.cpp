@@ -3,8 +3,11 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#include "SmallDataIO.hpp"
+// Chombo includes
 #include "SPMD.H" // for Chombo_MPI
+
+// Other includes
+#include "SmallDataIO.hpp"
 #include <cmath>
 #include <random>
 // (MR): if it were up to me, I'd be using the C++17 filesystems library
@@ -14,6 +17,9 @@
 #include <iomanip>
 #include <iostream>
 #include <sstream>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 // ------------ Constructors -----------------
 

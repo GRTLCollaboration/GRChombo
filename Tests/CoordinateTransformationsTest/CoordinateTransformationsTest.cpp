@@ -3,12 +3,18 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
+// Chombo includes
+#include "IntVect.H"
+
+// Other includes
 #include "CoordinateTransformations.hpp"
 #include "Coordinates.hpp"
-#include "IntVect.H"
 #include "TensorAlgebra.hpp"
 #include "simd.hpp"
 #include <limits>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 constexpr int ulp = 15; /* units in the last place */
 

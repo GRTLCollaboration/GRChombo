@@ -3,13 +3,20 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
+// Chombo includes
+#include "BoxIterator.H"
 #include "FArrayBox.H"
+
+// Other includes
 #include <iostream>
 
-#include "BoxIterator.H"
+// Our includes
 #include "BoxLoops.hpp"
 #include "DerivativeTestsCompute.hpp"
 #include "UserVariables.hpp"
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 bool is_wrong(double value, double correct_value, std::string deriv_type)
 {

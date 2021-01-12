@@ -8,11 +8,14 @@
 // This file incldues several functions that need to be called to
 // set up the runs but aren't very interesting for the normal user.
 
+// Chombo includes
+#include "AMRLevelFactory.H"
 #include "parstream.H" //Gives us pout()
+
+// Other includes
 #include <iostream>
 using std::cerr;
 using std::endl;
-#include "AMRLevelFactory.H"
 #include "ChomboParameters.hpp"
 #include "DerivativeSetup.hpp"
 #include "GRAMR.hpp"
@@ -28,6 +31,9 @@ using std::endl;
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 /// This function calls MPI_Init, makes sure a parameter file is supplied etc...
 void mainSetup(int argc, char *argv[]);

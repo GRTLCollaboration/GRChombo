@@ -6,6 +6,9 @@
 #ifndef DIAGNOSTICVARIABLES_HPP
 #define DIAGNOSTICVARIABLES_HPP
 
+#include <array>
+#include <string>
+
 // assign an enum to each variable
 enum
 {

@@ -6,20 +6,26 @@
 #ifndef GRAMRLEVEL_HPP_
 #define GRAMRLEVEL_HPP_
 
+// Chombo includes
 #include "AMRLevel.H"
-#include "BoundaryConditions.hpp"
 #include "CoarseAverage.H"
 #include "FourthOrderFillPatch.H"
-#include "GRAMR.hpp"
-#include "GRLevelData.hpp"
-#include "InterpSource.hpp"
 #include "LevelFluxRegister.H" //We don't actually use flux conservation but Chombo assumes we do
 #include "LevelRK4.H"
 #include "LoadBalance.H"
+
+// Other includes
+#include "BoundaryConditions.hpp"
+#include "GRAMR.hpp"
+#include "GRLevelData.hpp"
+#include "InterpSource.hpp"
 #include "SimulationParameters.hpp"
 #include "UserVariables.hpp" // need NUM_VARS
 #include <fstream>
 #include <sys/time.h>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 class GRAMRLevel : public AMRLevel, public InterpSource
 {
