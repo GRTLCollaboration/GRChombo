@@ -155,17 +155,25 @@ void SurfaceExtraction<SurfaceGeometry>::extract(
 template <class SurfaceGeometry>
 void SurfaceExtraction<SurfaceGeometry>::add_integrand(
     const integrand_t &a_integrand, std::vector<double> &out_integrals,
-    const IntegrationMethod &a_method_u, const IntegrationMethod &a_method_v)
+    const IntegrationMethod &a_method_u, const IntegrationMethod &a_method_v,
+    const bool a_broadcast_integral)
 {
+    // if broadcasting integral to all ranks, all ranks need to know about it
+    m_broadcast_integrals.push_back(a_broadcast_integral);
+    if (a_broadcast_integral || procID() == 0)
+    {
+        // resize the out_integrals and store a reference to it
+        out_integrals.resize(m_params.num_surfaces);
+        std::fill(out_integrals.begin(), out_integrals.end(), 0.0);
+    }
+    m_integrals.push_back(std::ref(out_integrals));
+
+    // only rank 0 actually does the integration and needs to know about the
+    // integrand and integration method
     if (procID() == 0)
     {
         // store the integrand
         m_integrands.push_back(a_integrand);
-
-        // resize the out_integrals and store a reference to it
-        out_integrals.resize(m_params.num_surfaces);
-        std::fill(out_integrals.begin(), out_integrals.end(), 0.0);
-        m_integrals.push_back(std::ref(out_integrals));
 
         // check if integration methods are valid given periodicity and number
         // of points
@@ -209,13 +217,15 @@ void SurfaceExtraction<SurfaceGeometry>::add_integrand(
 template <class SurfaceGeometry>
 void SurfaceExtraction<SurfaceGeometry>::add_var_integrand(
     int a_var, std::vector<double> &out_integrals,
-    const IntegrationMethod &a_method_u, const IntegrationMethod &a_method_v)
+    const IntegrationMethod &a_method_u, const IntegrationMethod &a_method_v,
+    const bool a_broadcast_integral)
 {
     CH_assert(a_var >= 0 && a_var < m_vars.size());
     integrand_t var_integrand = [var = a_var](std::vector<double> &data, double,
                                               double,
                                               double) { return data[var]; };
-    add_integrand(var_integrand, out_integrals, a_method_u, a_method_v);
+    add_integrand(var_integrand, out_integrals, a_method_u, a_method_v,
+                  a_broadcast_integral);
 }
 
 template <class SurfaceGeometry>
@@ -224,6 +234,7 @@ void SurfaceExtraction<SurfaceGeometry>::integrate()
     CH_assert(m_done_extraction);
     if (procID() == 0)
     {
+        // note this condition won't be true on other ranks
         CH_assert(m_integrands.size() == m_integration_methods.size() &&
                   m_integrals.size() > 0);
         int num_integrals = m_integrals.size();
@@ -270,6 +281,22 @@ void SurfaceExtraction<SurfaceGeometry>::integrate()
             }
         }
     }
+
+    // now broadcast result to non-zero ranks if requested
+    for (int iintegral = 0; iintegral < m_integrals.size(); ++iintegral)
+    {
+        if (m_broadcast_integrals[iintegral])
+        {
+            Vector<double> broadcast_Vector;
+            if (procID() == 0)
+                broadcast_Vector = m_integrals[iintegral].get();
+            broadcast(broadcast_Vector, 0);
+            if (procID() != 0)
+            {
+                m_integrals[iintegral].get() = broadcast_Vector.stdVector();
+            }
+        }
+    }
 }
 
 //! Integrate some integrand dependent on the interpolated data over the
@@ -281,14 +308,15 @@ void SurfaceExtraction<SurfaceGeometry>::integrate()
 template <class SurfaceGeometry>
 std::vector<double> SurfaceExtraction<SurfaceGeometry>::integrate(
     integrand_t a_integrand, const IntegrationMethod &a_method_u,
-    const IntegrationMethod &a_method_v)
+    const IntegrationMethod &a_method_v, const bool a_broadcast_integral)
 {
     m_integrands.clear();
     m_integration_methods.clear();
     m_integrals.clear();
 
     std::vector<double> out_integrals(m_params.num_surfaces, 0.0);
-    add_integrand(a_integrand, out_integrals, a_method_u, a_method_v);
+    add_integrand(a_integrand, out_integrals, a_method_u, a_method_v,
+                  a_broadcast_integral);
     integrate();
 
     return out_integrals;

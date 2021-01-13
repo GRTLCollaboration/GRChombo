@@ -85,6 +85,7 @@ template <class SurfaceGeometry> class SurfaceExtraction
     std::vector<integrand_t> m_integrands;
     std::vector<std::array<IntegrationMethod, 2>> m_integration_methods;
     std::vector<std::reference_wrapper<std::vector<double>>> m_integrals;
+    std::vector<bool> m_broadcast_integrals;
 
     bool m_done_extraction; //!< whether or not the extract function has been
                             //!< called for this object
@@ -141,28 +142,37 @@ template <class SurfaceGeometry> class SurfaceExtraction
     //! for integrate() to integrate over.
     //! Note the area_element is already included from the SurfaceGeometry
     //! template class
+    //! The last argument is whether to broadcast the result to all MPI ranks
+    //! or just keep on rank 0. Most use cases won't need this set to true.
     void add_integrand(
         const integrand_t &a_integrand, std::vector<double> &out_integrals,
         const IntegrationMethod &a_method_u = IntegrationMethod::trapezium,
-        const IntegrationMethod &a_method_v = IntegrationMethod::trapezium);
+        const IntegrationMethod &a_method_v = IntegrationMethod::trapezium,
+        const bool a_broadcast_integral = false);
 
     //! Add an integrand which is just a single var. The a_var argument should
     //! correspond to the order in which the desired var was added to this
     //! object with add_var
+    //! The last argument is whether to broadcast the result to all MPI ranks
+    //! or just keep on rank 0. Most use cases won't need this set to true.
     void add_var_integrand(
         int a_var, std::vector<double> &out_integrals,
         const IntegrationMethod &a_method_u = IntegrationMethod::trapezium,
-        const IntegrationMethod &a_method_v = IntegrationMethod::trapezium);
+        const IntegrationMethod &a_method_v = IntegrationMethod::trapezium,
+        const bool a_broadcast_integral = false);
 
     //! Integrate the integrands added using add_integrand
     void integrate();
 
     //! This integrate function can be used if you only want to integrate one
     //! integrand. It calls add_integrand() and integrate()
+    //! The last argument is whether to broadcast the result to all MPI ranks
+    //! or just keep on rank 0. Most use cases won't need this set to true.
     std::vector<double> integrate(
         integrand_t a_integrand,
         const IntegrationMethod &a_method_u = IntegrationMethod::trapezium,
-        const IntegrationMethod &a_method_v = IntegrationMethod::trapezium);
+        const IntegrationMethod &a_method_v = IntegrationMethod::trapezium,
+        const bool a_broadcast_integral = false);
 
     //! Write the interpolated data to a file with a block for each surface
     void write_extraction(std::string a_file_prefix) const;
