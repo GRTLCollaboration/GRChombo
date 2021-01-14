@@ -8,6 +8,7 @@
 
 // Chombo includes
 #include "CH_assert.H"
+#include "SPMD.H"
 
 // Other inclues
 #include "AMRInterpolator.hpp"
@@ -69,9 +70,10 @@ template <class SurfaceGeometry> class SurfaceExtraction
     const double m_time;
     const bool m_first_step;
     const double m_restart_time;
-    const int m_num_points; //!< the total number of points per surface
-    const double m_du;      //!< the grid spacing in u (used in integrate)
-    const double m_dv;      //!< the grid spacing in v (used in integrate)
+    const int m_num_interp_points; //!< the total number of points this rank
+                                   //!< will extract (0 on ranks > 0)
+    const double m_du; //!< the grid spacing in u (used in integrate)
+    const double m_dv; //!< the grid spacing in v (used in integrate)
 
     std::vector<std::vector<double>> m_interp_data;
     std::array<std::vector<double>, CH_SPACEDIM> m_interp_coords;
@@ -83,6 +85,7 @@ template <class SurfaceGeometry> class SurfaceExtraction
     std::vector<integrand_t> m_integrands;
     std::vector<std::array<IntegrationMethod, 2>> m_integration_methods;
     std::vector<std::reference_wrapper<std::vector<double>>> m_integrals;
+    std::vector<bool> m_broadcast_integrals;
 
     bool m_done_extraction; //!< whether or not the extract function has been
                             //!< called for this object
@@ -91,7 +94,8 @@ template <class SurfaceGeometry> class SurfaceExtraction
     //! associated to given surface, u and v indices
     int index(int a_isurface, int a_iu, int a_iv) const
     {
-        return a_isurface * m_num_points + a_iu * m_params.num_points_v + a_iv;
+        return a_isurface * m_params.num_points_u * m_params.num_points_v +
+               a_iu * m_params.num_points_v + a_iv;
     }
 
   public:
@@ -117,10 +121,11 @@ template <class SurfaceGeometry> class SurfaceExtraction
 
     //! Alternative constructor with a predefined vector of variables and
     //! derivatives
-    SurfaceExtraction(const SurfaceGeometry &a_geom, const params_t &a_params,
-                      const std::vector<std::pair<int, Derivative>> &a_vars,
-                      double a_dt, double a_time, bool a_first_step,
-                      double a_restart_time = 0.0);
+    SurfaceExtraction(
+        const SurfaceGeometry &a_geom, const params_t &a_params,
+        const std::vector<std::tuple<int, VariableType, Derivative>> &a_vars,
+        double a_dt, double a_time, bool a_first_step,
+        double a_restart_time = 0.0);
 
     //! Another alternative constructor with a predefined vector of variables
     //! no derivatives
@@ -137,28 +142,37 @@ template <class SurfaceGeometry> class SurfaceExtraction
     //! for integrate() to integrate over.
     //! Note the area_element is already included from the SurfaceGeometry
     //! template class
+    //! The last argument is whether to broadcast the result to all MPI ranks
+    //! or just keep on rank 0. Most use cases won't need this set to true.
     void add_integrand(
         const integrand_t &a_integrand, std::vector<double> &out_integrals,
         const IntegrationMethod &a_method_u = IntegrationMethod::trapezium,
-        const IntegrationMethod &a_method_v = IntegrationMethod::trapezium);
+        const IntegrationMethod &a_method_v = IntegrationMethod::trapezium,
+        const bool a_broadcast_integral = false);
 
     //! Add an integrand which is just a single var. The a_var argument should
     //! correspond to the order in which the desired var was added to this
     //! object with add_var
+    //! The last argument is whether to broadcast the result to all MPI ranks
+    //! or just keep on rank 0. Most use cases won't need this set to true.
     void add_var_integrand(
         int a_var, std::vector<double> &out_integrals,
         const IntegrationMethod &a_method_u = IntegrationMethod::trapezium,
-        const IntegrationMethod &a_method_v = IntegrationMethod::trapezium);
+        const IntegrationMethod &a_method_v = IntegrationMethod::trapezium,
+        const bool a_broadcast_integral = false);
 
     //! Integrate the integrands added using add_integrand
     void integrate();
 
     //! This integrate function can be used if you only want to integrate one
     //! integrand. It calls add_integrand() and integrate()
+    //! The last argument is whether to broadcast the result to all MPI ranks
+    //! or just keep on rank 0. Most use cases won't need this set to true.
     std::vector<double> integrate(
         integrand_t a_integrand,
         const IntegrationMethod &a_method_u = IntegrationMethod::trapezium,
-        const IntegrationMethod &a_method_v = IntegrationMethod::trapezium);
+        const IntegrationMethod &a_method_v = IntegrationMethod::trapezium,
+        const bool a_broadcast_integral = false);
 
     //! Write the interpolated data to a file with a block for each surface
     void write_extraction(std::string a_file_prefix) const;
