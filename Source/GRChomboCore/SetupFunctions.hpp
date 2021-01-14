@@ -129,10 +129,9 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     // and defines the minimum number of level l cells there have to be
     // between level l+1 and level l-1
     const int max_ref_ratio = 2;
-    const int additional_grid_buffer = 3;
     int grid_buffer_size =
         std::ceil(((double)chombo_params.num_ghosts) / (double)max_ref_ratio) +
-        additional_grid_buffer;
+        chombo_params.additional_grid_buffer;
     gr_amr.gridBufferSize(grid_buffer_size);
 
     // set checkpoint and plot intervals and prefixes
