@@ -7,18 +7,22 @@
 #define BOUNDARYCONDITIONS_HPP_
 
 #include "BoxIterator.H"
+#include "Coordinates.hpp"
 #include "Copier.H"
 #include "DimensionDefinitions.hpp"
 #include "FourthOrderInterpStencil.H"
 #include "GRLevelData.hpp"
+#include "GRParmParse.hpp"
+#include "Interval.H"
 #include "RealVect.H"
 #include "UserVariables.hpp"
+#include "VariableType.hpp"
 
 #include <array>
 
 /// Class which deals with the boundaries at the edge of the physical domain in
 /// cases where they are not periodic. Currently only options are static BCs,
-/// sommerfeld (outgoing radiation) and symmetric. The conditions can differ in
+/// sommerfeld (outgoing radiation) and reflective. The conditions can differ in
 /// the high and low directions.
 /// In cases where different variables/boundaries are required, the user should
 /// (usually) write their own conditions class which inherits from this one.
@@ -33,7 +37,9 @@ class BoundaryConditions
     {
         STATIC_BC,
         SOMMERFELD_BC,
-        REFLECTIVE_BC
+        REFLECTIVE_BC,
+        EXTRAPOLATING_BC,
+        MIXED_BC
     };
 
     /// enum for possible parity states
@@ -45,7 +51,9 @@ class BoundaryConditions
         ODD_Z,
         ODD_XY,
         ODD_YZ,
-        ODD_XZ
+        ODD_XZ,
+        ODD_XYZ,
+        UNDEFINED
     };
 
     /// Structure containing the boundary condition params
@@ -54,8 +62,26 @@ class BoundaryConditions
         std::array<int, CH_SPACEDIM> hi_boundary;
         std::array<int, CH_SPACEDIM> lo_boundary;
         std::array<bool, CH_SPACEDIM> is_periodic;
+        bool nonperiodic_boundaries_exist;
+        bool boundary_solution_enforced;
+        bool boundary_rhs_enforced;
+        bool reflective_boundaries_exist;
+        bool sommerfeld_boundaries_exist;
+        bool extrapolating_boundaries_exist;
+        bool mixed_boundaries_exist;
+
         std::array<int, NUM_VARS> vars_parity;
+        std::array<int, NUM_DIAGNOSTIC_VARS>
+            vars_parity_diagnostic; /* needed only in AMRInterpolator */
         std::array<double, NUM_VARS> vars_asymptotic_values;
+        std::map<int, int> mixed_bc_vars_map;
+        int extrapolation_order;
+        params_t(); // sets the defaults
+        void
+        set_is_periodic(const std::array<bool, CH_SPACEDIM> &a_is_periodic);
+        void set_hi_boundary(const std::array<int, CH_SPACEDIM> &a_hi_boundary);
+        void set_lo_boundary(const std::array<int, CH_SPACEDIM> &a_lo_boundary);
+        void read_params(GRParmParse &pp);
     };
 
   protected:
@@ -74,7 +100,8 @@ class BoundaryConditions
 
     /// define function sets members and is_defined set to true
     void define(double a_dx, std::array<double, CH_SPACEDIM> a_center,
-                params_t a_params, ProblemDomain a_domain, int a_num_ghosts);
+                const params_t &a_params, ProblemDomain a_domain,
+                int a_num_ghosts);
 
     /// change the asymptotic values of the variables for the Sommerfeld BCs
     /// this will allow them to evolve during a simulation if necessary
@@ -82,35 +109,48 @@ class BoundaryConditions
         std::array<double, NUM_VARS> &vars_asymptotic_values);
 
     /// write out boundary params (used during setup for debugging)
-    static void write_boundary_conditions(params_t a_params);
+    static void write_boundary_conditions(const params_t &a_params);
 
     /// The function which returns the parity of each of the vars in
     /// UserVariables.hpp The parity should be defined in the params file, and
     /// will be output to the pout files for checking at start/restart of
     /// simulation (It is only required for reflective boundary conditions.)
-    int get_vars_parity(int a_comp, int a_dir) const;
+    int
+    get_var_parity(int a_comp, int a_dir,
+                   const VariableType var_type = VariableType::evolution) const;
 
     /// static version used for initial output of boundary values
-    static int get_vars_parity(int a_comp, int a_dir, params_t a_params);
+    static int
+    get_var_parity(int a_comp, int a_dir, const params_t &a_params,
+                   const VariableType var_type = VariableType::evolution);
 
     /// Fill the rhs boundary values appropriately based on the params set
-    void fill_boundary_rhs(const Side::LoHiSide a_side,
-                           const GRLevelData &a_soln, GRLevelData &a_rhs);
+    void fill_rhs_boundaries(const Side::LoHiSide a_side,
+                             const GRLevelData &a_soln, GRLevelData &a_rhs);
+
+    /// enforce solution boundary conditions, e.g. after interpolation
+    void fill_solution_boundaries(
+        const Side::LoHiSide a_side, GRLevelData &a_state,
+        const Interval &a_comps = Interval(0, NUM_VARS - 1));
+
+    /// fill diagnostic boundaries - used in AMRInterpolator
+    void fill_diagnostic_boundaries(
+        const Side::LoHiSide a_side, GRLevelData &a_state,
+        const Interval &a_comps = Interval(0, NUM_DIAGNOSTIC_VARS - 1));
 
     /// Fill the boundary values appropriately based on the params set
     /// in the direction dir
-    void fill_boundary_rhs_dir(const Side::LoHiSide a_side,
-                               const GRLevelData &a_soln, GRLevelData &a_rhs,
-                               const int dir);
+    void fill_boundary_cells_dir(const Side::LoHiSide a_side,
+                                 const GRLevelData &a_soln, GRLevelData &a_out,
+                                 const int dir, const int boundary_condition,
+                                 const Interval &a_comps,
+                                 const VariableType var_type,
+                                 const bool filling_rhs);
 
     /// Copy the boundary values from src to dest
     /// NB assumes same box layout of input and output data
     void copy_boundary_cells(const Side::LoHiSide a_side,
                              const GRLevelData &a_src, GRLevelData &a_dest);
-
-    /// enforce symmetric boundary conditions, e.g. after interpolation
-    void enforce_symmetric_boundaries(const Side::LoHiSide a_side,
-                                      GRLevelData &a_state);
 
     /// Fill the fine boundary values in a_state
     /// Required for interpolating onto finer levels at boundaries
@@ -138,15 +178,27 @@ class BoundaryConditions
 
   private:
     /// write out reflective conditions
-    static void write_reflective_conditions(int idir, params_t a_params);
+    static void write_reflective_conditions(int idir, const params_t &a_params);
 
     /// write out sommerfeld conditions
-    static void write_sommerfeld_conditions(int idir, params_t a_params);
+    static void write_sommerfeld_conditions(int idir, const params_t &a_params);
+
+    /// write out mixed conditions
+    static void write_mixed_conditions(int idir, const params_t &a_params);
 
     void fill_sommerfeld_cell(FArrayBox &rhs_box, const FArrayBox &soln_box,
-                              const IntVect iv) const;
-    void fill_reflective_cell(FArrayBox &rhs_box, const IntVect iv,
-                              const Side::LoHiSide a_side, const int dir) const;
+                              const IntVect iv,
+                              const std::vector<int> &sommerfeld_comps) const;
+
+    void fill_extrapolating_cell(FArrayBox &out_box, const IntVect iv,
+                                 const Side::LoHiSide a_side, const int dir,
+                                 const std::vector<int> &extrapolating_comps,
+                                 const int order = 1) const;
+
+    void fill_reflective_cell(
+        FArrayBox &out_box, const IntVect iv, const Side::LoHiSide a_side,
+        const int dir, const std::vector<int> &reflective_comps,
+        const VariableType var_type = VariableType::evolution) const;
 };
 
 /// This derived class is used by expand_grids_to_boundaries to grow the

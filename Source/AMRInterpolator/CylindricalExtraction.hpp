@@ -35,8 +35,8 @@ class CylindricalExtraction : public SurfaceExtraction<CylindricalGeometry>
     }
 
     CylindricalExtraction(const params_t &a_params,
-                          const std::vector<std::pair<int, Derivative>> &a_vars,
-                          double a_dt, double a_time, bool a_first_step,
+                          const std::vector<vars_t> &a_vars, double a_dt,
+                          double a_time, bool a_first_step,
                           double a_restart_time = 0.0)
         : CylindricalExtraction(a_params, a_dt, a_time, a_first_step,
                                 a_restart_time)
@@ -45,13 +45,13 @@ class CylindricalExtraction : public SurfaceExtraction<CylindricalGeometry>
     }
 
     CylindricalExtraction(const params_t &a_params,
-                          const std::vector<int> &a_vars, double a_dt,
+                          const std::vector<int> &a_evolution_vars, double a_dt,
                           double a_time, bool a_first_step,
                           double a_restart_time = 0.0)
         : CylindricalExtraction(a_params, a_dt, a_time, a_first_step,
                                 a_restart_time)
     {
-        add_vars(a_vars);
+        add_evolution_vars(a_evolution_vars);
     }
 
     void execute_query(AMRInterpolator<Lagrange<4>> *a_interpolator)

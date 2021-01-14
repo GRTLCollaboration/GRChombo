@@ -9,8 +9,10 @@
 #include "AMR.H"
 #include "AMRInterpolator.hpp"
 #include "Lagrange.hpp"
+#include <algorithm>
 #include <chrono>
 #include <ratio>
+#include <vector>
 
 /// A child of Chombo's AMR class to interface with tools which require
 /// access to the whole AMR hierarchy (such as the AMRInterpolator)
@@ -18,6 +20,10 @@
  *It is necessary for many experimental features and allows us to
  *add said features later without breaking any user code.
  */
+
+// Forward declaration for get_gramrlevels function declarations
+class GRAMRLevel;
+
 class GRAMR : public AMR
 {
   private:
@@ -28,8 +34,9 @@ class GRAMR : public AMR
   public:
     AMRInterpolator<Lagrange<4>> *m_interpolator; //!< The interpolator pointer
 
-    GRAMR() { m_interpolator = nullptr; }
+    GRAMR();
 
+    // defined here due to auto return type
     auto get_walltime()
     {
         auto now = Clock::now();
@@ -39,10 +46,14 @@ class GRAMR : public AMR
     }
 
     // Called after AMR object set up
-    void set_interpolator(AMRInterpolator<Lagrange<4>> *a_interpolator)
-    {
-        m_interpolator = a_interpolator;
-    }
+    virtual void set_interpolator(AMRInterpolator<Lagrange<4>> *a_interpolator);
+
+    // returs a std::vector of GRAMRLevel pointers
+    // similar to AMR::getAMRLevels()
+    std::vector<GRAMRLevel *> get_gramrlevels();
+
+    // const version of above
+    std::vector<const GRAMRLevel *> get_gramrlevels() const;
 };
 
 #endif /* GRAMR_HPP_ */

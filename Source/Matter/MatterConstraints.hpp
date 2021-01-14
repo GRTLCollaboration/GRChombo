@@ -15,7 +15,7 @@
 #include "simd.hpp"
 #include <array>
 
-//!  Calculates the Hamiltonain and Momentum constraints with matter fields
+//!  Calculates the Hamiltonian and Momentum constraints with matter fields
 /*!
      The class calculates the Hamiltonian and Momentum constraints at each point
    in a box. It inherits from the Constraints class which calculates the

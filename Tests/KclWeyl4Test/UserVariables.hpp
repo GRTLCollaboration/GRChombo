@@ -1,98 +1,48 @@
 #ifndef USERVARIABLES_HPP
 #define USERVARIABLES_HPP
 
+#include "ArrayTools.hpp"
+#include "CCZ4UserVariables.hpp"
+
 // TODO: This file can be auto-generated from a list of variable names
 // Also, we should probably scope this enum too...
 //
 enum
 {
+    c_h = c_h11,
+    c_A = c_A11,
+    c_Gamma = c_Gamma1,
+    c_shift = c_shift1,
+    c_B = c_B1,
 
-    c_Weyl4_Re,
-    c_Weyl4_Im,
-
-    c_chi,
-
-    c_h,
-    c_h11 = c_h,
-    c_h12,
-    c_h13,
-    c_h22,
-    c_h23,
-    c_h33,
-
-    c_K,
-
-    c_A,
-    c_A11 = c_A,
-    c_A12,
-    c_A13,
-    c_A22,
-    c_A23,
-    c_A33,
-
-    c_Theta,
-
-    c_Gamma,
-    c_Gamma1 = c_Gamma,
-    c_Gamma2,
-    c_Gamma3,
-
-    c_lapse,
-
-    c_shift,
-    c_shift1 = c_shift,
-    c_shift2,
-    c_shift3,
-
-    c_B,
-    c_B1 = c_B,
-    c_B2,
-    c_B3,
-
-    c_phi,
+    c_phi = NUM_CCZ4_VARS,
     c_Pi,
 
     c_Rho,
 
     c_chi2,
 
+    c_Weyl4_Re,
+    c_Weyl4_Im,
+
     NUM_VARS
 };
 
 namespace UserVariables
 {
-static constexpr char const *variable_names[NUM_VARS] = {
-    "ReWeyl4", "ImWeyl4",
+static const std::array<std::string, NUM_VARS - NUM_CCZ4_VARS>
+    user_variable_names = {
 
-    "chi",
+        "phi",      "Pi",
 
-    "h11",     "h12",     "h13",    "h22", "h23", "h33",
+        "rho",
 
-    "K",
+        "chi2",
 
-    "A11",     "A12",     "A13",    "A22", "A23", "A33",
+        "Weyl4_Re", "Weyl4_Im"};
 
-    "Theta",
-
-    "Gamma1",  "Gamma2",  "Gamma3",
-
-    "lapse",
-
-    "shift1",  "shift2",  "shift3",
-
-    "B1",      "B2",      "B3",
-
-    "phi",     "Pi",
-
-    "rho",
-
-    "chi2"
-
-    //        "Ham",
-    //        "Mom1",
-    //        "Mom2",
-    //        "Mom3"
-};
-}
+static const std::array<std::string, NUM_VARS> variable_names =
+    ArrayTools::concatenate(ccz4_variable_names, user_variable_names);
+} // namespace UserVariables
 
 #endif /* USERVARIABLES_HPP */

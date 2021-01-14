@@ -3,14 +3,15 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef SIMULATIONPARAMETERS_HPP_
-#define SIMULATIONPARAMETERS_HPP_
+#ifndef SIMULATIONPARAMETERS_HPP
+#define SIMULATIONPARAMETERS_HPP
 
 // General includes
 #include "GRParmParse.hpp"
 #include "SimulationParametersBase.hpp"
 
 // Problem specific includes:
+#include "ArrayTools.hpp"
 #include "BoostedBH.hpp"
 
 class SimulationParameters : public SimulationParametersBase
@@ -18,11 +19,12 @@ class SimulationParameters : public SimulationParametersBase
   public:
     SimulationParameters(GRParmParse &pp) : SimulationParametersBase(pp)
     {
-        readParams(pp);
+        read_params(pp);
+        check_params();
     }
 
     /// Read parameters from the parameter file
-    void readParams(GRParmParse &pp)
+    void read_params(GRParmParse &pp)
     {
         // Initial data
         pp.load("massA", bh1_params.mass);
@@ -45,25 +47,58 @@ class SimulationParameters : public SimulationParametersBase
             bh2_params.center[idir] = centerB[idir] + offsetB[idir];
         }
 
-        // Do we want Weyl extraction and puncture tracking?
+        // Do we want Weyl extraction, puncture tracking and constraint norm
+        // calculation?
         pp.load("activate_extraction", activate_extraction, false);
         pp.load("track_punctures", track_punctures, false);
         pp.load("puncture_tracking_level", puncture_tracking_level, max_level);
+        pp.load("calculate_constraint_norms", calculate_constraint_norms,
+                false);
+    }
 
-        // hard code num punctures to 2 for now
-        int num_punctures = 2;
-        initial_puncture_coords.resize(num_punctures);
-        initial_puncture_coords[0] = bh1_params.center;
-        initial_puncture_coords[1] = bh2_params.center;
+    void check_params()
+    {
+        warn_parameter("massA", bh1_params.mass, bh1_params.mass >= 0,
+                       "should be >= 0");
+        warn_parameter("massB", bh2_params.mass, bh2_params.mass >= 0,
+                       "should be >= 0");
+        warn_array_parameter(
+            "momentumA", bh1_params.momentum,
+            std::sqrt(ArrayTools::norm2(bh1_params.momentum)) <
+                0.3 * bh1_params.mass,
+            "approximation used for boosted BH only valid for small boosts");
+        warn_array_parameter(
+            "momentumB", bh2_params.momentum,
+            std::sqrt(ArrayTools::norm2(bh2_params.momentum)) <
+                0.3 * bh1_params.mass,
+            "approximation used for boosted BH only valid for small boosts");
+        FOR1(idir)
+        {
+            std::string nameA = "centerA[" + std::to_string(idir) + "]";
+            std::string nameB = "centerB[" + std::to_string(idir) + "]";
+            double center_A_dir = bh1_params.center[idir];
+            double center_B_dir = bh2_params.center[idir];
+            warn_parameter(nameA, center_A_dir,
+                           (center_A_dir >= 0.0) &&
+                               (center_A_dir <= (ivN[idir] + 1) * coarsest_dx),
+                           "should be within the computational domain");
+            warn_parameter(nameB, center_B_dir,
+                           (center_B_dir >= 0.0) &&
+                               (center_B_dir <= (ivN[idir] + 1) * coarsest_dx),
+                           "should be within the computational domain");
+        }
+        check_parameter("puncture_tracking_level", puncture_tracking_level,
+                        (puncture_tracking_level >= 0) &&
+                            (puncture_tracking_level <= max_level),
+                        "must be between 0 and max_level (inclusive)");
     }
 
     // Initial data
-    bool activate_extraction, track_punctures;
+    bool activate_extraction, track_punctures, calculate_constraint_norms;
     int puncture_tracking_level;
-    std::vector<std::array<double, CH_SPACEDIM>> initial_puncture_coords;
     // Collection of parameters necessary for initial conditions
     BoostedBH::params_t bh2_params;
     BoostedBH::params_t bh1_params;
 };
 
-#endif /* SIMULATIONPARAMETERS_HPP_ */
+#endif /* SIMULATIONPARAMETERS_HPP */

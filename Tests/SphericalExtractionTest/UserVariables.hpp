@@ -6,6 +6,10 @@
 #ifndef USERVARIABLES_HPP
 #define USERVARIABLES_HPP
 
+#include "EmptyDiagnosticVariables.hpp"
+#include <array>
+#include <string>
+
 // assign enum to each variable
 enum
 {
@@ -17,7 +21,10 @@ enum
 
 namespace UserVariables
 {
-static constexpr char const *variable_names[NUM_VARS] = {"phi_Re", "phi_Im"};
+static const std::array<std::string, NUM_VARS> variable_names = {"phi_Re",
+                                                                 "phi_Im"};
 }
+
+#include "UserVariables.inc.hpp"
 
 #endif /* USERVARIABLES_HPP */

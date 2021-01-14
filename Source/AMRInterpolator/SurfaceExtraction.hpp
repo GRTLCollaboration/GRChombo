@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <array>
 #include <functional>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -49,11 +50,14 @@ template <class SurfaceGeometry> class SurfaceExtraction
         }
     };
 
+    using vars_t = std::tuple<int, VariableType, Derivative>;
+
   protected:
     const SurfaceGeometry m_geom; //!< the geometry class which knows about
                                   //!< the particular surface
     const params_t m_params;
-    std::vector<std::pair<int, Derivative>> m_vars; //!< the vector of pairs of
+    std::vector<std::tuple<int, VariableType, Derivative>>
+        m_vars; //!< the vector of pairs of
     //!< variables and derivatives to extract
     const double m_dt;
     const double m_time;
@@ -92,13 +96,18 @@ template <class SurfaceGeometry> class SurfaceExtraction
                       double a_restart_time = 0.0);
 
     //! add a single variable or derivative of variable
-    void add_var(int a_var, const Derivative &a_deriv = Derivative::LOCAL);
+    void add_var(int a_var,
+                 const VariableType var_type = VariableType::evolution,
+                 const Derivative &a_deriv = Derivative::LOCAL);
 
     //! add a vector of variables/derivatives of variables
-    void add_vars(const std::vector<std::pair<int, Derivative>> &a_vars);
+    void add_vars(const std::vector<vars_t> &a_vars);
 
-    //! add a vector of variables (no derivatives)
-    void add_vars(const std::vector<int> &a_vars);
+    //! add a vector of evolution variables (no derivatives)
+    void add_evolution_vars(const std::vector<int> &a_vars);
+
+    //! add a vector of diagnostic variables (no derivatives)
+    void add_diagnostic_vars(const std::vector<int> &a_vars);
 
     //! Alternative constructor with a predefined vector of variables and
     //! derivatives

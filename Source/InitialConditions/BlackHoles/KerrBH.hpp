@@ -8,8 +8,8 @@
 
 #include "ADMConformalVars.hpp"
 #include "Cell.hpp"
+#include "CoordinateTransformations.hpp"
 #include "Coordinates.hpp"
-#include "InitialDataTools.hpp"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"
 #include "UserVariables.hpp" //This files needs NUM_VARS - total number of components
@@ -29,7 +29,7 @@ class KerrBH
     {
         double mass;                            //!<< The mass of the Kerr BH
         std::array<double, CH_SPACEDIM> center; //!< The center of the Kerr BH
-        double spin; //!< The spin param a = J/M, so 0 < a < 1
+        double spin; //!< The spin param a = J/M, so 0 <= |a| <= M
     };
 
   protected:
@@ -41,10 +41,9 @@ class KerrBH
 
     {
         // check this spin param is sensible
-        if ((m_params.spin > 1.0) || (m_params.spin < 0.0))
+        if (std::abs(m_params.spin) > m_params.mass)
         {
-            MayDay::Error(
-                "The spin parameter must be in the range 0 < a < 1.0");
+            MayDay::Error("The spin parameter must satisfy |a| <= M");
         }
     }
 
@@ -62,7 +61,7 @@ class KerrBH
             &spherical_shift, //!<< The spherical components of the shift
         data_t &kerr_lapse,   //!<< The lapse for the kerr solution
         const Coordinates<data_t> coords //!<< Coords of current cell
-        ) const;
+    ) const;
 };
 
 #include "KerrBH.impl.hpp"

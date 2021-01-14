@@ -15,8 +15,10 @@
 #include "InterpSource.hpp"
 #include "LevelFluxRegister.H" //We don't actually use flux conservation but Chombo assumes we do
 #include "LevelRK4.H"
+#include "LoadBalance.H"
 #include "SimulationParameters.hpp"
 #include "UserVariables.hpp" // need NUM_VARS
+#include <fstream>
 #include <sys/time.h>
 
 class GRAMRLevel : public AMRLevel, public InterpSource
@@ -31,7 +33,8 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     static const GRAMRLevel *gr_cast(const AMRLevel *const amr_level_ptr);
     static GRAMRLevel *gr_cast(AMRLevel *const amr_level_ptr);
 
-    const GRLevelData &getLevelData() const;
+    const GRLevelData &
+    getLevelData(const VariableType var_type = VariableType::evolution) const;
 
     bool contains(const std::array<double, CH_SPACEDIM> &point) const;
 
@@ -140,9 +143,6 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     /// Things to do immediately before writing plot files
     virtual void prePlotLevel() {}
 
-    /// Specify which variables to write at plot intervals
-    virtual void specificWritePlotHeader(std::vector<int> &plot_states) const {}
-
     /// Things to do immediately after restart from checkpoint
     virtual void postRestart() {}
 #endif
@@ -157,10 +157,23 @@ class GRAMRLevel : public AMRLevel, public InterpSource
 
     double get_dx() const;
 
-    /// Fill all ghosts cells
-    virtual void fillAllGhosts();
+    /// Returns true if m_time is the same as the time at the end of the current
+    /// timestep on level a_level and false otherwise
+    /// Useful to check whether to calculate something in postTimeStep (which
+    /// might only be needed at the end of a_level's timestep)
+    bool at_level_timestep_multiple(int a_level) const;
+
+    /// Fill all [either] evolution or diagnostic ghost cells
+    virtual void
+    fillAllGhosts(const VariableType var_type = VariableType::evolution);
 
   protected:
+    /// Fill all evolution ghosts cells (i.e. those in m_state_new)
+    virtual void fillAllEvolutionGhosts();
+
+    /// Fill all diagnostics ghost cells (i.e. those in m_state_diagnostics)
+    virtual void fillAllDiagnosticsGhosts();
+
     /// Fill ghosts cells from boxes on this level only. Do not interpolate
     /// between levels.
     virtual void fillIntralevelGhosts();
@@ -181,7 +194,8 @@ class GRAMRLevel : public AMRLevel, public InterpSource
 
     GRLevelData m_state_old; //!< the solution at the old time
     GRLevelData m_state_new; //!< the solution at the new time
-    Real m_dx;               //!< grid spacing
+    GRLevelData m_state_diagnostics;
+    Real m_dx; //!< grid spacing
     double m_restart_time;
 
     GRAMR &m_gr_amr; //!< The GRAMR object containing this GRAMRLevel
@@ -196,6 +210,9 @@ class GRAMRLevel : public AMRLevel, public InterpSource
 
     FourthOrderFillPatch m_patcher; //!< Organises interpolation from coarse to
                                     //!< fine levels of ghosts
+    FourthOrderFillPatch
+        m_patcher_diagnostics; //!< Organises interpolation from coarse to
+                               //!< fine levels of ghosts for diagnostics
     FourthOrderFineInterp m_fine_interp; //!< executes the interpolation from
                                          //!< coarse to fine when regridding
 

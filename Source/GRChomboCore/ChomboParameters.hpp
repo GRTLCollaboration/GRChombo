@@ -6,127 +6,75 @@
 #ifndef CHOMBOPARAMETERS_HPP_
 #define CHOMBOPARAMETERS_HPP_
 
+// Chombo includes
+#include "Misc.H"
+
 // General includes
+#include "ArrayTools.hpp"
 #include "BoundaryConditions.hpp"
 #include "GRParmParse.hpp"
 #include "UserVariables.hpp"
+#include "VariableType.hpp"
 #include <algorithm>
+#include <string>
 
 class ChomboParameters
 {
   public:
-    ChomboParameters(GRParmParse &pp) { read_params(pp); }
+    ChomboParameters(GRParmParse &pp)
+    {
+        read_params(pp);
+        check_params();
+    }
 
     void read_params(GRParmParse &pp)
     {
         pp.load("verbosity", verbosity, 0);
         // Grid setup
-        pp.load("L", L, 1.0);
-        pp.load("regrid_threshold", regrid_threshold, 0.5);
         pp.load("num_ghosts", num_ghosts, 3);
         pp.load("tag_buffer_size", tag_buffer_size, 3);
         pp.load("dt_multiplier", dt_multiplier, 0.25);
         pp.load("fill_ratio", fill_ratio, 0.7);
 
-        // Setup the grid size
-        ivN = IntVect::Unit;
-        int max_N = 0;
-        for (int dir = 0; dir < CH_SPACEDIM; ++dir)
-        {
-            char dir_str[20];
-            sprintf(dir_str, "N%d", dir + 1);
-            int N;
-            pp.load(dir_str, N);
-            N_vect.push_back(N);
-            ivN[dir] = N - 1;
-            max_N = max(N, max_N);
-        }
-        coarsest_dx = L / max_N;
-
-        pp.load("center", center,
-                {0.5 * N_vect[0] * coarsest_dx, 0.5 * N_vect[1] * coarsest_dx,
-                 0.5 * N_vect[2] * coarsest_dx}); // default to center
-
         // Periodicity and boundaries
-        pp.load("isPeriodic", isPeriodic, {true, true, true});
-        int bc = BoundaryConditions::STATIC_BC;
-        pp.load("hi_boundary", boundary_params.hi_boundary, {bc, bc, bc});
-        pp.load("lo_boundary", boundary_params.lo_boundary, {bc, bc, bc});
-        // set defaults, then override them where appropriate
-        boundary_params.vars_parity.fill(BoundaryConditions::EVEN);
-        boundary_params.vars_asymptotic_values.fill(0.0);
-        boundary_params.is_periodic.fill(true);
-        nonperiodic_boundaries_exist = false;
-        symmetric_boundaries_exist = false;
-        FOR1(idir)
-        {
-            if (isPeriodic[idir] == false)
-            {
-                nonperiodic_boundaries_exist = true;
-                boundary_params.is_periodic[idir] = false;
+        boundary_params.read_params(pp);
 
-                // read in relevent params - note that no defaults are set so as
-                // to force the user to specify them where the relevant BCs are
-                // selected
-                if ((boundary_params.hi_boundary[idir] ==
-                     BoundaryConditions::REFLECTIVE_BC) ||
-                    (boundary_params.lo_boundary[idir] ==
-                     BoundaryConditions::REFLECTIVE_BC))
-                {
-                    symmetric_boundaries_exist = true;
-                    pp.load("vars_parity", boundary_params.vars_parity);
-
-                    if ((boundary_params.hi_boundary[idir] ==
-                         BoundaryConditions::REFLECTIVE_BC) &&
-                        (boundary_params.lo_boundary[idir] !=
-                         BoundaryConditions::REFLECTIVE_BC))
-                    {
-                        center[idir] = N_vect[idir] * coarsest_dx;
-                    }
-
-                    if ((boundary_params.lo_boundary[idir] ==
-                         BoundaryConditions::REFLECTIVE_BC) &&
-                        (boundary_params.hi_boundary[idir] !=
-                         BoundaryConditions::REFLECTIVE_BC))
-                    {
-                        center[idir] = 0;
-                    }
-                }
-                if ((boundary_params.hi_boundary[idir] ==
-                     BoundaryConditions::SOMMERFELD_BC) ||
-                    (boundary_params.lo_boundary[idir] ==
-                     BoundaryConditions::SOMMERFELD_BC))
-                {
-                    pp.load("vars_asymptotic_values",
-                            boundary_params.vars_asymptotic_values);
-                }
-            }
-        }
-        pout() << "Center has been set to: ";
-        FOR1(idir) { pout() << center[idir] << " "; }
-        pout() << endl;
-
-        if (nonperiodic_boundaries_exist)
-        {
-            // write out boundary conditions where non periodic - useful for
-            // debug
-            BoundaryConditions::write_boundary_conditions(boundary_params);
-        }
+        // L's, N's and center
+        read_grid_params(pp);
 
         // Misc
         pp.load("ignore_checkpoint_name_mismatch",
                 ignore_checkpoint_name_mismatch, false);
 
         pp.load("max_level", max_level, 0);
-        // the reference ratio is hard coded to 2 on all levels
+        // the reference ratio is hard coded to 2
         // in principle it can be set to other values, but this is
         // not recommended since we do not test GRChombo with other
         // refinement ratios - use other values at your own risk
         ref_ratios.resize(max_level + 1);
         ref_ratios.assign(2);
-        // read in frequency of regrid on each levels, needs
-        // max_level + 1 entries (although never regrids on max_level+1)
-        pp.getarr("regrid_interval", regrid_interval, 0, max_level + 1);
+        pp.getarr("regrid_interval", regrid_interval, 0, max_level);
+        // Regridding on max_level does nothing but Chombo's AMR class
+        // expects this Vector to be of length max_level + 1
+        // so just set the final value to 0.
+        regrid_interval.resize(max_level + 1);
+        regrid_interval[max_level] = 0;
+
+        if (pp.contains("regrid_thresholds"))
+        {
+            pout() << "Using multiple regrid thresholds." << std::endl;
+            // As for regrid_interval, the last element is irrelevant
+            pp.getarr("regrid_thresholds", regrid_thresholds, 0, max_level);
+            regrid_thresholds.resize(max_level + 1);
+            regrid_thresholds[max_level] = regrid_thresholds[max_level - 1];
+        }
+        else
+        {
+            pout() << "Using single regrid threshold." << std::endl;
+            double regrid_threshold;
+            pp.load("regrid_threshold", regrid_threshold, 0.5);
+            regrid_thresholds = Vector<double>(max_level + 1, regrid_threshold);
+        }
 
         // time stepping outputs and regrid data
         pp.load("checkpoint_interval", checkpoint_interval, 1);
@@ -138,18 +86,8 @@ class ChomboParameters
         pp.load("write_plot_ghosts", write_plot_ghosts, false);
 
         // load vars to write to plot files
-        pp.load("num_plot_vars", num_plot_vars, 0);
-        std::vector<std::string> plot_var_names(num_plot_vars, "");
-        pp.load("plot_vars", plot_var_names, num_plot_vars, plot_var_names);
-        for (std::string var_name : plot_var_names)
-        {
-            int var = variable_name_to_enum(var_name);
-            if (var >= 0 && var < NUM_VARS)
-            {
-                plot_vars.push_back(var);
-            }
-        }
-        num_plot_vars = plot_vars.size();
+        UserVariables::load_vars_to_vector(pp, "plot_vars", "num_plot_vars",
+                                           plot_vars, num_plot_vars);
 
         // alias the weird chombo names to something more descriptive
         // for these box params, and default to some reasonable values
@@ -169,43 +107,239 @@ class ChomboParameters
         {
             pp.load("min_box_size", block_factor, 8);
         }
+
+        if (pp.contains("check_params"))
+            just_check_params = true;
     }
 
-    /// Takes a string and returns the variable enum number if the string
-    /// matches one of those in UserVariables::variable_names, or returns -1
-    /// otherwise
-    int variable_name_to_enum(const std::string &a_var_name)
+    void read_grid_params(GRParmParse &pp)
     {
-        using namespace UserVariables;
+        // Grid N
+        std::array<int, CH_SPACEDIM> Ni_full;
+        std::array<int, CH_SPACEDIM> Ni;
+        ivN = IntVect::Unit;
 
-        // std::find did not work very well with the char const* array type of
-        // UserVariables::variable_names so here convert to a
-        // std::array of std::strings first. This is quite inefficient but this
-        // function isn't used much so doesn't matter.
-        std::array<std::string, NUM_VARS> variable_names_array;
-        for (int ivar = 0; ivar < NUM_VARS; ++ivar)
+        // cannot contain both
+        if ((pp.contains("N_full") && pp.contains("N")))
+            MayDay::Error("Please only provide 'N' or 'N_full', not both");
+
+        int N_full = -1;
+        int N = -1;
+        if (pp.contains("N_full"))
+            pp.load("N_full", N_full);
+        else if (pp.contains("N"))
+            pp.load("N", N);
+
+        // read all options (N, N_full, Ni_full and Ni) and then choose
+        // accordingly
+        FOR1(dir)
         {
-            variable_names_array[ivar] = variable_names[ivar];
+            std::string name = ("N" + std::to_string(dir + 1));
+            std::string name_full = ("N" + std::to_string(dir + 1) + "_full");
+            Ni_full[dir] = -1;
+            Ni[dir] = -1;
+
+            // only one of them exists - this passes if none of the 4 exist, but
+            // that is asserted below
+            if (!((N_full > 0 || N > 0) && !pp.contains(name.c_str()) &&
+                  !pp.contains(name_full.c_str())) &&
+                !((N_full < 0 && N < 0) && !(pp.contains(name.c_str()) &&
+                                             pp.contains(name_full.c_str()))))
+                error("Please provide 'N' or 'N_full' or a set of "
+                      "'N1/N1_full', 'N2/N2_full', 'N3/N3_full'");
+
+            if (N_full < 0 && N < 0)
+            {
+                if (pp.contains(name_full.c_str()))
+                    pp.load(name_full.c_str(), Ni_full[dir]);
+                else
+                    pp.load(name.c_str(), Ni[dir]);
+            }
+            if (N < 0 && N_full < 0 && Ni[dir] < 0 &&
+                Ni_full[dir] < 0) // sanity check
+                error("Please provide 'N' or 'N_full' or a set of "
+                      "'N1/N1_full', 'N2/N2_full', 'N3/N3_full'");
+
+            if (N_full > 0)
+                Ni_full[dir] = N_full;
+            else if (N > 0)
+                Ni[dir] = N;
+
+            if (Ni[dir] > 0)
+            {
+                if (boundary_params.lo_boundary[dir] ==
+                        BoundaryConditions::REFLECTIVE_BC ||
+                    boundary_params.hi_boundary[dir] ==
+                        BoundaryConditions::REFLECTIVE_BC)
+
+                    Ni_full[dir] = Ni[dir] * 2;
+                else
+                    Ni_full[dir] = Ni[dir];
+            }
+            else
+            {
+                if (boundary_params.lo_boundary[dir] ==
+                        BoundaryConditions::REFLECTIVE_BC ||
+                    boundary_params.hi_boundary[dir] ==
+                        BoundaryConditions::REFLECTIVE_BC)
+                {
+                    check_parameter("N" + std::to_string(dir) + "_full",
+                                    Ni_full[dir], Ni_full[dir] % 2 == 0,
+                                    "must be a multiple of 2");
+
+                    Ni[dir] = Ni_full[dir] / 2;
+                }
+                else
+                    Ni[dir] = Ni_full[dir];
+            }
+            ivN[dir] = Ni[dir] - 1;
+        }
+        int max_N_full = *std::max_element(Ni_full.begin(), Ni_full.end());
+        int max_N = ivN.max() + 1;
+
+        // Grid L
+        // cannot contain both
+        if ((pp.contains("L_full") && pp.contains("L")))
+            error("Please only provide 'L' or 'L_full', not both");
+
+        double L_full = -1.;
+        if (pp.contains("L_full"))
+            pp.load("L_full", L_full);
+        else
+            pp.load("L", L, 1.0);
+
+        if (L_full > 0.)
+            // necessary for some reflective BC cases, as 'L' is the
+            // length of the longest side of the box
+            L = (L_full * max_N) / max_N_full;
+
+        coarsest_dx = L / max_N;
+
+        // grid spacing params
+        dx.fill(coarsest_dx);
+        origin.fill(coarsest_dx / 2.0);
+
+        // These aren't parameters but used in parameter checks
+        FOR1(idir)
+        {
+            reflective_domain_lo[idir] = ((boundary_params.lo_boundary[idir] ==
+                                           BoundaryConditions::REFLECTIVE_BC)
+                                              ? -1.0
+                                              : 0.0) *
+                                         (ivN[idir] + 1) * coarsest_dx;
+            reflective_domain_hi[idir] = ((boundary_params.hi_boundary[idir] ==
+                                           BoundaryConditions::REFLECTIVE_BC)
+                                              ? 2.0
+                                              : 1.0) *
+                                         (ivN[idir] + 1) * coarsest_dx;
         }
 
-        const auto var_name_it =
-            std::find(variable_names_array.begin(), variable_names_array.end(),
-                      a_var_name);
+        // Grid center
+        // now that L is surely set, get center
+#if CH_SPACEDIM == 3
+        pp.load("center", center,
+                {0.5 * Ni[0] * coarsest_dx, 0.5 * Ni[1] * coarsest_dx,
+                 0.5 * Ni[2] * coarsest_dx}); // default to center
+#elif CH_SPACEDIM == 2
+        pp.load("center", center,
+                {0.5 * Ni[0] * coarsest_dx,
+                 0.5 * Ni[1] * coarsest_dx}); // default to center
+#endif
 
-        int var = std::distance(variable_names_array.begin(), var_name_it);
-        if (var != NUM_VARS)
-            return var;
-        else
+        FOR1(idir)
         {
-            pout() << "Variable with name " << a_var_name << " not found."
-                   << std::endl;
-            return -1;
+            if ((boundary_params.lo_boundary[idir] ==
+                 BoundaryConditions::REFLECTIVE_BC) &&
+                (boundary_params.hi_boundary[idir] !=
+                 BoundaryConditions::REFLECTIVE_BC))
+                center[idir] = 0.;
+            else if ((boundary_params.hi_boundary[idir] ==
+                      BoundaryConditions::REFLECTIVE_BC) &&
+                     (boundary_params.lo_boundary[idir] !=
+                      BoundaryConditions::REFLECTIVE_BC))
+                center[idir] = coarsest_dx * Ni[idir];
+        }
+        pout() << "Center has been set to: ";
+        FOR1(idir) { pout() << center[idir] << " "; }
+        pout() << endl;
+    }
+
+    void check_params()
+    {
+        check_parameter("L", L, L > 0.0, "must be > 0.0");
+        check_parameter("max_level", max_level, max_level >= 0, "must be >= 0");
+        // the following check assumes you will be taking some fourth (or
+        // higher) order one-sided derivatives
+        check_parameter("num_ghosts", num_ghosts,
+                        (num_ghosts >= 3) && (num_ghosts <= block_factor),
+                        "must be >= 3 and <= block_factor/min_box_size");
+        check_parameter("tag_buffer_size", tag_buffer_size,
+                        tag_buffer_size >= 0, "must be >= 0");
+        check_parameter("dt_multiplier", dt_multiplier, dt_multiplier > 0.0,
+                        "must be > 0.0");
+        check_parameter("max_grid_size/max_box_size", max_grid_size,
+                        max_grid_size >= 0, "must be >= 0");
+        check_parameter("block_factor/min_box_size", block_factor,
+                        block_factor >= 1, "must be >= 1");
+        check_parameter("block_factor/min_box_size", block_factor,
+                        Misc::isPower2(block_factor), "must be a power of 2");
+        // note that this also enforces block_factor <= max_grid_size
+        // if max_grid_size > 0
+        check_parameter("block_factor/min_box_size", block_factor,
+                        max_grid_size % block_factor == 0,
+                        "must divide max_grid_size/max_box_size = " +
+                            std::to_string(max_grid_size));
+        FOR1(idir)
+        {
+            std::string Ni_string = "N" + std::to_string(idir + 1);
+            std::string invalid_message = "must divide " + Ni_string;
+            if (boundary_params.reflective_boundaries_exist)
+            {
+                invalid_message += " (or " + Ni_string + "_full/2)";
+            }
+            invalid_message += " = " + std::to_string(ivN[idir] + 1);
+            check_parameter("block_factor/min_box_size", block_factor,
+                            (ivN[idir] + 1) % block_factor == 0,
+                            invalid_message);
+        }
+        check_parameter("fill_ratio", fill_ratio,
+                        (fill_ratio > 0.0) && (fill_ratio <= 1.0),
+                        "must be > 0 and <= 1");
+        // (MR); while this would technically work (any plot files would just
+        // overwrite a checkpoint file), I think a user would only ever do
+        // this unintentinally
+        check_parameter("plot_prefix", plot_prefix,
+                        plot_interval <= 0 || plot_prefix != checkpoint_prefix,
+                        "should be different to checkpoint_prefix");
+
+        if (boundary_params.reflective_boundaries_exist)
+        {
+            for (int ivar = 0; ivar < NUM_VARS; ++ivar)
+            {
+                std::string name = "vars_parity[c_" +
+                                   UserVariables::variable_names[ivar] + "]";
+                int var_parity = boundary_params.vars_parity[ivar];
+                check_parameter(name, var_parity,
+                                var_parity >= BoundaryConditions::EVEN &&
+                                    var_parity < BoundaryConditions::UNDEFINED,
+                                "parity type undefined");
+            }
+            for (int ivar = 0; ivar < NUM_DIAGNOSTIC_VARS; ++ivar)
+            {
+                std::string name = "vars_parity_diagnostic[c_" +
+                                   DiagnosticVariables::variable_names[ivar] +
+                                   "]";
+                int var_parity = boundary_params.vars_parity_diagnostic[ivar];
+                check_parameter(name, var_parity,
+                                var_parity >= BoundaryConditions::EVEN &&
+                                    var_parity <= BoundaryConditions::UNDEFINED,
+                                "parity type undefined");
+            }
         }
     }
 
     // General parameters
     int verbosity;
-    std::vector<int> N_vect;
     double L;                               // Physical sidelength of the grid
     std::array<double, CH_SPACEDIM> center; // grid center
     IntVect ivN;                 // The number of grid cells in each dimension
@@ -225,16 +359,93 @@ class ChomboParameters
     std::string checkpoint_prefix, plot_prefix; // naming of files
     bool write_plot_ghosts;
     int num_plot_vars;
-    std::vector<int> plot_vars; // vars to write to plot file
+    std::vector<std::pair<int, VariableType>>
+        plot_vars; // vars to write to plot file
+
+    std::array<double, CH_SPACEDIM> origin,
+        dx; // location of coarsest origin and dx
 
     // Boundary conditions
-    std::array<bool, CH_SPACEDIM> isPeriodic;     // periodicity
     BoundaryConditions::params_t boundary_params; // set boundaries in each dir
-    bool nonperiodic_boundaries_exist;
-    bool symmetric_boundaries_exist;
 
     // For tagging
-    double regrid_threshold;
+    Vector<double> regrid_thresholds;
+
+    // For checking parameters and then exiting rather before instantiating
+    // GRAMR (or child) object
+    bool just_check_params = false;
+
+  protected:
+    // the low and high corners of the domain taking into account reflective BCs
+    // only used in parameter checks hence protected
+    std::array<double, CH_SPACEDIM> reflective_domain_lo, reflective_domain_hi;
+
+    // use this error function instead of MayDay::error as this will only
+    // print from rank 0
+    void error(const std::string &a_error_message)
+    {
+        if (procID() == 0)
+        {
+            MayDay::Error(a_error_message.c_str());
+        }
+    }
+
+    template <typename T>
+    void check_parameter(const std::string &a_name, T a_value,
+                         const bool a_valid,
+                         const std::string &a_invalid_explanation)
+    {
+        if (a_valid)
+            return;
+        else
+        {
+            std::ostringstream error_message_ss;
+            error_message_ss << "Parameter: " << a_name << " = " << a_value
+                             << " is invalid: " << a_invalid_explanation;
+            error(error_message_ss.str());
+        }
+    }
+
+    template <typename T>
+    void warn_parameter(const std::string &a_name, T a_value,
+                        const bool a_nowarn,
+                        const std::string &a_warning_explanation)
+    {
+        if (a_nowarn)
+            return;
+        else
+        {
+            // only print the warning from rank 0
+            if (procID() == 0)
+            {
+                std::ostringstream warning_message_ss;
+                warning_message_ss << "Parameter: " << a_name << " = "
+                                   << a_value
+                                   << " warning: " << a_warning_explanation;
+                MayDay::Warning(warning_message_ss.str().c_str());
+            }
+        }
+    }
+
+    template <typename T, size_t N>
+    void check_array_parameter(const std::string &a_name,
+                               const std::array<T, N> &a_value,
+                               const bool a_valid,
+                               const std::string &a_invalid_explanation)
+    {
+        std::string value_str = ArrayTools::to_string(a_value);
+        check_parameter(a_name, value_str, a_valid, a_invalid_explanation);
+    }
+
+    template <typename T, size_t N>
+    void warn_array_parameter(const std::string &a_name,
+                              const std::array<T, N> &a_value,
+                              const bool a_nowarn,
+                              const std::string &a_warning_explanation)
+    {
+        std::string value_str = ArrayTools::to_string(a_value);
+        check_parameter(a_name, value_str, a_nowarn, a_warning_explanation);
+    }
 };
 
 #endif /* CHOMBOPARAMETERS_HPP_ */

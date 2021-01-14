@@ -16,7 +16,7 @@
 #include "BoxIterator.H"
 #include "BoxLoops.hpp"
 #include "ConstraintTestF_F.H"
-#include "Constraints.hpp"
+#include "NewConstraints.hpp"
 
 #define CHF_FRAn(a, n, c)                                                      \
     a.dataPtr(n),                                                              \
@@ -194,11 +194,13 @@ int main()
     struct timeval begin, end;
 
     // Make sure instructions are hot in cache
-    BoxLoops::loop(Constraints(dx), in_fab, in_fab_cpp_result, box);
+    BoxLoops::loop(Constraints(dx, c_Ham, Interval(c_Mom1, c_Mom3)), in_fab,
+                   in_fab_cpp_result, box);
 
     gettimeofday(&begin, NULL);
 
-    BoxLoops::loop(Constraints(dx), in_fab, in_fab_cpp_result, box);
+    BoxLoops::loop(Constraints(dx, c_Ham, Interval(c_Mom1, c_Mom3)), in_fab,
+                   in_fab_cpp_result, box);
 
     gettimeofday(&end, NULL);
 

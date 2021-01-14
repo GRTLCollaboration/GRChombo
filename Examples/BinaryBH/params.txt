@@ -9,15 +9,15 @@ chk_prefix = BinaryBHChk_
 plot_prefix = BinaryBHPlot_
 #restart_file = BinaryBHChk_000000.3d.hdf5
 
-# Set up coarsest level number of grid points in each dir
-# NB - the values need to be multiples of block_factor
-N1 = 64
-N2 = 64
-N3 = 64
-
-# Length of the longest N side
-# (This sets dx in all directions)
-L = 512
+# 'N' is the number of subdivisions in each direction of a cubic box
+# 'L' is the length of the longest side of the box, dx_coarsest = L/N
+# NB - If you use reflective BC and want to specify the subdivisions and side
+# of the box were there are no symmetries, specify 'N_full' and 'L_full' instead
+# NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full', 
+# 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
+# NB - the N values need to be multiples of the block_factor
+N_full = 64
+L_full = 512
 
 # Defaults to center of grid L/2
 # uncomment to change
@@ -34,11 +34,11 @@ massB = 0.48847892320123
 offsetB = 0.0 -6.10679 0.0
 momentumB =  0.0841746  0.000510846 0.0
 
-# regridding control, specify frequency on each level
-# so need max_level + 1 entries for interval
+# regridding control, specify threshold (same on each level)
 regrid_threshold = 0.05
 max_level = 9
-regrid_interval = 0 0 0 64 64 64 64 64 64 0
+# need max_level entries for regrid interval
+regrid_interval = 0 0 0 64 64 64 64 64 64
 
 # Max and min box sizes
 max_grid_size = 16
@@ -62,28 +62,26 @@ isPeriodic = 0 0 0
 # 0 = static, 1 = sommerfeld, 2 = reflective
 # (see BoundaryConditions.hpp for details)
 hi_boundary = 1 1 1
-lo_boundary = 1 1 1
+lo_boundary = 1 1 2
 
 # if reflective boundaries selected, must set
 # parity of all vars (in order given by UserVariables.hpp)
 # 0 = even
 # 1,2,3 = odd x, y, z
 # 4,5,6 = odd xy, yz, xz
+# 7     = odd xyz
 vars_parity            = 0 0 4 6 0 5 0    #chi and hij
                          0 0 4 6 0 5 0    #K and Aij
                          0 1 2 3          #Theta and Gamma
                          0 1 2 3 1 2 3    #lapse shift and B
-                         0 1 2 3          #Ham and Mom
-                         0 0              #Weyl
+vars_parity_diagnostic = 0 1 2 3          #Ham and Mom
+                         0 7              #Weyl
 
 # if sommerfeld boundaries selected, must select
-# asymptotic values (in order given by UserVariables.hpp)
-vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
-                         0.0 0.0 0.0 0.0 0.0 0.0 0.0 #K and Aij
-                         0.0 0.0 0.0 0.0             #Theta and Gamma
-                         1.0 0.0 0.0 0.0 0.0 0.0 0.0 #lapse shift and B
-                         0.0 0.0 0.0 0.0             #Ham and Mom
-                         0.0 0.0                     #Weyl
+# asymptotic values
+num_nonzero_asymptotic_vars = 5
+nonzero_asymptotic_vars = chi h11 h22 h33 lapse
+nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 
 # Lapse evolution
 lapse_advec_coeff = 1.0

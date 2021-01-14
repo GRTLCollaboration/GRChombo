@@ -15,25 +15,37 @@
 
 // Our includes
 
+#include "BoundaryConditions.hpp"
 #include "InterpSource.hpp"
 #include "InterpolationAlgorithm.hpp"
 #include "InterpolationLayout.hpp"
 #include "InterpolationQuery.hpp"
 
 #include "MPIContext.hpp"
+#include "UserVariables.hpp"
 
 // End include
 
 template <typename InterpAlgo> class AMRInterpolator
 {
   public:
+    // constructor for backward compatibility
+    // (adds an artificial BC with only periodic BC)
     AMRInterpolator(const AMR &amr,
                     const std::array<double, CH_SPACEDIM> &coarsest_origin,
                     const std::array<double, CH_SPACEDIM> &coarsest_dx,
                     int verbosity = 0);
+    AMRInterpolator(const AMR &amr,
+                    const std::array<double, CH_SPACEDIM> &coarsest_origin,
+                    const std::array<double, CH_SPACEDIM> &coarsest_dx,
+                    const BoundaryConditions::params_t &a_bc_params,
+                    int verbosity = 0);
     void refresh();
     void limit_num_levels(unsigned int num_levels);
     void interp(InterpolationQuery &query);
+    const AMR &getAMR() const;
+    const std::array<double, CH_SPACEDIM> &get_coarsest_dx();
+    const std::array<double, CH_SPACEDIM> &get_coarsest_origin();
 
   private:
     void computeLevelLayouts();
@@ -44,6 +56,16 @@ template <typename InterpAlgo> class AMRInterpolator
     void exchangeMPIQuery();
     void calculateAnswers(InterpolationQuery &query);
     void exchangeMPIAnswer();
+
+    /// set values of member 'm_lo_boundary_reflective' and
+    /// 'm_hi_boundary_reflective'
+    void set_reflective_BC();
+    int get_var_parity(int comp, const VariableType type, int point_idx,
+                       const InterpolationQuery &query,
+                       const Derivative &deriv) const;
+    /// reflect coordinates if BC set to reflective in that direction
+    double apply_reflective_BC_on_coord(const InterpolationQuery &query,
+                                        double dir, int point_idx) const;
 
     const AMR &m_amr;
 
@@ -79,6 +101,17 @@ template <typename InterpAlgo> class AMRInterpolator
     // A bit of Android-ism here, but it's really useful!
     // Identifies the printout as originating from this class.
     const static string TAG;
+
+    // Variables for reflective BC
+    // m_bc_params can't be a 'const' reference as we need a
+    // constructor with backward compatibility that builds an artificial
+    // 'BoundaryConditions::params_t'
+    BoundaryConditions::params_t m_bc_params;
+    /// simplified bools saying whether or not boundary has
+    /// a reflective condition in a given direction
+    std::array<bool, CH_SPACEDIM> m_lo_boundary_reflective,
+        m_hi_boundary_reflective;
+    std::array<double, CH_SPACEDIM> m_upper_corner;
 };
 
 #include "AMRInterpolator.impl.hpp"

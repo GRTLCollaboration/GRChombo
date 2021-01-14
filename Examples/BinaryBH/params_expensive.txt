@@ -12,10 +12,10 @@ N3 = 256
 L = 192
 
 massA = 0.5
-centerA = 99 96 96
+offsetA = 3 0 0
 
 massB = 0.5
-centerB = 93 96 96
+offsetB = -3 0 0
 
 momentumA = 0. -0.1 0.0
 momentumB = 0. 0.1 0.0

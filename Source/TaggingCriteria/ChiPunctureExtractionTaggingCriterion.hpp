@@ -23,12 +23,12 @@ class ChiPunctureExtractionTaggingCriterion
     const double m_dx;
     const int m_level;
     const int m_max_level;
-    const bool m_activate_extraction;
     const bool m_track_punctures;
-    const std::vector<double> m_puncture_masses;
-    const SphericalExtraction::params_t m_params;
+    const bool m_activate_extraction;
     const FourthOrderDerivatives m_deriv;
-    const std::vector<std::array<double, CH_SPACEDIM>> m_puncture_coords;
+    const SphericalExtraction::params_t m_params;
+    const std::vector<double> m_puncture_masses;
+    const std::vector<std::array<double, CH_SPACEDIM>> &m_puncture_coords;
 
   public:
     template <class data_t> struct Vars
@@ -48,14 +48,14 @@ class ChiPunctureExtractionTaggingCriterion
     ChiPunctureExtractionTaggingCriterion(
         const double dx, const int a_level, const int a_max_level,
         const SphericalExtraction::params_t a_params,
-        const std::vector<std::array<double, CH_SPACEDIM>> a_puncture_coords,
+        const std::vector<std::array<double, CH_SPACEDIM>> &a_puncture_coords,
         const bool activate_extraction = false,
         const bool track_punctures = false,
         const std::vector<double> a_puncture_masses = {1.0, 1.0})
-        : m_dx(dx), m_deriv(dx), m_params(a_params), m_level(a_level),
-          m_max_level(a_max_level), m_track_punctures(track_punctures),
-          m_activate_extraction(activate_extraction),
-          m_puncture_masses(a_puncture_masses),
+        : m_dx(dx), m_level(a_level), m_max_level(a_max_level),
+          m_track_punctures(track_punctures),
+          m_activate_extraction(activate_extraction), m_deriv(dx),
+          m_params(a_params), m_puncture_masses(a_puncture_masses),
           m_puncture_coords(a_puncture_coords)
     {
         // check that the number of punctures is consistent
