@@ -3,12 +3,15 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
+// Chombo includes
 #include "CH_Timer.H"
 #include "parstream.H" //Gives us pout()
-#include "AMRIO.H" //Gives us pout()
+
+// System includes
 #include <chrono>
 #include <iostream>
 
+// Our includes
 #include "BHAMR.hpp"
 #include "DefaultLevelFactory.hpp"
 #include "GRParmParse.hpp"
@@ -17,6 +20,9 @@
 
 // Problem specific includes:
 #include "BinaryBHLevel.hpp"
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 int runGRChombo(int argc, char *argv[])
 {

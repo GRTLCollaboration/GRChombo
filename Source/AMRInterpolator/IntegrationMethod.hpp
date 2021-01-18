@@ -6,8 +6,15 @@
 #ifndef INTEGRATIONMETHOD_HPP_
 #define INTEGRATIONMETHOD_HPP_
 
+// Chombo includes
+#include "CH_assert.H"
+
+// Other includes
 #include <utility>
 #include <vector>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 //! A class to store and return the weights associated to a Newton-Cotes formula
 //! for numerical integration/quadrature which can be closed (i.e. includes the

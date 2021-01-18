@@ -6,10 +6,16 @@
 #ifndef COORDINATES_HPP_
 #define COORDINATES_HPP_
 
-#include "DimensionDefinitions.hpp"
+// Chombo includes
 #include "IntVect.H"
+
+// Other includes
+#include "DimensionDefinitions.hpp"
 #include "simd.hpp"
 #include <array>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 template <class data_t> class Coordinates
 {

@@ -7,6 +7,7 @@
 #define WEYLEXTRACTION_HPP_
 
 #include "SphericalExtraction.hpp"
+
 //!  The class allows extraction of the values of the Weyl scalar components on
 //!  spherical shells at specified radii, and integration over those shells
 /*!

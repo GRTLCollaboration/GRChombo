@@ -6,9 +6,15 @@
 #ifndef INTERPSOURCE_H_
 #define INTERPSOURCE_H_
 
+// Chombo includes
 #include "LevelData.H"
+
+// Other inclues
 #include "VariableType.hpp"
 #include <array>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 // Abstrace base class to get the FABs out of an AMRLevel
 class InterpSource

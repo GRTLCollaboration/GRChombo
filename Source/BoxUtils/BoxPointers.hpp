@@ -6,10 +6,16 @@
 #ifndef BOXPOINTERS_HPP_
 #define BOXPOINTERS_HPP_
 
-#include "CellIndex.hpp"
+// Chombo includes
 #include "FArrayBox.H"
+
+// Other includes
+#include "CellIndex.hpp"
 #include "UserVariables.hpp"
 #include <array>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 /// This class provides information about where a Chombo box lies in memory and
 /// how it is laid out.

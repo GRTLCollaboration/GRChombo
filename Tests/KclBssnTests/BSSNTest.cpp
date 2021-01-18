@@ -5,12 +5,15 @@
 
 #define COVARIANTZ4
 
+// Chombo includes
+#include "FArrayBox.H"
+
+// Other includes
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
 #include "BoxLoops.hpp"
-#include "FArrayBox.H"
 #include "MatterCCZ4.hpp"
 #include "MatterConstraints.hpp"
 #include "Potential.hpp"
@@ -22,6 +25,9 @@
 #include <sys/time.h>
 
 #include "GRBSSNChomboF_F.H"
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 #define CHF_FRAn(a, n, c)                                                      \
     a.dataPtr(n),                                                              \

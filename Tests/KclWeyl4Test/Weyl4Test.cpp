@@ -1,11 +1,14 @@
 #define COMPARE_WITH_CHF
 #define COVARIANTZ4
 
+// Chombo includes
+#include "FArrayBox.H"
+
+// Other includes
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
-#include "FArrayBox.H"
 #include <iomanip>
 #include <iostream>
 #include <sys/time.h>
@@ -16,6 +19,9 @@
 #include "SetValue.hpp"
 #include "UserVariables.hpp"
 #include "Weyl4.hpp"
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 #define CHF_FRAn(a, n, c)                                                      \
     a.dataPtr(n),                                                              \
