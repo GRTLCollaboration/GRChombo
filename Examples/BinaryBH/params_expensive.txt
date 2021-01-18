@@ -41,7 +41,7 @@ plot_interval = 0
 num_plot_vars = 3
 plot_vars = chi Weyl4_Re Weyl4_Im
 dt_multiplier = 0.25
-stop_time = 1.0
+stop_time = 20.0
 max_steps = 40
 
 nan_check = 1
