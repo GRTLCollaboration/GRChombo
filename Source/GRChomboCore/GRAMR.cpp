@@ -39,3 +39,17 @@ std::vector<const GRAMRLevel *> GRAMR::get_gramrlevels() const
 
     return out;
 }
+
+void GRAMR::fill_multilevel_ghosts(const VariableType a_var_type,
+                                   const Interval &a_comps,
+                                   const int a_min_level,
+                                   const int a_max_level) const
+{
+    int max_level = std::min(m_finest_level, a_max_level);
+
+    for (int level_idx = a_min_level; level_idx <= max_level; ++level_idx)
+    {
+        GRAMRLevel &level = *GRAMRLevel::gr_cast(m_amrlevels[level_idx]);
+        level.fillAllGhosts(a_var_type, a_comps);
+    }
+}
