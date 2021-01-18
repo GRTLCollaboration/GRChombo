@@ -8,10 +8,11 @@
 
 // Chombo includes
 #include "AMR.H"
+#include "Interval.H"
 
 // Other includes
-#include "AMRInterpolator.hpp"
 #include "Lagrange.hpp"
+#include "VariableType.hpp"
 #include <algorithm>
 #include <chrono>
 #include <ratio>
@@ -29,6 +30,9 @@
 
 // Forward declaration for get_gramrlevels function declarations
 class GRAMRLevel;
+
+// Forward declaration for AMRInterpolator
+template <typename InterpAlgo> class AMRInterpolator;
 
 class GRAMR : public AMR
 {
@@ -60,6 +64,13 @@ class GRAMR : public AMR
 
     // const version of above
     std::vector<const GRAMRLevel *> get_gramrlevels() const;
+
+    // Fill ghosts on multiple levels
+    void fill_multilevel_ghosts(
+        const VariableType a_var_type,
+        const Interval &a_comps = Interval(0, std::numeric_limits<int>::max()),
+        const int a_min_level = 0,
+        const int a_max_level = std::numeric_limits<int>::max()) const;
 };
 
 #endif /* GRAMR_HPP_ */
