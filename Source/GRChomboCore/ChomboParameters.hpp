@@ -37,7 +37,7 @@ class ChomboParameters
         // Grid setup
         pp.load("num_ghosts", num_ghosts, 3);
         pp.load("tag_buffer_size", tag_buffer_size, 3);
-        pp.load("additional_grid_buffer", additional_grid_buffer, 3);
+        pp.load("grid_buffer_size", grid_buffer_size, 8);
         pp.load("dt_multiplier", dt_multiplier, 0.25);
         pp.load("fill_ratio", fill_ratio, 0.7);
 
@@ -280,9 +280,11 @@ class ChomboParameters
                         "must be >= 3 and <= block_factor/min_box_size");
         check_parameter("tag_buffer_size", tag_buffer_size,
                         tag_buffer_size >= 0, "must be >= 0");
-        check_parameter("additional_grid_buffer", additional_grid_buffer,
-                        additional_grid_buffer >= 0,
-                        "must be >= 0 for proper nesting");
+        // assume ref_ratio is always 2
+        check_parameter(
+            "grid_buffer_size", grid_buffer_size,
+            grid_buffer_size >= ceil(num_ghosts / 2.0),
+            "must be >= ceil(num_ghosts/max_ref_ratio) for proper nesting");
         check_parameter("dt_multiplier", dt_multiplier, dt_multiplier > 0.0,
                         "must be > 0.0");
         check_parameter("max_grid_size/max_box_size", max_grid_size,
@@ -350,14 +352,13 @@ class ChomboParameters
     int verbosity;
     double L;                               // Physical sidelength of the grid
     std::array<double, CH_SPACEDIM> center; // grid center
-    IntVect ivN;                // The number of grid cells in each dimension
-    double coarsest_dx;         // The coarsest resolution
-    int max_level;              // the max number of regriddings to do
-    int num_ghosts;             // must be at least 3 for KO dissipation
-    int tag_buffer_size;        // Amount the tagged region is grown by
-    int additional_grid_buffer; // Number of additional cells (above the minimum
-                                // required for proper nesting) between level
-    Vector<int> ref_ratios;     // ref ratios between levels
+    IntVect ivN;            // The number of grid cells in each dimension
+    double coarsest_dx;     // The coarsest resolution
+    int max_level;          // the max number of regriddings to do
+    int num_ghosts;         // must be at least 3 for KO dissipation
+    int tag_buffer_size;    // Amount the tagged region is grown by
+    int grid_buffer_size;   // Number of cells between level
+    Vector<int> ref_ratios; // ref ratios between levels
     // boundaries.
     Vector<int> regrid_interval; // steps between regrid at each level
     int max_steps;
