@@ -12,10 +12,10 @@ N3 = 256
 L = 192
 
 massA = 0.5
-offsetA = 3 0 0
+centerA = 99 96 96
 
 massB = 0.5
-offsetB = -3 0 0
+centerB = 93 96 96
 
 momentumA = 0. -0.1 0.0
 momentumB = 0. 0.1 0.0
@@ -41,7 +41,7 @@ plot_interval = 0
 num_plot_vars = 3
 plot_vars = chi Weyl4_Re Weyl4_Im
 dt_multiplier = 0.25
-stop_time = 1.0
+stop_time = 20.0
 max_steps = 40
 
 nan_check = 1
