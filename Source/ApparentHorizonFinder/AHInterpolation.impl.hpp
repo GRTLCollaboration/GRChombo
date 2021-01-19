@@ -467,6 +467,20 @@ AHInterpolation<SurfaceGeometry, AHFunction>::get_cartesian_coords(
 }
 
 template <class SurfaceGeometry, class AHFunction>
+const Tensor<1, double>
+AHInterpolation<SurfaceGeometry, AHFunction>::get_coords(int idx) const
+{
+    return
+    {
+        m_u[idx],
+#if CH_SPACEDIM == 3
+            m_v[idx],
+#endif
+            m_f[idx]
+    };
+}
+
+template <class SurfaceGeometry, class AHFunction>
 const AHData<int, double>
 AHInterpolation<SurfaceGeometry, AHFunction>::get_data(int idx) const
 {

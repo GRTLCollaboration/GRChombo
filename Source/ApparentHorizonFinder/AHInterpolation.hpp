@@ -97,6 +97,7 @@ template <class SurfaceGeometry, class AHFunction> class AHInterpolation
                          double add_epsilon = 0.);
     const AHGeometryData get_geometry_data(int idx) const;
     const Tensor<1, double> get_cartesian_coords(int idx) const;
+    const Tensor<1, double> get_coords(int idx) const;
     const AHData<int, double> get_data(int idx) const;
 
     //! verify origin +- initial guess is inside the grid

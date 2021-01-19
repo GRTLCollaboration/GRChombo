@@ -23,7 +23,8 @@ struct AHTest2DFunction : AHFunctionDefault
     static int vars_max() { return c_V; }
 
     AHTest2DFunction(const AHData<int, double> &a_data,
-                     const Tensor<1, double> &a_coords)
+                     const Tensor<1, double> &a_coords,
+                     const Tensor<1, double> &a_cart_coords)
     {
         v = a_data.vars.at(c_V);
     }

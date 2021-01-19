@@ -141,6 +141,45 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::initialise_PETSc()
     SNESMonitorSet(m_snes, &Petsc_SNES_monitor, this, NULL);
 
     SNESSetFromOptions(m_snes);
+
+    if (m_params.verbose > AHFinder::MIN)
+    {
+        SNESType snes_type;
+        SNESGetType(m_snes, &snes_type);
+        double snes_atol, snes_rtol, snes_stol;
+        int snes_maxit, snes_maxf;
+        SNESGetTolerances(m_snes, &snes_atol, &snes_rtol, &snes_stol,
+                          &snes_maxit, &snes_maxf);
+
+        double snes_divtol;
+        SNESGetDivergenceTolerance(m_snes, &snes_divtol);
+
+        KSP snes_ksp;
+        SNESGetKSP(m_snes, &snes_ksp);
+        KSPType ksp_type;
+        KSPGetType(snes_ksp, &ksp_type);
+        double ksp_rtol, ksp_abstol, ksp_dtol;
+        int ksp_maxits;
+        KSPGetTolerances(snes_ksp, &ksp_rtol, &ksp_abstol, &ksp_dtol,
+                         &ksp_maxits);
+
+        pout() << "-------------------------------------\n";
+        pout() << "AHFinder Options:\n";
+        pout() << "-------------------------------------\n";
+        pout() << "PETSc SNES Options:\n";
+        pout() << "Type: " << snes_type << "\n";
+        pout() << "atol = " << snes_atol << ", rtol = " << snes_rtol
+               << ", stol = " << snes_stol << ",\n";
+        pout() << "maxit = " << snes_maxit << ", maxf = " << snes_maxf << "\n";
+        pout() << "divtol = " << snes_divtol << "\n";
+        pout() << "-------------------------------------\n";
+        pout() << "PETSc KSP Options:\n";
+        pout() << "Type: " << ksp_type << "\n";
+        pout() << "rtol = " << ksp_rtol << ", abstol = " << ksp_abstol
+               << ", dtol = " << ksp_dtol << ", maxits = " << ksp_maxits
+               << "\n";
+        pout() << "-------------------------------------" << std::endl;
+    }
 }
 
 template <class SurfaceGeometry, class AHFunction>
@@ -654,8 +693,9 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::form_function(Vec F, Vec Rhs)
             {
                 const auto geometry_data = m_interp.get_geometry_data(idx);
                 const auto data = m_interp.get_data(idx);
-                const auto coords = m_interp.get_cartesian_coords(idx);
-                AHFunction func(data, coords);
+                const auto coords = m_interp.get_coords(idx);
+                const auto coords_cart = m_interp.get_cartesian_coords(idx);
+                AHFunction func(data, coords, coords_cart);
                 _out = func.get(geometry_data, deriv, m_func_params);
             }
 
@@ -878,8 +918,9 @@ double ApparentHorizon<SurfaceGeometry, AHFunction>::point_jacobian(
 
         const auto geometry_data = interp_plus.get_geometry_data(idx);
         const auto data = interp_plus.get_data(idx);
-        const auto coords = interp_plus.get_cartesian_coords(idx);
-        AHFunction func(data, coords);
+        const auto coords = interp_plus.get_coords(idx);
+        const auto coords_cart = interp_plus.get_cartesian_coords(idx);
+        AHFunction func(data, coords, coords_cart);
         expansionPlus = func.get(geometry_data, deriv, m_func_params);
 
         _in = in_old;
@@ -900,8 +941,9 @@ double ApparentHorizon<SurfaceGeometry, AHFunction>::point_jacobian(
 
         const auto geometry_data = interp_minus.get_geometry_data(idx);
         const auto data = interp_minus.get_data(idx);
-        const auto coords = interp_minus.get_cartesian_coords(idx);
-        AHFunction func(data, coords);
+        const auto coords = interp_minus.get_coords(idx);
+        const auto coords_cart = interp_minus.get_cartesian_coords(idx);
+        AHFunction func(data, coords, coords_cart);
         expansionMinus = func.get(geometry_data, deriv, m_func_params);
 
         _in = in_old;

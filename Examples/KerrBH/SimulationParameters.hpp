@@ -35,7 +35,7 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("AH_initial_guess", AH_initial_guess, 0.5 * kerr_params.mass);
 #ifdef USE_CHI_CONTOURS
         pp.load("look_for_chi_contour", look_for_chi_contour);
-        CH_assert(sim_params.look_for_chi_contour > 0.);
+        CH_assert(look_for_chi_contour > 0.);
 #endif
 #endif
     }

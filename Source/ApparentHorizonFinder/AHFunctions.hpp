@@ -41,8 +41,11 @@ struct ExpansionFunction : AHFunctionDefault
     Tensor<2, double> K;
     double trK;
 
-// case of reduced Cartoon methods that have an extra metric component and
-// require the coordinates to calculate the expansion
+    // target coordinate (e.g. radius)
+    double f;
+
+    // case of reduced Cartoon methods that have an extra metric component and
+    // require the coordinates to calculate the expansion
 #if GR_SPACEDIM != CH_SPACEDIM
     // hd - higher dimensions
     Tensor<1, double> x; // coordinates
@@ -110,9 +113,12 @@ struct ExpansionFunction : AHFunctionDefault
     }
 
     ExpansionFunction(const AHData<int, double> &a_data,
-                      const Tensor<1, double> &a_coords)
+                      const Tensor<1, double> &a_coords,
+                      const Tensor<1, double> &a_coords_cartesian)
     {
         CH_TIME("ExpansionFunction::calculate_data");
+
+        f = a_coords[CH_SPACEDIM - 1];
 
         // * ---------------------------
         // *       GR-RELATED DATA
@@ -185,8 +191,8 @@ struct ExpansionFunction : AHFunctionDefault
             }
         }
 
-// part for higher dimensions that use Cartoon Method
-// Uli's paper does it for 3+1D (from 5D) - arxiv 1808.05834
+        // part for higher dimensions that use Cartoon Method
+        // Uli's paper does it for 3+1D (from 5D) - arxiv 1808.05834
 #if GR_SPACEDIM != CH_SPACEDIM
         int comp_hww =
             c_K - 1; // c_K-1 expected to be c_hww (is c_hww direct better?)
@@ -297,7 +303,10 @@ struct ExpansionFunction : AHFunctionDefault
         }
 #endif
 
-        return expansion;
+        // using "r * Expansion" significantly improves the convergence
+        // (making a Schw. BH converge for any radius >~ 0.5*r_AH instead of
+        // only up to ~ 3 * r_AH as it happens just with the expansion)
+        return expansion * f;
     }
 };
 
@@ -310,7 +319,8 @@ struct ChiContourFunction : AHFunctionDefault
     static int vars_max() { return c_chi; }
 
     ChiContourFunction(const AHData<int, double> &a_data,
-                       const Tensor<1, double> &a_coords)
+                       const Tensor<1, double> &a_coords,
+                       const Tensor<1, double> &a_coords_cartesian)
     {
         chi = a_data.vars.at(c_chi);
     }

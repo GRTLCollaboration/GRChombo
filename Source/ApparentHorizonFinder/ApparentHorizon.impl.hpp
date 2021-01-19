@@ -1108,9 +1108,6 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_coords_file(
                 output[idx * num_components_total + 1] = m_F[idx];
 #endif
 
-                const auto data = m_interp.get_data(idx);
-                const auto coords = m_interp.get_cartesian_coords(idx);
-                AHFunction func(data, coords);
                 auto extra = m_interp.get_extra_data(idx);
 
                 int el = 0;
@@ -1144,15 +1141,21 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_coords_file(
 
                 // geometry vars
                 if (write_geometry_data)
+                {
+                    const auto data = m_interp.get_data(idx);
+                    const auto coords = m_interp.get_coords(idx);
+                    const auto coords_cart = m_interp.get_cartesian_coords(idx);
+                    AHFunction func(data, coords, coords_cart);
                     func.write_vars(
                         &output[idx * num_components_total + CH_SPACEDIM + el]);
+                }
 
 #ifdef CH_MPI
-                    // all processes send their 'output' to rank 0, who receives
-                    // and writes everything (to simplify, rank 0 also sends it
-                    // to itself, otherwise we wouldn't know which tags rank 0
-                    // has) sends are tagged by global index, so that receives
-                    // can be unique and writes indexed correctly
+                // all processes send their 'output' to rank 0, who receives
+                // and writes everything (to simplify, rank 0 also sends it
+                // to itself, otherwise we wouldn't know which tags rank 0
+                // has) sends are tagged by global index, so that receives
+                // can be unique and writes indexed correctly
 #if CH_SPACEDIM == 3
                 int idx_global = v * m_num_global_u + u;
 #elif CH_SPACEDIM == 2
@@ -1314,8 +1317,9 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_spin_dimensionless(
                 {
                     const auto geometry_data = m_interp.get_geometry_data(idx);
                     const auto data = m_interp.get_data(idx);
-                    const auto coords = m_interp.get_cartesian_coords(idx);
-                    AHFunction func(data, coords);
+                    const auto coords = m_interp.get_coords(idx);
+                    const auto coords_cart = m_interp.get_cartesian_coords(idx);
+                    AHFunction func(data, coords, coords_cart);
                     auto &g = func.get_metric();
 
                     double dxdv[3];
@@ -1415,8 +1419,9 @@ double ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_area()
             {
                 const auto geometric_data = m_interp.get_geometry_data(idx);
                 const auto data = m_interp.get_data(idx);
-                const auto coords = m_interp.get_cartesian_coords(idx);
-                AHFunction func(data, coords);
+                const auto coords = m_interp.get_coords(idx);
+                const auto coords_cart = m_interp.get_cartesian_coords(idx);
+                AHFunction func(data, coords, coords_cart);
                 auto &g = func.get_metric();
 
                 // Calculate Jacobian matrix for transformation from Cartesian

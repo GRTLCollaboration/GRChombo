@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef _AHFUNCTION_HPP_
-#define _AHFUNCTION_HPP_
+#ifndef _AHFUNCTIONDEFAULT_HPP_
+#define _AHFUNCTIONDEFAULT_HPP_
 
 #include "AlwaysInline.hpp"
 #include "Tensor.hpp"
@@ -51,6 +51,15 @@ struct AHFunctionDefault
     struct params // no params needed
     {
     };
+
+    // some constructor with these arguments:
+    // AHFunctionDefault(const AHData<int, double> &a_data,
+    // const Tensor<1, double> &a_coords,
+    // const Tensor<1, double> &a_coords_cartesian);
+
+    // and some 'get'
+    // double get(const AHGeometryData &geo_data, const AHDeriv &deriv,
+    // const params &a_params) const;
 };
 
-#endif /* _AHFUNCTION_HPP_ */
+#endif /* _AHFUNCTIONDEFAULT_HPP_ */
