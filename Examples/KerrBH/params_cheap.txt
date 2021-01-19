@@ -82,7 +82,7 @@ plot_interval = 0
 num_plot_vars = 0
 dt_multiplier = 0.25
 stop_time = 10.0
-max_steps = 2
+max_steps = 1
 
 #Lapse evolution
 lapse_power = 1.0
@@ -114,4 +114,4 @@ extraction_levels = 1 1 0
 num_points_phi = 50
 num_points_theta = 52
 extraction_extrapolation_order = 3
-extraction_extrapolation_radii = 2 0 1
+extraction_extrapolation_radii = 0 1 2

@@ -403,7 +403,8 @@ void SurfaceExtraction<SurfaceGeometry>::write_integrals(
 {
     if (procID() == 0)
     {
-        std::vector<double> extrapolations = richardson_extrapolation(a_integrals);
+        std::vector<double> extrapolations =
+            richardson_extrapolation(a_integrals);
         bool extrapolation_done = extrapolations.size() > 0;
 
         const int num_integrals_per_surface = a_integrals.size();
@@ -439,7 +440,8 @@ void SurfaceExtraction<SurfaceGeometry>::write_integrals(
             for (int iintegral = 0; iintegral < num_integrals_per_surface;
                  ++iintegral)
             {
-                for (int isurface = 0; isurface < m_params.num_surfaces; ++isurface)
+                for (int isurface = 0; isurface < m_params.num_surfaces;
+                     ++isurface)
                 {
                     int idx = isurface * num_integrals_per_surface + iintegral;
                     if (a_labels.empty())
@@ -451,8 +453,9 @@ void SurfaceExtraction<SurfaceGeometry>::write_integrals(
                 }
                 if (extrapolation_done)
                 {
-                    int idx = m_params.num_surfaces * num_integrals_per_surface +
-                              iintegral;
+                    int idx =
+                        m_params.num_surfaces * num_integrals_per_surface +
+                        iintegral;
                     header1_strings[idx] = a_labels[iintegral];
                     header2_strings[idx] = "Infinity";
                 }
@@ -468,8 +471,9 @@ void SurfaceExtraction<SurfaceGeometry>::write_integrals(
         // make vector of data for writing
         std::vector<double> data_for_writing(num_integrals_per_surface *
                                              total_num_surfaces);
-         for (int iintegral = 0; iintegral < num_integrals_per_surface; ++iintegral)
-         {
+        for (int iintegral = 0; iintegral < num_integrals_per_surface;
+             ++iintegral)
+        {
             for (int isurface = 0; isurface < m_params.num_surfaces; ++isurface)
             {
                 int idx = isurface * num_integrals_per_surface + iintegral;
@@ -477,8 +481,8 @@ void SurfaceExtraction<SurfaceGeometry>::write_integrals(
             }
             if (extrapolation_done)
             {
-                int idx =
-                    m_params.num_surfaces * num_integrals_per_surface + iintegral;
+                int idx = m_params.num_surfaces * num_integrals_per_surface +
+                          iintegral;
                 data_for_writing[idx] = extrapolations[iintegral];
             }
         }
@@ -535,8 +539,6 @@ SurfaceExtraction<SurfaceGeometry>::richardson_extrapolation(
     const std::vector<std::vector<double>> &integrals) const
 {
     CH_TIME("SurfaceExtraction::richardson_extrapolation");
-    int num_comps = integrals.size();
-    int num_surfaces = m_params.num_surfaces;
 
     // already validated the radii
     int extrapolation_order = m_params.radii_idxs_for_extrapolation.size();
@@ -546,6 +548,7 @@ SurfaceExtraction<SurfaceGeometry>::richardson_extrapolation(
         return std::vector<double>();
     }
 
+    int num_comps = integrals.size();
     std::vector<double> extrapolations(num_comps);
 
     if (extrapolation_order == 3)

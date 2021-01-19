@@ -38,8 +38,8 @@ class ADMQuantities
 
     ADMQuantities(const std::array<double, CH_SPACEDIM> &a_center, double a_dx,
                   int a_c_Madm = -1, int a_c_Jadm = -1, double a_G_Newton = 1.0)
-        : m_deriv(a_dx), m_center(a_center), m_G_Newton(a_G_Newton), m_dir(Z),
-          m_c_Madm(a_c_Madm), m_c_Jadm(a_c_Jadm)
+        : m_deriv(a_dx), m_center(a_center), m_G_Newton(a_G_Newton),
+          m_c_Madm(a_c_Madm), m_c_Jadm(a_c_Jadm), m_dir(Z)
     {
     }
 
@@ -59,10 +59,7 @@ class ADMQuantities
 
         // Surface element for integration
         Coordinates<data_t> coords(current_cell, m_deriv.m_dx, m_center);
-        data_t r = coords.get_radius();
         Tensor<1, data_t> x = {coords.x, coords.y, coords.z};
-        // This is multiplied by r^2 as SphericalExtraction assumes it is
-        // normalised as such.
         Tensor<1, data_t> dS_U = x;
 
         data_t dS_norm = 0.;

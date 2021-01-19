@@ -46,7 +46,8 @@ int runGRChombo(int argc, char *argv[])
     // Note: 'interpolator' needs to be in scope when gr_amr.run() is called,
     // otherwise pointer is lost
     AMRInterpolator<Lagrange<4>> interpolator(
-        gr_amr, sim_params.origin, sim_params.dx, sim_params.verbosity);
+        gr_amr, sim_params.origin, sim_params.dx, sim_params.boundary_params,
+        sim_params.verbosity);
     gr_amr.set_interpolator(&interpolator);
 
     using Clock = std::chrono::steady_clock;

@@ -194,7 +194,7 @@ template <class SurfaceGeometry> class SurfaceExtraction
                         const std::vector<double> &a_integrals,
                         const std::string &a_label = "") const;
 
-protected:
+  protected:
     // returns empty vector if no extrapolation is done
     std::vector<double> richardson_extrapolation(
         const std::vector<std::vector<double>> &integrals) const;
