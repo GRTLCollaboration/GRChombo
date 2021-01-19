@@ -212,6 +212,10 @@ struct ExpansionFunction : AHFunctionDefault
 #endif
     }
 
+    struct params // no params needed
+    {
+        double expansion_radius_power = 1.;
+    };
     double get(const AHGeometryData &geo_data, const AHDeriv &deriv,
                const params &a_params) const
     {
@@ -306,7 +310,7 @@ struct ExpansionFunction : AHFunctionDefault
         // using "r * Expansion" significantly improves the convergence
         // (making a Schw. BH converge for any radius >~ 0.5*r_AH instead of
         // only up to ~ 3 * r_AH as it happens just with the expansion)
-        return expansion * f;
+        return expansion * pow(f, a_params.expansion_radius_power);
     }
 };
 
