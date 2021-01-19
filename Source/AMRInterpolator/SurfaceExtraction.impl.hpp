@@ -50,6 +50,8 @@ SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
             }
         }
     }
+
+    m_params.validate_extrapolation_radii();
 }
 
 //! add a single variable or derivative of variable
@@ -397,20 +399,16 @@ template <class SurfaceGeometry>
 void SurfaceExtraction<SurfaceGeometry>::write_integrals(
     const std::string &a_filename,
     const std::vector<std::vector<double>> &a_integrals,
-    const std::vector<std::string> &a_labels, int extrapolation_order) const
+    const std::vector<std::string> &a_labels) const
 {
     if (procID() == 0)
     {
-        std::vector<double> extrapolations;
-        if (extrapolation_order)
-        {
-            extrapolations =
-                richardson_extrapolation(a_integrals, extrapolation_order);
-        }
+        std::vector<double> extrapolations = richardson_extrapolation(a_integrals);
+        bool extrapolation_done = extrapolations.size() > 0;
 
         const int num_integrals_per_surface = a_integrals.size();
         const int total_num_surfaces =
-            m_params.num_surfaces + (extrapolation_order > 0 ? 1 : 0);
+            m_params.num_surfaces + (extrapolation_done > 0 ? 1 : 0);
 
         // if labels are provided there must be the same number of labels as
         // there are integrals
@@ -451,7 +449,7 @@ void SurfaceExtraction<SurfaceGeometry>::write_integrals(
                     header2_strings[idx] =
                         std::to_string(m_params.surface_param_values[isurface]);
                 }
-                if (extrapolation_order)
+                if (extrapolation_done)
                 {
                     int idx = m_params.num_surfaces * num_integrals_per_surface +
                               iintegral;
@@ -477,7 +475,7 @@ void SurfaceExtraction<SurfaceGeometry>::write_integrals(
                 int idx = isurface * num_integrals_per_surface + iintegral;
                 data_for_writing[idx] = a_integrals[iintegral][isurface];
             }
-            if (extrapolation_order)
+            if (extrapolation_done)
             {
                 int idx =
                     m_params.num_surfaces * num_integrals_per_surface + iintegral;
@@ -494,46 +492,74 @@ void SurfaceExtraction<SurfaceGeometry>::write_integrals(
 //! surface
 template <class SurfaceGeometry>
 void SurfaceExtraction<SurfaceGeometry>::write_integral(
-    const std::string &a_filename, const std::vector<double> a_integrals,
-    const std::string a_label, int extrapolation_order) const
+    const std::string &a_filename, const std::vector<double> &a_integrals,
+    const std::string &a_label) const
 {
-    std::vector<std::vector<double>> integrals(1, a_integrals);
-    if (!a_label.empty())
-    {
-        std::vector<std::string> labels(1, a_label);
-        write_integrals(a_filename, integrals, labels, extrapolation_order);
-    }
-    else
-        write_integrals(a_filename, integrals, extrapolation_order);
+    write_integrals(a_filename, {a_integrals}, {a_label});
 }
 
-// function to apply richardson extrapolation of 1st or 2nd order to calculated
+template <class SurfaceGeometry>
+void SurfaceExtraction<
+    SurfaceGeometry>::params_t::validate_extrapolation_radii()
+{
+    std::vector<int> valid_radii;
+    for (int i = 0; i < radii_idxs_for_extrapolation.size(); ++i)
+    {
+        // if valid
+        if (radii_idxs_for_extrapolation[i] < num_surfaces &&
+            radii_idxs_for_extrapolation[i] > -num_surfaces)
+        {
+            // allow negative indices, such that '-1' is 'last', '-2' is 'one
+            // before last'
+            if (radii_idxs_for_extrapolation[i] < 0)
+                radii_idxs_for_extrapolation[i] += num_surfaces;
+
+            // if not repeated already
+            if (i == 0 || std::find(radii_idxs_for_extrapolation.begin(),
+                                    radii_idxs_for_extrapolation.begin() + i,
+                                    radii_idxs_for_extrapolation[i]) ==
+                              radii_idxs_for_extrapolation.begin() + i)
+            {
+                valid_radii.push_back(radii_idxs_for_extrapolation[i]);
+            }
+        }
+    }
+    radii_idxs_for_extrapolation = valid_radii;
+}
+
+// function to apply richardson extrapolation of 2nd or 3rd order to calculated
 // integrals
 template <class SurfaceGeometry>
 std::vector<double>
 SurfaceExtraction<SurfaceGeometry>::richardson_extrapolation(
-    const std::vector<std::vector<double>> &integrals,
-    int extrapolation_order) const
+    const std::vector<std::vector<double>> &integrals) const
 {
     CH_TIME("SurfaceExtraction::richardson_extrapolation");
     int num_comps = integrals.size();
     int num_surfaces = m_params.num_surfaces;
-    CH_assert(extrapolation_order <= 2 && extrapolation_order >= 0);
+
+    // already validated the radii
+    int extrapolation_order = m_params.radii_idxs_for_extrapolation.size();
+
+    if (extrapolation_order < 2)
+    {
+        return std::vector<double>();
+    }
 
     std::vector<double> extrapolations(num_comps);
 
-    if (num_surfaces >= 3 && extrapolation_order == 2)
+    if (extrapolation_order == 3)
     {
+        int i1 = m_params.radii_idxs_for_extrapolation[0];
+        int i2 = m_params.radii_idxs_for_extrapolation[1];
+        int i3 = m_params.radii_idxs_for_extrapolation[2];
+        double r1 = m_params.surface_param_values[i1];
+        double r2 = m_params.surface_param_values[i2];
+        double r3 = m_params.surface_param_values[i3];
+        double c2 = r2 / r1 * (1. - r3 / r1) / (1. - r3 / r2);
+        double c3 = -r3 / r1 * (1. - r2 / r1) / (r2 / r3 - 1.);
         for (int icomp = 0; icomp < num_comps; ++icomp)
         {
-            int i1 = num_surfaces - 1;
-            int i2 = num_surfaces - 2;
-            int i3 = num_surfaces - 3;
-            double r1 = m_params.surface_param_values[i1];
-            double r2 = m_params.surface_param_values[i2];
-            double r3 = m_params.surface_param_values[i3];
-            double c2 = r2 / r1 * (1. - r3 / r1) / (1. - r3 / r2);
-            double c3 = -r3 / r1 * (1. - r2 / r1) / (r2 / r3 - 1.);
             double comp_inf =
                 (integrals[icomp][i1] - c2 * integrals[icomp][i2] -
                  c3 * integrals[icomp][i3]) /
@@ -541,20 +567,21 @@ SurfaceExtraction<SurfaceGeometry>::richardson_extrapolation(
             extrapolations[icomp] = comp_inf;
         }
     }
-    else if (num_surfaces >= 2 && extrapolation_order >= 1)
+    else if (extrapolation_order == 2)
     {
+        int i1 = m_params.radii_idxs_for_extrapolation[0];
+        int i2 = m_params.radii_idxs_for_extrapolation[1];
+        double r1 = m_params.surface_param_values[i1];
+        double r2 = m_params.surface_param_values[i2];
         for (int icomp = 0; icomp < num_comps; ++icomp)
         {
-            int i1 = num_surfaces - 1;
-            int i2 = num_surfaces - 2;
-            double r1 = m_params.surface_param_values[i1];
-            double r2 = m_params.surface_param_values[i2];
             double comp_inf =
                 (integrals[icomp][i1] - r2 / r1 * integrals[icomp][i2]) /
                 (1. - r2 / r1);
             extrapolations[icomp] = comp_inf;
         }
     }
+
     return extrapolations;
 }
 

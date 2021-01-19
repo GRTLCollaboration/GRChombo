@@ -69,14 +69,12 @@ class ADMQuantitiesExtraction : public SphericalExtraction
 
         // do the integration over the surface
         integrate();
-        int extrapolation_order = 2;
         std::vector<std::string> labels(num_integrals);
         if (m_c_Madm >= 0)
             labels[0] = "M_adm";
         if (m_c_Jadm >= 0)
             labels[J_index] = "J_adm";
-        write_integrals("IntegralADMQuantities", out_integrals, labels,
-                        extrapolation_order);
+        write_integrals("IntegralADMQuantities", out_integrals, labels);
     }
 
   private:

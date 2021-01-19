@@ -50,11 +50,17 @@ template <class SurfaceGeometry> class SurfaceExtraction
                                             //!< extraction for each surface
         bool write_extraction; //!< whether or not to write the extracted data
 
-        int min_extraction_level()
+        std::vector<int>
+            radii_idxs_for_extrapolation; // 2 for 2nd order, 3 for 3rd order
+
+        int min_extraction_level() const
         {
             return *(std::min_element(extraction_levels.begin(),
                                       extraction_levels.end()));
         }
+
+        //! deletes invalid or repeated
+        void validate_extrapolation_radii();
     };
 
     using vars_t = std::tuple<int, VariableType, Derivative>;
@@ -62,7 +68,7 @@ template <class SurfaceGeometry> class SurfaceExtraction
   protected:
     const SurfaceGeometry m_geom; //!< the geometry class which knows about
                                   //!< the particular surface
-    const params_t m_params;
+    params_t m_params;
     std::vector<std::tuple<int, VariableType, Derivative>>
         m_vars; //!< the vector of pairs of
     //!< variables and derivatives to extract
@@ -185,13 +191,13 @@ template <class SurfaceGeometry> class SurfaceExtraction
     //! convenience caller for write_integrals in the case of just integral per
     //! surface
     void write_integral(const std::string &a_filename,
-                        const std::vector<double> a_integrals,
-                        const std::string a_label = "") const;
+                        const std::vector<double> &a_integrals,
+                        const std::string &a_label = "") const;
 
 protected:
-    std::vector<double>
-    richardson_extrapolation(const std::vector<std::vector<double>> &integrals,
-                             int extrapolation_order) const;
+    // returns empty vector if no extrapolation is done
+    std::vector<double> richardson_extrapolation(
+        const std::vector<std::vector<double>> &integrals) const;
 };
 
 #include "SurfaceExtraction.impl.hpp"

@@ -113,3 +113,5 @@ extraction_radii = 30. 40. 50.
 extraction_levels = 1 1 0
 num_points_phi = 50
 num_points_theta = 52
+extraction_extrapolation_order = 3
+extraction_extrapolation_radii = 2 0 1
