@@ -108,15 +108,17 @@ class Derivative : public std::array<int, CH_SPACEDIM>
 
     static const Derivative dx;
     static const Derivative dy;
-    static const Derivative dz;
 
     static const Derivative dxdx;
-    static const Derivative dydy;
-    static const Derivative dzdz;
-
     static const Derivative dxdy;
+    static const Derivative dydy;
+
+#if CH_SPACEDIM == 3
+    static const Derivative dz;
     static const Derivative dxdz;
     static const Derivative dydz;
+    static const Derivative dzdz;
+#endif
 
     static std::string name(const Derivative &deriv)
     {
@@ -124,20 +126,22 @@ class Derivative : public std::array<int, CH_SPACEDIM>
             return "dx";
         else if (deriv == dy)
             return "dy";
-        else if (deriv == dz)
-            return "dz";
         else if (deriv == dxdx)
             return "dxdx";
-        else if (deriv == dydy)
-            return "dydy";
-        else if (deriv == dzdz)
-            return "dzdz";
         else if (deriv == dxdy)
             return "dxdy";
+        else if (deriv == dydy)
+            return "dydy";
+#if CH_SPACEDIM == 3
+        else if (deriv == dz)
+            return "dz";
+        else if (deriv == dzdz)
+            return "dzdz";
         else if (deriv == dxdz)
             return "dxdz";
         else if (deriv == dydz)
             return "dydz";
+#endif
         else
             return "";
     }

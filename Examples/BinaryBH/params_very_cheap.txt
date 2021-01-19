@@ -33,11 +33,11 @@ tag_buffer_size = 3
 
 checkpoint_interval = 1
 # set to zero to turn off plot files
-plot_interval = 1
+plot_interval = 2
 num_plot_vars = 4
 plot_vars = chi Ham Weyl4_Re Weyl4_Im
 dt_multiplier = 0.25
-stop_time = 10.0
+stop_time = 2.0
 
 nan_check = 1
 
@@ -103,4 +103,13 @@ num_modes = 3
 modes = 2 0 # l m for spherical harmonics
         2 1
         2 2
+
+#Apparent Horizon finder 
+AH_activate = 1
+AH_num_ranks = 2
+AH_num_points_u = 11
+AH_num_points_v = 10
+AH_solve_interval = 2
+AH_print_interval = 2
+#AH_merger_search_factor = 1
 

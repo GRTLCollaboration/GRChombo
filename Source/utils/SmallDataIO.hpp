@@ -41,7 +41,7 @@ class SmallDataIO
     const int m_data_precision;
     const int m_data_width;
     const double m_data_epsilon; //!< the maximum data precision error
-    static constexpr int s_default_coords_precision = 7;
+    static constexpr int s_default_coords_precision = 10;
     const int m_coords_precision;
     const int m_coords_width;
     const double m_coords_epsilon; //!< the maximum coords precision error
@@ -132,6 +132,9 @@ class SmallDataIO
     void get_specific_data_line(std::vector<double> &a_out_data,
                                 const double a_coord);
 
+    static std::vector<std::vector<double>> read(std::string a_filename,
+                                                 bool verbose = true);
+
     // ------------ Other Functions --------------
 
     //! returns the full filename of a file created in NEW mode at time=a_time
@@ -140,6 +143,9 @@ class SmallDataIO
         const std::string &a_filename_prefix, double a_dt, double a_time,
         const std::string &a_file_extension = s_default_file_extension,
         int a_filename_steps_width = s_default_filename_steps_width);
+    static std::string
+    pad_number(int step,
+               int a_filename_steps_width = s_default_filename_steps_width);
 
     //! returns m_data_epsilon
     double get_data_epsilon() const;

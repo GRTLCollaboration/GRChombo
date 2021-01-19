@@ -62,6 +62,20 @@ int runGRChombo(int argc, char *argv[])
     if (sim_params.track_punctures)
         bh_amr.m_puncture_tracker.restart_punctures();
 
+#ifdef USE_AHFINDER
+    if (sim_params.AH_activate)
+    {
+        AHSphericalGeometry sph1(sim_params.bh1_params.center);
+        AHSphericalGeometry sph2(sim_params.bh2_params.center);
+
+        bh_amr.m_ah_finder.add_ah(sph1, sim_params.AH_1_initial_guess,
+                                  sim_params.AH_params);
+        bh_amr.m_ah_finder.add_ah(sph2, sim_params.AH_2_initial_guess,
+                                  sim_params.AH_params);
+        bh_amr.m_ah_finder.add_ah_merger(0, 1, sim_params.AH_params);
+    }
+#endif
+
     using Clock = std::chrono::steady_clock;
     using Minutes = std::chrono::duration<double, std::ratio<60, 1>>;
 

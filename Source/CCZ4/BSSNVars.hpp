@@ -31,8 +31,17 @@ struct VarsNoGauge : public ADMConformalVars::VarsNoGauge<data_t>
     {
         using namespace VarsTools; // define_enum_mapping is part of VarsTools
         ADMConformalVars::VarsNoGauge<data_t>::enum_mapping(mapping_function);
+#if CH_SPACEDIM == 3
         define_enum_mapping(mapping_function, GRInterval<c_Gamma1, c_Gamma3>(),
                             Gamma); //!< The auxilliary variable Gamma^i
+#elif CH_SPACEDIM == 2
+        define_enum_mapping(mapping_function, GRInterval<c_Gamma1, c_Gamma2>(),
+                            Gamma); //!< The auxilliary variable Gamma^i
+#else
+#ifdef CH_SPACEDIM
+#error define_enum_mapping() has not got your dimension combination implemented.
+#endif
+#endif
     }
 };
 
@@ -52,9 +61,19 @@ template <class data_t> struct VarsWithGauge : public VarsNoGauge<data_t>
         using namespace VarsTools; // define_enum_mapping is part of VarsTools
         VarsNoGauge<data_t>::enum_mapping(mapping_function);
         define_enum_mapping(mapping_function, c_lapse, lapse);
+#if CH_SPACEDIM == 3
         define_enum_mapping(mapping_function, GRInterval<c_shift1, c_shift3>(),
                             shift);
         define_enum_mapping(mapping_function, GRInterval<c_B1, c_B3>(), B);
+#elif CH_SPACEDIM == 2
+        define_enum_mapping(mapping_function, GRInterval<c_shift1, c_shift2>(),
+                            shift);
+        define_enum_mapping(mapping_function, GRInterval<c_B1, c_B2>(), B);
+#else
+#ifdef CH_SPACEDIM
+#error define_enum_mapping() has not got your dimension combination implemented.
+#endif
+#endif
     }
 };
 

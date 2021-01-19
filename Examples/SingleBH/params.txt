@@ -1,0 +1,106 @@
+verbosity = 0
+chk_prefix = SingleBH_
+plot_prefix = SingleBHPlot_
+#restart_file = SingleBH_000004.3d.hdf5
+
+# Set up grid spacings and regrid params
+# NB - the N values need to be multiples of block_factor
+
+N_full = 32
+L_full = 16
+
+mass = 1.0
+offset = 0 0 0
+momentum = 0. -0.5 0.0
+
+regrid_threshold = 0.05
+max_level = 2
+regrid_interval = 1 2 4 8 16
+
+
+#boundaries and periodicity of grid
+#Periodic directions - 0 = false, 1 = true
+isPeriodic = 0 0 0
+# if not periodic, then specify the boundary type
+# 0 = static, 1 = sommerfeld, 2 = reflective
+# (see BoundaryConditions.hpp for details)
+hi_boundary = 1 1 1
+lo_boundary = 1 1 2
+
+# if reflective boundaries selected, must set
+# parity of all vars (in order given by UserVariables.hpp)
+# 0 = even
+# 1,2,3 = odd x, y, z
+# 4,5,6 = odd xy, yz, xz
+# 7     = odd xyz
+vars_parity            = 0 0 4 6 0 5 0    #chi and hij
+                         0 0 4 6 0 5 0    #K and Aij
+                         0 1 2 3          #Theta and Gamma
+                         0 1 2 3 1 2 3    #lapse shift and B
+vars_parity_diagnostic = 0 1 2 3          #Ham and Mom
+
+# if sommerfeld boundaries selected, must select 
+# asymptotic values (in order given by UserVariables.hpp)
+vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
+                         0.0 0.0 0.0 0.0 0.0 0.0 0.0 #K and Aij
+                         0.0 0.0 0.0 0.0             #Theta and Gamma
+                         1.0 0.0 0.0 0.0 0.0 0.0 0.0 #lapse shift and B
+
+#Max and min box sizes
+max_grid_size = 16
+block_factor = 16
+
+# Set up time steps
+# dt will be dx*dt_multiplier on each grid level
+# HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
+
+checkpoint_interval = 2
+# set to zero to turn off plot files
+plot_interval = 1
+num_plot_vars = 1
+plot_vars = chi
+dt_multiplier = 0.25
+stop_time = 10.0
+max_steps = 10
+
+#Lapse evolution
+lapse_advec_coeff = 0.0
+lapse_coeff = 2.0
+lapse_power = 1.0
+
+# Shift evolution
+shift_advec_coeff = 0.0
+shift_Gamma_coeff = 0.75
+eta = 1.82
+
+# CCZ4 parameters
+kappa1 = 0.1
+kappa2 = 0
+kappa3 = 1.
+covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
+
+#coefficient for KO numerical dissipation
+sigma = 0.3
+
+#Apparent Horizon finder 
+AH_activate = 1
+AH_num_ranks = 2
+AH_num_points_u = 11
+AH_num_points_v = 20
+AH_solve_interval = 1
+AH_print_interval = 1
+#AH_track_center = true
+#AH_predict_origin = true
+#AH_merger_search_factor = 1. #-1 to deactivate
+#AH_merger_pre_factor = 1.
+#AH_level_to_run = 0
+#AH_allow_re_attempt = 0
+#AH_start_time = 0.0
+#AH_give_up_time = -1. # -1 to never
+#AH_max_fails_after_lost = 0 # -1 to never
+AH_verbose = 3
+
+#AH_initial_guess = 0.25
+
+AH_num_write_vars = 2
+AH_write_vars = chi d1_chi

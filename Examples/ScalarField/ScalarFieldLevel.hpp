@@ -6,6 +6,7 @@
 #ifndef SCALARFIELDLEVEL_HPP_
 #define SCALARFIELDLEVEL_HPP_
 
+#include "BHAMR.hpp"
 #include "DefaultLevelFactory.hpp"
 #include "GRAMRLevel.hpp"
 // Problem specific includes
@@ -26,6 +27,8 @@ class ScalarFieldLevel : public GRAMRLevel
     friend class DefaultLevelFactory<ScalarFieldLevel>;
     // Inherit the contructors from GRAMRLevel
     using GRAMRLevel::GRAMRLevel;
+
+    BHAMR &m_bh_amr = dynamic_cast<BHAMR &>(m_gr_amr);
 
     // Typedef for scalar field
     typedef ScalarField<Potential> ScalarFieldWithPotential;
@@ -50,6 +53,9 @@ class ScalarFieldLevel : public GRAMRLevel
     //! Tell Chombo how to tag cells for regridding
     virtual void computeTaggingCriterion(FArrayBox &tagging_criterion,
                                          const FArrayBox &current_state);
+
+    //! to do post each time step on every level
+    virtual void specificPostTimeStep() override;
 };
 
 #endif /* SCALARFIELDLEVEL_HPP_ */

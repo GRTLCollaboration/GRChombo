@@ -41,6 +41,12 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("kerr_mass", kerr_params.mass, 1.0);
         pp.load("kerr_spin", kerr_params.spin, 0.0);
         pp.load("kerr_center", kerr_params.center, center);
+
+#ifdef USE_AHFINDER
+        double AH_guess =
+            8. * initial_params.amplitude * initial_params.amplitude;
+        pp.load("AH_initial_guess", AH_initial_guess, AH_guess);
+#endif
     }
 
     void check_params()
@@ -75,6 +81,10 @@ class SimulationParameters : public SimulationParametersBase
     InitialScalarData::params_t initial_params;
     Potential::params_t potential_params;
     KerrBH::params_t kerr_params;
+
+#ifdef USE_AHFINDER
+    double AH_initial_guess;
+#endif
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */

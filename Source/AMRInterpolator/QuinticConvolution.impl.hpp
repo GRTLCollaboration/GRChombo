@@ -6,26 +6,29 @@
 #ifndef QUINTICCONVOLUTION_IMPL_HPP_
 #define QUINTICCONVOLUTION_IMPL_HPP_
 
-const string QuinticConvolution::TAG = "\x1b[36;1m[QuinticConvolution]\x1b[0m ";
+template <int N_DIMS>
+const string QuinticConvolution<N_DIMS>::TAG =
+    "\x1b[36;1m[QuinticConvolution]\x1b[0m ";
 
-QuinticConvolution::QuinticConvolution(const InterpSource &source,
-                                       bool verbosity)
+template <int N_DIMS>
+QuinticConvolution<N_DIMS>::QuinticConvolution(
+    const InterpSource<N_DIMS> &source, bool verbosity)
     : m_source(source), m_verbosity(verbosity)
 {
-    CH_assert(CH_SPACEDIM <= 3);
+    CH_assert(N_DIMS <= 3);
 }
 
-void QuinticConvolution::setup(const std::array<int, CH_SPACEDIM> &deriv,
-                               const std::array<double, CH_SPACEDIM> &dx,
-                               const std::array<double, CH_SPACEDIM> &evalCoord,
-                               const IntVect &nearest)
+template <int N_DIMS>
+void QuinticConvolution<N_DIMS>::setup(
+    const std::array<int, N_DIMS> &deriv, const std::array<double, N_DIMS> &dx,
+    const std::array<double, N_DIMS> &evalCoord)
 {
     m_interp_points.clear();
     m_interp_weights.clear();
 
-    double weights_1d[CH_SPACEDIM][6];
+    double weights_1d[N_DIMS][6];
 
-    for (int dim = 0; dim < CH_SPACEDIM; ++dim)
+    for (int dim = 0; dim < N_DIMS; ++dim)
     {
         double s = evalCoord[dim] - floor(evalCoord[dim]);
 
@@ -98,16 +101,18 @@ void QuinticConvolution::setup(const std::array<int, CH_SPACEDIM> &deriv,
         }
     }
 
-    std::array<double, CH_SPACEDIM> interp_coord;
+    std::array<double, N_DIMS> interp_coord;
 
-#if CH_SPACEDIM >= 3
+#if N_DIMS >= 3
     for (int z = 0; z < 6; ++z)
     {
         interp_coord[2] = floor(evalCoord[2]) + z - 2;
 #endif
+#if N_DIMS >= 2
         for (int y = 0; y < 6; ++y)
         {
             interp_coord[1] = floor(evalCoord[1]) + y - 2;
+#endif
 
             for (int x = 0; x < 6; ++x)
             {
@@ -117,17 +122,27 @@ void QuinticConvolution::setup(const std::array<int, CH_SPACEDIM> &deriv,
                 m_interp_points.push_back(IntVect(D_DECL6(
                     interp_coord[0], interp_coord[1], interp_coord[2],
                     interp_coord[3], interp_coord[4], interp_coord[5])));
-                m_interp_weights.push_back(D_TERM6(weights_1d[0][x],
-                                                   *weights_1d[1][y],
-                                                   *weights_1d[2][z], , , ));
+#if N_DIMS >= 3
+                m_interp_weights.push_back(weights_1d[0][x] * weights_1d[1][y] *
+                                           weights_1d[2][z]);
+#elif N_DIMS >= 2
+        m_interp_weights.push_back(weights_1d[0][x] * weights_1d[1][y]);
+#else
+        m_interp_weights.push_back(weights_1d[0][x]);
+#endif
             }
+#if N_DIMS >= 2
         }
-#if CH_SPACEDIM >= 3
+#endif
+#if N_DIMS >= 3
     }
 #endif
 }
 
-double QuinticConvolution::interpData(const FArrayBox &fab, int comp)
+template <int N_DIMS>
+template <class GeneralArrayBox>
+double QuinticConvolution<N_DIMS>::interpData(const GeneralArrayBox &fab,
+                                              int comp)
 {
     long double accum = 0.0;
 

@@ -107,3 +107,21 @@ extraction_radii = 30. 40. 50.
 extraction_levels = 2 1 0
 num_points_phi = 50
 num_points_theta = 52
+
+#Apparent Horizon finder 
+AH_activate = 1 
+AH_num_ranks = 20
+AH_num_points_u = 30
+AH_num_points_v = 50
+AH_solve_interval = 1
+AH_print_interval = 2
+AH_track_center = false
+AH_predict_origin = false
+#AH_level_to_run = 0
+#AH_allow_re_attempt = 0
+#AH_start_time = 0.0
+#AH_give_up_time = -1. # -1 to never
+#AH_max_fails_after_lost = 0 # -1 to never
+#AH_verbose = 1
+
+#AH_initial_guess = 0.5

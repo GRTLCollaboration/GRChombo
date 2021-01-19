@@ -26,4 +26,12 @@ static const std::array<std::string, NUM_VARS> variable_names =
 
 #include "UserVariables.inc.hpp"
 
+// uncomment to look for chi instead of expansion
+// #define USE_CHI_CONTOURS
+
+#ifdef USE_CHI_CONTOURS
+#include "AHFunctions.hpp"
+#define AHFunction ChiContourFunction // change default to chi contours
+#endif
+
 #endif /* USERVARIABLES_HPP */

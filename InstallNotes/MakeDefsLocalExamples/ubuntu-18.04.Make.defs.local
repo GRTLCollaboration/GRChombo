@@ -5,7 +5,7 @@
 # libhdf5-openmpi-dev openmpi-bin libblas-dev liblapack-dev \
 # libgetopt-complete-perl ssh
 
-DIM            = 3
+DIM           ?= 3
 DEBUG          = TRUE
 PRECISION      = DOUBLE
 OPT            = TRUE

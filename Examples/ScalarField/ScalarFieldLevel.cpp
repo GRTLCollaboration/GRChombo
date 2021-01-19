@@ -39,8 +39,9 @@ void ScalarFieldLevel::specificAdvance()
 
     // Check for nan's
     if (m_p.nan_check)
-        BoxLoops::loop(NanCheck(), m_state_new, m_state_new,
-                       EXCLUDE_GHOST_CELLS, disable_simd());
+        BoxLoops::loop(
+            NanCheck(m_dx, m_p.center, "NaNCheck in specific Advance"),
+            m_state_new, m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
 }
 
 // Initial data for field and metric variables
@@ -107,4 +108,11 @@ void ScalarFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
     BoxLoops::loop(
         FixedGridsTaggingCriterion(m_dx, m_level, 2.0 * m_p.L, m_p.center),
         current_state, tagging_criterion);
+}
+void ScalarFieldLevel::specificPostTimeStep()
+{
+#ifdef USE_AHFINDER
+    if (m_p.AH_activate && m_level == m_p.AH_params.level_to_run)
+        m_bh_amr.m_ah_finder.solve(m_dt, m_time, m_restart_time);
+#endif
 }

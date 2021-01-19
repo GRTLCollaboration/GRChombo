@@ -57,7 +57,7 @@ SmallDataIO::SmallDataIO(std::string a_filename_prefix, double a_dt,
                 // overwrite any existing file if this is the first step
                 file_openmode = std::ios::out;
             }
-            else if (m_restart_time > 0. &&
+            else if (m_restart_time >= 0. &&
                      m_time < m_restart_time + m_dt + m_coords_epsilon)
             {
                 // allow reading in the restart case so that duplicate time
@@ -205,7 +205,7 @@ void SmallDataIO::line_break()
 
 void SmallDataIO::remove_duplicate_time_data(const bool keep_m_time_data)
 {
-    if (m_rank == 0 && m_restart_time > 0. && m_mode == APPEND &&
+    if (m_rank == 0 && m_restart_time >= 0. && m_mode == APPEND &&
         m_time < m_restart_time + m_dt + m_coords_epsilon)
     {
         // copy lines with time < m_time into a temporary file
@@ -316,6 +316,12 @@ std::string SmallDataIO::get_new_filename(const std::string &a_file_prefix,
     CH_assert(a_dt > 0);
     const int step = std::round(a_time / a_dt);
 
+    // append step number to filename if in NEW mode
+    return a_file_prefix + pad_number(step) + a_file_extension;
+}
+
+std::string SmallDataIO::pad_number(int step, int a_filename_steps_width)
+{
     // append step number to filename (pad to make it
     // a_filename_steps_width digits).
     std::string step_string = std::to_string(step);
@@ -327,8 +333,7 @@ std::string SmallDataIO::get_new_filename(const std::string &a_file_prefix,
     std::string step_string_padded =
         std::string(a_filename_steps_width - step_string.length(), '0') +
         step_string;
-    // append step number to filename if in NEW mode
-    return a_file_prefix + step_string_padded + a_file_extension;
+    return step_string_padded;
 }
 
 // returns m_data_epsilon
@@ -347,4 +352,121 @@ double SmallDataIO::get_coords_epsilon() const { return m_coords_epsilon; }
 double SmallDataIO::get_default_coords_epsilon()
 {
     return pow(10.0, -s_default_coords_precision);
+}
+
+std::vector<std::vector<double>> SmallDataIO::read(std::string a_filename,
+                                                   bool verbose)
+{
+    int rank = 0;
+#ifdef CH_MPI
+    MPI_Comm_rank(Chombo_MPI::comm, &rank);
+#endif
+
+    int Nrows = 0, Ncols = 0;
+
+    std::fstream file;
+
+    if (rank == 0)
+    {
+        file.open(a_filename, std::ios::in);
+        if (!file)
+        {
+            if (verbose)
+                pout() << "File '" << a_filename << "' not found." << std::endl;
+        }
+        else
+        {
+            // run through file to get number of rows and cols
+            std::string line, save = "";
+            while (std::getline(file, line))
+            {
+                if (line.substr(0, 2) == "//" || line.substr(0, 1) == "#")
+                    continue;
+                else if (save == "")
+                    save = line;
+                ++Nrows;
+            }
+
+            // run through line and count number of columns
+            std::stringstream str(save);
+
+            std::string x_str;
+            double x;
+            str >> x_str;
+            if (x_str == "nan")
+                x = NAN;
+            else
+                (std::stringstream(x_str) >> x);
+            while (!str.fail())
+            {
+                str >> x_str;
+                if (x_str == "nan")
+                    x = NAN;
+                else
+                    (std::stringstream(x_str) >> x);
+                ++Ncols;
+            }
+        }
+    }
+
+#ifdef CH_MPI
+    MPI_Bcast(&Nrows, 1, MPI_INT, 0, Chombo_MPI::comm);
+    MPI_Bcast(&Ncols, 1, MPI_INT, 0, Chombo_MPI::comm);
+#endif
+
+    if (rank == 0 && Nrows != 0 && verbose)
+        std::cout << "Found " << Ncols << " columns and " << Nrows
+                  << " rows in file '" << a_filename << "'." << std::endl;
+
+    std::vector<std::vector<double>> out(Ncols, std::vector<double>(Nrows));
+
+    if (rank == 0 && Nrows != 0)
+    {
+        file.clear();
+        file.seekg(0, file.beg);
+
+        int j = 0;
+        std::string line;
+        while (std::getline(file, line))
+        {
+            if (line.substr(0, 2) == "//" || line.substr(0, 1) == "#")
+                continue;
+
+            std::stringstream ss(line);
+            std::string x_str;
+            double x;
+            ss >> x_str;
+            if (x_str == "nan")
+                x = NAN;
+            else
+                (std::stringstream(x_str) >> x);
+
+            int i = 0;
+            while (!ss.fail() && i < Ncols)
+            {
+                out[i++][j] = x;
+                ss >> x_str;
+                if (x_str == "nan")
+                    x = NAN;
+                else
+                    (std::stringstream(x_str) >> x);
+            }
+            ++j;
+        }
+
+        file.close();
+    }
+
+#ifdef CH_MPI
+    for (int i = 0; i < Ncols; ++i)
+        MPI_Bcast(&out[i][0], Nrows, MPI_DOUBLE, 0, Chombo_MPI::comm);
+#endif
+
+    /*    if(rank==0)
+            for(int i=0; i<out.size(); ++i)
+                for(int j=0; j<out[i].size(); ++j)
+                    std::cout << "out[" << i << "][" << j << "] = " << out[i][j]
+       << std::endl;*/
+
+    return out;
 }

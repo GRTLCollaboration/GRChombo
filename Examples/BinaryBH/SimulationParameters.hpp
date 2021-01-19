@@ -54,6 +54,13 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("puncture_tracking_level", puncture_tracking_level, max_level);
         pp.load("calculate_constraint_norms", calculate_constraint_norms,
                 false);
+
+#ifdef USE_AHFINDER
+        pp.load("AH_1_initial_guess", AH_1_initial_guess,
+                0.5 * bh1_params.mass);
+        pp.load("AH_2_initial_guess", AH_2_initial_guess,
+                0.5 * bh2_params.mass);
+#endif
     }
 
     void check_params()
@@ -99,6 +106,11 @@ class SimulationParameters : public SimulationParametersBase
     // Collection of parameters necessary for initial conditions
     BoostedBH::params_t bh2_params;
     BoostedBH::params_t bh1_params;
+
+#ifdef USE_AHFINDER
+    double AH_1_initial_guess;
+    double AH_2_initial_guess;
+#endif
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP */

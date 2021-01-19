@@ -9,6 +9,7 @@
 // Chombo includes
 #include "AMR.H"
 #include "AMRLevel.H"
+#include "LoHiSide.H"
 
 // Our includes
 #include "BoundaryConditions.hpp"
@@ -43,8 +44,10 @@ template <typename InterpAlgo> class AMRInterpolator
     void limit_num_levels(unsigned int num_levels);
     void interp(InterpolationQuery &query);
     const AMR &getAMR() const;
-    const std::array<double, CH_SPACEDIM> &get_coarsest_dx();
-    const std::array<double, CH_SPACEDIM> &get_coarsest_origin();
+    const std::array<double, CH_SPACEDIM> &get_coarsest_dx() const;
+    const std::array<double, CH_SPACEDIM> &get_coarsest_origin() const;
+    bool get_boundary_reflective(Side::LoHiSide a_side, int a_dir) const;
+    bool get_boundary_periodic(int a_dir) const;
 
   private:
     void computeLevelLayouts();

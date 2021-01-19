@@ -11,11 +11,17 @@
 #include "CCZ4.hpp"
 #include "ChomboParameters.hpp"
 #include "GRParmParse.hpp"
-#include "SphericalExtraction.hpp"
 #include <limits>
 
+#ifdef USE_AHFINDER
+#include "AHFinder.hpp"
+#endif
+
+#if CH_SPACEDIM == 3
+#include "SphericalExtraction.hpp"
 // add this type alias here for backwards compatibility
 using extraction_params_t = SphericalExtraction::params_t;
+#endif
 
 class SimulationParametersBase : public ChomboParameters
 {
@@ -53,6 +59,7 @@ class SimulationParametersBase : public ChomboParameters
         pp.load("min_chi", min_chi, 1e-4);
         pp.load("min_lapse", min_lapse, 1e-4);
 
+#if CH_SPACEDIM == 3
         // Extraction params
         pp.load("num_extraction_radii", extraction_params.num_extraction_radii,
                 1);
@@ -117,6 +124,14 @@ class SimulationParametersBase : public ChomboParameters
         }
 
         pp.load("write_extraction", extraction_params.write_extraction, false);
+#endif
+
+#ifdef USE_AHFINDER
+        // Apparent horizon parameters
+        pp.load("AH_activate", AH_activate, false);
+        if (AH_activate)
+            AH_params.read_params(pp, *this);
+#endif
     }
 
     void check_params()
@@ -197,6 +212,7 @@ class SimulationParametersBase : public ChomboParameters
                            std::numeric_limits<double>::epsilon(),
                        "set to 2.0 for 1+log slicing");
 
+#if CH_SPACEDIM == 3
         // Now extraction parameters
         FOR1(idir)
         {
@@ -236,6 +252,7 @@ class SimulationParametersBase : public ChomboParameters
             check_parameter(mode_name, value_str, (l >= 2) && (abs(m) <= l),
                             "l must be >= 2 and m must satisfy -l <= m <= l");
         }
+#endif
     }
 
   public:
@@ -249,7 +266,14 @@ class SimulationParametersBase : public ChomboParameters
 
     // Collection of parameters necessary for the CCZ4 RHS and extraction
     CCZ4::params_t ccz4_params;
+#if CH_SPACEDIM == 3
     SphericalExtraction::params_t extraction_params;
+#endif
+
+#ifdef USE_AHFINDER
+    bool AH_activate;
+    AHFinder::params AH_params;
+#endif
 };
 
 #endif /* SIMULATIONPARAMETERSBASE_HPP_ */

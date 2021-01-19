@@ -30,8 +30,9 @@ void BinaryBHLevel::specificAdvance()
 
     // Check for nan's
     if (m_p.nan_check)
-        BoxLoops::loop(NanCheck("NaNCheck in specific Advance: "), m_state_new,
-                       m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
+        BoxLoops::loop(
+            NanCheck(m_dx, m_p.center, "NaNCheck in specific Advance"),
+            m_state_new, m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
 }
 
 // This initial data uses an approximation for the metric which
@@ -59,8 +60,7 @@ void BinaryBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     BoxLoops::loop(make_compute_pack(TraceARemoval(), PositiveChiAndAlpha()),
                    a_soln, a_soln, INCLUDE_GHOST_CELLS);
 
-    // Calculate CCZ4 right hand side and set constraints to zero to avoid
-    // undefined values
+    // Calculate CCZ4 right hand side
     BoxLoops::loop(CCZ4(m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
                    a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
 }
@@ -161,6 +161,11 @@ void BinaryBHLevel::specificPostTimeStep()
         m_bh_amr.m_puncture_tracker.execute_tracking(m_time, m_restart_time,
                                                      m_dt, write_punctures);
     }
+
+#ifdef USE_AHFINDER
+    if (m_p.AH_activate && m_level == m_p.AH_params.level_to_run)
+        m_bh_amr.m_ah_finder.solve(m_dt, m_time, m_restart_time);
+#endif
 }
 
 // Things to do before a plot level - need to calculate the Weyl scalars

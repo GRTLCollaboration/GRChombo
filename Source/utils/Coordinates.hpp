@@ -22,7 +22,10 @@ template <class data_t> class Coordinates
   public:
     data_t x; // We vectorise over x so we must allow x to be a vector
     double y;
+#if !(DEFAULT_TENSOR_DIM == CH_SPACEDIM && CH_SPACEDIM == 2)
+    // don't even add a 'z'
     double z;
+#endif
     std::array<double, CH_SPACEDIM> m_center;
 
     Coordinates(IntVect integer_coords, double dx,
@@ -38,6 +41,8 @@ template <class data_t> class Coordinates
 #elif DEFAULT_TENSOR_DIM == CH_SPACEDIM + 1 && CH_SPACEDIM == 2
         y = 0;
         compute_coord(z, integer_coords[1], dx, center[1]);
+#elif DEFAULT_TENSOR_DIM == CH_SPACEDIM && CH_SPACEDIM == 2
+        compute_coord(y, integer_coords[1], dx, center[1]);
 #else
 #ifdef CH_SPACEDIM
 #error compute_coord has not got your dimension combination implemented.
@@ -69,7 +74,7 @@ template <class data_t> class Coordinates
     data_t get_radius() const
     {
         // Note that this is not currently dimension independent
-        data_t r = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
+        data_t r = sqrt(D_TERM(x * x, +y * y, +z * z));
 
         const double minimum_r = 1e-6;
         return simd_max(r, minimum_r);
@@ -82,14 +87,17 @@ template <class data_t> class Coordinates
     {
         data_t xx;
         double yy;
-        double zz;
 
         // Note that this is not currently dimension independent
         compute_coord(xx, integer_coords[0], dx, center[0]);
         compute_coord(yy, integer_coords[1], dx, center[1]);
-        compute_coord(zz, integer_coords[2], dx, center[2]);
 
-        data_t r = sqrt(pow(xx, 2) + pow(yy, 2) + pow(zz, 2));
+#if CH_SPACEDIM == 3
+        double zz;
+        compute_coord(zz, integer_coords[2], dx, center[2]);
+#endif
+
+        data_t r = sqrt(D_TERM(xx * xx, +yy * yy, +zz * zz));
 
         const double minimum_r = 1e-6;
         return simd_max(r, minimum_r);
@@ -100,9 +108,11 @@ template <typename data_t>
 ALWAYS_INLINE ostream &operator<<(ostream &os,
                                   const Coordinates<data_t> &in_coords)
 {
-    os << "(x,y,z) = (" << in_coords.x << "," << in_coords.y << ","
-       << in_coords.z << ")"
-       << " r = " << in_coords.get_radius();
+    os << "(x,y,z) = (" << in_coords.x << "," << in_coords.y <<
+#if CH_SPACEDIM == 3
+        "," << in_coords.z <<
+#endif
+        ") r = " << in_coords.get_radius();
     return os;
 }
 #endif /* COORDINATES_HPP_ */

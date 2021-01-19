@@ -27,7 +27,7 @@
 // Chombo namespace
 #include "UsingNamespace.H"
 
-class GRAMRLevel : public AMRLevel, public InterpSource
+class GRAMRLevel : public AMRLevel, public InterpSource<>
 {
   public:
     GRAMRLevel(GRAMR &gr_amr, const SimulationParameters &a_p, int a_verbosity);
