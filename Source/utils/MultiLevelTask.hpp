@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef MULTI_LEVEL_TASK
-#define MULTI_LEVEL_TASK
+#ifndef MULTILEVELTASK_HPP_
+#define MULTILEVELTASK_HPP_
 
 #include "AMR.H"
 #include "GRAMRLevel.hpp"
@@ -14,13 +14,13 @@
 
 //! This is just an interface for the AMR scheduler to call some GRAMRLevel (or
 //! any other Example specific level) function on every AMRLevel
-//! Satisfies syntax of Chmbo's Scheduler such that it can be passed to GRAMR
+//! Satisfies syntax of Chombo's Scheduler such that it can be passed to GRAMR
 //! and be scheduled
-template <class Level = GRAMRLevel>
+template <class level_t = GRAMRLevel>
 class MultiLevelTask : public Scheduler::PeriodicFunction
 {
+    std::function<void(level_t *)> m_func;
     bool m_reverse_levels;
-    std::function<void(Level *)> m_func;
 
     // Use default condstructor of PeriodicFunction
     using PeriodicFunction::PeriodicFunction;
@@ -28,7 +28,7 @@ class MultiLevelTask : public Scheduler::PeriodicFunction
     AMR *m_amr_ptr; //! pointer to AMR object
 
   public:
-    MultiLevelTask(std::function<void(Level *)> a_func,
+    MultiLevelTask(std::function<void(level_t *)> a_func,
                    bool a_reverse_levels = true)
         : m_func(a_func), m_reverse_levels(a_reverse_levels)
     {
@@ -53,28 +53,28 @@ class MultiLevelTask : public Scheduler::PeriodicFunction
             std::reverse(std::begin(amr_level_ptrs), std::end(amr_level_ptrs));
 
         for (AMRLevel *amr_level_ptr : amr_level_ptrs)
-            m_func(Level::gr_cast(amr_level_ptr));
+            m_func(level_t::gr_cast(amr_level_ptr));
     }
 };
 
-//! This is just an interface for the AMR scheduler to call some Level
+//! This is just an interface for the AMR scheduler to call some level_t
 //! function on every AMRLevel
 //! This can either be called directly by calling execute, or passed to an AMR
 //! (as GRAMR) by doing gr_amr.schedule(me) (this version will make it be called
 //! only after plot files are written, if that is ever an interest)
-template <class Level = GRAMRLevel>
+template <class level_t = GRAMRLevel>
 class MultiLevelTaskPtr : public RefCountedPtr<Scheduler>
 {
-    RefCountedPtr<MultiLevelTask<Level>> m_ptr_to_func;
+    RefCountedPtr<MultiLevelTask<level_t>> m_ptr_to_func;
 
   public:
     //! interval defines the frequency with which the scheduler will be called
     //! if added to an AMR
-    MultiLevelTaskPtr(std::function<void(Level *)> a_func,
+    MultiLevelTaskPtr(std::function<void(level_t *)> a_func,
                       bool a_reverse_levels = true,
                       int a_interval = std::numeric_limits<int>::max())
         : RefCountedPtr<Scheduler>(new Scheduler),
-          m_ptr_to_func(new MultiLevelTask<Level>(a_func, a_reverse_levels))
+          m_ptr_to_func(new MultiLevelTask<level_t>(a_func, a_reverse_levels))
     // the two 'new' pointers are deleted by RefCountedPtr, no memory leak
     {
         if (a_interval <= 0) // the user probably means "never again"
@@ -90,4 +90,4 @@ class MultiLevelTaskPtr : public RefCountedPtr<Scheduler>
     }
 };
 
-#endif /* MULTI_LEVEL_TASK */
+#endif /* MULTILEVELTASK_HPP_ */
