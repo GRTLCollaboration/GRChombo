@@ -937,7 +937,9 @@ void GRAMRLevel::evalRHS(GRLevelData &rhs, GRLevelData &soln,
 void GRAMRLevel::updateODE(GRLevelData &soln, const GRLevelData &rhs, Real dt)
 {
     CH_TIME("GRAMRLevel::updateODE");
-    soln.plus(rhs, dt);
+    // m_grown_grids will include outer boundary ghosts in the case of
+    // nonperiodic BCs but will just be the problem domain otherwise.
+    soln.plus(rhs, dt, m_grown_grids);
 
     specificUpdateODE(soln, rhs, dt);
     fillBdyGhosts(soln);
