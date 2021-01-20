@@ -129,7 +129,12 @@ void BinaryBHLevel::specificPostTimeStep()
             {
                 CH_TIME("WeylExtraction");
                 // Now refresh the interpolator and do the interpolation
-                m_gr_amr.m_interpolator->refresh();
+                // fill ghosts manually to minimise communication
+                bool fill_ghosts = false;
+                m_gr_amr.m_interpolator->refresh(fill_ghosts);
+                m_gr_amr.fill_multilevel_ghosts(
+                    VariableType::diagnostic, Interval(c_Weyl4_Re, c_Weyl4_Im),
+                    min_level);
                 WeylExtraction my_extraction(m_p.extraction_params, m_dt,
                                              m_time, first_step,
                                              m_restart_time);
