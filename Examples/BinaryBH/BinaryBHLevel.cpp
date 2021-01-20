@@ -59,8 +59,7 @@ void BinaryBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     BoxLoops::loop(make_compute_pack(TraceARemoval(), PositiveChiAndAlpha()),
                    a_soln, a_soln, INCLUDE_GHOST_CELLS);
 
-    // Calculate CCZ4 right hand side and set constraints to zero to avoid
-    // undefined values
+    // Calculate CCZ4 right hand side
     BoxLoops::loop(CCZ4(m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
                    a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
 }
@@ -102,7 +101,10 @@ void BinaryBHLevel::specificPostTimeStep()
 {
     CH_TIME("BinaryBHLevel::specificPostTimeStep");
 
-    bool first_step = (m_time == m_dt);
+    bool first_step =
+        (m_time == 0.); // this form is used when 'specificPostTimeStep' was
+                        // called during setup at t=0 from Main
+    // bool first_step = (m_time == m_dt); // if not called in Main
 
     if (m_p.activate_extraction == 1)
     {
@@ -123,7 +125,8 @@ void BinaryBHLevel::specificPostTimeStep()
                 // Now refresh the interpolator and do the interpolation
                 m_gr_amr.m_interpolator->refresh();
                 WeylExtraction my_extraction(m_p.extraction_params, m_dt,
-                                             m_time, m_restart_time);
+                                             m_time, first_step,
+                                             m_restart_time);
                 my_extraction.execute_query(m_gr_amr.m_interpolator);
             }
         }

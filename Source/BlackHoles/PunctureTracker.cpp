@@ -132,7 +132,8 @@ void PunctureTracker::execute_tracking(double a_time, double a_restart_time,
                                        double a_dt, const bool write_punctures)
 {
     CH_TIME("PunctureTracker::execute_tracking");
-    if (m_num_punctures == 0)
+    // leave if this is called at t=0, we don't want to move the puncture yet
+    if (m_num_punctures == 0 || a_time == 0.)
         return;
     CH_assert(m_interpolator != nullptr); // sanity check
 
