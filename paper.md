@@ -36,22 +36,24 @@ bibliography: paper.bib
 
 **A summary describing the high-level functionality and purpose of the software for a diverse, non-specialist audience.**
 
-The 2015 detection of gravitational waves (GWs) from a binary black hole merger [@Abbott:2016blz] was a breakthrough moment for science. The LIGO and Virgo detectors have gone on to detect hundreds of candidate events, and the next decade promises a deluge of new data detected by a world-wide network of GW instruments including Advanced LIGO and KAGRA [@TheLIGOScientific:2014jea; @Aasi:2013wya; @Somiya:2011np], and in the longer term space based missions such as LISA [@Audley:2017drz] and Tianqin [@Luo:2015ght]. To make sense of the data streams we will receive we need to fully understand the theoretical predictions that are made by our current best theory of gravity, *General Relativity* (GR), including possible deviations relating to new physics.
-
-GR is encapsulated by the Einstein Field Equations [@Einstein:1916vd]
+The 2015 detection of gravitational waves (GWs) from a binary black hole merger by the LIGO/VIRGO GW detector [@Abbott:2016blz] was a breakthrough moment for science. To fully understand the theoretical predictions from Einstein's Theory of General Relativity requires the use of *numerical relativity* (NR) -- i.e. using high performance computing to solve the Einstein Field Equations [@Einstein:1916vd] numerically:
 \begin{equation}
    R_{\mu \nu} - \frac{1}{2} R g_{\mu \nu} = 8 \pi G T_{\mu\nu} ~.
 \end{equation}
-This elegant and concise form somewhat obscures the nature of the equations from those unfamiliar with the notation - expanded out, it is a set of second order partial differential equations for the metric tensor field $g_{\mu\nu}$, which describes the curvature of spacetime in the presence of matter with stress-energy $T_{\mu\nu}$, i.e.
+This concise form obscures the nature of the equations from those unfamiliar with the notation - expanded out, it is a set of second order partial differential equations for the metric tensor field $g_{\mu\nu}$, which describes the curvature of spacetime in the presence of matter with stress-energy $T_{\mu\nu}$, i.e.
 \begin{equation}
    \partial_t \partial_t g_{\mu\nu} = \partial_x \partial_x g_{\mu\nu} + \partial_y \partial_y g_{\mu\nu} + \partial_z \partial_z g_{\mu\nu} + {\rm non ~ linear ~ cross ~ terms} 
           + 8 \pi G T_{\mu\nu}
 \end{equation}
 where the indices $\mu, \nu$ run over the spacetime indices - in 4 dimensions, $t, x, y, z$. Given that $g_{\mu\nu}$ is symmetric in its indices, this gives a set of ten coupled, non linear wave equations, sourced by the stress-energy of any matter present in the spacetime.
 
-Beyond the perturbative regime or cases with high degrees of symmetry, analytic solutions to the Einstein equation are rare and in general the equations must be solved numerically. One common approach to this problem is to specify an initial spatial distribution for the metric and matter fields (subject to certain constraints), and then solve a time evolution for all metric and matter quantities, thus populating their values thoughout the four dimensional spacetime. The canonical example of this is the simulation of two black holes in orbit around each other, which permits extraction of the gravitational wave signal produced during the merger. Such numerical results have been instrumental in discovering signals in the noisy LIGO/VIRGO detector data, as well as confirming the predictions of GR to a high precision in the strong field regime.
 
-In principle, time domain evolutions of coupled non linear wave equations are tractable numerical problems, but in practice there are a number of subtleties which meant that stable evolutions of black hole binary mergers, like those observed by LIGO, were not possible until the early 2000's. Four key breakthroughs which made such *Numerical Relativity* (NR) evolutions possible were:
+/*: The LIGO and Virgo detectors have gone on to detect hundreds of candidate events, and the next decade promises a deluge of new data detected by a world-wide network of GW instruments including Advanced LIGO and KAGRA [@TheLIGOScientific:2014jea; @Aasi:2013wya; @Somiya:2011np], and in the longer term space based missions such as LISA [@Audley:2017drz] and Tianqin [@Luo:2015ght]. To make sense of the data streams we will receive we need to fully understand the theoretical predictions that are made by our current best theory of gravity, *General Relativity* (GR), including possible deviations relating to new physics. :*/
+
+
+Aalytic solutions to the Einstein equation are rare and in general the equations must be solved numerically. One common approach to this problem is to specify an initial spatial distribution for the metric and matter fields (subject to certain constraints), and then solve a time evolution for all metric and matter quantities, thus populating their values thoughout the four dimensional spacetime. The canonical example of this is the simulation of two black holes in orbit around each other, which permits extraction of the gravitational wave signal produced during the merger. Such numerical results have been instrumental in discovering signals in the noisy LIGO/VIRGO detector data, as well as confirming the predictions of GR to a high precision in the strong field regime.
+
+/*: In principle, time domain evolutions of coupled non linear wave equations are tractable numerical problems, but in practice there are a number of subtleties which meant that stable evolutions of black hole binary mergers, like those observed by LIGO, were not possible until the early 2000's. Four key breakthroughs which made such *Numerical Relativity* (NR) evolutions possible were: 
 
 1. The development of the ADM formulation of the Einstein equations in 1962 by Arnowitt, Deser and Misner [@Arnowitt:1962hi], as a Hamiltonian formulation of gravity.
 
@@ -61,7 +63,9 @@ In principle, time domain evolutions of coupled non linear wave equations are tr
 
 4. The availability of large and powerful supercomputing clusters and the maturity of parallel processing technology such as the Message Passing Interface (MPI) and OpenMP, which make simulations in the full four dimensional spacetimes computationally feasible on large supercomputers. 
 
-Building on these achievements, and over a decade of community experience, GRChombo is an open-source code for performing NR time evolutions. Whilst GRChombo uses standard techniques in NR, it focusses on applications in theoretical physics where adaptability, both in terms of grid structure, and in terms of code modification, are key drivers. Further details are given in the following sections.
+:*/
+
+GRChombo is an open-source code for performing NR time evolutions. Whilst GRChombo uses standard techniques in NR, it focusses on applications in theoretical physics where adaptability, both in terms of grid structure, and in terms of code modification, are key drivers. 
 
 # Key features of GRChombo
 
@@ -92,13 +96,15 @@ GRChombo is built on Chombo, which is a set of tools developed by Lawrence Berke
 - MPI scalability: Chombo contains parallel infrastructure which gives it the ability to scale efficiently to several thousand CPU-cores per run. It uses an inbuilt load balancing algorithm, with Morton ordering to map grid responsibility to neighbouring processors in order to optimise processor number scaling.
 
 - Standardised Output and Visualisation: Chombo uses the HDF5 output format, which is supported by many popular visualisation tools such as VisIt [@HPV:VisIt] and yt[@Turk:2010ah]. Specific subsets of evolution variables and/or diagnostics can be output, as well as checkpoint files to permit restarts from previous runs.
-
+/*:
 The code continues to be actively developed. Ongoing and future projects include:
 
 - methods for dimensional reduction of higher dimensional spacetimes
 - fixed background methods for studying matter evolution on stationary metric backgrounds
 - adding further matter types, e.g. perfect fluids, MHD and Proca fields
 - developing methods for the study of particles with backreaction, and particles as geodesic tracers
+
+:*/
 
 # Statement of Need
  
@@ -118,19 +124,19 @@ Finallly, as a result of an ongoing collaboration with Intel via the Cosmos Inte
 
 **Mention (if applicable) a representative set of past or ongoing research projects using the software and recent scholarly publications enabled by it.**
 
-GRChombo is developed and maintained by a collaboration of numerical relativists with a wide range of research interests, from early universe cosmology to astrophysics and mathematical general relativity, and has been used in many papers to date.
+/*: GRChombo is developed and maintained by a collaboration of numerical relativists with a wide range of research interests, from early universe cosmology to astrophysics and mathematical general relativity, and has been used in many papers to date. :*/
 
-A few of the many fundamental physics problems for which the code has been used include:
+The fundamental physics problems for which the code has been used include:
 
-- the simulation of pre-inflationary spacetimes in early universe cosmology, to check if models are robust to inhomogeneous initial conditions [@Aurrekoetxea:2019fhr;@Clough:2017efm;@Clough:2016ymm].
+- the simulation of pre-inflationary spacetimes in early universe cosmology [@Aurrekoetxea:2019fhr;@Clough:2017efm;@Clough:2016ymm].
 
 ![Cosmology \label{fig:cosmo}](figures/cosmo.png){ width=60% }
 
-- the study of modified gravity, and violation of cosmic censorship in higher dimensional spacetimes [@Figueras:2020dzx;@Bantilan:2019bvf;@Figueras:2017zwa;@Figueras:2015hkb].
+- the study of modified gravity, and violation of cosmic censorship [@Figueras:2020dzx;@Bantilan:2019bvf;@Figueras:2017zwa;@Figueras:2015hkb].
 
 ![Cosmic censorship \label{fig:blackstring}](figures/blackstring.png){ width=60% }
 
-- the formation, collapse and collisions of exotic compact objects (ECOs) which could mimic black holes, such as axion stars or boson stars [@Muia:2019coe;@Widdicombe:2019woy;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl].
+- the formation, collapse and collisions of exotic compact objects (ECOs) and dark matter stars [@Muia:2019coe;@Widdicombe:2019woy;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl].
 
 ![Exotic compact objects \label{fig:axionstar}](figures/oscillotons.png){ width=60% }
 
