@@ -3,13 +3,14 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef CCZ4_HPP_
-#define CCZ4_HPP_
+#ifndef CCZ4RHS_HPP_
+#define CCZ4RHS_HPP_
 
 #include "CCZ4Geometry.hpp"
 #include "CCZ4Vars.hpp"
 #include "Cell.hpp"
 #include "FourthOrderDerivatives.hpp"
+#include "MovingPuncturePlusGauge.hpp"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"
 #include "simd.hpp"
@@ -26,7 +27,7 @@
  *metric, extrinsic curvature, etc) and CCZ4::Params (parameters necessary for
  *CCZ4 like gauge and damping parameters).
  **/
-class CCZ4
+template <class gauge_t, class deriv_t = FourthOrderDerivatives> class CCZ4RHS
 {
   public:
     enum
@@ -44,40 +45,30 @@ class CCZ4
 
     /// Parameters for CCZ4
     /** This struct collects all parameters that are necessary for CCZ4 such as
-     * gauge and damping parameters.  */
-    struct params_t
+     * gauge and damping parameters. It inherits from the gauge parameters  */
+    struct params_t : public gauge_t::params_t
     {
         double kappa1; //!< Damping parameter kappa1 as in arXiv:1106.2254
         double kappa2; //!< Damping parameter kappa2 as in arXiv:1106.2254
         double kappa3; //!< Damping parameter kappa3 as in arXiv:1106.2254
-        double shift_Gamma_coeff = 0.75; //!< Gives the F in \f$\partial_t
-                                         //!  \beta^i =  F B^i\f$
-        double lapse_advec_coeff = 0.;   //!< Switches advection terms in
-                                         //! the lapse condition on/off
-        double shift_advec_coeff = 0.;   //!< Switches advection terms in the
-                                         //! shift condition on/off
-        double eta = 1.; //!< The eta in \f$\partial_t B^i = \partial_t \tilde
-                         //!\Gamma - \eta B^i\f$
-        double lapse_power = 1.; //!< The power p in \f$\partial_t \alpha = - c
-                                 //!\alpha^p(K-2\Theta)\f$
-        double lapse_coeff = 2.; //!< The coefficient c in \f$\partial_t \alpha
-                                 //!= -c \alpha^p(K-2\Theta)\f$
     };
 
   protected:
     const params_t m_params; //!< CCZ4 parameters
+    const gauge_t m_gauge;   //!< Class to compute gauge in rhs_equation
     const double m_sigma;    //!< Coefficient for Kreiss-Oliger dissipation
     int m_formulation;
     double m_cosmological_constant;
-    const FourthOrderDerivatives m_deriv;
+    const deriv_t m_deriv;
 
   public:
     /// Constructor
-    CCZ4(params_t params,            //!< The CCZ4 parameters
-         double dx,                  //!< The grid spacing
-         double sigma,               //!< Kreiss-Oliger dissipation coefficient
-         int formulation = USE_CCZ4, //!< Switches between CCZ4, BSSN,...
-         double cosmological_constant = 0 //!< Value of the cosmological const.
+    CCZ4RHS(
+        params_t a_params,            //!< The CCZ4 parameters
+        double a_dx,                  //!< The grid spacing
+        double a_sigma,               //!< Kreiss-Oliger dissipation coefficient
+        int a_formulation = USE_CCZ4, //!< Switches between CCZ4, BSSN,...
+        double a_cosmological_constant = 0 //!< Value of the cosmological const.
     );
 
     /// Compute function
@@ -109,6 +100,10 @@ class CCZ4
     ) const;
 };
 
-#include "CCZ4.impl.hpp"
+#include "CCZ4RHS.impl.hpp"
 
-#endif /* CCZ4_HPP_ */
+// This is here for backwards compatibility though the CCZ4RHS class should be
+// used in future
+using CCZ4 = CCZ4RHS<MovingPuncturePlusGauge, FourthOrderDerivatives>;
+
+#endif /* CCZ4RHS_HPP_ */

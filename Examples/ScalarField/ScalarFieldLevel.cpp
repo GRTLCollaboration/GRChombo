@@ -11,7 +11,7 @@
 #include "TraceARemoval.hpp"
 
 // For RHS update
-#include "MatterCCZ4.hpp"
+#include "MatterCCZ4RHS.hpp"
 
 // For constraints calculation
 #include "NewMatterConstraints.hpp"
@@ -87,9 +87,10 @@ void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     // Calculate MatterCCZ4 right hand side with matter_t = ScalarField
     Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
-    MatterCCZ4<ScalarFieldWithPotential> my_ccz4_matter(
-        scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
-        m_p.G_Newton);
+    MatterCCZ4RHS<ScalarFieldWithPotential, MovingPuncturePlusGauge,
+                  FourthOrderDerivatives>
+        my_ccz4_matter(scalar_field, m_p.ccz4_params, m_dx, m_p.sigma,
+                       m_p.formulation, m_p.G_Newton);
     BoxLoops::loop(my_ccz4_matter, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
 }
 

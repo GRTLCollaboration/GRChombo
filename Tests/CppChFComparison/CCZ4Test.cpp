@@ -17,7 +17,7 @@
 
 // Our includes
 #include "BoxLoops.hpp"
-#include "CCZ4.hpp"
+#include "CCZ4RHS.hpp"
 #include "GRBSSNChomboF_F.H"
 
 // Chombo namespace

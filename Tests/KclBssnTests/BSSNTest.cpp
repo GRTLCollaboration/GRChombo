@@ -14,7 +14,7 @@
 #endif
 
 #include "BoxLoops.hpp"
-#include "MatterCCZ4.hpp"
+#include "MatterCCZ4RHS.hpp"
 #include "MatterConstraints.hpp"
 #include "Potential.hpp"
 #include "ScalarField.hpp"

@@ -14,7 +14,7 @@
 #include <sys/time.h>
 
 #include "BoxLoops.hpp"
-#include "CCZ4.hpp"
+#include "CCZ4RHS.hpp"
 #include "GravWavDecF_F.H"
 #include "SetValue.hpp"
 #include "UserVariables.hpp"

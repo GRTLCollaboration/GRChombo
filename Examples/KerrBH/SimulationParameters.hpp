@@ -11,7 +11,6 @@
 #include "SimulationParametersBase.hpp"
 
 // Problem specific includes:
-#include "CCZ4.hpp"
 #include "KerrBH.hpp"
 
 class SimulationParameters : public SimulationParametersBase
