@@ -22,12 +22,14 @@
 /// Compute class to calculate the CCZ4 right hand side
 /**
  * This compute class implements the CCZ4 right hand side equations. Use it by
- *handing it to a loop in the BoxLoops namespace. CCZ4 includes two classes in
- *its scope: CCZ4::Vars (the CCZ4 variables like conformal factor, conformal
- *metric, extrinsic curvature, etc) and CCZ4::Params (parameters necessary for
- *CCZ4 like gauge and damping parameters).
+ *handing it to a loop in the BoxLoops namespace. CCZ4RHS includes two classes
+ *in its scope: CCZ4RHS::Vars (the CCZ4 variables like conformal factor,
+ *conformal metric, extrinsic curvature, etc) and CCZ4RHS::Params (parameters
+ *necessary for CCZ4 like gauge and damping parameters).
  **/
-template <class gauge_t, class deriv_t = FourthOrderDerivatives> class CCZ4RHS
+template <class gauge_t = MovingPuncturePlusGauge,
+          class deriv_t = FourthOrderDerivatives>
+class CCZ4RHS
 {
   public:
     enum
@@ -45,7 +47,8 @@ template <class gauge_t, class deriv_t = FourthOrderDerivatives> class CCZ4RHS
 
     /// Parameters for CCZ4
     /** This struct collects all parameters that are necessary for CCZ4 such as
-     * gauge and damping parameters. It inherits from the gauge parameters  */
+     * gauge and damping parameters. It inherits from the gauge params_t struct
+     */
     struct params_t : public gauge_t::params_t
     {
         double kappa1; //!< Damping parameter kappa1 as in arXiv:1106.2254
@@ -80,10 +83,10 @@ template <class gauge_t, class deriv_t = FourthOrderDerivatives> class CCZ4RHS
 
   protected:
     /// Calculates the rhs for CCZ4
-    /** Calculates the right hand side for CCZ4 with slicing \f$- n \alpha^m (K
-     *- 2\Theta)\f$ and Gamma-Driver shift condition. The variables (the
-     *template argument vars_t) must contain at least the members: chi,
-     *h[i][j], Gamma[i], A[i][j], Theta, lapse and shift[i].
+    /** Calculates the right hand side for CCZ4 and calls rhs_gauge for the
+     *gauge conditions The variables (the template argument vars_t) must contain
+     *at least the members: chi, h[i][j], Gamma[i], A[i][j], Theta, lapse and
+     *shift[i].
      **/
     template <class data_t, template <typename> class vars_t,
               template <typename> class diff2_vars_t>
@@ -103,7 +106,7 @@ template <class gauge_t, class deriv_t = FourthOrderDerivatives> class CCZ4RHS
 #include "CCZ4RHS.impl.hpp"
 
 // This is here for backwards compatibility though the CCZ4RHS class should be
-// used in future
-using CCZ4 = CCZ4RHS<MovingPuncturePlusGauge, FourthOrderDerivatives>;
+// used in future hence mark as deprecated
+using CCZ4 [[deprecated("Use CCZ4RHS instead")]] = CCZ4RHS<>;
 
 #endif /* CCZ4RHS_HPP_ */

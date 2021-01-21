@@ -67,7 +67,7 @@ void MatterCCZ4RHS<matter_t, gauge_t, deriv_t>::add_emtensor_rhs(
         my_matter.compute_emtensor(matter_vars, d1, h_UU, chris.ULL);
 
     // Update RHS for K and Theta depending on formulation
-    if (this->m_formulation == CCZ4::USE_BSSN)
+    if (this->m_formulation == CCZ4RHS<>::USE_BSSN)
     {
         matter_rhs.K += 4.0 * M_PI * m_G_Newton * matter_vars.lapse *
                         (emtensor.S + emtensor.rho);

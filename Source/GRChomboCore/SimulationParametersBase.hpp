@@ -137,10 +137,10 @@ class SimulationParametersBase : public ChomboParameters
         // 0.0"); check_parameter("min_lapse", min_lapse, (min_lapse >= 0.0)
         // "must be >= 0.0");
         check_parameter("formulation", formulation,
-                        (formulation == CCZ4::USE_CCZ4) ||
-                            (formulation == CCZ4::USE_BSSN),
+                        (formulation == CCZ4RHS<>::USE_CCZ4) ||
+                            (formulation == CCZ4RHS<>::USE_BSSN),
                         "must be 0 or 1");
-        if (formulation == CCZ4::USE_CCZ4)
+        if (formulation == CCZ4RHS<>::USE_CCZ4)
         {
             warn_parameter(
                 "kappa1", ccz4_params.kappa1, ccz4_params.kappa1 > 0.0,
@@ -151,7 +151,7 @@ class SimulationParametersBase : public ChomboParameters
                            "should be greater than -1.0 to damp constraints "
                            "(see arXiv:1106.2254)");
         }
-        else if (formulation == CCZ4::USE_BSSN)
+        else if (formulation == CCZ4RHS<>::USE_BSSN)
         {
             // maybe we should just set these to zero and print a warning
             // in the BSSN case
@@ -249,7 +249,7 @@ class SimulationParametersBase : public ChomboParameters
 
     // Collection of parameters necessary for the CCZ4 RHS and extraction
     // Note the gauge parameters are specific to MovingPuncturePlusGauge
-    CCZ4::params_t ccz4_params;
+    CCZ4RHS<>::params_t ccz4_params;
     SphericalExtraction::params_t extraction_params;
 };
 
