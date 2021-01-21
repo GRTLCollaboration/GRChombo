@@ -19,13 +19,33 @@
 
 #include <array>
 
+/// Base parameter struct for CCZ4
+/** This struct collects the gauge independent CCZ4 parameters i.e. the damping
+ * ones
+ */
+struct CCZ4_base_params_t
+{
+    double kappa1; //!< Damping parameter kappa1 as in arXiv:1106.2254
+    double kappa2; //!< Damping parameter kappa2 as in arXiv:1106.2254
+    double kappa3; //!< Damping parameter kappa3 as in arXiv:1106.2254
+};
+
+/// Parameter struct for CCZ4
+/** This struct collects all parameters that are necessary for CCZ4 such as
+ * gauge and damping parameters. It inherits from CCZ4_base_params_t and
+ * gauge_t::params_t
+ */
+template <class gauge_t = MovingPuncturePlusGauge>
+struct CCZ4_params_t : public CCZ4_base_params_t, public gauge_t::params_t
+{
+};
+
 /// Compute class to calculate the CCZ4 right hand side
 /**
  * This compute class implements the CCZ4 right hand side equations. Use it by
- *handing it to a loop in the BoxLoops namespace. CCZ4RHS includes two classes
+ *handing it to a loop in the BoxLoops namespace. CCZ4RHS includes a struct
  *in its scope: CCZ4RHS::Vars (the CCZ4 variables like conformal factor,
- *conformal metric, extrinsic curvature, etc) and CCZ4RHS::Params (parameters
- *necessary for CCZ4 like gauge and damping parameters).
+ *conformal metric, extrinsic curvature, etc).
  **/
 template <class gauge_t = MovingPuncturePlusGauge,
           class deriv_t = FourthOrderDerivatives>
@@ -38,23 +58,14 @@ class CCZ4RHS
         USE_BSSN
     };
 
+    using params_t = CCZ4_params_t<gauge_t>;
+
     /// CCZ4 variables
     template <class data_t> using Vars = CCZ4Vars::VarsWithGauge<data_t>;
 
     /// CCZ4 variables
     template <class data_t>
     using Diff2Vars = CCZ4Vars::Diff2VarsWithGauge<data_t>;
-
-    /// Parameters for CCZ4
-    /** This struct collects all parameters that are necessary for CCZ4 such as
-     * gauge and damping parameters. It inherits from the gauge params_t struct
-     */
-    struct params_t : public gauge_t::params_t
-    {
-        double kappa1; //!< Damping parameter kappa1 as in arXiv:1106.2254
-        double kappa2; //!< Damping parameter kappa2 as in arXiv:1106.2254
-        double kappa3; //!< Damping parameter kappa3 as in arXiv:1106.2254
-    };
 
   protected:
     const params_t m_params; //!< CCZ4 parameters

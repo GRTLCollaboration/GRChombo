@@ -216,7 +216,7 @@ int main()
         }
     }
 
-    CCZ4::params_t params;
+    CCZ4_params_t<MovingPuncturePlusGauge> params;
     params.kappa1 = 0.0;
     params.kappa2 = 0.0;
     params.kappa3 = 0.0;

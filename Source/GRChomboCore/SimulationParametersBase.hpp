@@ -41,9 +41,12 @@ class SimulationParametersBase : public ChomboParameters
 
         // CCZ4 parameters
         pp.load("formulation", formulation, 0);
-        pp.load("kappa1", ccz4_params.kappa1, 0.1);
-        pp.load("kappa2", ccz4_params.kappa2, 0.0);
-        pp.load("kappa3", ccz4_params.kappa3, 1.0);
+        pp.load("kappa1", ccz4_base_params.kappa1, 0.1);
+        pp.load("kappa2", ccz4_base_params.kappa2, 0.0);
+        pp.load("kappa3", ccz4_base_params.kappa3, 1.0);
+        ccz4_params.kappa1 = ccz4_base_params.kappa1;
+        ccz4_params.kappa2 = ccz4_base_params.kappa2;
+        ccz4_params.kappa3 = ccz4_base_params.kappa3;
 
         // Dissipation
         pp.load("sigma", sigma, 0.1);
@@ -238,6 +241,11 @@ class SimulationParametersBase : public ChomboParameters
         }
     }
 
+  protected:
+    // This is just the CCZ4 damping parameters in case you want to use
+    // a different gauge (with different parameters)
+    CCZ4_base_params_t ccz4_base_params;
+
   public:
     double sigma; // Kreiss-Oliger dissipation parameter
 
@@ -249,7 +257,9 @@ class SimulationParametersBase : public ChomboParameters
 
     // Collection of parameters necessary for the CCZ4 RHS and extraction
     // Note the gauge parameters are specific to MovingPuncturePlusGauge
-    CCZ4RHS<>::params_t ccz4_params;
+    // If you are using a different gauge, you need to load your parameters
+    // in your own SimulationParameters class.
+    CCZ4_params_t<> ccz4_params;
     SphericalExtraction::params_t extraction_params;
 };
 
