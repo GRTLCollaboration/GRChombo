@@ -213,7 +213,9 @@ int main()
     struct timeval begin, end;
     gettimeofday(&begin, NULL);
 
-    BoxLoops::loop(CCZ4(params, dx, sigma), in_fab, out_fab);
+    BoxLoops::loop(CCZ4RHS<MovingPuncturePlusGauge, FourthOrderDerivatives>(
+                       params, dx, sigma),
+                   in_fab, out_fab);
 
     gettimeofday(&end, NULL);
 

@@ -37,10 +37,11 @@ template <class matter_t> class ChiRelaxation
 
     // Use the variable definitions in MatterCCZ4
     template <class data_t>
-    using Vars = typename MatterCCZ4<matter_t>::template Vars<data_t>;
+    using Vars = typename MatterCCZ4RHS<matter_t>::template Vars<data_t>;
 
     template <class data_t>
-    using Diff2Vars = typename MatterCCZ4<matter_t>::template Diff2Vars<data_t>;
+    using Diff2Vars =
+        typename MatterCCZ4RHS<matter_t>::template Diff2Vars<data_t>;
 
   public:
     //! Constructor of class ChiRelaxation
