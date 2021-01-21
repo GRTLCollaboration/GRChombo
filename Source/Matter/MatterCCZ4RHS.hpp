@@ -114,7 +114,9 @@ class MatterCCZ4RHS : public CCZ4RHS<gauge_t, deriv_t>
 #include "MatterCCZ4RHS.impl.hpp"
 
 // This is here for backwards compatibility though the MatterCCZ4RHS
-// class should be used in future
-template <class matter_t> using MatterCCZ4 = MatterCCZ4RHS<matter_t>;
+// class should be used in future hence mark as deprecated
+template <class matter_t>
+using MatterCCZ4 [[deprecated("Use MatterCCZ4RHS instead")]] =
+    MatterCCZ4RHS<matter_t>;
 
 #endif /* MATTERCCZ4RHS_HPP_ */
