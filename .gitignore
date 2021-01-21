@@ -24,4 +24,7 @@ time.table.*
 *.log
 ipo_out.optrpt
 
+# JOSS paper
+*.pdf
+
 Doxygen/html
