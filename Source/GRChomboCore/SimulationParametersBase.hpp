@@ -8,7 +8,7 @@
 
 // General includes
 #include "BoundaryConditions.hpp"
-#include "CCZ4.hpp"
+#include "CCZ4RHS.hpp"
 #include "ChomboParameters.hpp"
 #include "GRParmParse.hpp"
 #include "SphericalExtraction.hpp"
@@ -248,6 +248,7 @@ class SimulationParametersBase : public ChomboParameters
     int formulation; // Whether to use BSSN or CCZ4
 
     // Collection of parameters necessary for the CCZ4 RHS and extraction
+    // Note the gauge parameters are specific to MovingPuncturePlusGauge
     CCZ4::params_t ccz4_params;
     SphericalExtraction::params_t extraction_params;
 };
