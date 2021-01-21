@@ -34,7 +34,10 @@ template <class matter_t, class gauge_t = MovingPuncturePlusGauge,
 class MatterCCZ4RHS : public CCZ4RHS<gauge_t, deriv_t>
 {
   public:
-    using params_t = typename CCZ4RHS<gauge_t, deriv_t>::params_t;
+    // Use this alias for the same template instantiation as this class
+    using CCZ4 = CCZ4RHS<gauge_t, deriv_t>;
+
+    using params_t = typename CCZ4::params_t;
 
     template <class data_t>
     using MatterVars = typename matter_t::template Vars<data_t>;
@@ -42,24 +45,27 @@ class MatterCCZ4RHS : public CCZ4RHS<gauge_t, deriv_t>
     template <class data_t>
     using MatterDiff2Vars = typename matter_t::template Diff2Vars<data_t>;
 
+    template <class data_t> using CCZ4Vars = typename CCZ4::Vars<data_t>;
+
+    template <class data_t>
+    using CCZ4Diff2Vars = typename CCZ4::Diff2Vars<data_t>;
+
     // Inherit the variable definitions from CCZ4RHS + matter_t
     template <class data_t>
-    struct Vars : public CCZ4RHS<gauge_t, deriv_t>::Vars<data_t>,
-                  public MatterVars<data_t>
+    struct Vars : public CCZ4Vars<data_t>, public MatterVars<data_t>
     {
         /// Defines the mapping between members of Vars and Chombo grid
         /// variables (enum in User_Variables)
         template <typename mapping_function_t>
         void enum_mapping(mapping_function_t mapping_function)
         {
-            using CCZ4Vars = typename CCZ4RHS<gauge_t, deriv_t>::Vars<data_t>;
-            CCZ4Vars::enum_mapping(mapping_function);
+            CCZ4Vars<data_t>::enum_mapping(mapping_function);
             MatterVars<data_t>::enum_mapping(mapping_function);
         }
     };
 
     template <class data_t>
-    struct Diff2Vars : public CCZ4RHS<gauge_t, deriv_t>::Diff2Vars<data_t>,
+    struct Diff2Vars : public CCZ4Diff2Vars<data_t>,
                        public MatterDiff2Vars<data_t>
     {
         /// Defines the mapping between members of Vars and Chombo grid
@@ -67,9 +73,7 @@ class MatterCCZ4RHS : public CCZ4RHS<gauge_t, deriv_t>
         template <typename mapping_function_t>
         void enum_mapping(mapping_function_t mapping_function)
         {
-            using CCZ4Diff2Vars =
-                typename CCZ4RHS<gauge_t, deriv_t>::Diff2Vars<data_t>;
-            CCZ4Diff2Vars::enum_mapping(mapping_function);
+            CCZ4Diff2Vars<data_t>::enum_mapping(mapping_function);
             MatterDiff2Vars<data_t>::enum_mapping(mapping_function);
         }
     };
