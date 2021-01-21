@@ -16,8 +16,9 @@
 #include "VarsTools.hpp"
 
 template <class gauge_t, class deriv_t>
-inline CCZ4RHS<gauge_t, deriv_t>::CCZ4RHS(params_t a_params, double a_dx,
-                                          double a_sigma, int a_formulation,
+inline CCZ4RHS<gauge_t, deriv_t>::CCZ4RHS(CCZ4_params_t<gauge_t> a_params,
+                                          double a_dx, double a_sigma,
+                                          int a_formulation,
                                           double a_cosmological_constant)
     : m_params(a_params), m_gauge(a_params), m_sigma(a_sigma),
       m_formulation(a_formulation),

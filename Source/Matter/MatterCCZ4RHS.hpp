@@ -37,7 +37,7 @@ class MatterCCZ4RHS : public CCZ4RHS<gauge_t, deriv_t>
     // Use this alias for the same template instantiation as this class
     using CCZ4 = CCZ4RHS<gauge_t, deriv_t>;
 
-    using params_t = typename CCZ4::params_t;
+    using params_t = CCZ4_params_t<gauge_t>;
 
     template <class data_t>
     using MatterVars = typename matter_t::template Vars<data_t>;
