@@ -39,7 +39,7 @@ int main()
     std::cout << "#threads = " << omp_get_max_threads() << std::endl;
 #endif
 
-    const int N_GRID = 128;
+    const int N_GRID = 32;
     Box box(IntVect(0, 0, 0), IntVect(N_GRID - 1, N_GRID - 1, N_GRID - 1));
     Box ghosted_box(IntVect(-3, -3, -3),
                     IntVect(N_GRID + 2, N_GRID + 2, N_GRID + 2));
@@ -47,7 +47,7 @@ int main()
     FArrayBox out_fab(box, NUM_VARS);
     FArrayBox out_fab_chf(box, NUM_VARS);
 
-    const double dx = 1.0 / (N_GRID - 1);
+    const double dx = 0.25 / (N_GRID - 1);
 
     for (int zz = -3; zz < N_GRID + 3; ++zz)
     {
