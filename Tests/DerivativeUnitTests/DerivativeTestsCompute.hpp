@@ -6,13 +6,12 @@
 #ifndef DERIVATIVETESTSCOMPUTE_HPP_
 #define DERIVATIVETESTSCOMPUTE_HPP_
 
-#include "FourthOrderDerivatives.hpp"
 #include "VarsTools.hpp"
 
-class DerivativeTestsCompute
+template <class deriv_t> class DerivativeTestsCompute
 {
   protected:
-    const FourthOrderDerivatives m_deriv;
+    const deriv_t m_deriv;
 
   public:
     DerivativeTestsCompute(double dx) : m_deriv(dx) {}
