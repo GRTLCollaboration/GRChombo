@@ -16,6 +16,7 @@
 #include "GRParmParse.hpp"
 #include "UserVariables.hpp"
 #include "VariableType.hpp"
+#include "unistd.h"
 #include <algorithm>
 #include <string>
 
@@ -48,6 +49,11 @@ class ChomboParameters
         read_grid_params(pp);
 
         // Misc
+        restart_from_checkpoint = pp.contains("restart_file");
+        if (restart_from_checkpoint)
+        {
+            pp.load("restart_file", restart_file);
+        }
         pp.load("ignore_checkpoint_name_mismatch",
                 ignore_checkpoint_name_mismatch, false);
 
@@ -285,6 +291,17 @@ class ChomboParameters
             "grid_buffer_size", grid_buffer_size,
             grid_buffer_size >= ceil(num_ghosts / 2.0),
             "must be >= ceil(num_ghosts/max_ref_ratio) for proper nesting");
+
+        // check the restart_file exists and can be read if restarting from a
+        // checkpoint
+        if (restart_from_checkpoint)
+        {
+            bool restart_file_exists =
+                (access(restart_file.c_str(), R_OK) == 0);
+            check_parameter("restart_file", restart_file, restart_file_exists,
+                            "file cannot be opened for reading");
+        }
+
         check_parameter("dt_multiplier", dt_multiplier, dt_multiplier > 0.0,
                         "must be > 0.0");
         check_parameter("max_grid_size/max_box_size", max_grid_size,
@@ -362,6 +379,8 @@ class ChomboParameters
     // boundaries.
     Vector<int> regrid_interval; // steps between regrid at each level
     int max_steps;
+    bool restart_from_checkpoint; // whether or not to restart or start afresh
+    std::string restart_file;     // The path to the restart_file
     bool ignore_checkpoint_name_mismatch;   // ignore mismatch of variable names
                                             // between restart file and program
     double dt_multiplier, stop_time;        // The Courant factor and stop time

@@ -157,17 +157,14 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     gr_amr.timeEps(std::min(1.e-6, eps / 2.));
 
     // Set up input files
-    if (!pp.contains("restart_file"))
+    if (!chombo_params.restart_from_checkpoint)
     {
         gr_amr.setupForNewAMRRun();
     }
     else
     {
-        std::string restart_file;
-        pp.query("restart_file", restart_file);
-
 #ifdef CH_USE_HDF5
-        HDF5Handle handle(restart_file, HDF5Handle::OPEN_RDONLY);
+        HDF5Handle handle(chombo_params.restart_file, HDF5Handle::OPEN_RDONLY);
         // read from checkpoint file
         gr_amr.setupForRestart(handle);
         handle.close();
