@@ -59,8 +59,7 @@ void BinaryBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     BoxLoops::loop(make_compute_pack(TraceARemoval(), PositiveChiAndAlpha()),
                    a_soln, a_soln, INCLUDE_GHOST_CELLS);
 
-    // Calculate CCZ4 right hand side and set constraints to zero to avoid
-    // undefined values
+    // Calculate CCZ4 right hand side
     BoxLoops::loop(CCZ4(m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
                    a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
 }
@@ -73,6 +72,12 @@ void BinaryBHLevel::specificUpdateODE(GRLevelData &a_soln,
     BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
 }
 
+void BinaryBHLevel::preTagCells()
+{
+    // We only use chi in the tagging criterion so only fill the ghosts for chi
+    fillAllGhosts(VariableType::evolution, Interval(c_chi, c_chi));
+}
+
 // specify the cells to tag
 void BinaryBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                             const FArrayBox &current_state)
@@ -81,7 +86,8 @@ void BinaryBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
     {
         const vector<double> puncture_masses = {m_p.bh1_params.mass,
                                                 m_p.bh2_params.mass};
-        auto puncture_coords = m_bh_amr.puncture_tracker.get_puncture_coords();
+        auto puncture_coords =
+            m_bh_amr.m_puncture_tracker.get_puncture_coords();
         BoxLoops::loop(ChiPunctureExtractionTaggingCriterion(
                            m_dx, m_level, m_p.max_level, m_p.extraction_params,
                            puncture_coords, m_p.activate_extraction,
@@ -101,7 +107,10 @@ void BinaryBHLevel::specificPostTimeStep()
 {
     CH_TIME("BinaryBHLevel::specificPostTimeStep");
 
-    bool first_step = (m_time == m_dt);
+    bool first_step =
+        (m_time == 0.); // this form is used when 'specificPostTimeStep' was
+                        // called during setup at t=0 from Main
+    // bool first_step = (m_time == m_dt); // if not called in Main
 
     if (m_p.activate_extraction == 1)
     {
@@ -120,9 +129,15 @@ void BinaryBHLevel::specificPostTimeStep()
             {
                 CH_TIME("WeylExtraction");
                 // Now refresh the interpolator and do the interpolation
-                m_gr_amr.m_interpolator->refresh();
+                // fill ghosts manually to minimise communication
+                bool fill_ghosts = false;
+                m_gr_amr.m_interpolator->refresh(fill_ghosts);
+                m_gr_amr.fill_multilevel_ghosts(
+                    VariableType::diagnostic, Interval(c_Weyl4_Re, c_Weyl4_Im),
+                    min_level);
                 WeylExtraction my_extraction(m_p.extraction_params, m_dt,
-                                             m_time, m_restart_time);
+                                             m_time, first_step,
+                                             m_restart_time);
                 my_extraction.execute_query(m_gr_amr.m_interpolator);
             }
         }
@@ -157,8 +172,8 @@ void BinaryBHLevel::specificPostTimeStep()
         // only do the write out for every coarsest level timestep
         int coarsest_level = 0;
         bool write_punctures = at_level_timestep_multiple(coarsest_level);
-        m_bh_amr.puncture_tracker.execute_tracking(m_time, m_restart_time, m_dt,
-                                                   write_punctures);
+        m_bh_amr.m_puncture_tracker.execute_tracking(m_time, m_restart_time,
+                                                     m_dt, write_punctures);
     }
 }
 

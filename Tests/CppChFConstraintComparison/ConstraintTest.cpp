@@ -8,15 +8,22 @@
 
 //#include <omp.h>
 
+// Chombo includes
+#include "BoxIterator.H"
 #include "FArrayBox.H"
+
+// Other includes
 #include <iomanip>
 #include <iostream>
 #include <sys/time.h>
 
-#include "BoxIterator.H"
+// Our includes
 #include "BoxLoops.hpp"
 #include "ConstraintTestF_F.H"
 #include "NewConstraints.hpp"
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 #define CHF_FRAn(a, n, c)                                                      \
     a.dataPtr(n),                                                              \

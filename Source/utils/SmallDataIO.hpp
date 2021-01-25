@@ -6,16 +6,7 @@
 #ifndef SMALLDATAIO_HPP_
 #define SMALLDATAIO_HPP_
 
-// (MR): if it were up to me, I'd be using the C++17 filesystems library
-// instead of cstdio but I'm sure someone would tell me off for not maintaining
-// backwards compatability.
-#include "SPMD.H" // for Chombo_MPI
-#include <cmath>
-#include <cstdio>
 #include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -37,7 +28,7 @@ class SmallDataIO
     };
 
   protected:
-    std::string m_filename; // this is the filename prefix in the NEW Mode
+    std::string m_filename;
     const double m_dt;
     const double m_time;
     const double m_restart_time;
@@ -45,112 +36,46 @@ class SmallDataIO
     const Mode m_mode;
     const bool m_first_step; // this should be set to true if this is the first
                              // timestep
-    const std::string m_file_extension;
+    static const std::string s_default_file_extension;
+    static constexpr int s_default_data_precision = 10;
     const int m_data_precision;
     const int m_data_width;
+    const double m_data_epsilon; //!< the maximum data precision error
+    static constexpr int s_default_coords_precision = 7;
     const int m_coords_precision;
     const int m_coords_width;
+    const double m_coords_epsilon; //!< the maximum coords precision error
+    static constexpr int s_default_filename_steps_width = 6;
 
     std::fstream m_file;
     int m_rank; // only rank 0 does the write out
 
   public:
     //! Constructor (opens file)
-    SmallDataIO(std::string a_filename, double a_dt, double a_time,
+    SmallDataIO(std::string a_filename_prefix, double a_dt, double a_time,
                 double a_restart_time, Mode a_mode, bool a_first_step,
-                std::string a_file_extension = ".dat",
-                int a_data_precision = 10, int a_coords_precision = 7)
-        : m_filename(a_filename), m_dt(a_dt), m_time(a_time),
-          m_restart_time(a_restart_time), m_mode(a_mode),
-          m_first_step(a_first_step), m_file_extension(a_file_extension),
-          m_data_precision(a_data_precision),
-          // data columns need extra space for scientific notation
-          // compared to coords columns
-          m_data_width(m_data_precision + 10),
-          m_coords_precision(a_coords_precision),
-          m_coords_width(m_coords_precision + 5)
-    {
-        constexpr double epsilon = 1.0e-8;
-#ifdef CH_MPI
-        MPI_Comm_rank(Chombo_MPI::comm, &m_rank);
-#else
-        m_rank = 0;
-#endif
-        if (m_rank == 0)
-        {
-            std::ios::openmode file_openmode;
-            if (m_mode == APPEND)
-            {
-                if (m_first_step)
-                {
-                    // overwrite any existing file if this is the first step
-                    file_openmode = std::ios::out;
-                }
-                else if (m_restart_time > 0. &&
-                         m_time < m_restart_time + m_dt + epsilon)
-                {
-                    // allow reading in the restart case so that duplicate time
-                    // data may be removed
-                    file_openmode = std::ios::app | std::ios::in;
-                }
-                else
-                {
-                    // default mode is just appending to existing file
-                    file_openmode = std::ios::app;
-                }
-            }
-            else if (m_mode == NEW)
-            {
-                file_openmode = std::ios::out;
-                m_step = std::round(m_time / m_dt);
-                // append step number to filename if in NEW mode
-                m_filename += std::to_string(m_step);
-            }
-            else if (m_mode == READ)
-            {
-                file_openmode = std::ios::in;
-            }
-            else
-            {
-                MayDay::Error("SmallDataIO: mode not supported");
-            }
-            m_filename += m_file_extension;
-            m_file.open(m_filename, file_openmode);
-            if (!m_file)
-            {
-                MayDay::Error("SmallDataIO::error opening file for writing");
-            }
-        }
-    }
+                std::string a_file_extension = s_default_file_extension,
+                int a_data_precision = s_default_data_precision,
+                int a_coords_precision = s_default_coords_precision,
+                int a_filename_steps_width = s_default_filename_steps_width);
 
     //! Old constructor which assumes SmallDataIO is called in
     //! specificPostTimeStep
-    SmallDataIO(std::string a_filename, double a_dt, double a_time,
+    SmallDataIO(std::string a_filename_prefix, double a_dt, double a_time,
                 double a_restart_time, Mode a_mode,
-                std::string a_file_extension = ".dat",
-                int a_data_precision = 10, int a_coords_precision = 7)
-        : SmallDataIO(a_filename, a_dt, a_time, a_restart_time, a_mode,
-                      (a_time == a_dt), a_file_extension, a_data_precision,
-                      a_coords_precision)
-    {
-    }
+                std::string a_file_extension = s_default_file_extension,
+                int a_data_precision = s_default_data_precision,
+                int a_coords_precision = s_default_coords_precision,
+                int a_filename_steps_width = s_default_filename_steps_width);
 
     //! Constructor for reading when m_time, m_dt, m_restart_time are irrelevant
-    SmallDataIO(std::string a_filename, std::string a_file_extension = ".dat",
-                int a_data_precision = 10, int a_coords_precision = 7)
-        : SmallDataIO(a_filename, 0.0, 0.0, 0.0, READ, false, a_file_extension,
-                      a_data_precision, a_coords_precision)
-    {
-    }
+    SmallDataIO(std::string a_filename_prefix,
+                std::string a_file_extension = s_default_file_extension,
+                int a_data_precision = s_default_data_precision,
+                int a_coords_precision = s_default_coords_precision);
 
     //! Destructor (closes file)
-    ~SmallDataIO()
-    {
-        if (m_rank == 0)
-        {
-            m_file.close();
-        }
-    }
+    ~SmallDataIO();
 
     // disable default copy constructor and assignment operator
     SmallDataIO(const SmallDataIO &) = delete;
@@ -186,7 +111,7 @@ class SmallDataIO
     //! Use this for 1D or 2D data when the first two or more columns are
     //! coordinates.
     void write_data_line(const std::vector<double> &a_data,
-                         const std::vector<double> &a_coords);
+                         const std::vector<double> &a_coords = {});
 
     //! This just adds a double line break to the file.
     void line_break();
@@ -207,10 +132,26 @@ class SmallDataIO
     void get_specific_data_line(std::vector<double> &a_out_data,
                                 const double a_coord);
 
-    //! Read a file of data into a vector of arrays of length CH_SPACEDIM+1
-    //! useful for read in of grid data (x, y, z, value)
-    void get_data_array(
-        std::vector<std::array<double, CH_SPACEDIM + 1>> &a_out_data);
+    // ------------ Other Functions --------------
+
+    //! returns the full filename of a file created in NEW mode at time=a_time
+    //! with dt=a_dt
+    static std::string get_new_filename(
+        const std::string &a_filename_prefix, double a_dt, double a_time,
+        const std::string &a_file_extension = s_default_file_extension,
+        int a_filename_steps_width = s_default_filename_steps_width);
+
+    //! returns m_data_epsilon
+    double get_data_epsilon() const;
+
+    //! returns the default data_epsilon
+    static double get_default_data_epsilon();
+
+    //! returns m_coords_epsilon
+    double get_coords_epsilon() const;
+
+    //! returns the default coords epsilon
+    static double get_default_coords_epsilon();
 };
 
 #endif /* SMALLDATAIO_HPP_ */

@@ -6,9 +6,15 @@
 #ifndef INTERPSOURCE_H_
 #define INTERPSOURCE_H_
 
+// Chombo includes
 #include "LevelData.H"
+
+// Other inclues
 #include "VariableType.hpp"
 #include <array>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 // Abstrace base class to get the FABs out of an AMRLevel
 class InterpSource
@@ -18,8 +24,6 @@ class InterpSource
         const VariableType var_type = VariableType::evolution) const = 0;
     virtual bool
     contains(const std::array<double, CH_SPACEDIM> &point) const = 0;
-    virtual void
-    fillAllGhosts(const VariableType var_type = VariableType::evolution) = 0;
 };
 
 #endif /* INTERPSOURCE_H_ */

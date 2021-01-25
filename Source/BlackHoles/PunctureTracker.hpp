@@ -7,6 +7,7 @@
 #define PUNCTURETRACKER_HPP_
 
 #include "AMRInterpolator.hpp"
+#include "AlwaysInline.hpp"
 #include "Lagrange.hpp"
 
 //!  The class tracks the puncture locations by integrating the shift at
@@ -18,6 +19,8 @@ class PunctureTracker
     int m_num_punctures;
     std::vector<std::array<double, CH_SPACEDIM>> m_puncture_coords;
     std::vector<std::array<double, CH_SPACEDIM>> m_puncture_shift;
+    int m_min_level; //!< the min level on which punctures will be
+                     //!< (to fill ghosts)
 
     std::string m_punctures_filename;
 
@@ -33,23 +36,24 @@ class PunctureTracker
     //! if the puncture locations are required for Tagging Criteria
     void initial_setup(const std::vector<std::array<double, CH_SPACEDIM>>
                            &initial_puncture_coords,
-                       const std::string &a_checkpoint_prefix);
+                       const std::string &a_checkpoint_prefix,
+                       const int a_min_level = 0);
 
     //! set puncture locations on start (or restart)
-    void set_interpolator(AMRInterpolator<Lagrange<4>> *a_interpolator);
+    void restart_punctures();
 
     //! Execute the tracking and write out
     void execute_tracking(double a_time, double a_restart_time, double a_dt,
                           const bool write_punctures = true);
 
-    inline void
-        change_interpolator(AMRInterpolator<Lagrange<4>> *a_interpolator)
+    ALWAYS_INLINE void
+    set_interpolator(AMRInterpolator<Lagrange<4>> *a_interpolator)
     {
         m_interpolator = a_interpolator;
     }
 
     // function to get punctures
-    inline const std::vector<std::array<double, CH_SPACEDIM>> &
+    ALWAYS_INLINE const std::vector<std::array<double, CH_SPACEDIM>> &
     get_puncture_coords() const
     {
         return m_puncture_coords;

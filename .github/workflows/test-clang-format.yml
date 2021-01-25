@@ -1,6 +1,6 @@
 name: Check Clang Format
 
-on: [pull_request]
+on: [push]
 
 jobs:
   format:
@@ -8,8 +8,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: DoozyX/clang-format-lint-action@v0.5
+    - uses: DoozyX/clang-format-lint-action@v0.11
       with:
         source: '.'
         extensions: 'hpp,cpp'
-        clangFormatVersion: 6
+        clangFormatVersion: 10

@@ -13,20 +13,19 @@
 //! Set punctures post restart
 void PunctureTracker::initial_setup(
     const std::vector<std::array<double, CH_SPACEDIM>> &initial_puncture_coords,
-    const std::string &a_checkpoint_prefix)
+    const std::string &a_checkpoint_prefix, const int a_min_level)
 {
     m_punctures_filename = a_checkpoint_prefix + "Punctures";
 
     // first set the puncture data
     // m_num_punctures is only set later
     m_puncture_coords = initial_puncture_coords;
+
+    m_min_level = a_min_level;
 }
 
-void PunctureTracker::set_interpolator(
-    AMRInterpolator<Lagrange<4>> *a_interpolator)
+void PunctureTracker::restart_punctures()
 {
-    change_interpolator(a_interpolator);
-
     int current_step = m_interpolator->getAMR().s_step;
 
     if (current_step == 0)
@@ -135,7 +134,8 @@ void PunctureTracker::execute_tracking(double a_time, double a_restart_time,
                                        double a_dt, const bool write_punctures)
 {
     CH_TIME("PunctureTracker::execute_tracking");
-    if (m_num_punctures == 0)
+    // leave if this is called at t=0, we don't want to move the puncture yet
+    if (m_num_punctures == 0 || a_time == 0.)
         return;
     CH_assert(m_interpolator != nullptr); // sanity check
 
@@ -179,7 +179,11 @@ void PunctureTracker::interp_shift()
     m_puncture_shift.resize(m_num_punctures);
 
     // refresh interpolator
-    m_interpolator->refresh();
+    bool fill_ghosts = false;
+    m_interpolator->refresh(fill_ghosts);
+    // only fill the ghosts we need
+    m_interpolator->fill_multilevel_ghosts(
+        VariableType::evolution, Interval(c_shift1, c_shift3), m_min_level);
 
     // set up shift and coordinate holders
     std::vector<double> interp_shift1(m_num_punctures);

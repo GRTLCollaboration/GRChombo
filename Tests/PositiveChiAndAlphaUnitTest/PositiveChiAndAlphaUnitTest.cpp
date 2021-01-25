@@ -3,13 +3,17 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
+// Chombo includes
 #include "FArrayBox.H"
+
+// Other includes
+#include "BoxLoops.hpp"
 #include "PositiveChiAndAlpha.hpp"
 #include "Tensor.hpp"
 #include <iostream>
 
-#include "BoxLoops.hpp"
-#include "PositiveChiAndAlpha.hpp"
+// Chombo namespace
+#include "UsingNamespace.H"
 
 int main()
 {

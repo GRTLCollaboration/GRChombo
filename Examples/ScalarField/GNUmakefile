@@ -20,6 +20,6 @@ src_dirs := $(GRCHOMBO_SOURCE)/utils \
             $(GRCHOMBO_SOURCE)/GRChomboCore  \
             $(GRCHOMBO_SOURCE)/TaggingCriteria  \
             $(GRCHOMBO_SOURCE)/AMRInterpolator  \
-            $(GRCHOMBO_SOURCE)/InitialConditions/ScalarFields
+            $(GRCHOMBO_SOURCE)/InitialConditions/BlackHoles
 
 include $(CHOMBO_HOME)/mk/Make.test

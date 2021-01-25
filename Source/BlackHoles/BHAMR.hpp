@@ -17,9 +17,15 @@
 class BHAMR : public GRAMR
 {
   public:
-    PunctureTracker puncture_tracker;
+    PunctureTracker m_puncture_tracker;
 
     BHAMR() {}
+
+    void set_interpolator(AMRInterpolator<Lagrange<4>> *a_interpolator) override
+    {
+        GRAMR::set_interpolator(a_interpolator);
+        m_puncture_tracker.set_interpolator(a_interpolator);
+    }
 };
 
 #endif /* BHAMR_HPP_ */

@@ -6,19 +6,18 @@
 #ifndef COORDINATETRANSFORMATIONS_HPP_
 #define COORDINATETRANSFORMATIONS_HPP_
 
-#include "AlwaysInline.hpp"
 #include "DimensionDefinitions.hpp"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"
+#include "simd.hpp"
 
 namespace CoordinateTransformations
 {
-// The jacobian matrix for transformation of one forms from spherical to
-// cartesian and vectors from cartesian to spherical - drdx drdy drdz, dthetadx
-// etc
+
+// Jacobian transformation matrix
 template <class data_t>
-static Tensor<2, data_t> jacobian_drdx(const data_t x, const double y,
-                                       const double z)
+static Tensor<2, data_t> spherical_jacobian(const data_t x, const double y,
+                                            const double z)
 {
     // calculate useful position quantities
     data_t rho2 = simd_max(x * x + y * y, 1e-12);
@@ -41,15 +40,13 @@ static Tensor<2, data_t> jacobian_drdx(const data_t x, const double y,
     jac[0][2] = z / r;
     jac[1][2] = -rho / r2;
     jac[2][2] = 0.0;
-
     return jac;
 }
 
-// The jacobian matrix for transformation of vectors from spherical to cartesian
-// and one forms from cartesian to spherical - dxdr dxdtheta dxdphi, dydr etc
+// Incerse Jacobian
 template <class data_t>
-static Tensor<2, data_t> jacobian_dxdr(const data_t x, const double y,
-                                       const double z)
+static Tensor<2, data_t>
+inverse_spherical_jacobian(const data_t x, const double y, const double z)
 {
     // calculate useful position quantities
     data_t rho2 = simd_max(x * x + y * y, 1e-12);
@@ -58,7 +55,7 @@ static Tensor<2, data_t> jacobian_dxdr(const data_t x, const double y,
     data_t r = sqrt(r2);
 
     // And the sines and cosines of phi and theta
-    data_t sin_theta = rho / r;
+    // data_t sin_theta = rho / r;
     data_t cos_phi = x / rho;
     data_t sin_phi = y / rho;
 
@@ -69,11 +66,10 @@ static Tensor<2, data_t> jacobian_dxdr(const data_t x, const double y,
     inv_jac[2][0] = z / r;
     inv_jac[0][1] = z * cos_phi;
     inv_jac[1][1] = z * sin_phi;
-    inv_jac[2][1] = -r * sin_theta;
+    inv_jac[2][1] = -rho;
     inv_jac[0][2] = -y;
     inv_jac[1][2] = x;
     inv_jac[2][2] = 0.0;
-
     return inv_jac;
 }
 
@@ -81,64 +77,112 @@ static Tensor<2, data_t> jacobian_dxdr(const data_t x, const double y,
 // coords
 template <class data_t>
 static Tensor<2, data_t>
-    spherical_to_cartesian_LL(Tensor<2, data_t> spherical_g, data_t x, double y,
-                              double z)
+spherical_to_cartesian_LL(const Tensor<2, data_t> &spherical_g, const data_t x,
+                          const double y, const double z)
 {
-    // The output - g in cartesian coords
     Tensor<2, data_t> cartesian_g;
 
     // derivatives for jacobian matrix - drdx etc
-    Tensor<2, data_t> jac = jacobian_drdx(x, y, z);
+    Tensor<2, data_t> jac = spherical_jacobian(x, y, z);
 
     // Convert the Tensor to cartesian coords
     FOR2(i, j)
     {
-        cartesian_g[i][j] = 0;
-        FOR2(k, m)
+        cartesian_g[i][j] = 0.;
+        FOR2(k, l)
         {
-            cartesian_g[i][j] += spherical_g[k][m] * jac[k][i] * jac[m][j];
+            cartesian_g[i][j] += spherical_g[k][l] * jac[k][i] * jac[l][j];
         }
     }
     return cartesian_g;
+}
+
+// Convert a Tensor (with two upper indices) in spherical coords to cartesian
+// coords
+template <class data_t>
+static Tensor<2, data_t>
+spherical_to_cartesian_UU(const Tensor<2, data_t> &spherical_g_UU,
+                          const data_t x, const double y, const double z)
+{
+    Tensor<2, data_t> cartesian_g_UU;
+
+    // derivatives for jacobian matrix - drdx etc
+    Tensor<2, data_t> inv_jac = inverse_spherical_jacobian(x, y, z);
+
+    // Convert the Tensor to cartesian coords
+    FOR2(i, j)
+    {
+        cartesian_g_UU[i][j] = 0.;
+        FOR2(k, l)
+        {
+            cartesian_g_UU[i][j] +=
+                spherical_g_UU[k][l] * inv_jac[i][k] * inv_jac[j][l];
+        }
+    }
+    return cartesian_g_UU;
 }
 
 // Convert a Tensor (with two lower indices) in cartesian coords to spherical
 // coords
 template <class data_t>
 static Tensor<2, data_t>
-    cartesian_to_spherical_LL(Tensor<2, data_t> cartesian_g, data_t x, double y,
-                              double z)
+cartesian_to_spherical_LL(const Tensor<2, data_t> &cartesian_g, const data_t x,
+                          const double y, const double z)
 {
-    // The output - g in spherical coords
     Tensor<2, data_t> spherical_g;
 
-    // derivatives for jacobian matrix - dxdr etc
-    Tensor<2, data_t> inv_jac = jacobian_dxdr(x, y, z);
+    // derivatives for inverse jacobian matrix - drdx etc
+    Tensor<2, data_t> inv_jac = inverse_spherical_jacobian(x, y, z);
 
     // Convert the Tensor to spherical coords
     FOR2(i, j)
     {
-        spherical_g[i][j] = 0;
-        FOR2(k, m)
+        spherical_g[i][j] = 0.;
+        FOR2(k, l)
         {
             spherical_g[i][j] +=
-                cartesian_g[k][m] * inv_jac[k][i] * inv_jac[m][j];
+                cartesian_g[k][l] * inv_jac[k][i] * inv_jac[l][j];
         }
     }
     return spherical_g;
 }
 
+// Convert a Tensor (with two upper indices) in cartesian coords to spherical
+// coords
+template <class data_t>
+static Tensor<2, data_t>
+cartesian_to_spherical_UU(const Tensor<2, data_t> &cartesian_g_UU, data_t x,
+                          double y, double z)
+{
+    Tensor<2, data_t> spherical_g_UU;
+
+    // derivatives for jacobian matrix - drdx etc
+    Tensor<2, data_t> jac = spherical_jacobian(x, y, z);
+
+    // Convert the Tensor to spherical coords
+    FOR2(i, j)
+    {
+        spherical_g_UU[i][j] = 0.;
+        FOR2(k, l)
+        {
+            spherical_g_UU[i][j] +=
+                cartesian_g_UU[k][l] * jac[i][k] * jac[j][l];
+        }
+    }
+    return spherical_g_UU;
+}
+
 // Convert a vector (with one upper index) in spherical coords to cartesian
 // coords
 template <class data_t>
-Tensor<1, data_t> spherical_to_cartesian_U(Tensor<1, data_t> spherical_v_U,
-                                           data_t x, double y, double z)
+Tensor<1, data_t>
+spherical_to_cartesian_U(const Tensor<1, data_t> &spherical_v_U, data_t x,
+                         double y, double z)
 {
-    // The output - v in cartesian coords
     Tensor<1, data_t> cartesian_v_U;
 
-    // derivatives for jacobian matrix - dxdr etc
-    Tensor<2, data_t> inv_jac = jacobian_dxdr(x, y, z);
+    // derivatives for inverse jacobian matrix - drdx etc
+    Tensor<2, data_t> inv_jac = inverse_spherical_jacobian(x, y, z);
 
     // transform the vector to cartesian coords
     FOR1(i)
@@ -149,41 +193,76 @@ Tensor<1, data_t> spherical_to_cartesian_U(Tensor<1, data_t> spherical_v_U,
     return cartesian_v_U;
 }
 
-// Convert a one form (with one lower index) in spherical coords to cartesian
+// Convert a vector (with one lower index) in spherical coords to cartesian
 // coords
 template <class data_t>
-Tensor<1, data_t> spherical_to_cartesian_L(Tensor<1, data_t> spherical_v_L,
-                                           data_t x, double y, double z)
+Tensor<1, data_t>
+spherical_to_cartesian_L(const Tensor<1, data_t> &spherical_v_L, data_t x,
+                         double y, double z)
 {
-    // The output - w in cartesian coords
     Tensor<1, data_t> cartesian_v_L;
 
     // derivatives for jacobian matrix - drdx etc
-    Tensor<2, data_t> jac = jacobian_drdx(x, y, z);
+    Tensor<2, data_t> jac = spherical_jacobian(x, y, z);
 
     // transform the vector to cartesian coords
     FOR1(i)
     {
         cartesian_v_L[i] = 0.0;
-        FOR1(j) { cartesian_v_L[i] += jac[j][i] * spherical_v_L[j]; }
+        FOR1(j) { cartesian_v_L[i] += spherical_v_L[j] * jac[j][i]; }
     }
     return cartesian_v_L;
 }
 
-// Get the determinant of the spherical metric at a point
+// Convert a vector (with one upper index) in cartesian coords to spherical
+// coords
 template <class data_t>
-data_t get_det_spherical_area(Tensor<2, data_t> cartesian_g, data_t x, double y,
-                              double z)
+Tensor<1, data_t>
+cartesian_to_spherical_U(const Tensor<1, data_t> &cartesian_v_U, data_t x,
+                         double y, double z)
 {
-    // The metric in spherical coords
-    const Tensor<2, data_t> spherical_g =
-        cartesian_to_spherical_LL(cartesian_g, x, y, z);
+    Tensor<1, data_t> spherical_v_U;
 
-    // the r components should now be zero in this adapted basis, so
-    const data_t det_Sigma = spherical_g[1][1] * spherical_g[2][2] -
-                             spherical_g[1][2] * spherical_g[2][1];
+    // derivatives for jacobian matrix - drdx etc
+    Tensor<2, data_t> jac = spherical_jacobian(x, y, z);
 
-    return det_Sigma;
+    // transform the vector to cartesian coords
+    FOR1(i)
+    {
+        spherical_v_U[i] = 0.0;
+        FOR1(j) { spherical_v_U[i] += jac[i][j] * cartesian_v_U[j]; }
+    }
+    return spherical_v_U;
 }
+
+// Convert a vector (with one lower index) in cartesian coords to spherical
+// coords
+template <class data_t>
+Tensor<1, data_t>
+cartesian_to_spherical_L(const Tensor<1, data_t> &cartesian_v_L, data_t x,
+                         double y, double z)
+{
+    Tensor<1, data_t> spherical_v_L;
+
+    // derivatives for inverse jacobian matrix - drdx etc
+    Tensor<2, data_t> inv_jac = inverse_spherical_jacobian(x, y, z);
+
+    // transform the vector to cartesian coords
+    FOR1(i)
+    {
+        spherical_v_L[i] = 0.0;
+        FOR1(j) { spherical_v_L[i] += cartesian_v_L[j] * inv_jac[j][i]; }
+    }
+    return spherical_v_L;
+}
+
+// The area element of a sphere
+template <class data_t>
+data_t area_element_sphere(const Tensor<2, data_t> &spherical_g)
+{
+    return sqrt(spherical_g[1][1] * spherical_g[2][2] -
+                spherical_g[1][2] * spherical_g[2][1]);
+}
+
 } // namespace CoordinateTransformations
 #endif /* COORDINATETRANSFORMATIONS_HPP_ */

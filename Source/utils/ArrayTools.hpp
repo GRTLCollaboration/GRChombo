@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <array>
+#include <string>
 
 /// A place for tools that operate on std::arrays
 namespace ArrayTools
@@ -22,6 +23,31 @@ std::array<T, N + M> concatenate(const std::array<T, N> &first,
     std::array<T, N + M> out;
     std::copy(first.cbegin(), first.cend(), out.begin());
     std::copy(second.cbegin(), second.cend(), out.begin() + N);
+    return out;
+}
+
+template <typename T, size_t N,
+          std::enable_if_t<std::is_arithmetic<T>::value, bool> = true>
+T norm2(const std::array<T, N> &a_array)
+{
+    T out = 0;
+    for (auto &elem : a_array)
+    {
+        out += elem * elem;
+    }
+    return out;
+}
+
+template <typename T, size_t N,
+          std::enable_if_t<std::is_arithmetic<T>::value, bool> = true>
+std::string to_string(const std::array<T, N> a_array)
+{
+    std::string out;
+    for (int i = 0; i < N - 1; ++i)
+    {
+        out += std::to_string(a_array[i]) + " ";
+    }
+    out += std::to_string(a_array[N - 1]);
     return out;
 }
 } // namespace ArrayTools

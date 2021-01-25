@@ -8,7 +8,7 @@ plot_prefix = KerrBHp_
 # 'N' is the number of subdivisions in each direction of a cubic box
 # 'L' is the length of the longest side of the box, dx_coarsest = L/N
 # NB - If you use reflective BC and want to specify the subdivisions and side
-# of the box were there no symmetries, specify 'N_full' and 'L_full' instead
+# of the box were there are no symmetries, specify 'N_full' and 'L_full' instead
 # NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full', 
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
@@ -23,16 +23,18 @@ kerr_spin = 0.5
 #kerr_center = 64 64 64
 
 # Regridding
-# Thresholds on the change across a cell which prompts regrid
-regrid_threshold = 0.3
 
 # Level data
 # Maximum number of times you can regrid above coarsest level
-max_level = 3 #4 There are (max_level+1) grids, so min is zero
-# Frequency of regridding at each level
+max_level = 4 #4 There are (max_level+1) grids, so min is zero
+
+# Frequency of regridding at each level and thresholds on the tagging
 # Need one for each level, ie max_level+1 items
 # Generally you do not need to regrid frequently on every level
-regrid_interval = 50 25 5 5 5 5 5
+# Level Regridding:   0   1   2   3   4   5   6
+regrid_interval   =  50  25   5   5   5   5   5
+regrid_thresholds = 0.3 0.3 0.3 0.3 0.3
+
 # Max box sizes
 max_grid_size = 16
 # Min box size
@@ -67,7 +69,6 @@ vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
                          0.0 0.0 0.0 0.0 0.0 0.0 0.0 #K and Aij
                          0.0 0.0 0.0 0.0             #Theta and Gamma
                          1.0 0.0 0.0 0.0 0.0 0.0 0.0 #lapse shift and B
-                         #0.0 0.0 0.0 0.0             #Ham and Mom
 
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
@@ -87,7 +88,7 @@ lapse_advec_coeff = 1 # 1 makes the lapse gauge 1+log slicing
 # Shift evolution coefficients
 shift_advec_coeff = 0 # Usually no advection for beta
 shift_Gamma_coeff = 0.75 # 
-eta = 1.0 # This is beta_driver, usually of order 1/M_ADM of spacetime
+eta = 1.0 # This is gamma driver, usually of order 1/M_ADM of spacetime
 
 # CCZ4 parameters
 # if using BSSN the kappa values should be zero

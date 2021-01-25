@@ -6,12 +6,8 @@ plot_prefix = BinaryBHPlot_
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
 
-N1 = 32
-N2 = 32
-N3 = 32
-L = 16 #100
-
-track_punctures = 1 # do it on max_level
+N_full = 32
+L_full = 16
 
 massA = 1
 offsetA = -2 0 0
@@ -38,8 +34,8 @@ tag_buffer_size = 3
 checkpoint_interval = 1
 # set to zero to turn off plot files
 plot_interval = 1
-num_plot_vars = 3
-plot_vars = chi Weyl4_Re Weyl4_Im
+num_plot_vars = 4
+plot_vars = chi Ham Weyl4_Re Weyl4_Im
 dt_multiplier = 0.25
 stop_time = 10.0
 
@@ -87,13 +83,11 @@ vars_parity_diagnostic = 0 1 2 3          #Ham and Mom
                          0 7              #Weyl
 
 # if sommerfeld boundaries selected, must select
-# asymptotic values (in order given by UserVariables.hpp)
-vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
-                         0.0 0.0 0.0 0.0 0.0 0.0 0.0 #K and Aij
-                         0.0 0.0 0.0 0.0             #Theta and Gamma
-                         1.0 0.0 0.0 0.0 0.0 0.0 0.0 #lapse shift and B
+# non zero asymptotic values
+num_nonzero_asymptotic_vars = 5
+nonzero_asymptotic_vars = chi h11 h22 h33 lapse
+nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 
-# puncture tracking
 track_punctures = 1
 puncture_tracking_level = 1
 
@@ -109,3 +103,4 @@ num_modes = 3
 modes = 2 0 # l m for spherical harmonics
         2 1
         2 2
+

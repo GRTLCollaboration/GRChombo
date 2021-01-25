@@ -6,10 +6,16 @@
 #ifndef GRPARMPARSE_HPP_
 #define GRPARMPARSE_HPP_
 
+// Chombo includes
 #include "ParmParse.H"
 #include "parstream.H" //Gives us pout()
+
+// Other includes
 #include <algorithm>
 #include <memory>
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 /// Helper structs to translate a dataype into a Chombo ParmParse data type
 template <class T> struct ParmParseTranslator;

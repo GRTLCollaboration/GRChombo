@@ -6,12 +6,18 @@
 #ifndef CELL_HPP_
 #define CELL_HPP_
 
+// Chombo includes
+#include "IntVect.H"
+
+// Our includes
 #include "AlwaysInline.hpp"
 #include "BoxPointers.hpp"
 #include "CellIndex.hpp"
 #include "GRInterval.hpp"
-#include "IntVect.H"
 #include "Tensor.hpp"
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 /// Encapsulates information about the position of a cell
 /** It contains the position of the cell on the Chombo grid and the index of the
