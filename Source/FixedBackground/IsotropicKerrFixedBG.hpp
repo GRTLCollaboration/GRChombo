@@ -10,7 +10,6 @@
 #include "Cell.hpp"
 #include "Coordinates.hpp"
 #include "DimensionDefinitions.hpp"
-#include "InitialDataTools.hpp"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"
 #include "UserVariables.hpp" //This files needs NUM_VARS - total number of components
@@ -273,32 +272,6 @@ class IsotropicKerrFixedBG
             vars.K_tensor[i][j] *= 0.5 / vars.lapse;
         }
         vars.K = compute_trace(vars.K_tensor, gamma_UU);
-
-        /*
-                // debug - optional
-                // as a check can also calculate K from analytic expression
-                using namespace InitialDataTools;
-                Tensor<2, data_t> spherical_K;
-                FOR2(i, j) { spherical_K[i][j] = 0.0; }
-                // K_R\phi
-                spherical_K[0][2] =
-                    a * M * sin_theta2 / (Sigma * sqrt(AA * Sigma)) *
-                    //(2.0 * r_BL2 * (r_BL2 + a2) + Sigma * (r_BL2 - a2)) *
-                    (3.0 * pow(r_BL, 4.0) + 2 * a * a * r_BL * r_BL -
-           pow(a, 4.0) - a * a * (r_BL * r_BL - a * a) * sin_theta2) * (1.0 +
-           0.25 * r_plus / R) / sqrt(R * r_BL - R * r_minus); spherical_K[2][0]
-           = spherical_K[0][2];
-                // K_\theta\phi
-                spherical_K[2][1] = -2.0 * a * a2 * M * r_BL * cos_theta *
-           sin_theta * sin_theta2 / (Sigma * sqrt(AA * Sigma)) * (R - 0.25 *
-           r_plus) * sqrt(r_BL / R - r_minus / R); spherical_K[1][2] =
-           spherical_K[2][1]; Tensor<2, data_t> cartesian_K; cartesian_K =
-           spherical_to_cartesian_LL(spherical_K, x, y, z); data_t TraceK =
-           compute_trace(cartesian_K, gamma_UU); data_t diff = cartesian_K[0][0]
-           - vars.K_tensor[0][0]; if ((y == m_dx * (0.0 + 0.5)) && (z == m_dx *
-           (0.0 + 0.5))) {pout() << "Diff: " << diff << ", x " << x << endl;}
-                // end debug
-        */
     }
 
   public:

@@ -47,7 +47,7 @@ class PunctureTracker
                           const bool write_punctures = true);
 
     ALWAYS_INLINE void
-    set_interpolator(AMRInterpolator<Lagrange<4>> *a_interpolator)
+        set_interpolator(AMRInterpolator<Lagrange<4>> *a_interpolator)
     {
         m_interpolator = a_interpolator;
     }

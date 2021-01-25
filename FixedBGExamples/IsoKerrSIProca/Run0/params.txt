@@ -2,8 +2,8 @@
 
 verbosity = 0
 integral_filename = ProcaDensities
-chk_prefix = /cosma6/data/dp174/dc-cui1/Proca/Realmu0.5A0.01c0ISO2_chk
-plot_prefix = /cosma6/data/dp174/dc-cui1/Proca/Realmu0.5A0.01c0ISO2_plt
+chk_prefix = Realmu0.5A0.01c0ISO2_chk
+plot_prefix = Realmu0.5A0.01c0ISO2_plt
 #restart_file = /cosma6/data/dp174/dc-cui1/Proca/Realmu0.5A0.01c0ISO2_chk000100.3d.hdf5
 write_plot_ghosts = 0
 
@@ -61,8 +61,8 @@ nonzero_asymptotic_values = 0.0
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 50
-plot_interval = 5
+checkpoint_interval = 0
+plot_interval = 0
 num_plot_vars = 3
 plot_vars = Avec1 phi Z rho
 dt_multiplier = 0.2

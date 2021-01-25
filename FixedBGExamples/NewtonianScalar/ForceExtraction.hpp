@@ -22,7 +22,7 @@ class ForceExtraction : public SphericalExtraction
                     double a_time, bool a_first_step,
                     double a_restart_time = 0.0)
         : SphericalExtraction(a_params, a_dt, a_time, a_first_step,
-                               a_restart_time)
+                              a_restart_time)
     {
         add_var(c_Edot, VariableType::diagnostic);
         add_var(c_Jdot, VariableType::diagnostic);

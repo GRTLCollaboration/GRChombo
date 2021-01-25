@@ -46,17 +46,16 @@ void ScalarFieldLevel::initialData()
     // First set everything to zero and set the initial chi to check data
     SetValue set_zero(0.0);
     BinaryNewtonFixedBG binary_newton(m_p.bg_params1, m_p.bg_params2, m_dx,
-                                    m_p.center);
+                                      m_p.center);
     auto compute_pack = make_compute_pack(set_zero, binary_newton);
     BoxLoops::loop(compute_pack, m_state_diagnostics, m_state_diagnostics,
                    SKIP_GHOST_CELLS);
 
     // now set the fields to evolve
     InitialConditions set_fields(m_p.field_amplitude_re, m_p.field_amplitude_im,
-                              m_p.potential_params.scalar_mass, m_p.center,
-                              m_dx);
+                                 m_p.potential_params.scalar_mass, m_p.center,
+                                 m_dx);
     BoxLoops::loop(set_fields, m_state_new, m_state_new, FILL_GHOST_CELLS);
-
 }
 
 // Things to do before outputting a plot file
@@ -65,12 +64,13 @@ void ScalarFieldLevel::prePlotLevel() {}
 // Things to do in RHS update, at each RK4 step
 void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
                                        const double a_time)
-{ 
+{
     // Calculate MatterCCZ4 right hand side with matter_t = ScalarField
     ComplexScalarPotential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
     BinaryNewtonFixedBG binary_newton(m_p.bg_params1, m_p.bg_params2, m_dx,
-                                    m_p.center, a_time, m_p.separation, m_p.omega_binary);
+                                      m_p.center, a_time, m_p.separation,
+                                      m_p.omega_binary);
     FixedBGEvolution<ScalarFieldWithPotential, BinaryNewtonFixedBG> my_matter(
         scalar_field, binary_newton, m_p.sigma, m_dx, m_p.center);
     BoxLoops::loop(my_matter, a_soln, a_rhs, SKIP_GHOST_CELLS);
@@ -94,14 +94,17 @@ void ScalarFieldLevel::specificPostTimeStep()
         ComplexScalarPotential potential(m_p.potential_params);
         ScalarFieldWithPotential scalar_field(potential);
         BinaryNewtonFixedBG binary_newton(m_p.bg_params1, m_p.bg_params2, m_dx,
-                                    m_p.center, m_time, m_p.separation, m_p.omega_binary);
-        FixedBGDensityAndAngularMom<ScalarFieldWithPotential, BinaryNewtonFixedBG>
+                                          m_p.center, m_time, m_p.separation,
+                                          m_p.omega_binary);
+        FixedBGDensityAndAngularMom<ScalarFieldWithPotential,
+                                    BinaryNewtonFixedBG>
             densities(scalar_field, binary_newton, m_dx, m_p.center);
         FixedBGEnergyAndAngularMomFlux<ScalarFieldWithPotential,
                                        BinaryNewtonFixedBG>
             energy_fluxes(scalar_field, binary_newton, m_dx, m_p.center);
-        BoxLoops::loop(make_compute_pack(densities, energy_fluxes, binary_newton),
-                       m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
+        BoxLoops::loop(
+            make_compute_pack(densities, energy_fluxes, binary_newton),
+            m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
         // excise within horizon
         BoxLoops::loop(
             ExcisionDiagnostics<ScalarFieldWithPotential, BinaryNewtonFixedBG>(

@@ -81,8 +81,10 @@ template <class matter_t, class background_t> class FixedBGMomentumFlux
         data_t rho2 =
             simd_max(coords.x * coords.x + coords.y * coords.y, 1e-12);
         data_t r2sintheta = sqrt(rho2) * R;
-        data_t det_Sigma = CoordinateTransformations::get_det_spherical_area(
+        using namespace CoordinateTransformations;
+        Tensor<2, data_t> spherical_gamma = cartesian_to_spherical_LL(
             metric_vars.gamma, coords.x, coords.y, coords.z);
+        data_t det_Sigma = area_element_sphere(spherical_gamma);
 
         // The integrand for the x-momentum flux out of a radial
         // shell at the current position
@@ -118,15 +120,17 @@ template <class matter_t, class background_t> class FixedBGMomentumFlux
                 source[i] += emtensor.Si[j] * metric_vars.d1_shift[j][i];
                 FOR1(k)
                 {
-                    BHMom[i] += - 1.0/8.0/M_PI * Ni_L[k] * 
-                                  gamma_UU[j][k] * delta(i,j) * metric_vars.K;
-                
+                    BHMom[i] += -1.0 / 8.0 / M_PI * Ni_L[k] * gamma_UU[j][k] *
+                                delta(i, j) * metric_vars.K;
+
                     FOR1(l)
                     {
                         source[i] += metric_vars.lapse * gamma_UU[k][l] *
-                                 emtensor.Sij[k][j] * chris_phys.ULL[j][l][i];
-                        BHMom[i] += 1.0/8.0/M_PI * Ni_L[j] * 
-                                  gamma_UU[k][i] * gamma_UU[l][j] * metric_vars.K_tensor[k][l];
+                                     emtensor.Sij[k][j] *
+                                     chris_phys.ULL[j][l][i];
+                        BHMom[i] += 1.0 / 8.0 / M_PI * Ni_L[j] *
+                                    gamma_UU[k][i] * gamma_UU[l][j] *
+                                    metric_vars.K_tensor[k][l];
                     }
                 }
             }

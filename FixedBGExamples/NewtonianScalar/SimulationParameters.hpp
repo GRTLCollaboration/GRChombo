@@ -11,8 +11,8 @@
 #include "FixedBGSimulationParametersBase.hpp"
 #include "GRParmParse.hpp"
 // Problem specific includes:
-#include "NewtonianBHFixedBG.hpp"
 #include "ComplexScalarPotential.hpp"
+#include "NewtonianBHFixedBG.hpp"
 
 class SimulationParameters : public FixedBGSimulationParametersBase
 {
@@ -42,7 +42,7 @@ class SimulationParameters : public FixedBGSimulationParametersBase
         pp.load("field_amplitude_im", field_amplitude_im);
         pp.load("scalar_mass", potential_params.scalar_mass);
         pp.load("inner_r", inner_r, 1.0);
-        pp.load("outer_r", outer_r, L/2.0);
+        pp.load("outer_r", outer_r, L / 2.0);
     }
 
     // Problem specific parameters

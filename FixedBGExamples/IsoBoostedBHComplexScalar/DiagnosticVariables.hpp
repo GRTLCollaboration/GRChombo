@@ -15,7 +15,7 @@ enum
     c_Edot,   // the energy density of the SF
     c_Jdot,   // the energy density of the SF
     c_xMom,   // the energy density of the SF
-    c_BHMom,   // the energy density of the SF
+    c_BHMom,  // the energy density of the SF
     c_Stress, // the energy density of the SF
     c_Source, // the energy density of the SF
 

@@ -61,7 +61,7 @@ class KerrBH
             &spherical_shift, //!<< The spherical components of the shift
         data_t &kerr_lapse,   //!<< The lapse for the kerr solution
         const Coordinates<data_t> coords //!<< Coords of current cell
-    ) const;
+        ) const;
 };
 
 #include "KerrBH.impl.hpp"

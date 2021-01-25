@@ -10,7 +10,6 @@
 #include "Cell.hpp"
 #include "Coordinates.hpp"
 #include "DimensionDefinitions.hpp"
-#include "InitialDataTools.hpp"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"
 #include "UserVariables.hpp" //This files needs NUM_VARS - total number of components
@@ -104,7 +103,7 @@ class NewtonianBHFixedBG
 
         // populate ADM vars
         using namespace TensorAlgebra;
-        const data_t sign = (r -  2.0 * M) / abs(r - 2.0 * M);
+        const data_t sign = (r - 2.0 * M) / abs(r - 2.0 * M);
         vars.lapse = sign * sqrt(abs(1.0 + 2.0 * Phi));
 
         FOR2(i, j) { vars.gamma[i][j] = (1.0 - 2.0 * Phi) * delta(i, j); }

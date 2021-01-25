@@ -29,7 +29,7 @@ int runGRChombo(int argc, char *argv[])
     // must be before 'setupAMRObject' to define punctures for tagging criteria
     if (sim_params.track_punctures)
     {
-        bh_amr.puncture_tracker.initial_setup(
+        bh_amr.m_puncture_tracker.initial_setup(
             {sim_params.bh1_params.center, sim_params.bh2_params.center},
             sim_params.checkpoint_prefix);
     }
@@ -49,7 +49,7 @@ int runGRChombo(int argc, char *argv[])
 
     // must be after interpolator is set
     if (sim_params.track_punctures)
-        bh_amr.puncture_tracker.set_interpolator(&interpolator);
+        bh_amr.m_puncture_tracker.set_interpolator(&interpolator);
 
     using Clock = std::chrono::steady_clock;
     using Minutes = std::chrono::duration<double, std::ratio<60, 1>>;

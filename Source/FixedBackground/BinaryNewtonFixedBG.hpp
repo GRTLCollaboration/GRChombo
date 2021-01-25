@@ -9,7 +9,6 @@
 #include "Cell.hpp"
 #include "Coordinates.hpp"
 #include "DimensionDefinitions.hpp"
-#include "InitialDataTools.hpp"
 #include "NewtonianBHFixedBG.hpp"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"

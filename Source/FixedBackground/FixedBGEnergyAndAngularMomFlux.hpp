@@ -80,13 +80,14 @@ class FixedBGEnergyAndAngularMomFlux
         FOR2(i, j) { mod_N2 += gamma_UU[i][j] * Ni_L[i] * Ni_L[j]; }
         FOR1(i) { Ni_L[i] = Ni_L[i] / sqrt(mod_N2); }
 
-        // the area element of the sphere - should be spheroid, but approx
-        // ok this just corrects for the determinant of Sigma
+        // the area element of the sphere
         data_t rho2 =
             simd_max(coords.x * coords.x + coords.y * coords.y, 1e-12);
         data_t r2sintheta = sqrt(rho2) * R;
-        data_t det_Sigma = CoordinateTransformations::get_det_spherical_area(
+        using namespace CoordinateTransformations;
+        Tensor<2, data_t> spherical_gamma = cartesian_to_spherical_LL(
             metric_vars.gamma, coords.x, coords.y, coords.z);
+        data_t det_Sigma = area_element_sphere(spherical_gamma);
 
         // dxdphi to convert tensor components to spherical polar
         Tensor<1, data_t> dxdphi;

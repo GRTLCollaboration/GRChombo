@@ -47,7 +47,8 @@ void ScalarFieldLevel::initialData()
     // First set everything to zero ... we don't want undefined values in
     // constraints etc, then initial conditions for fields
     SetValue set_zero(0.0);
-    BoostedIsotropicBHFixedBG boosted_bh(m_p.bg_params, m_dx); // just calculates chi
+    BoostedIsotropicBHFixedBG boosted_bh(m_p.bg_params,
+                                         m_dx); // just calculates chi
     InitialConditions set_phi(m_p.field_amplitude_re, m_p.field_amplitude_im,
                               m_p.potential_params.scalar_mass, m_p.center,
                               m_p.bg_params, m_dx);
@@ -76,8 +77,8 @@ void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     ComplexScalarPotential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
     BoostedIsotropicBHFixedBG boosted_bh(m_p.bg_params, m_dx);
-    FixedBGEvolution<ScalarFieldWithPotential, BoostedIsotropicBHFixedBG> my_matter(
-        scalar_field, boosted_bh, m_p.sigma, m_dx, m_p.center);
+    FixedBGEvolution<ScalarFieldWithPotential, BoostedIsotropicBHFixedBG>
+        my_matter(scalar_field, boosted_bh, m_p.sigma, m_dx, m_p.center);
     BoxLoops::loop(my_matter, a_soln, a_rhs, SKIP_GHOST_CELLS);
 
     // excise within horizon, no simd
@@ -99,7 +100,8 @@ void ScalarFieldLevel::specificPostTimeStep()
         ComplexScalarPotential potential(m_p.potential_params);
         ScalarFieldWithPotential scalar_field(potential);
         BoostedIsotropicBHFixedBG boosted_bh(m_p.bg_params, m_dx);
-        FixedBGDensityAndAngularMom<ScalarFieldWithPotential, BoostedIsotropicBHFixedBG>
+        FixedBGDensityAndAngularMom<ScalarFieldWithPotential,
+                                    BoostedIsotropicBHFixedBG>
             densities(scalar_field, boosted_bh, m_dx, m_p.center);
         FixedBGEnergyAndAngularMomFlux<ScalarFieldWithPotential,
                                        BoostedIsotropicBHFixedBG>
@@ -110,7 +112,8 @@ void ScalarFieldLevel::specificPostTimeStep()
                        m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
         // excise within horizon
         BoxLoops::loop(
-            ExcisionDiagnostics<ScalarFieldWithPotential, BoostedIsotropicBHFixedBG>(
+            ExcisionDiagnostics<ScalarFieldWithPotential,
+                                BoostedIsotropicBHFixedBG>(
                 m_dx, m_p.center, boosted_bh, m_p.inner_r, m_p.outer_r),
             m_state_diagnostics, m_state_diagnostics, SKIP_GHOST_CELLS,
             disable_simd());
