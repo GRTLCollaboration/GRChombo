@@ -2,9 +2,9 @@
 
 verbosity = 0
 integral_filename = RhoIntegral
-chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost3I_chk
-plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost3I_plt
-restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost3I_chk002000.3d.hdf5
+chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost4I_chk
+plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost4I_plt
+#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost4I_chk001000.3d.hdf5
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
@@ -72,7 +72,7 @@ checkpoint_interval = 500
 plot_interval = 100
 num_plot_vars = 2
 plot_vars = Source BHMom
-dt_multiplier = 0.05
+dt_multiplier = 0.1
 stop_time = 10000.0
 
 # coefficient for KO numerical dissipation
@@ -88,7 +88,7 @@ f_axion = 0.0
 
 # Boosted BH initial data, boost in x direction, spin in z direction
 bh_mass = 1.0
-bh_velocity = 0.3 # This is a, so needs to be <= M
+bh_velocity = 0.4 # This is a, so needs to be <= M
 inner_r = 3.0
 outer_r = 200.0
 

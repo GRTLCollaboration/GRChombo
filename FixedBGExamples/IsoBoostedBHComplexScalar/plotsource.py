@@ -15,12 +15,12 @@ symmetry = 4
 fig = plt.figure()
 
 # for v=0.4
-data1 = np.loadtxt("Run8/RhoIntegral.dat")
-labelstring = "integral Source dV v = 0.8"
-timedata = data1[:,0]
-Fdata = data1[:,1]
-SourceData = Fdata * symmetry
-plt.plot(timedata, SourceData, '--', lw = 1.0, label=labelstring)
+#data1 = np.loadtxt("Run8/RhoIntegral.dat")
+#labelstring = "integral Source dV v = 0.8"
+#timedata = data1[:,0]
+#Fdata = data1[:,1]
+#SourceData = Fdata * symmetry
+#plt.plot(timedata, SourceData, '--', lw = 1.0, label=labelstring)
 
 # for v=0.4
 data1 = np.loadtxt("Run7/RhoIntegral.dat")
@@ -31,12 +31,12 @@ SourceData = Fdata * symmetry
 plt.plot(timedata, SourceData, '--', lw = 1.0, label=labelstring)
 
 # for v=0.4
-data1 = np.loadtxt("Run6/RhoIntegral.dat")
-labelstring = "integral Source dV v = 0.6"
-timedata = data1[:,0]
-Fdata = data1[:,1]
-SourceData = Fdata * symmetry
-plt.plot(timedata, SourceData, '--', lw = 1.0, label=labelstring)
+#data1 = np.loadtxt("Run6/RhoIntegral.dat")
+#labelstring = "integral Source dV v = 0.6"
+#timedata = data1[:,0]
+#Fdata = data1[:,1]
+#SourceData = Fdata * symmetry
+#plt.plot(timedata, SourceData, '--', lw = 1.0, label=labelstring)
 
 # mass dataset - source
 data1 = np.loadtxt("Run5/RhoIntegral.dat")
@@ -65,7 +65,7 @@ plt.plot(timedata, SourceData, '--', lw = 1.0, label=labelstring)
 # make the plot look nice
 plt.xlabel("time")
 plt.ylabel("F")
-#plt.xlim(0, 1000)
+plt.xlim(0, 5000)
 #plt.ylim(1e-1, 1e2)
 plt.legend(loc=3)
 
