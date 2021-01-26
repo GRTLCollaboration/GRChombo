@@ -45,6 +45,9 @@ class OscillatonInitial
         // may want to add to existing values so load the vars
         auto vars =
             current_cell.template load_vars<MatterCCZ4<ScalarField<>>::Vars>();
+        // assign them zero to be sure they are zeroed
+        // including at boundaries where required
+        VarsTools::assign(vars, 0.);
 
         // Define Coordinates
         const Coordinates<double> coords(current_cell, m_dx, m_center);
@@ -53,7 +56,6 @@ class OscillatonInitial
         const double y = coords.y;
         const double z = coords.z;
         const double rho = sqrt(x * x + y * y);
-        const double sintheta = rho / r;
 
         // Interpolate data from read in values
         const int indxL = static_cast<int>(floor(r / m_spacing));
@@ -76,17 +78,14 @@ class OscillatonInitial
         Tensor<2, double> spherical_gamma;
         spherical_gamma[0][0] = grr;
         spherical_gamma[1][1] = r * r;
-        spherical_gamma[2][2] = r * r * sintheta;
+        spherical_gamma[2][2] = rho * rho; // r2 sin2theta
         vars.h = CoordinateTransformations::spherical_to_cartesian_LL(
             spherical_gamma, x, y, z);
 
         // decompose for BSSN form
-        const double det_gamma = TensorAlgebra::compute_determinant_sym(vars.h);
+        const double det_gamma = TensorAlgebra::compute_determinant(vars.h);
         vars.chi = pow(det_gamma, -1.0 / 3.0);
-        FOR2(i, j)
-        {
-            vars.h[i][j] *= vars.chi;
-        }
+        FOR2(i, j) { vars.h[i][j] *= vars.chi; }
 
         // store the values
         current_cell.store_vars(vars);

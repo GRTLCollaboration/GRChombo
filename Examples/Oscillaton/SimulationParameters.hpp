@@ -34,8 +34,9 @@ class SimulationParameters : public SimulationParametersBase
     void check_params()
     {
         warn_parameter("scalar_mass", potential_params.scalar_mass,
-                       potential_params.scalar_mass <
-                           0.2 / coarsest_dx / dt_multiplier * pow(2.0, max_level),
+                       potential_params.scalar_mass < 0.2 / coarsest_dx /
+                                                          dt_multiplier *
+                                                          pow(2.0, max_level),
                        "oscillations of scalar field do not appear to be "
                        "resolved on finest level");
     }

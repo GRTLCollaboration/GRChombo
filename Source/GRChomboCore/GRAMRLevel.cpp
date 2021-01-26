@@ -108,9 +108,19 @@ Real GRAMRLevel::advance()
     const DisjointBoxLayout &level_domain = m_state_new.disjointBoxLayout();
     int nbox = level_domain.dataIterator().size();
     int total_nbox = level_domain.size();
-    pout() << "GRAMRLevel::advance level " << m_level << " at time " << m_time
-           << " (" << speed << " M/hr)"
-           << ". Boxes on this rank: " << nbox << " / " << total_nbox << endl;
+    int rank;
+#ifdef CH_MPI
+    MPI_Comm_rank(Chombo_MPI::comm, &rank);
+#else
+    rank = 0;
+#endif
+    if (rank == 0)
+    {
+        pout() << "GRAMRLevel::advance level " << m_level << " at time "
+               << m_time << " (" << speed << " M/hr)"
+               << ". Boxes on this rank: " << nbox << " / " << total_nbox
+               << endl;
+    }
 
     // copy soln to old state to save it
     m_state_new.copyTo(m_state_new.interval(), m_state_old,
@@ -219,10 +229,13 @@ void GRAMRLevel::tagCells(IntVectSet &a_tags)
         DataIndex di = dit0[ibox];
         const Box &b = level_domain[di];
         const FArrayBox &state_fab = m_state_new[di];
+        const FArrayBox &state_fab_diagnostics = m_state_diagnostics[di];
 
         // mod gradient
         FArrayBox tagging_criterion(b, 1);
         computeTaggingCriterion(tagging_criterion, state_fab);
+        computeDiagnosticsTaggingCriterion(tagging_criterion,
+                                           state_fab_diagnostics);
 
         const IntVect &smallEnd = b.smallEnd();
         const IntVect &bigEnd = b.bigEnd();
