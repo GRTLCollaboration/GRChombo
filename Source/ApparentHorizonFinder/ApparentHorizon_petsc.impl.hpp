@@ -146,20 +146,20 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::initialise_PETSc()
     {
         SNESType snes_type;
         SNESGetType(m_snes, &snes_type);
-        double snes_atol, snes_rtol, snes_stol;
-        int snes_maxit, snes_maxf;
+        PetscReal snes_atol, snes_rtol, snes_stol;
+        PetscInt snes_maxit, snes_maxf;
         SNESGetTolerances(m_snes, &snes_atol, &snes_rtol, &snes_stol,
                           &snes_maxit, &snes_maxf);
 
-        double snes_divtol;
+        PetscReal snes_divtol;
         SNESGetDivergenceTolerance(m_snes, &snes_divtol);
 
         KSP snes_ksp;
         SNESGetKSP(m_snes, &snes_ksp);
         KSPType ksp_type;
         KSPGetType(snes_ksp, &ksp_type);
-        double ksp_rtol, ksp_abstol, ksp_dtol;
-        int ksp_maxits;
+        PetscReal ksp_rtol, ksp_abstol, ksp_dtol;
+        PetscInt ksp_maxits;
         KSPGetTolerances(snes_ksp, &ksp_rtol, &ksp_abstol, &ksp_dtol,
                          &ksp_maxits);
 

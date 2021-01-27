@@ -417,6 +417,11 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
         double spin_dimensionless = calculate_spin_dimensionless(m_area);
         m_mass = calculate_mass(m_area, spin_dimensionless);
         m_spin = spin_dimensionless * m_mass;
+
+        if (m_params.verbose > AHFinder::MIN)
+        {
+            pout() << "mass = " << m_mass << endl;
+        }
 #endif
 
         // reset min and max F, to force re-calculation
@@ -1305,7 +1310,7 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_spin_dimensionless(
 
         // m_F is already set from solve
 
-        int u_equator = floor(M_PI / 2.0 / m_du);
+        int u_equator = std::round(M_PI / 2.0 / m_du);
 
         for (int v = m_vmin; v < m_vmax; ++v)
         {

@@ -3,7 +3,7 @@
 verbosity = 0
 chk_prefix = KerrBH_
 plot_prefix = KerrBHp_
-#restart_file = KerrBH_000060.3d.hdf5
+#restart_file = KerrBH_000400.3d.hdf5
 
 # 'N' is the number of subdivisions in each direction of a cubic box
 # 'L' is the length of the longest side of the box, dx_coarsest = L/N
@@ -12,7 +12,7 @@ plot_prefix = KerrBHp_
 # NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full', 
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
-N_full = 64
+N_full = 128
 L_full = 128
 
 # Params for Kerr BH
@@ -32,8 +32,8 @@ max_level = 6 # There are (max_level+1) grids, so min is zero
 # Need one for each level except the top one, ie max_level items
 # Generally you do not need to regrid frequently on every level
 # Level Regridding:   0   1   2   3   4   5
-regrid_interval   =  50  25   5   5   5   5
-regrid_thresholds = 0.3 0.3 0.3 0.3 0.3 0.3
+regrid_interval   =   0   0   0   0   0   0
+regrid_threshold = 0.0065
 
 # Max box sizes
 max_grid_size = 16
@@ -72,12 +72,12 @@ nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 50
-plot_interval = 10
-num_plot_vars = 0
+checkpoint_interval = 0
+plot_interval = 20
+num_plot_vars = 2
+plot_vars = chi Ham
 dt_multiplier = 0.25
-stop_time = 20.0
-max_steps = 10000000
+stop_time = 100.0
 
 #Lapse evolution
 lapse_power = 1.0
@@ -91,37 +91,45 @@ eta = 1.0 # This is gamma driver, usually of order 1/M_ADM of spacetime
 
 # CCZ4 parameters
 # if using BSSN the kappa values should be zero
-formulation = 1  # 1 for BSSN, 0 for CCZ4
-kappa1 = 0
+formulation = 0 # 1 for BSSN, 0 for CCZ4
+kappa1 = 0.1
 kappa2 = 0
-kappa3 = 0
-covariantZ4 = 0 # 0: default. 1: dampk1 -> dampk1/lapse
+kappa3 = 1
+covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
 
 # coefficient for KO numerical dissipation
 sigma = 0.3
 
 #extraction params
-activate_extraction = 0
+activate_extraction = 1
 num_extraction_radii = 3
-extraction_radii = 30. 40. 50.
-extraction_levels = 2 1 0
+extraction_radii = 20. 25. 30.
+extraction_levels = 1 1 0
 num_points_phi = 50
 num_points_theta = 52
 
 #Apparent Horizon finder 
 AH_activate = 1 
 AH_num_ranks = 20
-AH_num_points_u = 30
-AH_num_points_v = 50
+AH_num_points_u = 49
+AH_num_points_v = 48
 AH_solve_interval = 1
-AH_print_interval = 2
+AH_print_interval = 1
 AH_track_center = false
 AH_predict_origin = false
 #AH_level_to_run = 0
 #AH_allow_re_attempt = 0
-#AH_start_time = 0.0
+AH_stop_if_max_fails = 1
+#AH_start_time = 0.
 #AH_give_up_time = -1. # -1 to never
 #AH_max_fails_after_lost = 0 # -1 to never
-#AH_verbose = 1
+#AH_print_geometry_data = 0
+#AH_re_solve_at_restart = 0
+AH_verbose = 3
 
 #AH_initial_guess = 0.5
+
+#look_for_chi_contour = 0.2
+
+AH_num_write_vars = 1
+AH_write_vars = chi
