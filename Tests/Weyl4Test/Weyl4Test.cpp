@@ -286,9 +286,9 @@ int main()
     }
 
     if (failed == 0)
-        std::cout << "KCL Weyl test passed..." << std::endl;
+        std::cout << "Weyl4 test passed..." << std::endl;
     else
-        std::cout << "KCL Weyl test failed..." << std::endl;
+        std::cout << "Weyl4 test failed..." << std::endl;
 
     return failed;
 
