@@ -258,20 +258,13 @@ int main()
         double max_err = out_fab.norm(0, i, 1);
         double max_chf = out_fab_chf.norm(0, i, 1);
 
+        // Note that due to the change from chi' to chi = chi'^2, errors in chi
+        // may be larger than other variables.
         if (max_err / max_chf > 0.00001)
         {
             std::cout << std::endl
                       << " -------------------------- Remark "
                          "---------------------------- "
-                      << std::endl;
-            std::cout << " Error will be at least O(10^-3) for given output "
-                      << std::endl;
-            std::cout << " This is because of the change from chi' to chi = "
-                         "pow(chi',2) "
-                      << std::endl;
-            std::cout << " ----------------------------------------------------"
-                         "---------- "
-                      << std::endl
                       << std::endl;
             std::cout << " --  " << UserVariables::variable_names[i]
                       << " Value = " << max_chf << std::endl;

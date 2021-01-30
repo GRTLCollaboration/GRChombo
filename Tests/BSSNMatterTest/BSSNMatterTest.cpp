@@ -328,9 +328,9 @@ int main()
     }
 
     if (failed == 0)
-        std::cout << "BSSN test passed..." << std::endl;
+        std::cout << "BSSN Matter test passed..." << std::endl;
     else
-        std::cout << "BSSN test failed..." << std::endl;
+        std::cout << "BSSN Matter test failed..." << std::endl;
 
     return failed;
 }
