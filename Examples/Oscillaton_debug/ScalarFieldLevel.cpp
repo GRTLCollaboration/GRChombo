@@ -22,8 +22,8 @@
 // Problem specific includes
 #include "ComputePack.hpp"
 #include "GammaCalculator.hpp"
-#include "InitialScalarData.hpp"
 #include "KerrBH.hpp"
+#include "OscillatonInitial.hpp"
 #include "Potential.hpp"
 #include "ScalarField.hpp"
 #include "SetValue.hpp"
@@ -50,12 +50,39 @@ void ScalarFieldLevel::initialData()
     if (m_verbosity)
         pout() << "ScalarFieldLevel::initialData " << m_level << endl;
 
-    // First set everything to zero then initial conditions for scalar field -
-    // here a Kerr BH and a scalar field profile
+    // information about the csv file data
+    const int lines = 100002;
+    const double spacing = 0.01; // in r for the values
+
+    std::array<double, 3> tmp = {0.0};
+    std::vector<double> lapse_values, grr_values, Pi_values;
+
+    std::string lapse_file(m_p.initial_data_prefix + "alpha001.csv");
+    ifstream ifs0(lapse_file);
+
+    std::string grr_file(m_p.initial_data_prefix + "grr001.csv");
+    ifstream ifs1(grr_file);
+
+    std::string Pi_file(m_p.initial_data_prefix + "Pi001.csv");
+    ifstream ifs2(Pi_file);
+
+    for (int i = 0; i < lines; ++i)
+    {
+        ifs0 >> tmp[0];
+        ifs1 >> tmp[1];
+        ifs2 >> tmp[2];
+
+        lapse_values.push_back(tmp[0]);
+        grr_values.push_back(tmp[1]);
+        Pi_values.push_back(tmp[2]);
+    }
+
+    // First set everything to zero then initial conditions for scalar field
     BoxLoops::loop(
-        make_compute_pack(SetValue(0.), KerrBH(m_p.kerr_params, m_dx),
-                          InitialScalarData(m_p.initial_params, m_dx)),
-        m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
+        make_compute_pack(SetValue(0.),
+                          OscillatonInitial(m_p.L, m_dx, m_p.center, spacing,
+                                     lapse_values, grr_values, Pi_values)),
+        m_state_new, m_state_new, INCLUDE_GHOST_CELLS, disable_simd());
 
     fillAllGhosts();
     BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
