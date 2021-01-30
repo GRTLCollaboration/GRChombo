@@ -18,12 +18,12 @@
 
 // For tag cells
 #include "FixedGridsTaggingCriterion.hpp"
-#include "HamTaggingCriterion.hpp"
 
 // Problem specific includes
 #include "ComputePack.hpp"
 #include "GammaCalculator.hpp"
-#include "OscillatonInitial.hpp"
+#include "InitialScalarData.hpp"
+#include "KerrBH.hpp"
 #include "Potential.hpp"
 #include "ScalarField.hpp"
 #include "SetValue.hpp"
@@ -50,39 +50,13 @@ void ScalarFieldLevel::initialData()
     if (m_verbosity)
         pout() << "ScalarFieldLevel::initialData " << m_level << endl;
 
-    // information about the csv file data
-    const int lines = 100002;
-    const double spacing = 0.01; // in r for the values
+    // First set everything to zero then initial conditions for scalar field -
+    // here a Kerr BH and a scalar field profile
+    BoxLoops::loop(
+        make_compute_pack(SetValue(0.), KerrBH(m_p.kerr_params, m_dx),
+                          InitialScalarData(m_p.initial_params, m_dx)),
+        m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
 
-    std::array<double, 3> tmp = {0.0};
-    std::vector<double> lapse_values, grr_values, Pi_values;
-
-    std::string lapse_file(m_p.initial_data_prefix + "alpha001.csv");
-    ifstream ifs0(lapse_file);
-
-    std::string grr_file(m_p.initial_data_prefix + "grr001.csv");
-    ifstream ifs1(grr_file);
-
-    std::string Pi_file(m_p.initial_data_prefix + "Pi001.csv");
-    ifstream ifs2(Pi_file);
-
-    for (int i = 0; i < lines; ++i)
-    {
-        ifs0 >> tmp[0];
-        ifs1 >> tmp[1];
-        ifs2 >> tmp[2];
-
-        lapse_values.push_back(tmp[0]);
-        grr_values.push_back(tmp[1]);
-        Pi_values.push_back(tmp[2]);
-    }
-
-    // Initial conditions for scalar field - Oscillaton
-    BoxLoops::loop(OscillatonInitial(m_p.L, m_dx, m_p.center, spacing,
-                                     lapse_values, grr_values, Pi_values),
-                   m_state_new, m_state_new, FILL_GHOST_CELLS, disable_simd());
-
-    // data is not conformally flat, so fix Gamma values
     fillAllGhosts();
     BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
                    EXCLUDE_GHOST_CELLS);
@@ -94,11 +68,10 @@ void ScalarFieldLevel::prePlotLevel()
     fillAllGhosts();
     Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
-    BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
-                       scalar_field, m_dx, m_p.G_Newton, c_Ham,
-                       Interval(c_Mom, c_Mom), c_Ham_abs_sum,
-                       Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
-                   m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+    BoxLoops::loop(
+        MatterConstraints<ScalarFieldWithPotential>(
+            scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom, c_Mom)),
+        m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 }
 
 // Things to do in RHS update, at each RK4 step
@@ -130,29 +103,14 @@ void ScalarFieldLevel::specificUpdateODE(GRLevelData &a_soln,
 
 void ScalarFieldLevel::preTagCells()
 {
-    // Pre tagging - fill ghost cells and calculate Ham terms
-    //fillAllGhosts();
-    //Potential potential(m_p.potential_params);
-    //ScalarFieldWithPotential scalar_field(potential);
-    //BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
-    //                   scalar_field, m_dx, m_p.G_Newton, c_Ham,
-    //                   Interval(c_Mom, c_Mom), c_Ham_abs_sum,
-    //                   Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
-    //               m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-}
-
-void ScalarFieldLevel::computeDiagnosticsTaggingCriterion(
-    FArrayBox &tagging_criterion, const FArrayBox &current_state_diagnostics)
-{
-//    BoxLoops::loop(HamTaggingCriterion(m_dx), current_state_diagnostics,
-//                   tagging_criterion);
+    // we don't need any ghosts filled for the fixed grids tagging criterion
+    // used here so don't fill any
 }
 
 void ScalarFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                                const FArrayBox &current_state)
 {
-    //    Fixed grids tagging
-        BoxLoops::loop(
-            FixedGridsTaggingCriterion(m_dx, m_level, 2.0 * m_p.L,
-            m_p.center), current_state, tagging_criterion);
+    BoxLoops::loop(
+        FixedGridsTaggingCriterion(m_dx, m_level, 2.0 * m_p.L, m_p.center),
+        current_state, tagging_criterion);
 }
