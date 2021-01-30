@@ -62,6 +62,7 @@ void ScalarFieldLevel::initialData()
                    EXCLUDE_GHOST_CELLS);
 }
 
+#ifdef CH_USE_HDF5
 // Things to do before outputting a checkpoint file
 void ScalarFieldLevel::prePlotLevel()
 {
@@ -73,6 +74,7 @@ void ScalarFieldLevel::prePlotLevel()
             scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom, c_Mom)),
         m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 }
+#endif
 
 // Things to do in RHS update, at each RK4 step
 void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
