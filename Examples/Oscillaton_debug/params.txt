@@ -4,6 +4,7 @@ verbosity = 0
 chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
 #restart_file = ScalarField_000000.3d.hdf5
+initial_data_prefix = Oscillaton_data/
 
 # 'N' is the number of subdivisions in each direction of a cubic box
 # 'L' is the length of the longest side of the box, dx_coarsest = L/N
