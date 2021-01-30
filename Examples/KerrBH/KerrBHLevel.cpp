@@ -8,9 +8,9 @@
 #include "CCZ4RHS.hpp"
 #include "ChiTaggingCriterion.hpp"
 #include "ComputePack.hpp"
-#include "Constraints.hpp"
 #include "KerrBHLevel.hpp"
 #include "NanCheck.hpp"
+#include "NewConstraints.hpp"
 #include "PositiveChiAndAlpha.hpp"
 #include "SetValue.hpp"
 #include "TraceARemoval.hpp"
@@ -49,12 +49,14 @@ void KerrBHLevel::initialData()
                    EXCLUDE_GHOST_CELLS);
 }
 
+#ifdef CH_USE_HDF5
 void KerrBHLevel::prePlotLevel()
 {
     fillAllGhosts();
-    BoxLoops::loop(Constraints(m_dx), m_state_new, m_state_diagnostics,
-                   EXCLUDE_GHOST_CELLS);
+    BoxLoops::loop(Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3)),
+                   m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 }
+#endif /* CH_USE_HDF5 */
 
 void KerrBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
                                   const double a_time)
