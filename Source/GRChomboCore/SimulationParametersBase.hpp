@@ -256,7 +256,7 @@ class SimulationParametersBase : public ChomboParameters
     int formulation; // Whether to use BSSN or CCZ4
 
     // Collection of parameters necessary for the CCZ4 RHS and extraction
-    // Note the gauge parameters are specific to MovingPuncturePlusGauge
+    // Note the gauge parameters are specific to MovingPunctureGauge
     // If you are using a different gauge, you need to load your parameters
     // in your own SimulationParameters class.
     CCZ4_params_t<> ccz4_params;

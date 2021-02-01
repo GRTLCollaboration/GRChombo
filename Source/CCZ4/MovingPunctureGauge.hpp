@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef MOVINGPUNCTUREPLUSGAUGE_HPP_
-#define MOVINGPUNCTUREPLUSGAUGE_HPP_
+#ifndef MOVINGPUNCTUREGAUGE_HPP_
+#define MOVINGPUNCTUREGAUGE_HPP_
 
 #include "DimensionDefinitions.hpp"
 #include "Tensor.hpp"
@@ -17,7 +17,7 @@
  * f(lapse) = -c*lapse^(p-2)
  * and a Gamma-driver shift condition
  **/
-class MovingPuncturePlusGauge
+class MovingPunctureGauge
 {
   public:
     struct params_t
@@ -40,7 +40,7 @@ class MovingPuncturePlusGauge
     params_t m_params;
 
   public:
-    MovingPuncturePlusGauge(const params_t &a_params) : m_params(a_params) {}
+    MovingPunctureGauge(const params_t &a_params) : m_params(a_params) {}
 
     template <class data_t, template <typename> class vars_t,
               template <typename> class diff2_vars_t>
@@ -64,4 +64,4 @@ class MovingPuncturePlusGauge
     }
 };
 
-#endif /* MOVINGPUNCTUREPLUSGAUGE_HPP_ */
+#endif /* MOVINGPUNCTUREGAUGE_HPP_ */

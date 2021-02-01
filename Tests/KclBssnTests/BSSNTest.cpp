@@ -216,7 +216,7 @@ int main()
         }
     }
 
-    CCZ4_params_t<MovingPuncturePlusGauge> params;
+    CCZ4_params_t<MovingPunctureGauge> params;
     params.kappa1 = 0.0;
     params.kappa2 = 0.0;
     params.kappa3 = 0.0;
@@ -241,11 +241,11 @@ int main()
     typedef ScalarField<Potential> ScalarFieldWithPotential;
     Potential my_potential(potential_params);
     ScalarFieldWithPotential my_scalar_field(my_potential);
-    BoxLoops::loop(
-        MatterCCZ4RHS<ScalarFieldWithPotential, MovingPuncturePlusGauge,
-                      FourthOrderDerivatives>(my_scalar_field, params, dx,
-                                              sigma, formulation, G_Newton),
-        in_fab, out_fab);
+    BoxLoops::loop(MatterCCZ4RHS<ScalarFieldWithPotential, MovingPunctureGauge,
+                                 FourthOrderDerivatives>(my_scalar_field,
+                                                         params, dx, sigma,
+                                                         formulation, G_Newton),
+                   in_fab, out_fab);
     BoxLoops::loop(
         MatterConstraints<ScalarFieldWithPotential>(
             my_scalar_field, dx, G_Newton, c_Ham, Interval(c_Mom1, c_Mom3)),

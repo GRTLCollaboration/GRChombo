@@ -10,7 +10,7 @@
 #include "CCZ4RHS.hpp"
 #include "Cell.hpp"
 #include "FourthOrderDerivatives.hpp"
-#include "MovingPuncturePlusGauge.hpp"
+#include "MovingPunctureGauge.hpp"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"
 #include "UserVariables.hpp" //This files needs NUM_VARS - total number of components
@@ -29,7 +29,7 @@
    an example of a matter_t. \sa CCZ4RHS(), ScalarField()
 */
 
-template <class matter_t, class gauge_t = MovingPuncturePlusGauge,
+template <class matter_t, class gauge_t = MovingPunctureGauge,
           class deriv_t = FourthOrderDerivatives>
 class MatterCCZ4RHS : public CCZ4RHS<gauge_t, deriv_t>
 {
