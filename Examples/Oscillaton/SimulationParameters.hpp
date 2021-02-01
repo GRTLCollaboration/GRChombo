@@ -28,6 +28,7 @@ class SimulationParameters : public SimulationParametersBase
     {
         pp.load("G_Newton", G_Newton, 1.0);
         pp.load("scalar_mass", potential_params.scalar_mass, 1.0);
+        pp.load("f_axion", potential_params.f_axion, 1.0);
         pp.load("initial_data_prefix", initial_data_prefix);
     }
 
