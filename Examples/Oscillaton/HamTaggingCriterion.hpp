@@ -21,7 +21,8 @@ class HamTaggingCriterion
 
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {
-        data_t criterion = current_cell.load_vars(c_Ham_abs_sum) * m_dx * m_dx;
+        auto Ham_abs_sum = current_cell.load_vars(c_Ham_abs_sum);
+        data_t criterion = sqrt(Ham_abs_sum) * m_dx;
 
         // Write back into the flattened Chombo box
         current_cell.store_vars(criterion, 0);

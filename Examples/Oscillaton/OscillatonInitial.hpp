@@ -6,6 +6,7 @@
 #ifndef OSCILLATONINITIAL_HPP_
 #define OSCILLATONINITIAL_HPP_
 
+#include "ADMConformalVars.hpp"
 #include "Cell.hpp"
 #include "CoordinateTransformations.hpp"
 #include "Coordinates.hpp"
@@ -43,19 +44,19 @@ class OscillatonInitial
     void compute(Cell<double> current_cell) const
     {
         // may want to add to existing values so load the vars
-        auto vars =
-            current_cell.template load_vars<MatterCCZ4<ScalarField<>>::Vars>();
+        ADMConformalVars::VarsWithGauge<double> vars;
         // assign them zero to be sure they are zeroed
         // including at boundaries where required
         VarsTools::assign(vars, 0.);
 
         // Define Coordinates
         const Coordinates<double> coords(current_cell, m_dx, m_center);
-        const double r = coords.get_radius();
         const double x = coords.x;
         const double y = coords.y;
         const double z = coords.z;
-        const double rho = sqrt(x * x + y * y);
+        const double r = coords.get_radius();
+        double rho2 = max(x * x + y * y, 1e-12);
+        double r2sin2theta = rho2;
 
         // Interpolate data from read in values
         const int indxL = static_cast<int>(floor(r / m_spacing));
@@ -65,9 +66,10 @@ class OscillatonInitial
         vars.lapse = m_lapse_values[indxL] +
                      (r / m_spacing - indxL) *
                          (m_lapse_values[indxH] - m_lapse_values[indxL]);
+        vars.lapse = max(vars.lapse, 1.0e-6);
 
         // the field values
-        vars.Pi +=
+        double Pi =
             m_Pi_values[indxL] +
             (r / m_spacing - indxL) * (m_Pi_values[indxH] - m_Pi_values[indxL]);
 
@@ -76,19 +78,24 @@ class OscillatonInitial
                            (r / m_spacing - indxL) *
                                (m_grr_values[indxH] - m_grr_values[indxL]);
         Tensor<2, double> spherical_gamma;
+        FOR2(i, j) { spherical_gamma[i][j] = 0.0; }
         spherical_gamma[0][0] = grr;
         spherical_gamma[1][1] = r * r;
-        spherical_gamma[2][2] = rho * rho; // r2 sin2theta
+        spherical_gamma[2][2] = r2sin2theta; //
         vars.h = CoordinateTransformations::spherical_to_cartesian_LL(
             spherical_gamma, x, y, z);
 
         // decompose for BSSN form
-        const double det_gamma = TensorAlgebra::compute_determinant(vars.h);
+        const double det_gamma = TensorAlgebra::compute_determinant_sym(vars.h);
         vars.chi = pow(det_gamma, -1.0 / 3.0);
+        vars.chi = max(vars.chi, 1.0e-6);
         FOR2(i, j) { vars.h[i][j] *= vars.chi; }
 
-        // store the values
+        // store the metric vars
         current_cell.store_vars(vars);
+        // store the matter vars
+        current_cell.store_vars(Pi, c_Pi);
+        current_cell.store_vars(0.0, c_phi);
     }
 
   protected:

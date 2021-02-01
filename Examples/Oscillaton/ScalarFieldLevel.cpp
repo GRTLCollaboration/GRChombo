@@ -78,6 +78,9 @@ void ScalarFieldLevel::initialData()
     }
 
     // Initial conditions for scalar field - Oscillaton
+    BoxLoops::loop(SetValue(0.0), m_state_new, m_state_new, FILL_GHOST_CELLS);
+    BoxLoops::loop(SetValue(0.0), m_state_diagnostics, m_state_diagnostics,
+                   FILL_GHOST_CELLS);
     BoxLoops::loop(OscillatonInitial(m_p.L, m_dx, m_p.center, spacing,
                                      lapse_values, grr_values, Pi_values),
                    m_state_new, m_state_new, FILL_GHOST_CELLS, disable_simd());
@@ -131,7 +134,7 @@ void ScalarFieldLevel::specificUpdateODE(GRLevelData &a_soln,
 void ScalarFieldLevel::preTagCells()
 {
     // Pre tagging - fill ghost cells and calculate Ham terms
-    fillAllGhosts();
+    fillAllEvolutionGhosts();
     Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
     BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
@@ -139,6 +142,7 @@ void ScalarFieldLevel::preTagCells()
                        Interval(c_Mom, c_Mom), c_Ham_abs_sum,
                        Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+    // fillAllGhosts();
 }
 
 void ScalarFieldLevel::computeDiagnosticsTaggingCriterion(
@@ -151,8 +155,8 @@ void ScalarFieldLevel::computeDiagnosticsTaggingCriterion(
 void ScalarFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                                const FArrayBox &current_state)
 {
-    //    Fixed grids tagging
-    //    BoxLoops::loop(
-    //        FixedGridsTaggingCriterion(m_dx, m_level, 2.0 * m_p.L,
-    //        m_p.center), current_state, tagging_criterion);
+    //        Fixed grids tagging
+    //        BoxLoops::loop(
+    //            FixedGridsTaggingCriterion(m_dx, m_level, 2.0 * m_p.L,
+    //            m_p.center), current_state, tagging_criterion);
 }
