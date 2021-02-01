@@ -10,7 +10,7 @@
 #include "CCZ4Vars.hpp"
 #include "Cell.hpp"
 #include "FourthOrderDerivatives.hpp"
-#include "MovingPuncturePlusGauge.hpp"
+#include "MovingPunctureGauge.hpp"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"
 #include "simd.hpp"
@@ -35,7 +35,7 @@ struct CCZ4_base_params_t
  * gauge and damping parameters. It inherits from CCZ4_base_params_t and
  * gauge_t::params_t
  */
-template <class gauge_t = MovingPuncturePlusGauge>
+template <class gauge_t = MovingPunctureGauge>
 struct CCZ4_params_t : public CCZ4_base_params_t, public gauge_t::params_t
 {
 };
@@ -47,7 +47,7 @@ struct CCZ4_params_t : public CCZ4_base_params_t, public gauge_t::params_t
  *in its scope: CCZ4RHS::Vars (the CCZ4 variables like conformal factor,
  *conformal metric, extrinsic curvature, etc).
  **/
-template <class gauge_t = MovingPuncturePlusGauge,
+template <class gauge_t = MovingPunctureGauge,
           class deriv_t = FourthOrderDerivatives>
 class CCZ4RHS
 {

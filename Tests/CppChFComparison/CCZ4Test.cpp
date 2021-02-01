@@ -199,7 +199,7 @@ int main()
         }
     }
 
-    CCZ4_params_t<MovingPuncturePlusGauge> params;
+    CCZ4_params_t<MovingPunctureGauge> params;
     params.kappa1 = 0.1;
     params.kappa2 = 0;
     params.kappa3 = 1;
@@ -213,9 +213,9 @@ int main()
     struct timeval begin, end;
     gettimeofday(&begin, NULL);
 
-    BoxLoops::loop(CCZ4RHS<MovingPuncturePlusGauge, FourthOrderDerivatives>(
-                       params, dx, sigma),
-                   in_fab, out_fab);
+    BoxLoops::loop(
+        CCZ4RHS<MovingPunctureGauge, FourthOrderDerivatives>(params, dx, sigma),
+        in_fab, out_fab);
 
     gettimeofday(&end, NULL);
 
