@@ -128,8 +128,8 @@ TP_target_mass_minus = 0.5
 TP_offset_plus = 6.10679
 TP_offset_minus = -6.10679
 #TP_swap_xz = false
-TP_momentum_plus = -0.0841746 -0.000510846 0.0
-TP_momentum_minus = 0.0841746  0.000510846 0.0
+TP_momentum_plus = -0.000510846 0.0841746 0.0
+TP_momentum_minus = 0.000510846 -0.0841746 0.0
 TP_spin_plus = 0.0 0.0 0.0
 TP_spin_minus = 0.0 0.0 0.0
 
