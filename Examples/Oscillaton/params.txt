@@ -1,9 +1,9 @@
 #Params for runtime inputs
 
 verbosity = 0
-chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Oscillaton/ScalarField2_
-plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Oscillaton/ScalarField2p_
-#restart_file = ScalarField_000000.3d.hdf5
+chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Oscillaton/ScalarField1_
+plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Oscillaton/ScalarField1p_
+#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Oscillaton/ScalarField2_000200.3d.hdf5
 
 # 'N' is the number of subdivisions in each direction of a cubic box
 # 'L' is the length of the longest side of the box, dx_coarsest = L/N
@@ -74,7 +74,7 @@ plot_interval = 1
 num_plot_vars = 3
 plot_vars = chi phi Ham_abs_sum
 dt_multiplier = 0.25
-stop_time = 100.0
+stop_time = 500.0
 
 #Lapse evolution
 lapse_power = 1.0
@@ -104,5 +104,5 @@ G_Newton = 1.0
 # Scalar field initial data
 # data for https://arxiv.org/abs/1808.04668 (Fig 1)
 scalar_mass = 1.0
-f_axion = 0.05 # 1.0 stable, 0.06 oscillatory, 0.05 collapse
+f_axion = 0.01 # 1.0 stable, 0.06 oscillatory, 0.05 collapse
 initial_data_prefix = Oscillaton_data/

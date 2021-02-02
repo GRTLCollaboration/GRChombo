@@ -48,7 +48,7 @@ void ScalarFieldLevel::initialData()
 {
     CH_TIME("ScalarFieldLevel::initialData");
     if (m_verbosity)
-        pout() << "ScalarFieldLevel::initialData " << m_level << endl;
+       pout() << "ScalarFieldLevel::initialData " << m_level << endl;
 
     // information about the csv file data
     const int lines = 100002;

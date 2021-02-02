@@ -145,9 +145,9 @@ void ScalarFieldLevel::specificPostTimeStep()
 
         // Now refresh the interpolator and do the interpolation
         bool fill_ghosts = false;
-        m_gr_amr.m_interpolator->refresh(fill_ghosts);
-        m_gr_amr.fill_multilevel_ghosts(
-            VariableType::diagnostic, Interval(c_Stress, c_BHMom));
+        m_gr_amr.m_interpolator->refresh(); //fill_ghosts);
+        //m_gr_amr.fill_multilevel_ghosts(
+        //    VariableType::diagnostic, Interval(c_Stress, c_BHMom));
 
         ForceExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
                                       m_restart_time);

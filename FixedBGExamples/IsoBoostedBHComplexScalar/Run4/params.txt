@@ -2,9 +2,9 @@
 
 verbosity = 0
 integral_filename = RhoIntegral
-chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost4I_chk
-plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost4I_plt
-#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost4I_chk001000.3d.hdf5
+chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost4_chk
+plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost4_plt
+#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost4_chk001500.3d.hdf5
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
@@ -14,15 +14,15 @@ N3 = 64
 
 # Length of longest box side, dx_coarsest = L/N(max)
 # NB if non cubic, this determines dx for all sides
-L = 2056
+L = 1024
 
 # Regridding
 tag_buffer_size = 0
-regrid_length = 2056
+#regrid_length = 512
 
 # Level data
 # Maximum number of times you can regrid above coarsest level
-max_level = 8 # There are (max_level+1) grids, so min is zero
+max_level = 7 # There are (max_level+1) grids, so min is zero
 # Frequency of regridding at each level
 # Need one for each level, ie max_level+1 items
 # Generally you do not need to regrid frequently on every level
@@ -63,34 +63,34 @@ nonzero_asymptotic_values = 1.0
 # (the rest are assumed to be all sommerfeld)
 #num_extrapolating_vars = 2
 #extrapolating_vars = phi Pi
-extrapolation_order = 1
+extrapolation_order = 0
 
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 500
-plot_interval = 100
-num_plot_vars = 2
-plot_vars = Source BHMom
-dt_multiplier = 0.1
-stop_time = 10000.0
+plot_interval = 10
+num_plot_vars = 3
+plot_vars = Source Stress xMom
+dt_multiplier = 0.04
+stop_time = 2000.0
 
 # coefficient for KO numerical dissipation
 # NB must be less than 0.5 for stability
 sigma = 1.0
 
 # SF Initial data
-scalar_mass = 0.05
-field_amplitude_re = 0.1
-field_amplitude_im = 0.1
+scalar_mass = 0.5
+field_amplitude_re = 1.0
+field_amplitude_im = 1.0
 # not used
 f_axion = 0.0
 
 # Boosted BH initial data, boost in x direction, spin in z direction
 bh_mass = 1.0
 bh_velocity = 0.4 # This is a, so needs to be <= M
-inner_r = 3.0
-outer_r = 200.0
+inner_r = 1.0
+outer_r = 500.0
 
 # for extraction
 activate_extraction = 0

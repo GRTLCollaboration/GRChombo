@@ -6,13 +6,11 @@ import matplotlib.pyplot as plt;
 
 # output data from running merger
 M = 1.0
-mu = 0.05
+mu = 0.5
 v = 0.1
 r = 3000
 symmetry = 4
-#data1a = np.loadtxt("RhoIntegralOld.dat")
 data1 = np.loadtxt("RhoIntegral.dat")
-data2 = np.loadtxt("Force_integrals.dat")
 
 # make the plot
 fig = plt.figure()
@@ -20,19 +18,7 @@ fig = plt.figure()
 # flux dataset out
 labelstring = "Source"
 timedata = data1[:,0]
-Fdata = 4*data1[:,1]
-plt.plot(timedata, Fdata, '--', lw = 1.0, label=labelstring)
-
-# flux dataset out
-labelstring = "Outerflux"
-timedata = data2[:,0]
-Fdata = data2[:,3]
-plt.plot(timedata, Fdata, '--', lw = 1.0, label=labelstring)
-
-# flux dataset out
-labelstring = "Innerflux"
-timedata = data2[:,0]
-Fdata = data2[:,1]
+Fdata = symmetry*data1[:,1]
 plt.plot(timedata, Fdata, '--', lw = 1.0, label=labelstring)
 
 # make the plot look nice
@@ -40,7 +26,7 @@ plt.xlabel("time")
 plt.ylabel("Force")
 #plt.xlim(0, 1000)
 #plt.ylim(1e-1, 1e2)
-plt.legend(loc=2)
+#plt.legend(loc=2)
 
 # save as png image
 filename = "FvsT" + "_mu" + str(mu) + ".png"
