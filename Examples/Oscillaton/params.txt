@@ -12,8 +12,8 @@ plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Oscillaton/ScalarField1p
 # NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full', 
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
-N_full = 128
-L_full = 256
+N_full = 64
+L_full = 128
 
 # Regridding - in this example use a fixed grid
 #tag_buffer_size = 0
@@ -21,16 +21,16 @@ L_full = 256
 
 # or for Ham_abs_sum
 tag_buffer_size = 2
-regrid_interval = 1 1 1 1 0 0 0
-regrid_threshold = 0.01
-#regrid_thresholds = 0.01 0.01 0.01 0.01 0.1 0.1 0.1
+regrid_interval = 0 0 4 1 0 0 0
+regrid_threshold = 0.05
+#regrid_thresholds = 0.1 0.1 0.1 0.1 0.1 0.1 0.1
 
 # Level data
 # Maximum number of times you can regrid above coarsest level
-max_level = 7 # There are (max_level+1) grids, so min is zero
+max_level = 6 # There are (max_level+1) grids, so min is zero
 # Max and min box size - for load balancing
-max_box_size = 16
-min_box_size = 16
+max_box_size = 8
+min_box_size = 8
 
 #boundaries and periodicity of grid
 #Periodic directions - 0 = false, 1 = true
@@ -104,5 +104,5 @@ G_Newton = 1.0
 # Scalar field initial data
 # data for https://arxiv.org/abs/1808.04668 (Fig 1)
 scalar_mass = 1.0
-f_axion = 0.01 # 1.0 stable, 0.06 oscillatory, 0.05 collapse
+f_axion = 0.05 # 1.0 stable, 0.06 oscillatory, 0.05 collapse
 initial_data_prefix = Oscillaton_data/
