@@ -37,7 +37,7 @@ class MatterCCZ4RHS : public CCZ4RHS<gauge_t, deriv_t>
     // Use this alias for the same template instantiation as this class
     using CCZ4 = CCZ4RHS<gauge_t, deriv_t>;
 
-    using params_t = CCZ4_params_t<gauge_t>;
+    using params_t = CCZ4_params_t<typename gauge_t::params_t>;
 
     template <class data_t>
     using MatterVars = typename matter_t::template Vars<data_t>;
@@ -45,10 +45,11 @@ class MatterCCZ4RHS : public CCZ4RHS<gauge_t, deriv_t>
     template <class data_t>
     using MatterDiff2Vars = typename matter_t::template Diff2Vars<data_t>;
 
-    template <class data_t> using CCZ4Vars = typename CCZ4::Vars<data_t>;
+    template <class data_t>
+    using CCZ4Vars = typename CCZ4::template Vars<data_t>;
 
     template <class data_t>
-    using CCZ4Diff2Vars = typename CCZ4::Diff2Vars<data_t>;
+    using CCZ4Diff2Vars = typename CCZ4::template Diff2Vars<data_t>;
 
     // Inherit the variable definitions from CCZ4RHS + matter_t
     template <class data_t>

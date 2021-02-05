@@ -25,9 +25,11 @@
  */
 struct CCZ4_base_params_t
 {
-    double kappa1; //!< Damping parameter kappa1 as in arXiv:1106.2254
-    double kappa2; //!< Damping parameter kappa2 as in arXiv:1106.2254
-    double kappa3; //!< Damping parameter kappa3 as in arXiv:1106.2254
+    double kappa1;    //!< Damping parameter kappa1 as in arXiv:1106.2254
+    double kappa2;    //!< Damping parameter kappa2 as in arXiv:1106.2254
+    double kappa3;    //!< Damping parameter kappa3 as in arXiv:1106.2254
+    bool covariantZ4; //!< if true, replace kappa1->kappa1/lapse as in
+                      //!<  arXiv:1307.7391 eq. 27
 };
 
 /// Parameter struct for CCZ4
@@ -35,8 +37,8 @@ struct CCZ4_base_params_t
  * gauge and damping parameters. It inherits from CCZ4_base_params_t and
  * gauge_t::params_t
  */
-template <class gauge_t = MovingPunctureGauge>
-struct CCZ4_params_t : public CCZ4_base_params_t, public gauge_t::params_t
+template <class gauge_params_t = MovingPunctureGauge::params_t>
+struct CCZ4_params_t : public CCZ4_base_params_t, public gauge_params_t
 {
 };
 
@@ -58,7 +60,7 @@ class CCZ4RHS
         USE_BSSN
     };
 
-    using params_t = CCZ4_params_t<gauge_t>;
+    using params_t = CCZ4_params_t<typename gauge_t::params_t>;
 
     /// CCZ4 variables
     template <class data_t> using Vars = CCZ4Vars::VarsWithGauge<data_t>;

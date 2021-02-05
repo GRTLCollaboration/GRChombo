@@ -44,9 +44,11 @@ class SimulationParametersBase : public ChomboParameters
         pp.load("kappa1", ccz4_base_params.kappa1, 0.1);
         pp.load("kappa2", ccz4_base_params.kappa2, 0.0);
         pp.load("kappa3", ccz4_base_params.kappa3, 1.0);
+        pp.load("covariantZ4", ccz4_base_params.covariantZ4, true);
         ccz4_params.kappa1 = ccz4_base_params.kappa1;
         ccz4_params.kappa2 = ccz4_base_params.kappa2;
         ccz4_params.kappa3 = ccz4_base_params.kappa3;
+        ccz4_params.covariantZ4 = ccz4_base_params.covariantZ4;
 
         // Dissipation
         pp.load("sigma", sigma, 0.1);
@@ -167,6 +169,7 @@ class SimulationParametersBase : public ChomboParameters
             warn_parameter("kappa3", ccz4_params.kappa3,
                            ccz4_params.kappa3 == 0.0,
                            "setting to 0.0 as required for BSSN");
+            // no warning necessary for ccz4_params.covariantZ4
             ccz4_params.kappa1 = 0.0;
             ccz4_params.kappa2 = 0.0;
             ccz4_params.kappa3 = 0.0;
@@ -174,23 +177,11 @@ class SimulationParametersBase : public ChomboParameters
 
         // only warn for gauge parameters as there are legitimate cases you may
         // want to deviate from the norm
-        warn_parameter("shift_Gamma_coeff", ccz4_params.shift_Gamma_coeff,
-                       abs(ccz4_params.shift_Gamma_coeff - 0.75) <
-                           std::numeric_limits<double>::epsilon(),
-                       "usually set to 0.75");
         warn_parameter("lapse_advec_coeff", ccz4_params.lapse_advec_coeff,
                        min(abs(ccz4_params.lapse_advec_coeff),
                            abs(ccz4_params.lapse_advec_coeff - 1.0)) <
                            std::numeric_limits<double>::epsilon(),
                        "usually set to 0.0 or 1.0");
-        warn_parameter("shift_advec_coeff", ccz4_params.shift_advec_coeff,
-                       min(abs(ccz4_params.shift_advec_coeff),
-                           abs(ccz4_params.shift_advec_coeff - 1.0)) <
-                           std::numeric_limits<double>::epsilon(),
-                       "usually set to 0.0 or 1.0");
-        warn_parameter("eta", ccz4_params.eta,
-                       ccz4_params.eta > 0.1 && ccz4_params.eta < 10,
-                       "usually O(1/M_ADM) so typically O(1) in code units");
         warn_parameter("lapse_power", ccz4_params.lapse_power,
                        abs(ccz4_params.lapse_power - 1.0) <
                            std::numeric_limits<double>::epsilon(),
@@ -199,6 +190,18 @@ class SimulationParametersBase : public ChomboParameters
                        abs(ccz4_params.lapse_coeff - 2.0) <
                            std::numeric_limits<double>::epsilon(),
                        "set to 2.0 for 1+log slicing");
+        warn_parameter("shift_Gamma_coeff", ccz4_params.shift_Gamma_coeff,
+                       abs(ccz4_params.shift_Gamma_coeff - 0.75) <
+                           std::numeric_limits<double>::epsilon(),
+                       "usually set to 0.75");
+        warn_parameter("shift_advec_coeff", ccz4_params.shift_advec_coeff,
+                       min(abs(ccz4_params.shift_advec_coeff),
+                           abs(ccz4_params.shift_advec_coeff - 1.0)) <
+                           std::numeric_limits<double>::epsilon(),
+                       "usually set to 0.0 or 1.0");
+        warn_parameter("eta", ccz4_params.eta,
+                       ccz4_params.eta > 0.1 && ccz4_params.eta < 10,
+                       "usually O(1/M_ADM) so typically O(1) in code units");
 
         // Now extraction parameters
         FOR1(idir)

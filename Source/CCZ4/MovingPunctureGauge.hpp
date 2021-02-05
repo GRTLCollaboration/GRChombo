@@ -22,18 +22,20 @@ class MovingPunctureGauge
   public:
     struct params_t
     {
-        double shift_Gamma_coeff = 0.75; //!< Gives the F in \f$\partial_t
-                                         //!  \beta^i =  F B^i\f$
-        double lapse_advec_coeff = 0.;   //!< Switches advection terms in
-                                         //! the lapse condition on/off
-        double shift_advec_coeff = 0.;   //!< Switches advection terms in the
-                                         //! shift condition on/off
-        double eta = 1.; //!< The eta in \f$\partial_t B^i = \partial_t \tilde
-                         //!\Gamma - \eta B^i\f$
+        // lapse params:
+        double lapse_advec_coeff = 0.; //!< Switches advection terms in
+                                       //! the lapse condition on/off
         double lapse_power = 1.; //!< The power p in \f$\partial_t \alpha = - c
                                  //!\alpha^p(K-2\Theta)\f$
         double lapse_coeff = 2.; //!< The coefficient c in \f$\partial_t \alpha
                                  //!= -c \alpha^p(K-2\Theta)\f$
+        // shift params:
+        double shift_Gamma_coeff = 0.75; //!< Gives the F in \f$\partial_t
+                                         //!  \beta^i =  F B^i\f$
+        double shift_advec_coeff = 0.;   //!< Switches advection terms in the
+                                         //! shift condition on/off
+        double eta = 1.; //!< The eta in \f$\partial_t B^i = \partial_t \tilde
+                         //!\Gamma - \eta B^i\f$
     };
 
   protected:

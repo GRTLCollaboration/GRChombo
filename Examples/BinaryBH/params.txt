@@ -97,7 +97,7 @@ eta = 1.0
 kappa1 = 0.1
 kappa2 = 0
 kappa3 = 1.0
-covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
+covariantZ4 = 1 # 0: keep kappa1; 1 [default]: replace kappa1 -> kappa1/lapse
 
 # coefficient for KO numerical dissipation
 sigma = 1.0
