@@ -10,16 +10,14 @@
 #ifndef CCZ4RHS_IMPL_HPP_
 #define CCZ4RHS_IMPL_HPP_
 
-#define COVARIANTZ4
 #include "DimensionDefinitions.hpp"
 #include "GRInterval.hpp"
 #include "VarsTools.hpp"
 
 template <class gauge_t, class deriv_t>
-inline CCZ4RHS<gauge_t, deriv_t>::CCZ4RHS(CCZ4_params_t<gauge_t> a_params,
-                                          double a_dx, double a_sigma,
-                                          int a_formulation,
-                                          double a_cosmological_constant)
+inline CCZ4RHS<gauge_t, deriv_t>::CCZ4RHS(
+    CCZ4_params_t<typename gauge_t::params_t> a_params, double a_dx,
+    double a_sigma, int a_formulation, double a_cosmological_constant)
     : m_params(a_params), m_gauge(a_params), m_sigma(a_sigma),
       m_formulation(a_formulation),
       m_cosmological_constant(a_cosmological_constant), m_deriv(a_dx)
@@ -155,11 +153,11 @@ void CCZ4RHS<gauge_t, deriv_t>::rhs_equation(
         }
     }
 
-#ifdef COVARIANTZ4
-    data_t kappa1_lapse = m_params.kappa1;
-#else
-    data_t kappa1_lapse = m_params.kappa1 * vars.lapse;
-#endif
+    data_t kappa1_times_lapse;
+    if (m_params.covariantZ4)
+        kappa1_times_lapse = m_params.kappa1;
+    else
+        kappa1_times_lapse = m_params.kappa1 * vars.lapse;
 
     if (m_formulation == USE_BSSN)
     {
@@ -177,7 +175,7 @@ void CCZ4RHS<gauge_t, deriv_t>::rhs_equation(
                 (ricci.scalar - tr_A2 +
                  ((GR_SPACEDIM - 1.0) / (double)GR_SPACEDIM) * vars.K * vars.K -
                  2 * vars.Theta * vars.K) -
-            0.5 * vars.Theta * kappa1_lapse *
+            0.5 * vars.Theta * kappa1_times_lapse *
                 ((GR_SPACEDIM + 1) + m_params.kappa2 * (GR_SPACEDIM - 1)) -
             Z_dot_d1lapse;
 
@@ -185,7 +183,8 @@ void CCZ4RHS<gauge_t, deriv_t>::rhs_equation(
         rhs.K =
             advec.K +
             vars.lapse * (ricci.scalar + vars.K * (vars.K - 2 * vars.Theta)) -
-            kappa1_lapse * GR_SPACEDIM * (1 + m_params.kappa2) * vars.Theta -
+            kappa1_times_lapse * GR_SPACEDIM * (1 + m_params.kappa2) *
+                vars.Theta -
             tr_covd2lapse;
         rhs.K += -2 * vars.lapse * GR_SPACEDIM / (GR_SPACEDIM - 1.) *
                  m_cosmological_constant;
@@ -198,7 +197,7 @@ void CCZ4RHS<gauge_t, deriv_t>::rhs_equation(
                           (divshift * (chris.contracted[i] +
                                        2 * m_params.kappa3 * Z_over_chi[i]) -
                            2 * vars.lapse * vars.K * Z_over_chi[i]) -
-                      2 * kappa1_lapse * Z_over_chi[i];
+                      2 * kappa1_times_lapse * Z_over_chi[i];
         FOR1(j)
         {
             Gammadot[i] +=
