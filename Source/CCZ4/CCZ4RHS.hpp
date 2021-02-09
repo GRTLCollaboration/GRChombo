@@ -120,6 +120,11 @@ class CCZ4RHS
 
 // This is here for backwards compatibility though the CCZ4RHS class should be
 // used in future hence mark as deprecated
+#ifdef __INTEL_COMPILER
+// Intel compiler bug means a spurious warning is printed (tinyurl.com/y9vfgj9j)
+// Supress the warning with this pragma
+#pragma warning(disable : 2651)
+#endif
 using CCZ4 [[deprecated("Use CCZ4RHS instead")]] = CCZ4RHS<>;
 
 #endif /* CCZ4RHS_HPP_ */
