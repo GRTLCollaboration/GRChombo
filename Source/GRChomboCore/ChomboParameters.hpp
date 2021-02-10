@@ -36,7 +36,10 @@ class ChomboParameters
     {
         pp.load("verbosity", verbosity, 0);
         // Grid setup
-        pp.load("num_ghosts", num_ghosts, 3);
+        pp.load("max_spatial_derivative_order", max_spatial_derivative_order,
+                4);
+        pp.load("num_ghosts", num_ghosts,
+                (max_spatial_derivative_order == 6) ? 4 : 3);
         pp.load("tag_buffer_size", tag_buffer_size, 3);
         pp.load("grid_buffer_size", grid_buffer_size, 8);
         pp.load("dt_multiplier", dt_multiplier, 0.25);
@@ -279,11 +282,19 @@ class ChomboParameters
     {
         check_parameter("L", L, L > 0.0, "must be > 0.0");
         check_parameter("max_level", max_level, max_level >= 0, "must be >= 0");
-        // the following check assumes you will be taking some fourth (or
-        // higher) order one-sided derivatives
-        check_parameter("num_ghosts", num_ghosts,
-                        (num_ghosts >= 3) && (num_ghosts <= block_factor),
-                        "must be >= 3 and <= block_factor/min_box_size");
+        check_parameter("max_spatial_derivative_order",
+                        max_spatial_derivative_order,
+                        max_spatial_derivative_order == 4 ||
+                            max_spatial_derivative_order == 6,
+                        "only 4 and 6 are supported");
+        // the following check assumes you will be taking one-sided derivatives
+        // of the order given by max_spatial_derivative_order
+        check_parameter(
+            "num_ghosts", num_ghosts,
+            (num_ghosts >= ((max_spatial_derivative_order == 6) ? 4 : 3)) &&
+                (num_ghosts <= block_factor),
+            "must be >= 3 (4th order derivatives) or 4 (6th order derivatives) "
+            "and <= block_factor/min_box_size");
         check_parameter("tag_buffer_size", tag_buffer_size,
                         tag_buffer_size >= 0, "must be >= 0");
         // assume ref_ratio is always 2
@@ -369,13 +380,16 @@ class ChomboParameters
     int verbosity;
     double L;                               // Physical sidelength of the grid
     std::array<double, CH_SPACEDIM> center; // grid center
-    IntVect ivN;            // The number of grid cells in each dimension
-    double coarsest_dx;     // The coarsest resolution
-    int max_level;          // the max number of regriddings to do
-    int num_ghosts;         // must be at least 3 for KO dissipation
-    int tag_buffer_size;    // Amount the tagged region is grown by
-    int grid_buffer_size;   // Number of cells between level
-    Vector<int> ref_ratios; // ref ratios between levels
+    IntVect ivN;        // The number of grid cells in each dimension
+    double coarsest_dx; // The coarsest resolution
+    int max_level;      // the max number of regriddings to do
+    int max_spatial_derivative_order; // The maximum order of the spatial
+                                      // derivatives This parameter does nothing
+                                      // in Chombo but can be used in examples
+    int num_ghosts;                   // must be at least 3 for KO dissipation
+    int tag_buffer_size;              // Amount the tagged region is grown by
+    int grid_buffer_size;             // Number of cells between level
+    Vector<int> ref_ratios;           // ref ratios between levels
     // boundaries.
     Vector<int> regrid_interval; // steps between regrid at each level
     int max_steps;
