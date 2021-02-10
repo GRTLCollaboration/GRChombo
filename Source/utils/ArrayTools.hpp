@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <array>
 #include <string>
+#include <vector>
 
 /// A place for tools that operate on std::arrays
 namespace ArrayTools
@@ -50,6 +51,21 @@ std::string to_string(const std::array<T, N> a_array)
     out += std::to_string(a_array[N - 1]);
     return out;
 }
+
+// SFINAE for std::arrays and std::vectors
+template <typename T> struct is_std_array_or_vector : std::false_type
+{
+};
+
+template <typename elem_t>
+struct is_std_array_or_vector<std::vector<elem_t>> : std::true_type
+{
+};
+
+template <typename elem_t, std::size_t N>
+struct is_std_array_or_vector<std::array<elem_t, N>> : std::true_type
+{
+};
 } // namespace ArrayTools
 
 #endif /* ARRAYTOOLS_HPP */
