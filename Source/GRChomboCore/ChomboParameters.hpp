@@ -294,7 +294,7 @@ class ChomboParameters
             (num_ghosts >= ((max_spatial_derivative_order == 6) ? 4 : 3)) &&
                 (num_ghosts <= block_factor),
             "must be >= 3 (4th order derivatives) or 4 (6th order derivatives) "
-            "and <= block_factor/min_box_size");
+            "and <= min_box_size (aka block_factor)");
         check_parameter("tag_buffer_size", tag_buffer_size,
                         tag_buffer_size >= 0, "must be >= 0");
         // assume ref_ratio is always 2
@@ -384,12 +384,12 @@ class ChomboParameters
     double coarsest_dx; // The coarsest resolution
     int max_level;      // the max number of regriddings to do
     int max_spatial_derivative_order; // The maximum order of the spatial
-                                      // derivatives This parameter does nothing
+                                      // derivatives - does nothing
                                       // in Chombo but can be used in examples
-    int num_ghosts;                   // must be at least 3 for KO dissipation
-    int tag_buffer_size;              // Amount the tagged region is grown by
-    int grid_buffer_size;             // Number of cells between level
-    Vector<int> ref_ratios;           // ref ratios between levels
+    int num_ghosts;         // min dependent on max_spatial_derivative_order
+    int tag_buffer_size;    // Amount the tagged region is grown by
+    int grid_buffer_size;   // Number of cells between level
+    Vector<int> ref_ratios; // ref ratios between levels
     // boundaries.
     Vector<int> regrid_interval; // steps between regrid at each level
     int max_steps;
