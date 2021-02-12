@@ -71,8 +71,8 @@ nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 500
 plot_interval = 1
-num_plot_vars = 3
-plot_vars = chi phi Ham_abs_sum
+num_plot_vars = 4
+plot_vars = chi phi Ham_abs_sum Ham
 dt_multiplier = 0.25
 stop_time = 500.0
 
