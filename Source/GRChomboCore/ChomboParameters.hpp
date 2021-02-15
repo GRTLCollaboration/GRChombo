@@ -248,34 +248,31 @@ class ChomboParameters
                                          (ivN[idir] + 1) * coarsest_dx;
         }
 
-        // Grid center
-        // now that L is surely set, get center
+        // First work out the default center ignoring reflective BCs
+        // but taking into account different grid lengths in each direction
+        std::array<double, CH_SPACEDIM> default_center;
 #if CH_SPACEDIM == 3
-        pp.load("center", center,
-                {0.5 * Ni[0] * coarsest_dx, 0.5 * Ni[1] * coarsest_dx,
-                 0.5 * Ni[2] * coarsest_dx}); // default to center
+        default_center = {0.5 * Ni[0] * coarsest_dx, 0.5 * Ni[1] * coarsest_dx,
+                          0.5 * Ni[2] * coarsest_dx};
 #elif CH_SPACEDIM == 2
-        pp.load("center", center,
-                {0.5 * Ni[0] * coarsest_dx,
-                 0.5 * Ni[1] * coarsest_dx}); // default to center
+        default_center = {0.5 * Ni[0] * coarsest_dx, 0.5 * Ni[1] * coarsest_dx};
 #endif
-
+        // Now take into account reflective BCs
         FOR1(idir)
         {
             if ((boundary_params.lo_boundary[idir] ==
                  BoundaryConditions::REFLECTIVE_BC) &&
                 (boundary_params.hi_boundary[idir] !=
                  BoundaryConditions::REFLECTIVE_BC))
-                center[idir] = 0.;
+                default_center[idir] = 0.;
             else if ((boundary_params.hi_boundary[idir] ==
                       BoundaryConditions::REFLECTIVE_BC) &&
                      (boundary_params.lo_boundary[idir] !=
                       BoundaryConditions::REFLECTIVE_BC))
-                center[idir] = coarsest_dx * Ni[idir];
+                default_center[idir] = coarsest_dx * Ni[idir];
         }
-        pout() << "Center has been set to: ";
-        FOR1(idir) { pout() << center[idir] << " "; }
-        pout() << endl;
+
+        pp.load("center", center, default_center); // default to center
     }
 
     void check_params()
