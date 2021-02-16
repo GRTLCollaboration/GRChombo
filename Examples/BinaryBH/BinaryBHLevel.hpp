@@ -8,6 +8,7 @@
 
 #include "DefaultLevelFactory.hpp"
 #include "GRAMRLevel.hpp"
+// TPAMR.hpp includes BHAMR.hpp
 #include "TPAMR.hpp"
 
 class BinaryBHLevel : public GRAMRLevel

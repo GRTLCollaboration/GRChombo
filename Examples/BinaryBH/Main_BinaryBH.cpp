@@ -17,6 +17,7 @@
 #include "MultiLevelTask.hpp"
 #include "SetupFunctions.hpp"
 #include "SimulationParameters.hpp"
+// TPAMR.hpp includes BHAMR.hpp
 #include "TPAMR.hpp" // TPAMR code conditional compiled on USE_TWOPUNCTURES
 
 // Problem specific includes:

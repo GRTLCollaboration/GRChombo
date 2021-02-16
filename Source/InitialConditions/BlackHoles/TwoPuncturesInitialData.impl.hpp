@@ -17,23 +17,28 @@ void TwoPuncturesInitialData::compute(Cell<double> current_cell) const
     VarsTools::assign(vars, 0.);
 
     Coordinates<double> coords(current_cell, m_dx, m_center);
-    Tensor<2, double> h_phys, extrinsic_K;
+    Tensor<2, double> h_phys, K_tensor;
     Tensor<1, double> shift, Z3;
     double lapse, Theta;
 
-    interpolate_tp_vars(coords, h_phys, extrinsic_K, lapse, shift, Theta, Z3);
+    interpolate_tp_vars(coords, h_phys, K_tensor, lapse, shift, Theta, Z3);
 
+    using namespace TensorAlgebra;
     // analytically set Bowen-York properties below (e.g. conformal flatness,
     // tracefree K)
 
     // metric variables
-    vars.chi = 1.0 / h_phys[0][0];
-    FOR1(i) { vars.h[i][i] = 1.0; }
+    vars.chi = pow(compute_determinant_sym(h_phys), -1. / 3.);
+    FOR1(i)
+    {
+        // Bowen-York data is conformally flat
+        vars.h[i][i] = 1.0;
+    }
 
     // extrinsic curvature
-    FOR2(i, j) { vars.A[i][j] = vars.chi * extrinsic_K[i][j]; }
+    FOR2(i, j) { vars.A[i][j] = vars.chi * K_tensor[i][j]; }
     // conformal flatness means h_UU = h
-    TensorAlgebra::make_trace_free(vars.A, vars.h, vars.h);
+    make_trace_free(vars.A, vars.h, vars.h);
 
     // gauge
     vars.lapse = lapse;
@@ -43,7 +48,7 @@ void TwoPuncturesInitialData::compute(Cell<double> current_cell) const
 
 void TwoPuncturesInitialData::interpolate_tp_vars(
     const Coordinates<double> &coords, Tensor<2, double> &out_h_phys,
-    Tensor<2, double> &out_extrinsic_K, double &out_lapse,
+    Tensor<2, double> &out_K_tensor, double &out_lapse,
     Tensor<1, double> &out_shift, double &out_Theta,
     Tensor<1, double> &out_Z3) const
 {
@@ -65,12 +70,12 @@ void TwoPuncturesInitialData::interpolate_tp_vars(
     out_h_phys[2][2] = TP_state[g33];
 
     // extrinsic curvature
-    out_extrinsic_K[0][0] = TP_state[K11];
-    out_extrinsic_K[0][1] = out_extrinsic_K[1][0] = TP_state[K12];
-    out_extrinsic_K[0][2] = out_extrinsic_K[2][0] = TP_state[K13];
-    out_extrinsic_K[1][1] = TP_state[K22];
-    out_extrinsic_K[1][2] = out_extrinsic_K[2][1] = TP_state[K23];
-    out_extrinsic_K[2][2] = TP_state[K33];
+    out_K_tensor[0][0] = TP_state[K11];
+    out_K_tensor[0][1] = out_K_tensor[1][0] = TP_state[K12];
+    out_K_tensor[0][2] = out_K_tensor[2][0] = TP_state[K13];
+    out_K_tensor[1][1] = TP_state[K22];
+    out_K_tensor[1][2] = out_K_tensor[2][1] = TP_state[K23];
+    out_K_tensor[2][2] = TP_state[K33];
 
     // Z4 vector
     out_Z3[0] = TP_state[Z1];
