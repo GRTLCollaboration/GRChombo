@@ -9,11 +9,14 @@ plot_prefix = ScalarFieldp_
 # 'L' is the length of the longest side of the box, dx_coarsest = L/N
 # NB - If you use reflective BC and want to specify the subdivisions and side
 # of the box were there are no symmetries, specify 'N_full' and 'L_full' instead
-# NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full', 
+# NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full',
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
 N_full = 128
 L_full = 256
+
+# Spatial derivative order (only affects CCZ4 RHS)
+max_spatial_derivative_order = 4 # can be 4 or 6
 
 # Regridding - in this example use a fixed grid
 tag_buffer_size = 0
@@ -97,7 +100,7 @@ sigma = 0.3
 # Change the gravitational constant of the Universe!
 # Default is 1.0, for standard geometric units
 # Here we decouple the evolution so the scalar evolved on the
-# metric background without backreaction (this avoids the need 
+# metric background without backreaction (this avoids the need
 # to solve the constaints)
 G_Newton = 0.0
 

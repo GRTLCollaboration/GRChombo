@@ -13,6 +13,7 @@
 #include "NewConstraints.hpp"
 #include "PositiveChiAndAlpha.hpp"
 #include "SetValue.hpp"
+#include "SixthOrderDerivatives.hpp"
 #include "TraceARemoval.hpp"
 
 // Initial data
@@ -66,9 +67,18 @@ void KerrBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
                    a_soln, a_soln, INCLUDE_GHOST_CELLS);
 
     // Calculate CCZ4 right hand side
-    BoxLoops::loop(CCZ4RHS<MovingPunctureGauge, FourthOrderDerivatives>(
-                       m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
-                   a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    if (m_p.max_spatial_derivative_order == 4)
+    {
+        BoxLoops::loop(CCZ4RHS<MovingPunctureGauge, FourthOrderDerivatives>(
+                           m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
+                       a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    }
+    else if (m_p.max_spatial_derivative_order == 6)
+    {
+        BoxLoops::loop(CCZ4RHS<MovingPunctureGauge, SixthOrderDerivatives>(
+                           m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
+                       a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    }
 }
 
 void KerrBHLevel::specificUpdateODE(GRLevelData &a_soln,

@@ -11,6 +11,9 @@ N2 = 256
 N3 = 256
 L = 192
 
+# Spatial derivative order (only affects CCZ4 RHS)
+max_spatial_derivative_order = 4 # can be 4 or 6
+
 massA = 0.5
 offsetA = 3 0 0
 

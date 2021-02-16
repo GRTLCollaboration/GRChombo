@@ -9,11 +9,14 @@ plot_prefix = KerrBHp_
 # 'L' is the length of the longest side of the box, dx_coarsest = L/N
 # NB - If you use reflective BC and want to specify the subdivisions and side
 # of the box were there are no symmetries, specify 'N_full' and 'L_full' instead
-# NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full', 
+# NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full',
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
 N_full = 64
 L_full = 128
+
+# Spatial derivative order (only affects CCZ4 RHS)
+max_spatial_derivative_order = 4 # can be 4 or 6
 
 # Params for Kerr BH
 kerr_mass = 1.0
@@ -63,7 +66,7 @@ vars_parity            = 0 0 4 6 0 5 0    #chi and hij
                          0 1 2 3 1 2 3    #lapse shift and B
 vars_parity_diagnostic = 0 1 2 3          #Ham and Mom
 
-# if sommerfeld boundaries selected, must select 
+# if sommerfeld boundaries selected, must select
 # non zero asymptotic values
 num_nonzero_asymptotic_vars = 5
 nonzero_asymptotic_vars = chi h11 h22 h33 lapse

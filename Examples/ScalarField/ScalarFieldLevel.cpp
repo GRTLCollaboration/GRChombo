@@ -8,6 +8,7 @@
 #include "BoxLoops.hpp"
 #include "NanCheck.hpp"
 #include "PositiveChiAndAlpha.hpp"
+#include "SixthOrderDerivatives.hpp"
 #include "TraceARemoval.hpp"
 
 // For RHS update
@@ -89,11 +90,22 @@ void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     // Calculate MatterCCZ4 right hand side with matter_t = ScalarField
     Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
-    MatterCCZ4RHS<ScalarFieldWithPotential, MovingPunctureGauge,
-                  FourthOrderDerivatives>
-        my_ccz4_matter(scalar_field, m_p.ccz4_params, m_dx, m_p.sigma,
-                       m_p.formulation, m_p.G_Newton);
-    BoxLoops::loop(my_ccz4_matter, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    if (m_p.max_spatial_derivative_order == 4)
+    {
+        MatterCCZ4RHS<ScalarFieldWithPotential, MovingPunctureGauge,
+                      FourthOrderDerivatives>
+            my_ccz4_matter(scalar_field, m_p.ccz4_params, m_dx, m_p.sigma,
+                           m_p.formulation, m_p.G_Newton);
+        BoxLoops::loop(my_ccz4_matter, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    }
+    else if (m_p.max_spatial_derivative_order == 6)
+    {
+        MatterCCZ4RHS<ScalarFieldWithPotential, MovingPunctureGauge,
+                      SixthOrderDerivatives>
+            my_ccz4_matter(scalar_field, m_p.ccz4_params, m_dx, m_p.sigma,
+                           m_p.formulation, m_p.G_Newton);
+        BoxLoops::loop(my_ccz4_matter, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    }
 }
 
 // Things to do at ODE update, after soln + rhs
