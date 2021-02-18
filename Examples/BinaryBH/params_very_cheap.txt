@@ -106,7 +106,7 @@ modes = 2 0 # l m for spherical harmonics
 
 #Apparent Horizon finder 
 AH_activate = 1
-AH_num_ranks = 2
+AH_num_ranks = 4
 AH_num_points_u = 11
 AH_num_points_v = 10
 AH_solve_interval = 2

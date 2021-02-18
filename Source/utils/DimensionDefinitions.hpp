@@ -11,7 +11,7 @@
 #endif
 
 #ifndef DEFAULT_TENSOR_DIM
-#define DEFAULT_TENSOR_DIM 3
+#define DEFAULT_TENSOR_DIM CH_SPACEDIM
 #endif
 
 #define FOR1(IDX) for (int IDX = 0; IDX < DEFAULT_TENSOR_DIM; ++IDX)

@@ -25,9 +25,8 @@ static const std::array<std::string, NUM_VARS> variable_names = {"V"};
 
 #include "UserVariables.inc.hpp"
 
-// already the 2D default
-// #include "AHStringGeometry.hpp"
-// #define AHSurfaceGeometry AHStringGeometry
+#include "AHStringGeometry.hpp"
+#define AHSurfaceGeometry AHStringGeometry
 
 #include "AHTest2DFunction.hpp"
 #define AHFunction AHTest2DFunction

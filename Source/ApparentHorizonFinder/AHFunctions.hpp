@@ -48,7 +48,7 @@ struct ExpansionFunction : AHFunctionDefault
     // require the coordinates to calculate the expansion
 #if GR_SPACEDIM != CH_SPACEDIM
     // hd - higher dimensions
-    Tensor<1, double> x; // coordinates
+    Tensor<1, double> x; // cartesian coordinates
     double g_hd;
     Tensor<1, double> dg_hd;
 
@@ -199,7 +199,7 @@ struct ExpansionFunction : AHFunctionDefault
         int comp_Aww = c_Aww; // is (c_Theta-1) more general?
         Tensor<1, double, CH_SPACEDIM> dhww;
 
-        x = a_coords;
+        x = a_coords_cartesian;
 
         double hww = a_data.vars.at(comp_hww);
         FOR1(a) { dhww[a] = a_data.d1.at(comp_hww)[a]; }

@@ -6,10 +6,6 @@
 #ifndef SPHERICALGEOMETRY_HPP_
 #define SPHERICALGEOMETRY_HPP_
 
-#if CH_SPACEDIM != 3
-#error "This file should only be included for 3+1D simulations"
-#endif
-
 // Chombo includes
 #include "AlwaysInline.hpp"
 #include "MayDay.H"
@@ -29,15 +25,25 @@
 //! u = theta, v = phi
 class SphericalGeometry
 {
-  protected:
-    std::array<double, CH_SPACEDIM> m_center;
-
   public:
+    enum UP_DIR
+    {
+        X,
+        Y,
+        Z
+    };
+
     SphericalGeometry(const std::array<double, CH_SPACEDIM> &a_center)
         : m_center(a_center)
     {
+#if CH_SPACEDIM == 3 // for now force 'Z', could be an argument later on
+        m_up_dir = Z;
+#elif CH_SPACEDIM == 2 // in Cartoon method, assume 'X' as 'z' axis
+        m_up_dir = X;
+#endif
     }
 
+    ALWAYS_INLINE UP_DIR get_up_dir() const { return m_up_dir; }
     ALWAYS_INLINE double get_domain_u_min() const { return 0.; }
     ALWAYS_INLINE double get_domain_u_max() const { return M_PI; }
     ALWAYS_INLINE double get_domain_v_min() const { return 0.; }
@@ -89,20 +95,25 @@ class SphericalGeometry
     //! returns the Cartesian coordinate in direction a_dir with specified
     //! radius, theta and phi.
     ALWAYS_INLINE double get_grid_coord(int a_dir, double a_radius,
-                                        double a_theta, double a_phi) const
+                                        double a_theta, double a_phi = 0.) const
     {
-        switch (a_dir)
+        double center = (a_dir < CH_SPACEDIM ? m_center[a_dir] : 0.);
+        switch ((a_dir + 2 - m_up_dir) % 3)
         {
         case (0):
-            return m_center[0] + a_radius * sin(a_theta) * cos(a_phi);
+            return center + a_radius * sin(a_theta) * cos(a_phi);
         case (1):
-            return m_center[1] + a_radius * sin(a_theta) * sin(a_phi);
+            return center + a_radius * sin(a_theta) * sin(a_phi);
         case (2):
-            return m_center[2] + a_radius * cos(a_theta);
+            return center + a_radius * cos(a_theta);
         default:
             MayDay::Error("SphericalGeometry: Direction not supported");
         }
     }
+
+  protected:
+    std::array<double, CH_SPACEDIM> m_center;
+    UP_DIR m_up_dir;
 };
 
 #endif /* SPHERICALGEOMETRY_HPP_ */

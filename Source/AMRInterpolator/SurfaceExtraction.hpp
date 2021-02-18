@@ -50,6 +50,8 @@ template <class SurfaceGeometry> class SurfaceExtraction
                                             //!< extraction for each surface
         bool write_extraction; //!< whether or not to write the extracted data
 
+        std::string extraction_prefix;
+
         int min_extraction_level()
         {
             return *(std::min_element(extraction_levels.begin(),
@@ -92,11 +94,18 @@ template <class SurfaceGeometry> class SurfaceExtraction
 
     //! returns the flattened index for m_interp_data and m_interp_coords
     //! associated to given surface, u and v indices
+#if CH_SPACEDIM == 3
     int index(int a_isurface, int a_iu, int a_iv) const
     {
         return a_isurface * m_params.num_points_u * m_params.num_points_v +
                a_iu * m_params.num_points_v + a_iv;
     }
+#elif CH_SPACEDIM == 2
+    int index(int a_isurface, int a_iu) const
+    {
+        return a_isurface * m_params.num_points_u + a_iu;
+    }
+#endif
 
   public:
     //! Normal constructor which requires vars to be added after construction

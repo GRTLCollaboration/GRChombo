@@ -19,8 +19,10 @@ SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
     : m_geom(a_geom), m_params(a_params), m_dt(a_dt), m_time(a_time),
       m_first_step(a_first_step), m_restart_time(a_restart_time),
       m_num_interp_points((procID() == 0)
-                              ? m_params.num_surfaces * m_params.num_points_u *
-                                    m_params.num_points_v
+                              ? m_params.num_surfaces * m_params.num_points_u
+#if CH_SPACEDIM == 3
+                                    * m_params.num_points_v
+#endif
                               : 0),
       m_du(m_geom.du(m_params.num_points_u)),
       m_dv(m_geom.dv(m_params.num_points_v)), m_done_extraction(false)
@@ -37,6 +39,7 @@ SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
             for (int iu = 0; iu < m_params.num_points_u; ++iu)
             {
                 double u = m_geom.u(iu, m_params.num_points_u);
+#if CH_SPACEDIM == 3
                 for (int iv = 0; iv < m_params.num_points_v; ++iv)
                 {
                     double v = m_geom.v(iv, m_params.num_points_v);
@@ -47,6 +50,14 @@ SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
                             idir, surface_param_value, u, v);
                     }
                 }
+#elif CH_SPACEDIM == 2
+                FOR1(idir)
+                {
+                    int idx = index(isurface, iu);
+                    m_interp_coords[idir][idx] =
+                        m_geom.get_grid_coord(idir, surface_param_value, u);
+                }
+#endif
             }
         }
     }
@@ -254,7 +265,11 @@ void SurfaceExtraction<SurfaceGeometry>::integrate()
                     for (int ivar = 0; ivar < m_vars.size(); ++ivar)
                     {
                         data_here[ivar] =
+#if CH_SPACEDIM == 3
                             m_interp_data[ivar][index(isurface, iu, iv)];
+#elif CH_SPACEDIM == 2
+                            m_interp_data[ivar][index(isurface, iu)];
+#endif
                     }
                     for (int iintegral = 0; iintegral < num_integrals;
                          ++iintegral)
@@ -330,7 +345,8 @@ void SurfaceExtraction<SurfaceGeometry>::write_extraction(
     CH_assert(m_done_extraction);
     if (procID() == 0)
     {
-        SmallDataIO extraction_file(a_file_prefix, m_dt, m_time, m_restart_time,
+        SmallDataIO extraction_file(m_params.extraction_prefix + a_file_prefix,
+                                    m_dt, m_time, m_restart_time,
                                     SmallDataIO::NEW, m_first_step);
 
         for (int isurface = 0; isurface < m_params.num_surfaces; ++isurface)
@@ -374,17 +390,26 @@ void SurfaceExtraction<SurfaceGeometry>::write_extraction(
             for (int iu = 0; iu < m_params.num_points_u; ++iu)
             {
                 double u = m_geom.u(iu, m_params.num_points_u);
+#if CH_SPACEDIM == 3
                 for (int iv = 0; iv < m_params.num_points_v; ++iv)
                 {
                     double v = m_geom.v(iv, m_params.num_points_v);
                     int idx = index(isurface, iu, iv);
+#elif CH_SPACEDIM == 2
+                {
+                    int idx = index(isurface, iu);
+#endif
                     std::vector<double> data(m_vars.size());
                     for (int ivar = 0; ivar < m_vars.size(); ++ivar)
                     {
                         data[ivar] = m_interp_data[ivar][idx];
                     }
 
+#if CH_SPACEDIM == 3
                     extraction_file.write_data_line(data, {u, v});
+#elif CH_SPACEDIM == 2
+                    extraction_file.write_data_line(data, {u});
+#endif
                 }
             }
             extraction_file.line_break();
@@ -415,8 +440,9 @@ void SurfaceExtraction<SurfaceGeometry>::write_integrals(
             CH_assert(vect.size() == m_params.num_surfaces);
         }
         // open file for writing
-        SmallDataIO integral_file(a_filename, m_dt, m_time, m_restart_time,
-                                  SmallDataIO::APPEND, m_first_step);
+        SmallDataIO integral_file(m_params.extraction_prefix + a_filename, m_dt,
+                                  m_time, m_restart_time, SmallDataIO::APPEND,
+                                  m_first_step);
 
         // remove any duplicate data if this is a restart
         integral_file.remove_duplicate_time_data();

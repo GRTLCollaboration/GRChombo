@@ -16,13 +16,8 @@
 
 // define SurfaceGeometry of AHFinder
 #ifndef AHSurfaceGeometry
-#if CH_SPACEDIM == 3
 #include "AHSphericalGeometry.hpp"
 #define AHSurfaceGeometry AHSphericalGeometry
-#elif CH_SPACEDIM == 2
-#include "AHStringGeometry.hpp"
-#define AHSurfaceGeometry AHStringGeometry
-#endif
 #endif
 
 // default to expansion

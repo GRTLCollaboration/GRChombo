@@ -415,12 +415,21 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
         }
 
         m_area = calculate_area();
+#if GR_SPACEDIM == 3 // GR_SPACEDIM, not CH_SPACEDIM !!!
+
 #if CH_SPACEDIM == 3
         double spin_dimensionless = calculate_spin_dimensionless(m_area);
-        m_mass = calculate_mass(m_area, spin_dimensionless);
-        m_spin = spin_dimensionless * m_mass;
+#elif CH_SPACEDIM == 2
+        double spin_dimensionless = 0.;
+#endif
 
-        if (m_params.verbose > AHFinder::NONE)
+        m_mass = calculate_mass(m_area, spin_dimensionless);
+
+#if CH_SPACEDIM == 3
+        m_spin = spin_dimensionless * m_mass;
+#endif
+
+        if (m_params.verbose > AHFinder::MIN)
         {
             pout() << "mass = " << m_mass << endl;
         }
@@ -486,11 +495,12 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
         // std::string coords_filename = file.get_new_file_number(fake_dt,
         // a_time);
 
-        // first '1' corresponds to 'step'
-        // the first (CH_SPACEDIM==3 ? 3 : 1) corresponds to area+spin+mass or
-        // only area
         CH_assert(CH_SPACEDIM == 3 || CH_SPACEDIM == 2);
-        std::vector<double> values(1 + (CH_SPACEDIM == 3 ? 3 : 1) +
+        // first '1' corresponds to 'step'
+        // area+spin+mass OR area+mass in 2D Cartoon OR only area for other
+        // cases (e.g. 4D -> 2D cartoon)
+        int stats = (GR_SPACEDIM == 3 ? (CH_SPACEDIM == 3 ? 3 : 2) : 1);
+        std::vector<double> values(1 + stats +
                                    CH_SPACEDIM * (1 + m_params.track_center));
 
         auto origin = get_origin();
@@ -500,8 +510,10 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
         int idx = 0;
         values[idx++] = step;
         values[idx++] = m_area;
+#if GR_SPACEDIM == 3 // GR_SPACEDIM, not CH_SPACEDIM !!!
 #if CH_SPACEDIM == 3
         values[idx++] = m_spin;
+#endif
         values[idx++] = m_mass;
 #endif
         for (int i = 0; i < CH_SPACEDIM; ++i)
@@ -513,15 +525,16 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
         // print headers to stats file in the beginning of evolution
         if (!m_printed_once)
         {
-            std::vector<std::string> headers(1 + (CH_SPACEDIM == 3 ? 3 : 1) +
-                                             CH_SPACEDIM *
-                                                 (1 + m_params.track_center));
+            std::vector<std::string> headers(
+                1 + stats + CH_SPACEDIM * (1 + m_params.track_center));
 
             idx = 0;
             headers[idx++] = "file";
             headers[idx++] = "area";
+#if GR_SPACEDIM == 3 // GR_SPACEDIM, not CH_SPACEDIM !!!
 #if CH_SPACEDIM == 3
             headers[idx++] = "spin";
+#endif
             headers[idx++] = "mass";
 #endif
             headers[idx++] = "origin_x";
@@ -776,10 +789,16 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
         int cols = stats.size();
 
         std::array<double, CH_SPACEDIM> origin;
+#if GR_SPACEDIM == 3 // GR_SPACEDIM, not CH_SPACEDIM !!!
 #if CH_SPACEDIM == 3
         bool was_center_tracked =
             (cols > 5 + CH_SPACEDIM); // 5 for time + file + area + spin + mass
-#elif CH_SPACEDIM == 2
+#else
+        // 3D -> 2D Cartoon method
+        bool was_center_tracked =
+            (cols > 4 + CH_SPACEDIM); // 5 for time + file + area + mass
+#endif
+#else
         bool was_center_tracked =
             (cols > 3 + CH_SPACEDIM); // 3 for time + file + area
 #endif
@@ -1318,10 +1337,9 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_spin_dimensionless(
         {
             for (int u = m_umin; u < m_umax; ++u)
             {
-                AHDeriv deriv = diff(in, u, v);
-
                 if (u_equator == u)
                 {
+                    AHDeriv deriv = diff(in, u, v);
                     const auto geometry_data = m_interp.get_geometry_data(idx);
                     const auto data = m_interp.get_data(idx);
                     const auto coords = m_interp.get_coords(idx);
@@ -1485,7 +1503,9 @@ double ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_area()
 // assume a (GR_SPACEDIM - CH_SPACEDIM)-sphere leftover
 #if GR_SPACEDIM != CH_SPACEDIM
                 double n_sphere = (GR_SPACEDIM - CH_SPACEDIM);
-                element *= pow(sqrt(func.get_metric_hd()) * m_F[idx], n_sphere);
+                element *= pow(sqrt(func.get_metric_hd()) *
+                                   coords_cart[CH_SPACEDIM - 1],
+                               n_sphere);
 #endif
 
                 inner_integral += element;

@@ -85,14 +85,21 @@ class SphericalExtraction : public SurfaceExtraction<SphericalGeometry>
         const IntegrationMethod &a_method_phi = IntegrationMethod::trapezium,
         const bool a_broadcast_integral = false)
     {
-        auto integrand_re = [center = m_center, &geom = m_geom, es, el, em,
+        // {x, y, z}
+        SphericalGeometry::UP_DIR up_dir = m_geom.get_up_dir();
+        std::array<int, 3> dirs = {(up_dir + 1) % 3, (up_dir + 2) % 3, up_dir};
+        std::array<double, 3> center;
+        for (int i = 0; i < 3; ++i)
+            center[i] = (dirs[i] < CH_SPACEDIM ? m_center[dirs[i]] : 0.);
+
+        auto integrand_re = [dirs, center, &geom = m_geom, es, el, em,
                              &a_function](std::vector<double> &a_data_here,
                                           double r, double theta, double phi) {
             // note that spin_Y_lm requires the coordinates with the center
             // at the origin
-            double x = geom.get_grid_coord(0, r, theta, phi) - center[0];
-            double y = geom.get_grid_coord(1, r, theta, phi) - center[1];
-            double z = geom.get_grid_coord(2, r, theta, phi) - center[2];
+            double x = geom.get_grid_coord(dirs[0], r, theta, phi) - center[0];
+            double y = geom.get_grid_coord(dirs[1], r, theta, phi) - center[1];
+            double z = geom.get_grid_coord(dirs[2], r, theta, phi) - center[2];
             SphericalHarmonics::Y_lm_t<double> Y_lm =
                 SphericalHarmonics::spin_Y_lm(x, y, z, es, el, em);
             auto function_here = a_function(a_data_here, r, theta, phi);
@@ -103,14 +110,14 @@ class SphericalExtraction : public SurfaceExtraction<SphericalGeometry>
         add_integrand(integrand_re, out_integrals.first, a_method_theta,
                       a_method_phi, a_broadcast_integral);
 
-        auto integrand_im = [center = m_center, &geom = m_geom, es, el, em,
+        auto integrand_im = [dirs, center, &geom = m_geom, es, el, em,
                              &a_function](std::vector<double> &a_data_here,
                                           double r, double theta, double phi) {
             // note that spin_Y_lm requires the coordinates with the center
             // at the origin
-            double x = geom.get_grid_coord(0, r, theta, phi) - center[0];
-            double y = geom.get_grid_coord(1, r, theta, phi) - center[1];
-            double z = geom.get_grid_coord(2, r, theta, phi) - center[2];
+            double x = geom.get_grid_coord(dirs[0], r, theta, phi) - center[0];
+            double y = geom.get_grid_coord(dirs[0], r, theta, phi) - center[1];
+            double z = geom.get_grid_coord(dirs[0], r, theta, phi) - center[2];
             SphericalHarmonics::Y_lm_t<double> Y_lm =
                 SphericalHarmonics::spin_Y_lm(x, y, z, es, el, em);
             auto function_here = a_function(a_data_here, r, theta, phi);
