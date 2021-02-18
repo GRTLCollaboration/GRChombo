@@ -345,7 +345,9 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
     if (!good_to_go(a_dt, a_time))
         return;
 
-    m_interp.refresh_interpolator(); //(ALL CHOMBO ranks do it!!)
+    m_interp.refresh_interpolator(
+        do_print(a_dt, a_time),
+        m_params.extra_vars); // (ALL CHOMBO ranks do it!!)
 
     // estimate the next position where origin will be
     if (get_converged())
@@ -418,7 +420,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
         m_mass = calculate_mass(m_area, spin_dimensionless);
         m_spin = spin_dimensionless * m_mass;
 
-        if (m_params.verbose > AHFinder::MIN)
+        if (m_params.verbose > AHFinder::NONE)
         {
             pout() << "mass = " << m_mass << endl;
         }
@@ -1376,7 +1378,7 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_spin_dimensionless(
                      : sqrt(1. - factor * factor)); // factor>1 means numerical
                                                     // error with spin as 0
 
-    if (m_params.verbose > AHFinder::MIN)
+    if (m_params.verbose > AHFinder::NONE)
     {
         pout() << "dimensionless spin = " << spin_dimensionless << endl;
     }
@@ -1525,7 +1527,7 @@ double ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_area()
     area = integral;
 #endif
 
-    if (m_params.verbose > AHFinder::NONE)
+    if (m_params.verbose > AHFinder::MIN)
     {
         pout() << "area = " << area << endl;
     }

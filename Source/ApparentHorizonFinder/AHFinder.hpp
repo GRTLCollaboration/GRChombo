@@ -122,7 +122,8 @@ class AHFinder
         int num_extra_vars; // total number of extra vars (!=extra_vars.size()
                             // as derivative count for multiple vars)
 
-        bool extra_contain_diagnostic; // not a parameter (set internally)
+        int extra_contain_diagnostic; // not a parameter (set internally);
+                                      // counts how many
 
         void read_params(GRParmParse &pp, const ChomboParameters &a_p);
     };

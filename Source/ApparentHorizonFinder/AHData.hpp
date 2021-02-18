@@ -61,7 +61,7 @@ template <class key, class data_t> struct AHData
 
 template <class key>
 AHData<key, double>
-get_AHData_idx(int idx, const AHData<key, std::vector<double>> a_data)
+get_AHData_idx(int idx, const AHData<key, std::vector<double>> &a_data)
 {
     AHData<key, double> data;
 

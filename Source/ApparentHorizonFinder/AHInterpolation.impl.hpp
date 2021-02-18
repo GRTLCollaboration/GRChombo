@@ -366,10 +366,65 @@ int AHInterpolation<SurfaceGeometry, AHFunction>::interpolate()
 }
 
 template <class SurfaceGeometry, class AHFunction>
-void AHInterpolation<SurfaceGeometry, AHFunction>::refresh_interpolator()
+void AHInterpolation<SurfaceGeometry, AHFunction>::refresh_interpolator(
+    bool printing_step,
+    const std::map<std::string, std::tuple<int, VariableType, int>> &extra_vars)
 {
     CH_TIME("AHInterpolation::refresh_interpolator");
-    m_interpolator->refresh();
+
+    // brute force filling of all ghosts:
+    // m_interpolator->refresh();
+
+    // OR try to only interpolate the variables needed:
+
+    int min_evolution_var =
+        std::min(AHFunction::vars_min(), std::min(AHFunction::d1_vars_min(),
+                                                  AHFunction::d2_vars_min()));
+    int max_evolution_var =
+        std::max(AHFunction::vars_max(), std::max(AHFunction::d1_vars_max(),
+                                                  AHFunction::d2_vars_max()));
+
+    int min_diagnostic_var = -1;
+    int max_diagnostic_var = -1;
+
+    for (auto &var : extra_vars)
+    {
+        int var_enum = std::get<0>(var.second);
+        VariableType var_type = std::get<1>(var.second);
+
+        if (var_type == VariableType::evolution)
+        {
+            if (var_enum < min_evolution_var)
+                min_evolution_var = var_enum;
+            else if (var_enum > max_evolution_var)
+                max_evolution_var = var_enum;
+        }
+        else if (printing_step) // diagnostic
+        {
+            if (min_diagnostic_var == -1)
+            {
+                min_diagnostic_var = var_enum;
+                max_diagnostic_var = var_enum;
+            }
+            else if (var_enum < min_diagnostic_var)
+                min_diagnostic_var = var_enum;
+            else if (var_enum > max_diagnostic_var)
+                max_diagnostic_var = var_enum;
+        }
+    }
+
+    // fill ghosts manually to minimise communication
+    bool fill_ghosts = false;
+    m_interpolator->refresh(fill_ghosts);
+    m_interpolator->fill_multilevel_ghosts(
+        VariableType::evolution,
+        Interval(min_evolution_var, max_evolution_var));
+    if (printing_step && min_diagnostic_var != -1)
+    {
+        m_interpolator->fill_multilevel_ghosts(
+            VariableType::evolution,
+            Interval(min_diagnostic_var, max_diagnostic_var));
+    }
 }
 
 // 'set_coordinates' calls 'interpolate'. All Chombo_MPI:comm need to run
@@ -489,7 +544,7 @@ AHInterpolation<SurfaceGeometry, AHFunction>::get_data(int idx) const
 
 template <class SurfaceGeometry, class AHFunction>
 void AHInterpolation<SurfaceGeometry, AHFunction>::interpolate_extra_vars(
-    std::map<std::string, std::tuple<int, VariableType, int>> extra_vars)
+    const std::map<std::string, std::tuple<int, VariableType, int>> &extra_vars)
 {
     CH_TIME("AHInterpolation::interpolate_extra_vars");
 
@@ -518,6 +573,8 @@ void AHInterpolation<SurfaceGeometry, AHFunction>::interpolate_extra_vars(
             m_extra.set_d2(query, var_enum, var.first, var_type, n);
     }
 
+    // ghosts for extra evolution or diagnostic vars already filled in
+    // 'refresh_interpolator'
     m_interpolator->interp(query);
 }
 

@@ -358,7 +358,7 @@ void AHFinder::params::read_params(GRParmParse &pp, const ChomboParameters &a_p)
 
     // load vars to write to coord files
     num_extra_vars = 0;
-    extra_contain_diagnostic = false;
+    extra_contain_diagnostic = 0;
 
     int AH_num_write_vars;
     pp.load("AH_num_write_vars", AH_num_write_vars, 0);
@@ -401,7 +401,7 @@ void AHFinder::params::read_params(GRParmParse &pp, const ChomboParameters &a_p)
                 else
                 {
                     var_type = VariableType::diagnostic;
-                    extra_contain_diagnostic = true;
+                    ++extra_contain_diagnostic;
                 }
             }
             if (var >= 0)

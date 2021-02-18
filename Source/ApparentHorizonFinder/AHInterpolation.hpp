@@ -79,7 +79,10 @@ template <class SurfaceGeometry, class AHFunction> class AHInterpolation
     const std::array<double, CH_SPACEDIM> &
     get_origin() const; //!< get origin of CoordSystem
 
-    void refresh_interpolator(); //!< refresh AMRInterpolator 'm_interpolator'
+    void refresh_interpolator(
+        bool printing_step,
+        const std::map<std::string, std::tuple<int, VariableType, int>>
+            &extra_vars); //!< refresh AMRInterpolator 'm_interpolator'
 
     double get_grid_coord(int a_dir, double f, double u
 #if CH_SPACEDIM == 3
@@ -130,7 +133,8 @@ template <class SurfaceGeometry, class AHFunction> class AHInterpolation
     int interpolate();
 
     void interpolate_extra_vars(
-        std::map<std::string, std::tuple<int, VariableType, int>> extra_vars);
+        const std::map<std::string, std::tuple<int, VariableType, int>>
+            &extra_vars);
     const AHData<std::string, double> get_extra_data(int idx) const;
 };
 
