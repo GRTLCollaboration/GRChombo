@@ -22,9 +22,8 @@ template <int N_DIMS = CH_SPACEDIM> class InterpSource
   public:
     virtual const LevelData<FArrayBox> &getLevelData(
         const VariableType var_type = VariableType::evolution) const = 0;
-    virtual bool contains(const std::array<double, N_DIMS> &point) const = 0;
-    virtual void
-    fillAllGhosts(const VariableType var_type = VariableType::evolution) = 0;
+    virtual bool
+    contains(const std::array<double, N_DIMS> &point) const = 0;
 };
 
 #endif /* INTERPSOURCE_H_ */

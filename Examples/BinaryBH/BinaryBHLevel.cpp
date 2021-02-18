@@ -73,6 +73,12 @@ void BinaryBHLevel::specificUpdateODE(GRLevelData &a_soln,
     BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
 }
 
+void BinaryBHLevel::preTagCells()
+{
+    // We only use chi in the tagging criterion so only fill the ghosts for chi
+    fillAllGhosts(VariableType::evolution, Interval(c_chi, c_chi));
+}
+
 // specify the cells to tag
 void BinaryBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                             const FArrayBox &current_state)
@@ -102,7 +108,10 @@ void BinaryBHLevel::specificPostTimeStep()
 {
     CH_TIME("BinaryBHLevel::specificPostTimeStep");
 
-    bool first_step = (m_time == m_dt);
+    bool first_step =
+        (m_time == 0.); // this form is used when 'specificPostTimeStep' was
+                        // called during setup at t=0 from Main
+    // bool first_step = (m_time == m_dt); // if not called in Main
 
     if (m_p.activate_extraction == 1)
     {
@@ -121,9 +130,15 @@ void BinaryBHLevel::specificPostTimeStep()
             {
                 CH_TIME("WeylExtraction");
                 // Now refresh the interpolator and do the interpolation
-                m_gr_amr.m_interpolator->refresh();
+                // fill ghosts manually to minimise communication
+                bool fill_ghosts = false;
+                m_gr_amr.m_interpolator->refresh(fill_ghosts);
+                m_gr_amr.fill_multilevel_ghosts(
+                    VariableType::diagnostic, Interval(c_Weyl4_Re, c_Weyl4_Im),
+                    min_level);
                 WeylExtraction my_extraction(m_p.extraction_params, m_dt,
-                                             m_time, m_restart_time);
+                                             m_time, first_step,
+                                             m_restart_time);
                 my_extraction.execute_query(m_gr_amr.m_interpolator);
             }
         }

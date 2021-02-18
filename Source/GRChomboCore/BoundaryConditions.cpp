@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <array>
 #include <map>
+#include <numeric>
 #include <string>
 
 // Chombo namespace

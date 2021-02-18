@@ -34,6 +34,9 @@ class BinaryBHLevel : public GRAMRLevel
                                    const GRLevelData &a_rhs,
                                    Real a_dt) override;
 
+    /// Things to do before tagging cells (i.e. filling ghosts)
+    virtual void preTagCells() override;
+
     /// Identify and tag the cells that need higher resolution
     virtual void
     computeTaggingCriterion(FArrayBox &tagging_criterion,

@@ -15,6 +15,7 @@
 #include "BHAMR.hpp"
 #include "DefaultLevelFactory.hpp"
 #include "GRParmParse.hpp"
+#include "MultiLevelTask.hpp"
 #include "SetupFunctions.hpp"
 #include "SimulationParameters.hpp"
 
@@ -39,9 +40,13 @@ int runGRChombo(int argc, char *argv[])
     // must be before 'setupAMRObject' to define punctures for tagging criteria
     if (sim_params.track_punctures)
     {
+        // the tagging criterion used in this example means that the punctures
+        // should be on the max level but let's fill ghosts on the level below
+        // too just in case
+        int puncture_tracker_min_level = sim_params.max_level - 1;
         bh_amr.m_puncture_tracker.initial_setup(
             {sim_params.bh1_params.center, sim_params.bh2_params.center},
-            sim_params.checkpoint_prefix);
+            sim_params.checkpoint_prefix, puncture_tracker_min_level);
     }
 
     // The line below selects the problem that is simulated
@@ -80,6 +85,20 @@ int runGRChombo(int argc, char *argv[])
     using Minutes = std::chrono::duration<double, std::ratio<60, 1>>;
 
     std::chrono::time_point<Clock> start_time = Clock::now();
+
+    // Add a scheduler to call specificPostTimeStep on every AMRLevel at t=0
+    auto task = [](GRAMRLevel *level) {
+        if (level->time() == 0.)
+            level->specificPostTimeStep();
+    };
+    // call 'now' really now
+    MultiLevelTaskPtr<> call_task(task);
+    call_task.execute(bh_amr);
+    // or call at post-plotLevel, at every 'some_interval'
+    // int some_interval = 10;
+    // bool reverse_levels = true;
+    // MultiLevelTaskPtr<> call_task(task, reverse_levels, some_interval);
+    // bh_amr.schedule(call_task);
 
     bh_amr.run(sim_params.stop_time, sim_params.max_steps);
 

@@ -1,11 +1,12 @@
 DIM            = 3
-DEBUG          = TRUE
-OPT            = TRUE
+DEBUG          = FALSE
+OPT            = HIGH
 PRECISION      = DOUBLE
 CXX            = icpc -std=c++14 -qopenmp -mkl=sequential
 FC             = ifort -qopenmp -mkl=sequential
 MPI            = TRUE
 MPICXX         = mpiicpc -std=c++14 -qopenmp -mkl=sequential -lmpi
+XTRACONFIG     = .Intel # This just appends to all object files and executables
 USE_64         = TRUE
 USE_HDF        = TRUE
 HDFINCFLAGS    = -I/apps/HDF5/1.8.19/INTEL/IMPI/include
@@ -14,7 +15,7 @@ HDFMPIINCFLAGS = -I/apps/HDF5/1.8.19/INTEL/IMPI/include
 HDFMPILIBFLAGS = -L/apps/HDF5/1.8.19/INTEL/IMPI/lib -lhdf5 -lz
 USE_MT         = FALSE
 OPENMPCC       = TRUE
-cxxdbgflags    = -g -Wl,--eh-frame-hdr
-cxxoptflags    = -O3 -qoverride-limits -xSSE4.2 -axAVX
-fdbgflags      = -g -Wl,--eh-frame-hdr
-foptflags      = -O3 -qoverride-limits -xSSE4.2 -axAVX
+cxxdbgflags    = -g
+cxxoptflags    = -O3 -xSSE4.2 -axAVX
+fdbgflags      = -g
+foptflags      = -O3 -xSSE4.2 -axAVX

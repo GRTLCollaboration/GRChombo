@@ -20,50 +20,59 @@ const string AMRInterpolator<InterpAlgo>::TAG =
 
 template <typename InterpAlgo>
 AMRInterpolator<InterpAlgo>::AMRInterpolator(
-    const AMR &amr, const std::array<double, CH_SPACEDIM> &coarsest_origin,
+    const GRAMR &gr_amr, const std::array<double, CH_SPACEDIM> &coarsest_origin,
     const std::array<double, CH_SPACEDIM> &coarsest_dx, int verbosity)
-    : AMRInterpolator(amr, coarsest_origin, coarsest_dx,
+    : AMRInterpolator(gr_amr, coarsest_origin, coarsest_dx,
                       BoundaryConditions::params_t(), verbosity)
 {
 }
 
 template <typename InterpAlgo>
 AMRInterpolator<InterpAlgo>::AMRInterpolator(
-    const AMR &amr, const std::array<double, CH_SPACEDIM> &coarsest_origin,
+    const GRAMR &gr_amr, const std::array<double, CH_SPACEDIM> &coarsest_origin,
     const std::array<double, CH_SPACEDIM> &coarsest_dx,
     const BoundaryConditions::params_t &a_bc_params, int verbosity)
-    : m_amr(amr), m_coarsest_origin(coarsest_origin),
+    : m_gr_amr(gr_amr), m_coarsest_origin(coarsest_origin),
       m_coarsest_dx(coarsest_dx),
-      m_num_levels(const_cast<AMR &>(m_amr).getAMRLevels().size()),
+      m_num_levels(const_cast<GRAMR &>(m_gr_amr).getAMRLevels().size()),
       m_verbosity(verbosity), m_bc_params(a_bc_params)
 {
     set_reflective_BC();
 }
 
-template <typename InterpAlgo> void AMRInterpolator<InterpAlgo>::refresh()
+template <typename InterpAlgo>
+void AMRInterpolator<InterpAlgo>::refresh(const bool a_fill_ghosts)
 {
     CH_TIME("AMRInterpolator::refresh");
 
-    const Vector<AMRLevel *> &levels = const_cast<AMR &>(m_amr).getAMRLevels();
+    const Vector<AMRLevel *> &levels =
+        const_cast<GRAMR &>(m_gr_amr).getAMRLevels();
     m_num_levels = levels.size();
 
     m_mem_level.clear();
     m_mem_box.clear();
 
-    for (int level_idx = 0; level_idx < m_num_levels; ++level_idx)
+    if (a_fill_ghosts)
     {
-        AMRLevel &level = *levels[level_idx];
-        InterpSource<> &interp_source = dynamic_cast<InterpSource<> &>(level);
-        interp_source.fillAllGhosts(VariableType::evolution);
+        fill_multilevel_ghosts(VariableType::evolution);
         if (NUM_DIAGNOSTIC_VARS > 0)
-            interp_source.fillAllGhosts(VariableType::diagnostic);
+            fill_multilevel_ghosts(VariableType::diagnostic);
     }
+}
+
+template <typename InterpAlgo>
+void AMRInterpolator<InterpAlgo>::fill_multilevel_ghosts(
+    const VariableType a_var_type, const Interval &a_comps,
+    const int a_min_level, const int a_max_level)
+{
+    m_gr_amr.fill_multilevel_ghosts(a_var_type, a_comps, a_min_level,
+                                    a_max_level);
 }
 
 template <typename InterpAlgo>
 const AMR &AMRInterpolator<InterpAlgo>::getAMR() const
 {
-    return m_amr;
+    return m_gr_amr;
 }
 
 template <typename InterpAlgo>
@@ -99,7 +108,7 @@ void AMRInterpolator<InterpAlgo>::limit_num_levels(unsigned int num_levels)
 {
     CH_TIME("AMRInterpolator::limit_num_levels");
 
-    int max_num_levels = const_cast<AMR &>(m_amr).getAMRLevels().size();
+    int max_num_levels = const_cast<AMR &>(m_gr_amr).getAMRLevels().size();
     if (num_levels > max_num_levels || num_levels == 0)
     {
         m_num_levels = max_num_levels;
@@ -197,7 +206,8 @@ void AMRInterpolator<InterpAlgo>::computeLevelLayouts()
         _pout << TAG << "Entering computeLevelLayouts" << endl;
     }
 
-    const Vector<AMRLevel *> &levels = const_cast<AMR &>(m_amr).getAMRLevels();
+    const Vector<AMRLevel *> &levels =
+        const_cast<GRAMR &>(m_gr_amr).getAMRLevels();
     const int num_levels = m_num_levels; // levels.size();
 
     m_origin.resize(num_levels);
@@ -282,7 +292,8 @@ AMRInterpolator<InterpAlgo>::findBoxes(InterpolationQuery &query)
         _pout << TAG << "Entering findBoxes" << endl;
     }
 
-    const Vector<AMRLevel *> &levels = const_cast<AMR &>(m_amr).getAMRLevels();
+    const Vector<AMRLevel *> &levels =
+        const_cast<GRAMR &>(m_gr_amr).getAMRLevels();
     const int num_levels = m_num_levels; // levels.size();
 
     std::array<double, CH_SPACEDIM> grid_coord;
@@ -636,7 +647,8 @@ void AMRInterpolator<InterpAlgo>::calculateAnswers(InterpolationQuery &query)
         _pout << TAG << "Entering calculateAnswer" << endl;
     }
 
-    const Vector<AMRLevel *> &levels = const_cast<AMR &>(m_amr).getAMRLevels();
+    const Vector<AMRLevel *> &levels =
+        const_cast<GRAMR &>(m_gr_amr).getAMRLevels();
     // const int num_levels = levels.size();
     // const int num_comps = query.numComps();
     const int num_answers = m_mpi.totalAnswerCount();
@@ -791,7 +803,7 @@ void AMRInterpolator<InterpAlgo>::exchangeMPIAnswer()
 template <typename InterpAlgo>
 void AMRInterpolator<InterpAlgo>::set_reflective_BC()
 {
-    const IntVect &big_end = const_cast<AMR &>(m_amr)
+    const IntVect &big_end = const_cast<GRAMR &>(m_gr_amr)
                                  .getAMRLevels()[0]
                                  ->problemDomain()
                                  .domainBox()

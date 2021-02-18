@@ -6,13 +6,17 @@
 #ifndef AMRINTERPOLATOR_HPP_
 #define AMRINTERPOLATOR_HPP_
 
+// system includes
+
+#include <limits>
+
 // Chombo includes
-#include "AMR.H"
 #include "AMRLevel.H"
 #include "LoHiSide.H"
 
 // Our includes
 #include "BoundaryConditions.hpp"
+#include "GRAMR.hpp"
 #include "InterpSource.hpp"
 #include "InterpolationAlgorithm.hpp"
 #include "InterpolationLayout.hpp"
@@ -31,16 +35,25 @@ template <typename InterpAlgo> class AMRInterpolator
   public:
     // constructor for backward compatibility
     // (adds an artificial BC with only periodic BC)
-    AMRInterpolator(const AMR &amr,
+    AMRInterpolator(const GRAMR &amr,
                     const std::array<double, CH_SPACEDIM> &coarsest_origin,
                     const std::array<double, CH_SPACEDIM> &coarsest_dx,
                     int verbosity = 0);
-    AMRInterpolator(const AMR &amr,
+    AMRInterpolator(const GRAMR &amr,
                     const std::array<double, CH_SPACEDIM> &coarsest_origin,
                     const std::array<double, CH_SPACEDIM> &coarsest_dx,
                     const BoundaryConditions::params_t &a_bc_params,
                     int verbosity = 0);
-    void refresh();
+
+    void refresh(const bool a_fill_ghosts = true);
+
+    // if not filling ghosts in refresh, call this explicitly for required vars
+    void fill_multilevel_ghosts(
+        const VariableType a_var_type,
+        const Interval &a_comps = Interval(0, std::numeric_limits<int>::max()),
+        const int a_min_level = 0,
+        const int a_max_level = std::numeric_limits<int>::max());
+
     void limit_num_levels(unsigned int num_levels);
     void interp(InterpolationQuery &query);
     const AMR &getAMR() const;
@@ -69,7 +82,7 @@ template <typename InterpAlgo> class AMRInterpolator
     double apply_reflective_BC_on_coord(const InterpolationQuery &query,
                                         double dir, int point_idx) const;
 
-    const AMR &m_amr;
+    const GRAMR &m_gr_amr;
 
     // Coordinates of the point represented by IntVect::Zero in coarsest grid
     const std::array<double, CH_SPACEDIM> m_coarsest_origin;
