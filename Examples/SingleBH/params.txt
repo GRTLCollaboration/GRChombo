@@ -9,6 +9,9 @@ plot_prefix = SingleBHPlot_
 N_full = 32
 L_full = 16
 
+# Spatial derivative order (only affects CCZ4 RHS)
+max_spatial_derivative_order = 4 # can be 4 or 6
+
 mass = 1.0
 offset = 0 0 0
 momentum = 0. -0.5 0.0

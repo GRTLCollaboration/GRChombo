@@ -8,10 +8,11 @@
 #include "BoxLoops.hpp"
 #include "NanCheck.hpp"
 #include "PositiveChiAndAlpha.hpp"
+#include "SixthOrderDerivatives.hpp"
 #include "TraceARemoval.hpp"
 
 // For RHS update
-#include "MatterCCZ4.hpp"
+#include "MatterCCZ4RHS.hpp"
 
 // For constraints calculation
 #include "NewMatterConstraints.hpp"
@@ -63,6 +64,7 @@ void ScalarFieldLevel::initialData()
                    EXCLUDE_GHOST_CELLS);
 }
 
+#ifdef CH_USE_HDF5
 // Things to do before outputting a checkpoint file
 void ScalarFieldLevel::prePlotLevel()
 {
@@ -74,6 +76,7 @@ void ScalarFieldLevel::prePlotLevel()
             scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom, c_Mom)),
         m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 }
+#endif
 
 // Things to do in RHS update, at each RK4 step
 void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
@@ -88,10 +91,22 @@ void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     // Calculate MatterCCZ4 right hand side with matter_t = ScalarField
     Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
-    MatterCCZ4<ScalarFieldWithPotential> my_ccz4_matter(
-        scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
-        m_p.G_Newton);
-    BoxLoops::loop(my_ccz4_matter, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    if (m_p.max_spatial_derivative_order == 4)
+    {
+        MatterCCZ4RHS<ScalarFieldWithPotential, MovingPunctureGauge,
+                      FourthOrderDerivatives>
+            my_ccz4_matter(scalar_field, m_p.ccz4_params, m_dx, m_p.sigma,
+                           m_p.formulation, m_p.G_Newton);
+        BoxLoops::loop(my_ccz4_matter, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    }
+    else if (m_p.max_spatial_derivative_order == 6)
+    {
+        MatterCCZ4RHS<ScalarFieldWithPotential, MovingPunctureGauge,
+                      SixthOrderDerivatives>
+            my_ccz4_matter(scalar_field, m_p.ccz4_params, m_dx, m_p.sigma,
+                           m_p.formulation, m_p.G_Newton);
+        BoxLoops::loop(my_ccz4_matter, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    }
 }
 
 // Things to do at ODE update, after soln + rhs

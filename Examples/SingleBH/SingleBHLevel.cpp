@@ -8,11 +8,13 @@
 #include "CCZ4.hpp"
 #include "ChiExtractionTaggingCriterion.hpp"
 #include "ComputePack.hpp"
-#include "Constraints.hpp"
+#include "FourthOrderDerivatives.hpp"
 #include "NanCheck.hpp"
+#include "NewConstraints.hpp"
 #include "PositiveChiAndAlpha.hpp"
 #include "SetValue.hpp"
 #include "SingleBH.hpp"
+#include "SixthOrderDerivatives.hpp"
 #include "TraceARemoval.hpp"
 
 void SingleBHLevel::specificAdvance()
@@ -46,8 +48,8 @@ void SingleBHLevel::initialData()
 void SingleBHLevel::prePlotLevel()
 {
     fillAllGhosts();
-    BoxLoops::loop(Constraints(m_dx), m_state_new, m_state_diagnostics,
-                   EXCLUDE_GHOST_CELLS);
+    BoxLoops::loop(Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3)),
+                   m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 }
 
 void SingleBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
@@ -58,8 +60,18 @@ void SingleBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
                    a_soln, a_soln, INCLUDE_GHOST_CELLS);
 
     // Calculate CCZ4 right hand side
-    BoxLoops::loop(CCZ4(m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
-                   a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    if (m_p.max_spatial_derivative_order == 4)
+    {
+        BoxLoops::loop(CCZ4RHS<MovingPunctureGauge, FourthOrderDerivatives>(
+                           m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
+                       a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    }
+    else if (m_p.max_spatial_derivative_order == 6)
+    {
+        BoxLoops::loop(CCZ4RHS<MovingPunctureGauge, SixthOrderDerivatives>(
+                           m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
+                       a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    }
 }
 
 void SingleBHLevel::specificUpdateODE(GRLevelData &a_soln,

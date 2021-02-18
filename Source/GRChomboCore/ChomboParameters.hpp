@@ -36,7 +36,10 @@ class ChomboParameters
     {
         pp.load("verbosity", verbosity, 0);
         // Grid setup
-        pp.load("num_ghosts", num_ghosts, 3);
+        pp.load("max_spatial_derivative_order", max_spatial_derivative_order,
+                4);
+        pp.load("num_ghosts", num_ghosts,
+                (max_spatial_derivative_order == 6) ? 4 : 3);
         pp.load("tag_buffer_size", tag_buffer_size, 3);
         pp.load("grid_buffer_size", grid_buffer_size, 8);
         pp.load("dt_multiplier", dt_multiplier, 0.25);
@@ -245,45 +248,50 @@ class ChomboParameters
                                          (ivN[idir] + 1) * coarsest_dx;
         }
 
-        // Grid center
-        // now that L is surely set, get center
+        // First work out the default center ignoring reflective BCs
+        // but taking into account different grid lengths in each direction
+        std::array<double, CH_SPACEDIM> default_center;
 #if CH_SPACEDIM == 3
-        pp.load("center", center,
-                {0.5 * Ni[0] * coarsest_dx, 0.5 * Ni[1] * coarsest_dx,
-                 0.5 * Ni[2] * coarsest_dx}); // default to center
+        default_center = {0.5 * Ni[0] * coarsest_dx, 0.5 * Ni[1] * coarsest_dx,
+                          0.5 * Ni[2] * coarsest_dx};
 #elif CH_SPACEDIM == 2
-        pp.load("center", center,
-                {0.5 * Ni[0] * coarsest_dx,
-                 0.5 * Ni[1] * coarsest_dx}); // default to center
+        default_center = {0.5 * Ni[0] * coarsest_dx, 0.5 * Ni[1] * coarsest_dx};
 #endif
-
+        // Now take into account reflective BCs
         FOR1(idir)
         {
             if ((boundary_params.lo_boundary[idir] ==
                  BoundaryConditions::REFLECTIVE_BC) &&
                 (boundary_params.hi_boundary[idir] !=
                  BoundaryConditions::REFLECTIVE_BC))
-                center[idir] = 0.;
+                default_center[idir] = 0.;
             else if ((boundary_params.hi_boundary[idir] ==
                       BoundaryConditions::REFLECTIVE_BC) &&
                      (boundary_params.lo_boundary[idir] !=
                       BoundaryConditions::REFLECTIVE_BC))
-                center[idir] = coarsest_dx * Ni[idir];
+                default_center[idir] = coarsest_dx * Ni[idir];
         }
-        pout() << "Center has been set to: ";
-        FOR1(idir) { pout() << center[idir] << " "; }
-        pout() << endl;
+
+        pp.load("center", center, default_center); // default to center
     }
 
     void check_params()
     {
         check_parameter("L", L, L > 0.0, "must be > 0.0");
         check_parameter("max_level", max_level, max_level >= 0, "must be >= 0");
-        // the following check assumes you will be taking some fourth (or
-        // higher) order one-sided derivatives
-        check_parameter("num_ghosts", num_ghosts,
-                        (num_ghosts >= 3) && (num_ghosts <= block_factor),
-                        "must be >= 3 and <= block_factor/min_box_size");
+        check_parameter("max_spatial_derivative_order",
+                        max_spatial_derivative_order,
+                        max_spatial_derivative_order == 4 ||
+                            max_spatial_derivative_order == 6,
+                        "only 4 and 6 are supported");
+        // the following check assumes you will be taking one-sided derivatives
+        // of the order given by max_spatial_derivative_order
+        check_parameter(
+            "num_ghosts", num_ghosts,
+            (num_ghosts >= ((max_spatial_derivative_order == 6) ? 4 : 3)) &&
+                (num_ghosts <= block_factor),
+            "must be >= 3 (4th order derivatives) or 4 (6th order derivatives) "
+            "and <= min_box_size (aka block_factor)");
         check_parameter("tag_buffer_size", tag_buffer_size,
                         tag_buffer_size >= 0, "must be >= 0");
         // assume ref_ratio is always 2
@@ -369,10 +377,13 @@ class ChomboParameters
     int verbosity;
     double L;                               // Physical sidelength of the grid
     std::array<double, CH_SPACEDIM> center; // grid center
-    IntVect ivN;            // The number of grid cells in each dimension
-    double coarsest_dx;     // The coarsest resolution
-    int max_level;          // the max number of regriddings to do
-    int num_ghosts;         // must be at least 3 for KO dissipation
+    IntVect ivN;        // The number of grid cells in each dimension
+    double coarsest_dx; // The coarsest resolution
+    int max_level;      // the max number of regriddings to do
+    int max_spatial_derivative_order; // The maximum order of the spatial
+                                      // derivatives - does nothing
+                                      // in Chombo but can be used in examples
+    int num_ghosts;         // min dependent on max_spatial_derivative_order
     int tag_buffer_size;    // Amount the tagged region is grown by
     int grid_buffer_size;   // Number of cells between level
     Vector<int> ref_ratios; // ref ratios between levels

@@ -39,8 +39,10 @@ class ScalarFieldLevel : public GRAMRLevel
     //! Initialize data for the field and metric variables
     virtual void initialData();
 
+#ifdef CH_USE_HDF5
     //! routines to do before outputting plot file
     virtual void prePlotLevel();
+#endif
 
     //! RHS routines used at each RK4 step
     virtual void specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
