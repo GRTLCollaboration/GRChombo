@@ -8,7 +8,7 @@
 #
 
 DIM = 2
-cxxcppflags := ${cxxcppflags} -DGR_SPACEDIM=2 -DDEFAULT_TENSOR_DIM=2
+cxxcppflags := ${cxxcppflags} -DGR_SPACEDIM=2
 
 GRCHOMBO_SOURCE = ../../Source
 

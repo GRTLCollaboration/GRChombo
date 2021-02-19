@@ -429,7 +429,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
         m_spin = spin_dimensionless * m_mass;
 #endif
 
-        if (m_params.verbose > AHFinder::MIN)
+        if (m_params.verbose > AHFinder::NONE)
         {
             pout() << "mass = " << m_mass << endl;
         }
@@ -471,6 +471,13 @@ template <class SurfaceGeometry, class AHFunction>
 void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
     double a_dt, double a_time, double a_restart_time)
 {
+    // print step. Printing the step allows the user to modify params as
+    // 'solve_interval', 'print_interval' or even 'dt_multiplier' (that change
+    // the frequency of writing outputs) and the class will still be able to
+    // restart from the correct file  (this only applies for frequency increase,
+    // for which the file number will suddenly jump, as for frequency decrease
+    // the AHFinder may override old coord files)
+
     // print stats (area, spin, origin, center) and coordinates
     // stop printing if it stopped converging
     // then in 'write_coords_file' nothing is printed if not converged
@@ -698,6 +705,8 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
         else if (idx == 0 && stats[0].size() > 1)
             old_print_dt = stats[0][idx + 1] -
                            stats[0][idx]; // there's still time steps forward
+        else // if we can't know, just default to the current one
+            old_print_dt = current_solve_dt * m_params.print_interval;
 
         if (m_params.verbose > AHFinder::SOME)
         {

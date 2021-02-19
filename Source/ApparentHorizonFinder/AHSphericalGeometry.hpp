@@ -43,6 +43,10 @@ class AHSphericalGeometry : public SphericalGeometry
     AHGeometryData get_geometry_data(double r, double theta,
                                      double phi = 0.) const
     {
+        // for 2D Cartoon spherical geometry (3D->2D), this should always be
+        // called with no 3rd argument (so phi=0), which means the formulas
+        // below are effectively polar coordinates
+
         CH_TIME("AHSphericalGeometry::get_geometry_data");
 
         double costheta = cos(theta);
