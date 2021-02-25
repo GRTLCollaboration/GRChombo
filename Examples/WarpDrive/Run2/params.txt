@@ -12,9 +12,9 @@ a3 = 1
 
 # Warp Bubble Initial data
 warp_acceleration = 0.0
-warp_speed = 0.05
-bubble_size = 5.0
-sigma_wall = 0.25
+warp_speed = 0.1
+bubble_size = 25.0
+sigma_wall = 0.5
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
@@ -24,20 +24,21 @@ N3 = 64
 
 # Length of longest box side, dx_coarsest = L/N(max)
 # NB if non cubic, this determines dx for all sides
-L = 2048
+L = 1024
 
 # Regridding
 # Thresholds on the change across a cell which prompts regrid
-regrid_threshold = 0.5
+regrid_threshold = 0.05
 
 # Level data
 # Maximum number of times you can regrid above coarsest level
-max_level = 6 # There are (max_level+1) grids, so min is zero
+max_level = 9 # There are (max_level+1) grids, so min is zero
 # Frequency of regridding at each level
 # Need one for each level, ie max_level+1 items
 # Generally you do not need to regrid frequently on every level
-regrid_interval = 0 0 0 0 0 0 0 0 0
+regrid_interval = 0 0 0 1 0 0 0 0 0 0 0
 tag_buffer_size = 0
+
 # Max box size
 max_grid_size = 16
 # Min box size
@@ -60,7 +61,7 @@ vars_parity            = 0 0 4 6 0 5 0    #chi and hij
                          0 1 2 3          #Theta and Gamma
                          0 1 2 3 1 2 3    #lapse shift and B
                          0 1 2 3 0 4 6 0 5 0  #Tmunu
-vars_parity_diagnostic = 0 1 2 3 0 7 # Ham Mom and Weyls
+vars_parity_diagnostic = 0 0 1 2 3 0 7 # Hami absHam Mom and Weyls
 
 # if sommerfeld boundaries selected, must select
 # asymptotic values (in order given by UserVariables.hpp)
@@ -73,23 +74,23 @@ vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-dt_multiplier = 0.05
-stop_time = 800.0
-checkpoint_interval = 100
-plot_interval = 0
-num_plot_vars = 4
-plot_vars = chi rho Ham Weyl4_Re
+dt_multiplier = 0.1
+stop_time = 500.0
+checkpoint_interval = 5
+plot_interval = 1
+num_plot_vars = 5
+plot_vars = lapse chi rho Ham_abs_sum Ham
 write_plot_ghosts = 0
 
 #Lapse evolution
 lapse_power = 1.0
-lapse_coeff = 2.0
+lapse_coeff = 1.0
 lapse_advec_coeff = 1 # 1 makes the lapse gauge 1+log slicing
 
 # Shift evolution coefficients
 shift_advec_coeff = 0 # Usually no advection for beta
 shift_Gamma_coeff = 0.75 # 
-eta = 1.0 # This is beta_driver, usually of order 1/M_ADM of spacetime
+eta = 2.0 # This is beta_driver, usually of order 1/M_ADM of spacetime
 
 # CCZ4 parameters
 # if using BSSN the kappa values should be zero
@@ -100,7 +101,7 @@ kappa3 = 1
 covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
 
 # coefficient for KO numerical dissipation
-sigma = 4.0
+sigma = 2.0
 
 # Change the gravitational constant of the Universe!
 # Default is 1.0, for standard geometric units
@@ -109,12 +110,12 @@ G_Newton = 1.0
 #extraction params
 #default center to grid center, uncomment to change
 #extraction_center = 512 512 512
-num_extraction_radii = 5
-extraction_radii = 200.0 300.0 400.0 500.0 600.0
-extraction_levels = 2 1 1 1 0
+num_extraction_radii = 3
+extraction_radii = 100.0 150.0 200.0
+extraction_levels = 0 0 0
 num_points_phi = 24
 num_points_theta = 24
-num_modes = 4
+num_modes = 3
 modes = 2 0 # l m for spherical harmonics
         2 1
         2 2

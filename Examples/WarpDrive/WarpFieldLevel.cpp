@@ -14,10 +14,11 @@
 #include "MatterCCZ4.hpp"
 
 // For constraints calculation
-#include "MatterConstraints.hpp"
+#include "NewMatterConstraints.hpp"
 
 // For tag cells
 #include "FixedGridsTaggingCriterion.hpp"
+#include "HamTaggingCriterion.hpp"
 
 // Problem specific includes
 #include "ComputePack.hpp"
@@ -77,17 +78,24 @@ void WarpFieldLevel::initialData()
                    EXCLUDE_GHOST_CELLS);
 
     // The constraints initially
+    fillAllEvolutionGhosts();
     WarpField warp_field(m_p.warpfield_params, m_time, m_xs, m_vs);
-    BoxLoops::loop(MatterConstraints<WarpField>(warp_field, m_dx, m_p.G_Newton),
+    BoxLoops::loop(MatterConstraints<WarpField>(
+                       warp_field, m_dx, m_p.G_Newton, c_Ham,
+                       Interval(c_Mom1, c_Mom3), c_Ham_abs_sum,
+                       Interval()),
                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 }
 
 // Things to do before outputting a plot file
 void WarpFieldLevel::prePlotLevel()
 {
-    fillAllGhosts();
+    fillAllEvolutionGhosts();
     WarpField warp_field(m_p.warpfield_params, m_time, m_xs, m_vs);
-    BoxLoops::loop(MatterConstraints<WarpField>(warp_field, m_dx, m_p.G_Newton),
+    BoxLoops::loop(MatterConstraints<WarpField>(
+                       warp_field, m_dx, m_p.G_Newton, c_Ham,
+                       Interval(c_Mom1, c_Mom3), c_Ham_abs_sum,
+                       Interval()),
                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 }
 
@@ -117,11 +125,37 @@ void WarpFieldLevel::specificUpdateODE(GRLevelData &a_soln,
     BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
 }
 
+void WarpFieldLevel::preTagCells()
+{
+    // Pre tagging - fill ghost cells and calculate Ham terms
+    fillAllEvolutionGhosts();
+    WarpField warp_field(m_p.warpfield_params, m_time, m_xs, m_vs);
+    BoxLoops::loop(MatterConstraints<WarpField>(
+                       warp_field, m_dx, m_p.G_Newton, c_Ham,
+                       Interval(c_Mom1, c_Mom3), c_Ham_abs_sum,
+                       Interval()),
+                   m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+}
+
+void WarpFieldLevel::computeDiagnosticsTaggingCriterion(
+    FArrayBox &tagging_criterion, const FArrayBox &current_state_diagnostics)
+{
+    if(m_level < 3)
+    {
+        BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L, m_p.center),
+                   current_state_diagnostics, tagging_criterion, disable_simd());
+    }
+    else
+    {
+        BoxLoops::loop(HamTaggingCriterion(m_dx), current_state_diagnostics,
+                   tagging_criterion);
+    }
+}
+
+
 void WarpFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                              const FArrayBox &current_state)
 {
-    BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L, m_p.center),
-                   current_state, tagging_criterion, disable_simd());
 }
 
 void WarpFieldLevel::specificPostTimeStep()
@@ -130,11 +164,15 @@ void WarpFieldLevel::specificPostTimeStep()
     fillAllGhosts();
     BoxLoops::loop(Weyl4(m_p.extraction_params.extraction_center, m_dx),
                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-
-    if (m_level == m_p.extraction_params.min_extraction_level())
+    int min_level = m_p.extraction_params.min_extraction_level();
+    if (m_level == min_level)
     {
         // Now refresh the interpolator and do the interpolation
-        m_gr_amr.m_interpolator->refresh();
+        bool fill_ghosts = false;
+        m_gr_amr.m_interpolator->refresh(fill_ghosts);
+        m_gr_amr.fill_multilevel_ghosts(
+            VariableType::diagnostic, Interval(c_Weyl4_Re, c_Weyl4_Im),
+            min_level);
         WeylExtraction my_extraction(m_p.extraction_params, m_dt, m_time);
         my_extraction.execute_query(m_gr_amr.m_interpolator);
     }

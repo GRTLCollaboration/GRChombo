@@ -71,7 +71,7 @@ extrapolation_order = 0
 checkpoint_interval = 500
 plot_interval = 10
 num_plot_vars = 3
-plot_vars = Source Stress xMom
+plot_vars = xMom Source Stress
 dt_multiplier = 0.04
 stop_time = 2000.0
 
