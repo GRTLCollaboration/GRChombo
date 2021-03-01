@@ -173,6 +173,21 @@ void GRAMRLevel::postTimeStep()
     if (m_verbosity)
         pout() << "GRAMRLevel::postTimeStep " << m_level << endl;
 
+    if (m_p.use_truncation_error_tagging && m_gr_amr.need_to_regrid(m_level))
+    {
+        pout() << "GRAMRLevel::postTimeStep: need_to_regrid on level "
+               << m_level << " = true"
+               << "\n";
+        for (int ivar = 0; ivar < m_p.num_truncation_error_vars; ++ivar)
+        {
+            const int var = m_p.truncation_error_vars[ivar].first;
+            // copy state vars now before coarse fine averaging for
+            // truncation error estimation
+            m_state_new.copyTo(Interval(var, var), m_truncation_error_state_old,
+                               Interval(ivar, ivar));
+        }
+    }
+
     if (m_finer_level_ptr != nullptr)
     {
         GRAMRLevel *finer_gr_amr_level_ptr = gr_cast(m_finer_level_ptr);
@@ -196,8 +211,22 @@ void GRAMRLevel::postTimeStep()
 void GRAMRLevel::preTagCells()
 {
     CH_TIME("GRAMRLevel::preTagCells");
-    fillAllEvolutionGhosts(); // We need filled ghost cells to calculate
-                              // gradients etc
+    if (m_p.use_truncation_error_tagging)
+    {
+        if (m_coarser_level_ptr != nullptr)
+        {
+            GRAMRLevel *coarser_gr_amr_level_ptr = gr_cast(m_coarser_level_ptr);
+            // interpolate from coarser level
+            // I hope this works given that m_fine_interp has been defined
+            // with NUM_VARS comps.
+            m_fine_interp.interpToFine(
+                m_truncation_error_state_coarse,
+                coarser_gr_amr_level_ptr->m_truncation_error_state_old);
+        }
+    }
+    else
+        fillAllEvolutionGhosts(); // We need filled ghost cells to calculate
+                                  // gradients etc
 }
 
 // create tags
@@ -345,6 +374,13 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
         m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS,
                                    iv_ghosts);
     }
+    if (m_p.use_truncation_error_tagging)
+    {
+        m_truncation_error_state_old.define(
+            level_domain, m_p.num_truncation_error_vars, IntVect::Zero);
+        m_truncation_error_state_coarse.define(
+            level_domain, m_p.num_truncation_error_vars, IntVect::Zero);
+    }
 }
 
 /// things to do after regridding
@@ -377,6 +413,13 @@ void GRAMRLevel::initialGrid(const Vector<Box> &a_new_grids)
     {
         m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS,
                                    iv_ghosts);
+    }
+    if (m_p.use_truncation_error_tagging)
+    {
+        m_truncation_error_state_old.define(
+            level_domain, m_p.num_truncation_error_vars, IntVect::Zero);
+        m_truncation_error_state_coarse.define(
+            level_domain, m_p.num_truncation_error_vars, IntVect::Zero);
     }
 
     defineExchangeCopier(level_domain);
@@ -719,6 +762,13 @@ void GRAMRLevel::readCheckpointLevel(HDF5Handle &a_handle)
     {
         m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS,
                                    iv_ghosts);
+    }
+    if (m_p.use_truncation_error_tagging)
+    {
+        m_truncation_error_state_old.define(
+            level_domain, m_p.num_truncation_error_vars, IntVect::Zero);
+        m_truncation_error_state_coarse.define(
+            level_domain, m_p.num_truncation_error_vars, IntVect::Zero);
     }
 }
 

@@ -71,6 +71,10 @@ class GRAMR : public AMR
         const Interval &a_comps = Interval(0, std::numeric_limits<int>::max()),
         const int a_min_level = 0,
         const int a_max_level = std::numeric_limits<int>::max()) const;
+
+    // returns true if there needs to be a regrid on this or some coarser level
+    // see AMR::needToRegrid.
+    bool need_to_regrid(const int a_level) const;
 };
 
 #endif /* GRAMR_HPP_ */

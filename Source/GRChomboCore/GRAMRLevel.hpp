@@ -208,8 +208,13 @@ class GRAMRLevel : public AMRLevel, public InterpSource
 
     BoundaryConditions m_boundaries; // the class for implementing BCs
 
-    GRLevelData m_state_old; //!< the solution at the old time
-    GRLevelData m_state_new; //!< the solution at the new time
+    GRLevelData m_state_old;                  //!< the solution at the old time
+    GRLevelData m_state_new;                  //!< the solution at the new time
+    GRLevelData m_truncation_error_state_old; //!< the truncation error vars
+                                              //!< before coarse-fine averaging
+    GRLevelData
+        m_truncation_error_state_coarse; //!< the truncation error vars
+                                         //!< interpolated from coarser level
     GRLevelData m_state_diagnostics;
     Real m_dx; //!< grid spacing
     double m_restart_time;

@@ -89,6 +89,13 @@ class ChomboParameters
             pp.load("regrid_threshold", regrid_threshold, 0.5);
             regrid_thresholds = Vector<double>(max_level + 1, regrid_threshold);
         }
+        // default to normal tagging criterion
+        pp.load("use_truncation_error_tagging", use_truncation_error_tagging,
+                false);
+        if (use_truncation_error_tagging)
+            UserVariables::load_vars_to_vector(
+                pp, "truncation_error_vars", "num_truncation_error_vars",
+                truncation_error_vars, num_truncation_error_vars);
 
         // time stepping outputs and regrid data
         pp.load("checkpoint_interval", checkpoint_interval, 1);
@@ -371,6 +378,18 @@ class ChomboParameters
                                 "parity type undefined");
             }
         }
+
+        // checks for truncation error tagging
+        check_parameter("max_level", max_level,
+                        !use_truncation_error_tagging || max_level > 1,
+                        "must be > 1 if using truncation error tagging");
+        bool using_only_evolution_vars = true;
+        for (const auto &var : truncation_error_vars)
+            using_only_evolution_vars &=
+                (var.second == VariableType::evolution);
+        check_parameter("truncation_error_vars", truncation_error_vars,
+                        using_only_evolution_vars,
+                        "must use only evolution vars");
     }
 
     // General parameters
@@ -413,6 +432,11 @@ class ChomboParameters
     // For tagging
     Vector<double> regrid_thresholds;
 
+    // For truncation error tagging (instead of normal tagging criterion)
+    bool use_truncation_error_tagging;
+    int num_truncation_error_vars;
+    std::vector<std::pair<int, VariableType>> truncation_error_vars;
+
     // For checking parameters and then exiting rather before instantiating
     // GRAMR (or child) object
     bool just_check_params = false;
@@ -444,6 +468,33 @@ class ChomboParameters
             std::ostringstream error_message_ss;
             error_message_ss << "Parameter: " << a_name << " = " << a_value
                              << " is invalid: " << a_invalid_explanation;
+            error(error_message_ss.str());
+        }
+    }
+
+    // template <>
+    void check_parameter(const std::string &a_name,
+                         std::vector<std::pair<int, VariableType>> a_value,
+                         const bool a_valid,
+                         const std::string &a_invalid_explanation)
+    {
+        if (a_valid)
+            return;
+        else
+        {
+            std::ostringstream error_message_ss;
+            error_message_ss << "Parameter: " << a_name << " =";
+            for (const auto &var : a_value)
+            {
+                error_message_ss << " ";
+                if (var.second == VariableType::evolution)
+                    error_message_ss
+                        << UserVariables::variable_names[var.first];
+                else
+                    error_message_ss
+                        << DiagnosticVariables::variable_names[var.first];
+            }
+            error_message_ss << " is invalid: " << a_invalid_explanation;
             error(error_message_ss.str());
         }
     }

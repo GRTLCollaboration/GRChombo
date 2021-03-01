@@ -53,3 +53,17 @@ void GRAMR::fill_multilevel_ghosts(const VariableType a_var_type,
         level.fillAllGhosts(a_var_type, a_comps);
     }
 }
+
+bool GRAMR::need_to_regrid(const int a_level) const
+{
+    bool out = false;
+    std::vector<const GRAMRLevel *> gramrlevels = get_gramrlevels();
+    for (int level = a_level; level >= 0; --level)
+    {
+        // this value is irrelevant, just needs to be != 0
+        constexpr int fake_steps_left = 1;
+        out |= (needToRegrid(level, fake_steps_left) &&
+                gramrlevels[a_level]->at_level_timestep_multiple(level));
+    }
+    return out;
+}
