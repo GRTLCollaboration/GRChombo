@@ -255,6 +255,7 @@ struct ExpansionFunction : AHFunctionDefault
         // using "r * Expansion" significantly improves the convergence
         // (making a Schw. BH converge for any radius >~ 0.5*r_AH instead of
         // only up to ~ 3 * r_AH as it happens just with the expansion)
+        // (see arXiv:gr-qc/0512169, around Fig 3.4)
         return expansion * pow(f, a_params.expansion_radius_power);
     }
 

@@ -16,15 +16,15 @@ plot_prefix = BinaryBHPlot_
 # NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full',
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
-N_full = 64
+N_full = 128
 L_full = 512
-
-# Spatial derivative order (only affects CCZ4 RHS)
-max_spatial_derivative_order = 4 # can be 4 or 6
 
 # Defaults to center of grid L/2
 # uncomment to change
 #center = 256.0 256.0 256.0
+
+# Spatial derivative order (only affects CCZ4 RHS)
+max_spatial_derivative_order = 6 # can be 4 or 6
 
 # BH params, use puncture tracking to
 # ensure horizons resolved
@@ -39,18 +39,18 @@ momentumB =  0.0841746  0.000510846 0.0
 
 # regridding control, specify threshold (same on each level)
 regrid_threshold = 0.05
-max_level = 9
+max_level = 8
 # need max_level entries for regrid interval
-regrid_interval = 0 0 0 64 64 64 64 64 64
+regrid_interval = 0 1 0 0 0 0 0 0 0
 
 # Max and min box sizes
-max_grid_size = 16
+max_grid_size = 32
 block_factor = 16
 
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 100
+checkpoint_interval = 50
 # set to zero to turn off plot files, comps defined in BinaryBHLevel.cpp
 plot_interval = 10
 num_plot_vars = 3
@@ -97,6 +97,7 @@ shift_Gamma_coeff = 0.75
 eta = 1.0
 
 # CCZ4 parameters
+formulation = 0  # 1 for BSSN, 0 for CCZ4
 kappa1 = 0.1
 kappa2 = 0
 kappa3 = 1.0
@@ -109,11 +110,11 @@ sigma = 1.0
 # default of extraction_center is center, uncomment to change
 #extraction_center = 256 256 256
 activate_extraction = 1
-num_extraction_radii = 2
-extraction_radii = 50.0 100.0
-extraction_levels = 2 1
-num_points_phi = 24
-num_points_theta = 36
+num_extraction_radii = 3
+extraction_radii = 50.0 75.0 100.0
+extraction_levels = 2 1 1
+num_points_phi = 32
+num_points_theta = 48
 num_modes = 8
 modes = 2 0 # l m for spherical harmonics
         2 1
@@ -127,15 +128,13 @@ modes = 2 0 # l m for spherical harmonics
 
 #Apparent Horizon finder
 AH_activate = 1
-AH_num_ranks = 20
-AH_num_points_u = 30
-AH_num_points_v = 50
+AH_num_ranks = 65
+AH_num_points_u = 65
+AH_num_points_v = 48
 #AH_solve_interval = 1
 #AH_print_interval = 1
 #AH_track_center = true
 #AH_predict_origin = true
-#AH_merger_search_factor = 1.
-#AH_merger_pre_factor = 1.
 #AH_level_to_run = 0
 #AH_start_time = 0.
 #AH_give_up_time = -1.
@@ -151,5 +150,7 @@ AH_num_points_v = 50
 #AH_1_initial_guess = 0.3
 #AH_2_initial_guess = 0.3
 
-AH_num_extra_vars = 2
-AH_extra_vars = chi d1_Ham d2_A11
+#AH_num_extra_vars = 2
+#AH_extra_vars = chi d1_Ham d2_A11
+
+AH_set_origins_to_punctures = 1

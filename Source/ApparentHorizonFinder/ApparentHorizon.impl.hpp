@@ -68,7 +68,10 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::ApparentHorizon(
               IntegrationMethod::simpson
       }),
 
-      m_area(NAN), m_spin(NAN), m_mass(NAN),
+      m_area(NAN), m_spin(NAN), m_mass(NAN), m_irreducible_mass(NAN),
+      m_spin_z_alt(NAN), m_dimensionless_spin_vector({NAN}),
+
+      origin_already_updated(false),
 
       m_interp(a_interp), m_interp_plus(a_interp), m_interp_minus(a_interp),
 
@@ -149,6 +152,16 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::set_origin(
     m_interp.set_origin(a_origin);
     m_interp_plus.set_origin(a_origin);
     m_interp_minus.set_origin(a_origin);
+    origin_already_updated = true;
+
+    if (m_params.verbose > AHFinder::SOME)
+    {
+        pout() << "Setting origin to (" << a_origin[0] << "," << a_origin[1]
+#if CH_SPACEDIM == 3
+               << "," << a_origin[2]
+#endif
+               << ")" << std::endl;
+    }
 }
 
 template <class SurfaceGeometry, class AHFunction>
@@ -350,7 +363,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
         m_params.extra_vars); // (ALL CHOMBO ranks do it!!)
 
     // estimate the next position where origin will be
-    if (get_converged())
+    if (!origin_already_updated && get_converged())
     {
         if (m_params.predict_origin)
             predict_next_origin();
@@ -419,6 +432,8 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
         // coordinates is 'get_origin()', not 'get_center()'
         if (m_params.track_center)
             calculate_center();
+
+        origin_already_updated = false;
 
         m_area = calculate_area();
 #if GR_SPACEDIM == 3 // GR_SPACEDIM, not CH_SPACEDIM !!!
@@ -509,14 +524,13 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
         }
 
         // write stats
-
-        // fake_dt is relevant for the 'remove_duplicate_time_data' part
         double fake_dt =
             a_dt * m_params.solve_interval * m_params.print_interval;
         SmallDataIO file(m_stats, fake_dt, a_time, a_restart_time,
                          SmallDataIO::APPEND, !m_printed_once);
 
-        file.remove_duplicate_time_data();
+        // not needed -> already done in restart:
+        // file.remove_duplicate_time_data();
 
         // std::string coords_filename = file.get_new_file_number(fake_dt,
         // a_time);
@@ -922,7 +936,9 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
                                << std::endl;
                     else
                         pout()
-                            << "AH time step changed. Recovering "
+                            << "Old AH time step is different than current one "
+                               "(this might happen if 'AH_print_interval != "
+                               "1').\n Recovering "
                             << old_centers_time_index.size()
                             << " old centers from interpolation, for accurate "
                                "prediction of next origin."
@@ -1019,6 +1035,16 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
                       Chombo_MPI::comm);
 #endif
     }
+
+    // force 'remove_duplicate_time_data' here because merger AH might only run
+    // a long time after 'a_restart_time' and don't remove duplicate time data
+    // because of it (if they happen not to be solved right from the restart)
+    // fake_dt is relevant for the 'remove_duplicate_time_data' part
+    double fake_dt = current_solve_dt * m_params.print_interval;
+    SmallDataIO file_cleanup(m_stats, fake_dt, current_time, current_time,
+                             SmallDataIO::APPEND, !m_printed_once);
+
+    file_cleanup.remove_duplicate_time_data();
 
     // if t=0, solve only if it's a restart and if solve_first_step = true (it
     // may be false for example for a merger of a binary, for which we don't
@@ -1438,11 +1464,6 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_spin_dimensionless(
         (factor > 1. ? 0
                      : sqrt(1. - factor * factor)); // factor>1 means numerical
                                                     // error with spin as 0
-
-    if (m_params.verbose > AHFinder::NONE)
-    {
-        pout() << "dimensionless spin = " << spin_dimensionless << std::endl;
-    }
 
     return spin_dimensionless;
 }

@@ -1,7 +1,7 @@
 verbosity = 0
 chk_prefix = BinaryBH_
 plot_prefix = BinaryBHPlot_
-#restart_file = BinaryBH_000360.3d.hdf5
+#restart_file = BinaryBH_000065.3d.hdf5
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
@@ -11,15 +11,6 @@ max_spatial_derivative_order = 4 # can be 4 or 6
 
 N_full = 32
 L_full = 16
-
-massA = 1
-offsetA = -2 0 0
-
-massB = 0.82
-offsetB = 2 0 0
-
-momentumA = 0. -0.14025 0.0
-momentumB = 0. 0.14025 0.0
 
 regrid_threshold = 0.1
 max_level = 3
@@ -40,7 +31,7 @@ plot_interval = 2
 num_plot_vars = 4
 plot_vars = chi Ham Weyl4_Re Weyl4_Im
 dt_multiplier = 0.25
-stop_time = 10.0
+stop_time = 15.0
 
 nan_check = 1
 
@@ -117,3 +108,41 @@ AH_print_interval = 2
 #AH_merger_search_factor = 1.
 #AH_merger_pre_factor = 1.
 
+AH_set_origins_to_punctures = 1
+
+
+### Two Punctures params
+
+# Main BH params
+# Either calculate target masses or set bare masses explicitly below
+TP_calculate_target_masses = true
+TP_target_mass_plus = 0.5
+TP_target_mass_minus = 0.5
+#TP_adm_tol = 1e-10
+# offset in x direction (or z if TP_swap_xz set true)
+TP_offset_plus = 2.
+TP_offset_minus = -2.
+#TP_swap_xz = false
+TP_momentum_plus = -0.2 0.0 0.0
+TP_momentum_minus = 0.2 0.0 0.0
+TP_spin_plus = 0.0 0.0 0.0
+TP_spin_minus = 0.0 0.0 0.0
+
+# Solver params
+#TP_npoints_A = 30
+#TP_npoints_B = 30
+#TP_npoints_phi = 16;
+#TP_Newton_tol = 1e-10
+#TP_Newton_maxit = 5
+TP_epsilon = 1e-6
+#TP_Tiny = 0.0
+#TP_Extend_Radius = 0.0
+
+# Initial data params
+TP_use_spectral_interpolation = true
+TP_initial_lapse = psi^n
+TP_initial_lapse_psi_exponent = -2.0
+
+# Debug output
+#TP_do_residuum_debug_output = false
+#TP_do_initial_debug_output = false

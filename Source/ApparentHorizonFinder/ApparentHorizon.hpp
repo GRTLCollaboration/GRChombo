@@ -177,6 +177,10 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
     double m_area, m_spin, m_mass, m_irreducible_mass, m_spin_z_alt;
     Tensor<1, double> m_dimensionless_spin_vector;
 
+    // prevents resetting the origin when the user externally did 'set_origin'
+    // before 'solve'
+    bool origin_already_updated;
+
     /////////////////////////////////////////////////////////////////////////
     /////////////////////////// PETSc stuff below ///////////////////////////
     /////////////////////////////////////////////////////////////////////////

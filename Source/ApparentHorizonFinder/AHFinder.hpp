@@ -48,6 +48,38 @@
 template <class SurfaceGeometry, class AHFunction> class AHInterpolation;
 template <class SurfaceGeometry, class AHFunction> class ApparentHorizon;
 
+/*
+TF:
+A general note on the radius and the value of chi on the AH surface.
+For a Kerr BH initial data with dimensionless spin 's' and mass 'M':
+  r_AH   = M / 4 (1 + sqrt{1 - s^2})
+  chi_AH = [(1-s^2)^(1/6) / 16 * ((1 + sqrt{1-s^2})/2)^{2/3} for theta=0,
+            (1-s^2)^{1/6} / 16 * ((1 + sqrt{1-s^2})/2)^{1/3} for theta=pi/2]
+
+After puncture gauge settled:
+  r_AH   ~ M * (0.275 + 0.76 * sqrt{1-s^2})
+  chi_AH ~ 0.26 * sqrt{1-s^2}
+
+Take it with a grain of salt, but these results are from a numerical fit I did
+for numerical Kerr BH runs, approximately settled at around t~50M, from spin=0
+to spin=0.99. You can use it generically for other things, like realizing that
+for spin=0 you can plot in VisIt the contour chi=0.26 to get the AH, or that for
+spin=0 the AH goes from r=M/2 to r~M
+
+Binaries:
+After some inspiral cases I've been through, I realized that merger happened
+when the distance between the punctures was about (roughtly!) ~[0.5,2]*(M1+M2)
+and with a radius of ~[0.7,1.1]*(M1+M2) (wobbly of course, and bigger values for
+smaller final spin). It makes sense to start looking for the merger before this,
+but remember that for PETSc diverging is significantly slower than converging,
+so the closer the better. Hence, as default, start looking for a merger when the
+separation is about ~<2*(M1+M2) and with a initial guess of ~2*(M1+M2) (twice as
+big as what we'll probably get to make sure it converges to the outer AH; even
+then it might converge to the inner one, but it is much easer for the AH to
+converge if the initial guess is bigger than the actual radius, but the opposite
+is more senstitive).
+*/
+
 //! Class to manage AHs and its mergers + control PETSc MPI sub-communicator
 class AHFinder
 {
@@ -81,19 +113,19 @@ class AHFinder
 
         //! mergers will be searched when distance between 'parent' BHs is
         //! distance < merger_search_factor * 4. * (AH_initial_guess_1 +
-        //! AH_initial_guess_2) should be roughly '2M' for initial guess at M/2
-        //! (set to non-positive to 'always search')
-        double merger_search_factor; // typically around ~0.8*[2(M1+M2)]
-                                     // (default 1)
-        //! initial guess for merger is 'merger_pre_factor * (AH_initial_guess_1
-        //! + AH_initial_guess_2)'
-        double merger_pre_factor; // typically ~0.6*[M1+M2] (default 1. to
-                                  // avoid finding the inner AH)
-        bool allow_re_attempt;    //!< re-attempt with initial guess if
+        //! AH_initial_guess_2) should be roughly '2M=2(m1+m2)' for initial
+        //! guess at m/2 (set to non-positive to 'always search')
+        double merger_search_factor; // see note above (default is 1)
+        //! initial guess for merger is 'merger_pre_factor * 4. *
+        //! (AH_initial_guess_1 + AH_initial_guess_2)'
+        //! set to somethig bigger to avoid finding the inner AH
+        double merger_pre_factor; // see note above (default to 1.)
+
+        bool allow_re_attempt; //!< re-attempt with initial guess if
                                //!< previous convergence failed (default false)
         int max_fails_after_lost; //!< number of time steps to try again after
                                   //!< (-1 to never) the AH was lost
-                                  //!< (default is < 0)
+                                  //!< (default is 0)
 
         int verbose; //!< print information during execution (default is 1)
 
@@ -192,6 +224,10 @@ class AHFinder
     {
         m_interpolator = a_interpolator;
     }
+
+    void
+    set_origins(const std::vector<std::array<double, CH_SPACEDIM>> &origins,
+                bool includes_mergers = false);
 
   private:
     //! returns false if 'parent' AHs are too far

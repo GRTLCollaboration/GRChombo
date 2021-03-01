@@ -204,7 +204,14 @@ void BinaryBHLevel::specificPostTimeStep()
 
 #ifdef USE_AHFINDER
     if (m_p.AH_activate && m_level == m_p.AH_params.level_to_run)
+    {
+        if (m_p.AH_set_origins_to_punctures && m_p.track_punctures)
+        {
+            m_bh_amr.m_ah_finder.set_origins(
+                m_bh_amr.m_puncture_tracker.get_puncture_coords());
+        }
         m_bh_amr.m_ah_finder.solve(m_dt, m_time, m_restart_time);
+    }
 #endif
 }
 

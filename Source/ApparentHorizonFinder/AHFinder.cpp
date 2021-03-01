@@ -254,7 +254,7 @@ bool AHFinder::solve_merger(int ah1, int ah2, double &initial_guess_merger,
     // ensure we don't catch the inner AH
     double merger_pre_factor = std::max(AH1->m_params.merger_pre_factor,
                                         AH2->m_params.merger_pre_factor);
-    initial_guess_merger = merger_pre_factor * initial_guess_sum;
+    initial_guess_merger = merger_pre_factor * 4. * initial_guess_sum;
 
     // update center of merged, otherwise it does it by
     // itself in solve
@@ -279,7 +279,7 @@ bool AHFinder::solve_merger(int ah1, int ah2, double &initial_guess_merger,
     double merger_search_factor = std::max(AH1->m_params.merger_search_factor,
                                            AH2->m_params.merger_search_factor);
 
-    double min_distance = merger_search_factor * 4.0 * initial_guess_sum;
+    double min_distance = merger_search_factor * 4. * initial_guess_sum;
 
     bool do_solve = false;
 
@@ -288,8 +288,9 @@ bool AHFinder::solve_merger(int ah1, int ah2, double &initial_guess_merger,
         do_solve = merger_search_factor <= 0. || distance <= min_distance;
 
         if (do_solve)
-            // radius of guess is bigger than AH distance
-            CH_assert(min_distance < initial_guess_merger);
+            // make sure twice the radius of the guess is bigger than AH
+            // distance
+            CH_assert(min_distance <= 2. * initial_guess_merger);
 
         if (AH1->m_params.verbose > NONE)
         {
@@ -305,6 +306,44 @@ bool AHFinder::solve_merger(int ah1, int ah2, double &initial_guess_merger,
     }
 
     return do_solve;
+}
+
+void AHFinder::set_origins(
+    const std::vector<std::array<double, CH_SPACEDIM>> &origins,
+    bool includes_mergers)
+{
+    const int num_ah = m_apparent_horizons.size();
+
+    int non_merger_counter = 0; // for 'includes_mergers == false'
+    for (int i = 0; i < num_ah; ++i)
+    {
+        if (includes_mergers)
+        {
+            m_apparent_horizons[i]->set_origin(origins[i]);
+        }
+        else
+        {
+            // if it is a merger that has not yet been found
+            if (m_merger_pairs[i].first >= 0)
+            {
+                if (!m_apparent_horizons[i]->has_been_found())
+                {
+                    auto origin1 = m_apparent_horizons[m_merger_pairs[i].first]
+                                       ->get_origin();
+                    auto origin2 = m_apparent_horizons[m_merger_pairs[i].second]
+                                       ->get_origin();
+                    std::array<double, CH_SPACEDIM> origin;
+                    FOR1(i) { origin[i] = (origin1[i] + origin2[i]) / 2.; }
+                    m_apparent_horizons[i]->set_origin(origin);
+                }
+            }
+            else
+            {
+                m_apparent_horizons[i]->set_origin(origins[non_merger_counter]);
+                ++non_merger_counter;
+            }
+        }
+    }
 }
 
 void AHFinder::params::read_params(GRParmParse &pp, const ChomboParameters &a_p)
