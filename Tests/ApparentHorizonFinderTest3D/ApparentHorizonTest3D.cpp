@@ -84,14 +84,19 @@ int runApparentHorizonTest3D(int argc, char *argv[])
             status = 1;
         else
         {
-            double spin = stats[3][0];
-            double mass = stats[4][0];
+            double mass = stats[3][0];
+            double spin = stats[5][0];
+            double spin_x = stats[6][0] * mass;
 
             double error_perc =
                 fabs(1. - mass / sim_params.kerr_params.mass) * 100;
             if (sim_params.kerr_params.spin != 0.)
+            {
                 error_perc +=
                     fabs(1. - spin / sim_params.kerr_params.spin) * 100;
+                error_perc +=
+                    fabs(1. - spin_x / sim_params.kerr_params.spin) * 100;
+            }
             pout() << "error = " << error_perc << "%" << std::endl;
             status |= (error_perc > 0.1) ||
                       +std::isnan(

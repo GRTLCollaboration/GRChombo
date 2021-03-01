@@ -128,7 +128,7 @@ AH_stop_if_max_fails = 1
 #AH_max_fails_after_lost = 0 # -1 to never
 #AH_print_geometry_data = 0
 #AH_re_solve_at_restart = 0
-AH_verbose = 3
+AH_verbose = 2
 
 #AH_initial_guess = 0.5
 

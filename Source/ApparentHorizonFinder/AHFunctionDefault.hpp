@@ -6,6 +6,9 @@
 #ifndef _AHFUNCTIONDEFAULT_HPP_
 #define _AHFUNCTIONDEFAULT_HPP_
 
+#include "AHData.hpp"
+#include "AHDeriv.hpp"
+#include "AHGeometryData.hpp"
 #include "AlwaysInline.hpp"
 #include "Tensor.hpp"
 
@@ -42,6 +45,10 @@ struct AHFunctionDefault
         FOR1(i) { g[i][i] = 1.; }
         return g;
     }
+    ALWAYS_INLINE const Tensor<2, double> get_extrinsic_curvature() const
+    {
+        return {0.};
+    }
 
     // case of reduced Cartoon methods that have an extra metric component
 #if GR_SPACEDIM != CH_SPACEDIM // hd - higher dimensions
@@ -52,6 +59,26 @@ struct AHFunctionDefault
     {
     };
 
+    // not defined by default
+    Tensor<1, double>
+    get_level_function_derivative(const AHGeometryData &geo_data,
+                                  const AHDeriv &deriv) const
+    {
+        return {0.};
+    }
+    Tensor<1, double> get_spatial_normal_U(const Tensor<1, double> &s_L) const
+    {
+        return {0.};
+    }
+    // not defined by default
+    Tensor<2, double> get_level_function_2nd_covariant_derivative(
+        const AHGeometryData &geo_data, const AHDeriv &deriv,
+        const Tensor<1, double> &s_L) const
+    {
+        return {0.};
+    }
+
+    // WHAT TO ADD TO YOUR OWN FUNCTIONS:
     // some constructor with these arguments:
     // AHFunctionDefault(const AHData<int, double> &a_data,
     // const Tensor<1, double> &a_coords,

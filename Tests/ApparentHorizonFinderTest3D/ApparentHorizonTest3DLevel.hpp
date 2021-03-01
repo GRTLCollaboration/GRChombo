@@ -80,6 +80,7 @@ class ApparentHorizonTest3DLevel : public GRAMRLevel
             make_compute_pack(SetValue(0.), KerrBH(m_p.kerr_params, m_dx)),
             m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
 
+        // Gamma's are not needed
         // fillAllGhosts();
         // BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
         // EXCLUDE_GHOST_CELLS);
@@ -91,7 +92,10 @@ class ApparentHorizonTest3DLevel : public GRAMRLevel
     }
 
     virtual void computeTaggingCriterion(FArrayBox &tagging_criterion,
-                                         const FArrayBox &current_state){};
+                                         const FArrayBox &current_state)
+    {
+        tagging_criterion.setVal(0.);
+    };
 };
 
 #endif /* APPARENT_HORIZON_TEST3DLEVEL_HPP_ */

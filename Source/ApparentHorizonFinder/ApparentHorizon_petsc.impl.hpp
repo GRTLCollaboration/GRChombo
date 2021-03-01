@@ -164,7 +164,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::initialise_PETSc()
                          &ksp_maxits);
 
         pout() << "-------------------------------------\n";
-        pout() << "AHFinder Options:\n";
+        pout() << "ApparentHorizon Options:\n";
         pout() << "-------------------------------------\n";
         pout() << "PETSc SNES Options:\n";
         pout() << "Type: " << snes_type << "\n";

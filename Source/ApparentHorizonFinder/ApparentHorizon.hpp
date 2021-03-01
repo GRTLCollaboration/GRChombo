@@ -61,11 +61,13 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
 
     const std::array<double, CH_SPACEDIM> &get_origin() const;
     const std::array<double, CH_SPACEDIM> &get_center() const;
-    void set_origin(const std::array<double, CH_SPACEDIM> &a_origin);
     double get_initial_guess() const;
     void set_initial_guess(double a_initial_guess);
-
     const Interpolation &get_ah_interp() const;
+
+    // set origin to whatever you want (e.g. punctures) before solving if you
+    // want, otherwise we use the last center or the estimate next center
+    void set_origin(const std::array<double, CH_SPACEDIM> &a_origin);
 
     double get_max_F() const;
     double get_min_F() const;
@@ -99,15 +101,19 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
     double calculate_area(); //!< calculate AH area
 
 #if CH_SPACEDIM == 3
+    Tensor<1, double> calculate_angular_momentum_J(); //!< calculate spin, ONLY
+                                                      //!< FOR 3D
     double calculate_spin_dimensionless(
         double a_area); //!< calculate spin with 'z' direction, ONLY FOR 3D
 #endif
-    // estimate based on area and spin
-    ALWAYS_INLINE double calculate_mass(double area, double spin_dimensionless)
+    // estimate based on area and angular momentum J
+    ALWAYS_INLINE double calculate_mass(double area, double J_norm)
     {
-        return sqrt(
-            area / (8. * M_PI *
-                    (1. + sqrt(1. - spin_dimensionless * spin_dimensionless))));
+        return sqrt(area / (16. * M_PI) + J_norm * J_norm * 4. * M_PI / area);
+    }
+    ALWAYS_INLINE double calculate_irreducible_mass(double area)
+    {
+        return calculate_mass(area, 0.);
     }
 
     void calculate_minmax_F() const;
@@ -167,8 +173,9 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
     // method
     std::array<IntegrationMethod, CH_SPACEDIM - 1> m_integration_methods;
 
-    double m_area, m_spin,
-        m_mass; // just to save the result temporarily at each iteration
+    // just to save the result temporarily at each iteration
+    double m_area, m_spin, m_mass, m_irreducible_mass, m_spin_z_alt;
+    Tensor<1, double> m_dimensionless_spin_vector;
 
     /////////////////////////////////////////////////////////////////////////
     /////////////////////////// PETSc stuff below ///////////////////////////

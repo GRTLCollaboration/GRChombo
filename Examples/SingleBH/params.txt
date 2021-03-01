@@ -14,10 +14,10 @@ max_spatial_derivative_order = 4 # can be 4 or 6
 
 mass = 1.0
 offset = 0 0 0
-momentum = 0. -0.5 0.0
+momentum = 0. -0.1 0.0
 
 regrid_threshold = 0.05
-max_level = 2
+max_level = 3
 regrid_interval = 1 2 4 8 16
 
 
@@ -87,7 +87,7 @@ sigma = 0.3
 
 #Apparent Horizon finder 
 AH_activate = 1
-AH_num_ranks = 2
+AH_num_ranks = 4
 AH_num_points_u = 11
 AH_num_points_v = 20
 AH_solve_interval = 1

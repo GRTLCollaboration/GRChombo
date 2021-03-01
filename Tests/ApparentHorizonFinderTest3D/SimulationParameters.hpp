@@ -26,6 +26,8 @@ class SimulationParameters : public ChomboParameters
         pp.load("kerr_mass", kerr_params.mass);
         pp.load("kerr_spin", kerr_params.spin);
         pp.load("kerr_center", kerr_params.center, center);
+        pp.load("kerr_spin_direction", kerr_params.spin_direction,
+                {0., 0., 1.});
 
 #ifdef USE_AHFINDER
         pp.load("initial_guess", initial_guess, kerr_params.mass * 0.5);

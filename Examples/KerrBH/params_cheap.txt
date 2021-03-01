@@ -13,7 +13,7 @@ plot_prefix = KerrBHp_
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
 N_full = 64
-L_full = 128
+L_full = 16
 
 # Spatial derivative order (only affects CCZ4 RHS)
 max_spatial_derivative_order = 4 # can be 4 or 6
@@ -21,6 +21,7 @@ max_spatial_derivative_order = 4 # can be 4 or 6
 # Params for Kerr BH
 kerr_mass = 1.0
 kerr_spin = 0.5
+kerr_spin_direction = 0.1 0.1 0. # doesn't need to be normalized
 # This is now defaulted to center of the grid so it does not need to be updated
 # when changing L (unless one wants to put the BH somewhere off center)
 #kerr_center = 64 64 64
@@ -52,7 +53,7 @@ isPeriodic = 0 0 0
 # 0 = static, 1 = sommerfeld, 2 = reflective
 # (see BoundaryConditions.hpp for details)
 hi_boundary = 1 1 1
-lo_boundary = 1 1 2
+lo_boundary = 1 1 1
 
 # if reflective boundaries selected, must set
 # parity of all vars (in order given by UserVariables.hpp)
@@ -108,7 +109,7 @@ sigma = 0.3
 
 #extraction params
 activate_extraction = 0
-num_extraction_radii = 3
+num_extraction_radii = 0 # 3
 extraction_radii = 30. 40. 50.
 extraction_levels = 1 1 0
 num_points_phi = 50
@@ -116,9 +117,9 @@ num_points_theta = 52
 
 #Apparent Horizon finder 
 AH_activate = 1
-AH_num_ranks = 2 #20
-AH_num_points_u = 11 #30
-AH_num_points_v = 10 #50
+AH_num_ranks = 4 #20
+AH_num_points_u = 15 #30
+AH_num_points_v = 20 #50
 AH_solve_interval = 2
 AH_print_interval = 2
 AH_track_center = false
@@ -126,14 +127,16 @@ AH_predict_origin = false
 AH_level_to_run = 0
 #AH_allow_re_attempt = 0
 #AH_stop_if_max_fails = 0
-AH_start_time = 0.
-AH_verbose = 3
-AH_print_geometry_data = 0
-AH_re_solve_at_restart = 0
+#AH_start_time = 0.
+#AH_give_up_time = -1. # -1 to never
+#AH_max_fails_after_lost = 0 # -1 to never
+#AH_print_geometry_data = 0
+#AH_re_solve_at_restart = 0
+AH_verbose = 2
 
 #AH_initial_guess = 0.5
 
-look_for_chi_contour = 0.2
+#look_for_chi_contour = 0.2
 
 AH_num_write_vars = 2
 AH_write_vars = chi d1_Ham

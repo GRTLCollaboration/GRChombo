@@ -10,9 +10,6 @@
 #include "CH_Timer.H"
 
 // Other includes
-#include "AHData.hpp"
-#include "AHDeriv.hpp"
-#include "AHGeometryData.hpp"
 #include "DimensionDefinitions.hpp" // make sure GR_SPACEDIM exists
 #include "TensorAlgebra.hpp"
 #include "UserVariables.hpp"
@@ -48,7 +45,7 @@ struct ExpansionFunction : AHFunctionDefault
     // require the coordinates to calculate the expansion
 #if GR_SPACEDIM != CH_SPACEDIM
     // hd - higher dimensions
-    Tensor<1, double> x; // cartesian coordinates
+    Tensor<1, double> coords; // cartesian coordinates
     double g_hd;
     Tensor<1, double> dg_hd;
 
@@ -69,6 +66,10 @@ struct ExpansionFunction : AHFunctionDefault
     static ALWAYS_INLINE int d1_vars_max() { return c_K - 1; }
 
     ALWAYS_INLINE const Tensor<2, double> get_metric() const { return g; }
+    ALWAYS_INLINE const Tensor<2, double> get_extrinsic_curvature() const
+    {
+        return K;
+    }
 
     static int num_write_vars()
     {
@@ -154,7 +155,6 @@ struct ExpansionFunction : AHFunctionDefault
 
         Tensor<2, double, CH_SPACEDIM> h_UU =
             TensorAlgebra::compute_inverse_sym(h_DD);
-        FOR2(i, j) { g_UU[i][j] = chi * h_UU[i][j]; }
 
         // Reconstructing ADM variables
         Tensor<1, double, CH_SPACEDIM> dchi;
@@ -166,9 +166,14 @@ struct ExpansionFunction : AHFunctionDefault
             for (int j = i; j < CH_SPACEDIM; ++j)
             {
                 {
-                    const double gij = h_DD[i][j] / (chi);
+                    const double gij = h_DD[i][j] / chi;
                     g[i][j] = gij;
                     g[j][i] = gij;
+                }
+                {
+                    const double g_UUij = h_UU[i][j] * chi;
+                    g_UU[i][j] = g_UUij;
+                    g_UU[j][i] = g_UUij;
                 }
 
                 {
@@ -199,7 +204,7 @@ struct ExpansionFunction : AHFunctionDefault
         int comp_Aww = c_Aww; // is (c_Theta-1) more general?
         Tensor<1, double, CH_SPACEDIM> dhww;
 
-        x = a_coords_cartesian;
+        coords = a_coords_cartesian;
 
         double hww = a_data.vars.at(comp_hww);
         FOR1(a) { dhww[a] = a_data.d1.at(comp_hww)[a]; }
@@ -212,94 +217,34 @@ struct ExpansionFunction : AHFunctionDefault
 #endif
     }
 
-    struct params // no params needed
+    struct params
     {
         double expansion_radius_power = 1.;
     };
     double get(const AHGeometryData &geo_data, const AHDeriv &deriv,
                const params &a_params) const
     {
-        // first calculate D_a L of 6.7.12 of Alcubierre for some level function
-        // L picking L = f - F(u,v)
-        // D_a L = d_a f - dF/du * du/dx^a - dF/dv * dv/dx^a
-
-#if CH_SPACEDIM == 3
-        Tensor<1, double> s = {0.};
-        FOR1(a)
-        {
-            s[a] = geo_data.df[a] - (deriv.duF * geo_data.du[a]) -
-                   (deriv.dvF * geo_data.dv[a]);
-        }
-
-        // just the partial derivative of the above
-        Tensor<2, double> ds = {0.};
-        FOR2(a, b)
-        {
-            ds[a][b] = geo_data.ddf[a][b] - (deriv.duF * geo_data.ddu[a][b]) -
-                       (deriv.dvF * geo_data.ddv[a][b]) -
-                       (deriv.duduF * geo_data.du[a] * geo_data.du[b]) -
-                       (deriv.dvdvF * geo_data.dv[a] * geo_data.dv[b]) -
-                       (deriv.dudvF * (geo_data.du[a] * geo_data.dv[b] +
-                                       geo_data.du[b] * geo_data.dv[a]));
-        }
-#elif CH_SPACEDIM == 2
-        Tensor<1, double> s = {0.};
-        FOR1(a) { s[a] = geo_data.df[a] - (deriv.duF * geo_data.du[a]); }
-
-        // just the partial derivative of the above
-        Tensor<2, double> ds = {0.};
-        FOR2(a, b)
-        {
-            ds[a][b] = geo_data.ddf[a][b] - (deriv.duF * geo_data.ddu[a][b]) -
-                       (deriv.duduF * geo_data.du[a] * geo_data.du[b]);
-        }
-#endif
-
-        // calculate the norm. This is also the norm of s_U (s^a))
-        double norm_s = 0.0;
-        FOR2(a, b) { norm_s += g_UU[a][b] * s[a] * s[b]; }
-        norm_s = sqrt(norm_s);
-
-        // calculate Christoffels on this point (u,v,f)
-        Tensor<3, double> chris = {0.};
-        FOR4(a, b, c, d)
-        {
-            chris[a][b][c] +=
-                0.5 * g_UU[a][d] * (dg[b][d][c] + dg[c][d][b] - dg[b][c][d]);
-        }
-
-        // raise s_a
-        Tensor<1, double> s_U = {0.};
-        FOR2(a, b) { s_U[a] += g_UU[a][b] * s[b]; }
-
-        // S = the real 's' of Alcubierre
-        Tensor<1, double> S_U = {0.};
-        FOR1(a) { S_U[a] = s_U[a] / norm_s; }
-
-        // covariant derivatrive of s_a to use for DS
-        Tensor<2, double> Ds = {0.};
-        FOR2(a, b)
-        {
-            Ds[a][b] = ds[a][b];
-            FOR1(c) { Ds[a][b] -= chris[c][a][b] * s[c]; }
-        }
+        Tensor<1, double> s_L = get_level_function_derivative(geo_data, deriv);
+        Tensor<2, double> Ds =
+            get_level_function_2nd_covariant_derivative(geo_data, deriv, s_L);
+        Tensor<1, double> S_U = get_spatial_normal_U(s_L);
 
         // calculate D_i S^i and S^i S^j K_ij
         double DiSi = 0.;
         double Kij_dot_Si_Sj = 0.;
         FOR2(a, b)
         {
-            DiSi += (g_UU[a][b] - S_U[a] * S_U[b]) * Ds[a][b] / norm_s;
+            DiSi += (g_UU[a][b] - S_U[a] * S_U[b]) * Ds[a][b];
             Kij_dot_Si_Sj += S_U[a] * S_U[b] * K[a][b];
         }
 
-        // Calculation of expansion - as in (6.7.9) of Alcubierre
+        // Calculation of expansion - as in (6.7.9 / 6.7.13) of Alcubierre
         double expansion = DiSi - trK + Kij_dot_Si_Sj;
 
         // part from extra dimensions in the case of Cartoon methods
 #if GR_SPACEDIM != CH_SPACEDIM
         expansion += (GR_SPACEDIM - CH_SPACEDIM) * S_U[CH_SPACEDIM - 1] /
-                     x[CH_SPACEDIM - 1];
+                     coords[CH_SPACEDIM - 1];
         FOR1(a)
         {
             expansion +=
@@ -311,6 +256,86 @@ struct ExpansionFunction : AHFunctionDefault
         // (making a Schw. BH converge for any radius >~ 0.5*r_AH instead of
         // only up to ~ 3 * r_AH as it happens just with the expansion)
         return expansion * pow(f, a_params.expansion_radius_power);
+    }
+
+    // extra stuff:
+    Tensor<1, double>
+    get_level_function_derivative(const AHGeometryData &geo_data,
+                                  const AHDeriv &deriv) const
+    {
+        // calculate D_a L of 6.7.12 of Alcubierre for some level function
+        // L picking L = f - F(u,v)
+        // D_a L = d_a f - dF/du * du/dx^a - dF/dv * dv/dx^a
+
+        Tensor<1, double> s_L = {0.}; // not normalized, just D_a L
+        FOR1(a)
+        {
+            s_L[a] = geo_data.df[a] - (deriv.duF * geo_data.du[a])
+#if CH_SPACEDIM == 3
+                     - (deriv.dvF * geo_data.dv[a])
+#endif
+                ;
+        }
+
+        return s_L;
+    }
+    Tensor<1, double> get_spatial_normal_U(const Tensor<1, double> &s_L) const
+    {
+        // calculate S_U = the real 's' of Alcubierre
+
+        // norm of s_L = | D_a L| (the 'u' in 6.7.12 of Alcubierre)
+        double norm_s = 0.0;
+        FOR2(a, b) { norm_s += g_UU[a][b] * s_L[a] * s_L[b]; }
+        norm_s = sqrt(norm_s);
+
+        // raise s_L
+        Tensor<1, double> s_U = {0.};
+        FOR2(a, b) { s_U[a] += g_UU[a][b] * s_L[b]; }
+
+        Tensor<1, double> S_U = {0.};
+        FOR1(a) { S_U[a] = s_U[a] / norm_s; }
+
+        return S_U;
+    }
+
+    Tensor<2, double> get_level_function_2nd_covariant_derivative(
+        const AHGeometryData &geo_data, const AHDeriv &deriv,
+        const Tensor<1, double> &s_L) const
+    {
+        // calculates D_a D_b L, required for 6.7.13 of Alcubierre
+        // for the level function L = f - F(u,v)
+
+        Tensor<2, double> ds = {0.};
+        FOR2(a, b)
+        {
+            ds[a][b] = geo_data.ddf[a][b] - (deriv.duF * geo_data.ddu[a][b]) -
+                       (deriv.duduF * geo_data.du[a] * geo_data.du[b])
+#if CH_SPACEDIM == 3
+                       - (deriv.dvF * geo_data.ddv[a][b]) -
+                       (deriv.dvdvF * geo_data.dv[a] * geo_data.dv[b]) -
+                       (deriv.dudvF * (geo_data.du[a] * geo_data.dv[b] +
+                                       geo_data.du[b] * geo_data.dv[a]))
+#endif
+                ;
+        }
+
+        // calculate Christoffels on this point (u,v,f)
+        Tensor<3, double> chris = {0.};
+        FOR4(a, b, c, d)
+        {
+            chris[a][b][c] +=
+                0.5 * g_UU[a][d] * (dg[b][d][c] + dg[c][d][b] - dg[b][c][d]);
+        }
+
+        // covariant derivatrive of s_a to use for DS
+        Tensor<2, double> Ds = {0.};
+        FOR2(a, b)
+        {
+            Ds[a][b] = ds[a][b];
+            FOR1(c) { Ds[a][b] -= chris[c][a][b] * s_L[c]; }
+        }
+
+        return Ds;
     }
 };
 

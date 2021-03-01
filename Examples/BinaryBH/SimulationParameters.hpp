@@ -22,12 +22,12 @@ class SimulationParameters : public SimulationParametersBase
   public:
     SimulationParameters(GRParmParse &pp) : SimulationParametersBase(pp)
     {
-        read_shared_params(pp);
 #ifdef USE_TWOPUNCTURES
         read_tp_params(pp);
 #else
         read_bh_params(pp);
 #endif
+        read_shared_params(pp);
         check_params();
     }
 
