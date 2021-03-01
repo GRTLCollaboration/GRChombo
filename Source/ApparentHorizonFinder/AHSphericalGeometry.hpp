@@ -6,6 +6,12 @@
 #ifndef AHSPHERICALGEOMETRY_HPP_
 #define AHSPHERICALGEOMETRY_HPP_
 
+#include "DimensionDefinitions.hpp" // make sure GR_SPACEDIM exists
+
+#if GR_SPACEDIM != 3
+#error "This file should only be included for GR_SPACEDIM == 3."
+#endif
+
 // Chombo includes
 #include "CH_Timer.H"
 

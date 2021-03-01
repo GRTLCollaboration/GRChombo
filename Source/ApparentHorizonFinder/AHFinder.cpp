@@ -97,6 +97,11 @@ void AHFinder::solve(double a_dt, double a_time, double a_restart_time)
         SOLVED
     };
 
+    // in case this was called at specificPostTimeStep at t=0 due to
+    // MultiLevelTask (solve already happened when AH was created)
+    if (a_time == 0.)
+        return;
+
     // solve if it has never converged before OR if has already converged in the
     // past this means it will stop solving as soon as it stops converging but
     // keeps trying (with same initial guess) if never found one
