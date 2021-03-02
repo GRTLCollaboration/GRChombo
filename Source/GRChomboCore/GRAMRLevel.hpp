@@ -16,10 +16,12 @@
 
 // Other includes
 #include "BoundaryConditions.hpp"
+#include "BoxLoops.hpp"
 #include "GRAMR.hpp"
 #include "GRLevelData.hpp"
 #include "InterpSource.hpp"
 #include "SimulationParameters.hpp"
+#include "TruncationErrorTagging.hpp"
 #include "UserVariables.hpp" // need NUM_VARS
 #include <fstream>
 #include <limits>
@@ -70,6 +72,10 @@ class GRAMRLevel : public AMRLevel, public InterpSource
 
     /// create tags at initialization
     virtual void tagCellsInit(IntVectSet &a_tags);
+
+    /// implementation of tagCells and tagCellsInit
+    virtual void tagCellsImplem(IntVectSet &a_tags,
+                                bool a_use_truncation_error_tagging);
 
     /// regrid
     virtual void regrid(const Vector<Box> &a_new_grids);
@@ -145,6 +151,12 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     /// Computes which cells have insufficient resolution and should be tagged
     virtual void computeTaggingCriterion(FArrayBox &tagging_criterion,
                                          const FArrayBox &current_state) = 0;
+
+    /// Computes truncation error estimates which are used as the tagging
+    /// criterion if m_p.use_truncation_error_tagging and t > 0
+    virtual void
+    computeTruncationError(FArrayBox &tagging_criterion,
+                           const FArrayBox &a_state_truncation_error);
 
 #ifdef CH_USE_HDF5
     /// Things to do immediately before checkpointing

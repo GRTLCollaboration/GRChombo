@@ -236,12 +236,26 @@ void GRAMRLevel::preTagCells()
                                   // gradients etc
 }
 
-// create tags
+// tag cells that need to be refined
 void GRAMRLevel::tagCells(IntVectSet &a_tags)
 {
-    CH_TIME("GRAMRLevel::tagCells");
+    tagCellsImplem(a_tags, m_p.use_truncation_error_tagging);
+}
+
+// create tags at initialization
+void GRAMRLevel::tagCellsInit(IntVectSet &a_tags)
+{
+    // can't use truncation error tagging for the initial grids
+    tagCellsImplem(a_tags, false);
+}
+
+// create tags
+void GRAMRLevel::tagCellsImplem(IntVectSet &a_tags,
+                                bool a_use_truncation_error_tagging)
+{
+    CH_TIME("GRAMRLevel::tagCellsImplem");
     if (m_verbosity)
-        pout() << "GRAMRLevel::tagCells " << m_level << endl;
+        pout() << "GRAMRLevel::tagCellsImplem " << m_level << endl;
 
     preTagCells();
 
@@ -255,10 +269,20 @@ void GRAMRLevel::tagCells(IntVectSet &a_tags)
         DataIndex di = dit0[ibox];
         const Box &b = level_domain[di];
         const FArrayBox &state_fab = m_state_new[di];
+        const FArrayBox &state_truncation_error_fab =
+            m_state_truncation_error[di];
 
         // mod gradient
         FArrayBox tagging_criterion(b, 1);
-        computeTaggingCriterion(tagging_criterion, state_fab);
+        if (a_use_truncation_error_tagging)
+        {
+            computeTruncationError(tagging_criterion,
+                                   state_truncation_error_fab);
+        }
+        else
+        {
+            computeTaggingCriterion(tagging_criterion, state_fab);
+        }
 
         const IntVect &smallEnd = b.smallEnd();
         const IntVect &bigEnd = b.bigEnd();
@@ -300,11 +324,12 @@ void GRAMRLevel::tagCells(IntVectSet &a_tags)
     a_tags = local_tags;
 }
 
-// create tags at initialization
-void GRAMRLevel::tagCellsInit(IntVectSet &a_tags)
+void GRAMRLevel::computeTruncationError(
+    FArrayBox &tagging_criterion, const FArrayBox &a_state_truncation_error)
 {
-    // the default is to use the standard tagging function
-    tagCells(a_tags);
+    BoxLoops::loop(
+        TruncationErrorTagging(m_p.num_truncation_error_vars, m_level),
+        a_state_truncation_error, tagging_criterion);
 }
 
 // regrid
