@@ -254,6 +254,9 @@ class GRAMRLevel : public AMRLevel, public InterpSource
                                //!< fine levels of ghosts for diagnostics
     FourthOrderFineInterp m_fine_interp; //!< executes the interpolation from
                                          //!< coarse to fine when regridding
+    FourthOrderFineInterp
+        m_fine_interp_truncation_error; //!< fine interp for
+                                        //!< m_state_truncation_error
 
     DisjointBoxLayout m_grids;       //!< Holds grid setup (the layout of boxes)
     DisjointBoxLayout m_grown_grids; //!< Holds grown grid setup (for

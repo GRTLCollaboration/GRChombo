@@ -214,9 +214,7 @@ void GRAMRLevel::preTagCells()
         {
             GRAMRLevel *coarser_gr_amr_level_ptr = gr_cast(m_coarser_level_ptr);
             // interpolate from coarser level
-            // I hope this works given that m_fine_interp has been defined
-            // with NUM_VARS comps.
-            m_fine_interp.interpToFine(
+            m_fine_interp_truncation_error.interpToFine(
                 m_state_truncation_error_coarse_alias,
                 coarser_gr_amr_level_ptr->m_state_truncation_error_old);
         }
@@ -408,6 +406,9 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
     }
     if (m_p.use_truncation_error_tagging)
     {
+        m_fine_interp_truncation_error.define(level_domain,
+                                              m_p.num_truncation_error_vars,
+                                              m_ref_ratio, m_problem_domain);
         m_state_truncation_error.define(
             level_domain, 2 * m_p.num_truncation_error_vars, IntVect::Zero);
         m_state_truncation_error_old.define(
@@ -452,6 +453,9 @@ void GRAMRLevel::initialGrid(const Vector<Box> &a_new_grids)
     }
     if (m_p.use_truncation_error_tagging)
     {
+        m_fine_interp_truncation_error.define(level_domain,
+                                              m_p.num_truncation_error_vars,
+                                              m_ref_ratio, m_problem_domain);
         m_state_truncation_error.define(
             level_domain, 2 * m_p.num_truncation_error_vars, IntVect::Zero);
         m_state_truncation_error_old.define(
@@ -805,6 +809,9 @@ void GRAMRLevel::readCheckpointLevel(HDF5Handle &a_handle)
     }
     if (m_p.use_truncation_error_tagging)
     {
+        m_fine_interp_truncation_error.define(level_domain,
+                                              m_p.num_truncation_error_vars,
+                                              m_ref_ratio, m_problem_domain);
         m_state_truncation_error.define(
             level_domain, 2 * m_p.num_truncation_error_vars, IntVect::Zero);
         m_state_truncation_error_old.define(
