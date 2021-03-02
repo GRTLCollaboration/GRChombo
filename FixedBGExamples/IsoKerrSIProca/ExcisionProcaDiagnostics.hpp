@@ -27,23 +27,24 @@ template <class matter_t, class background_t> class ExcisionProcaDiagnostics
     const std::array<double, CH_SPACEDIM> m_center; //!< The BH center
     const FourthOrderDerivatives m_deriv;
     const background_t m_background;
-    const double m_excision_width;
+    const double m_r_min;
+    const double m_r_max;
 
   public:
     ExcisionProcaDiagnostics(const double a_dx,
                              const std::array<double, CH_SPACEDIM> a_center,
                              background_t a_background,
-                             double a_excision_width = 1.0)
-        : m_dx(a_dx), m_deriv(m_dx), m_center(a_center),
-          m_excision_width(a_excision_width), m_background(a_background)
+                             const double a_r_min, const double a_r_max)
+        : m_dx(a_dx), m_deriv(m_dx), m_center(a_center), m_r_max(a_r_max),
+          m_r_min(a_r_min), m_background(a_background)
     {
     }
 
     void compute(const Cell<double> current_cell) const
     {
         const Coordinates<double> coords(current_cell, m_dx, m_center);
-        double horizon_distance = m_background.excise(current_cell);
-        if (horizon_distance < m_excision_width)
+        double r = coords.get_radius();
+        if ((r < m_r_min) || (r > m_r_max))
         {
             current_cell.store_vars(0.0, c_rho);
             current_cell.store_vars(0.0, c_rhoJ);

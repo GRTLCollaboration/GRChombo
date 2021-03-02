@@ -1,0 +1,62 @@
+/cosma/home/dp016/dc-cui1/.bashrc: line 15: bind: warning: line editing not enabled
+[?1034h/cosma/home/dp016/dc-cui1/.bashrc: line 16: bind: warning: line editing not enabled
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+slurmstepd: error: *** STEP 2992620.5 ON m6270 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** JOB 2992620 ON m6261 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.16 ON m6267 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.12 ON m6290 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.4 ON m6288 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.23 ON m6273 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.14 ON m6278 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.8 ON m6293 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.22 ON m6269 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.0 ON m6272 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.19 ON m6304 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.24 ON m6285 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.6 ON m6284 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.7 ON m6268 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.17 ON m6289 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.20 ON m6294 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.10 ON m6295 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.2 ON m6274 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.25 ON m6275 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.26 ON m6283 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.11 ON m6282 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.3 ON m6276 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.27 ON m6277 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.28 ON m6281 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.1 ON m6280 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.29 ON m6306 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.13 ON m6305 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.9 ON m6286 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***
+slurmstepd: error: *** STEP 2992620.30 ON m6287 CANCELLED AT 2021-02-28T06:56:01 DUE TO TIME LIMIT ***

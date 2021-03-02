@@ -2,9 +2,9 @@
 
 verbosity = 0
 integral_filename = ProcaDensities
-chk_prefix = /cosma6/data/dp174/dc-cui1/Proca/Realmu0.5A0.1c0ISO_chk
-plot_prefix = /cosma6/data/dp174/dc-cui1/Proca/Realmu0.5A0.1c0ISO_plt
-#restart_file = /cosma6/data/dp174/dc-cui1/Proca/Realmu0.5A0.1c0ISO_chk000100.3d.hdf5
+chk_prefix = /cosma6/data/dp174/dc-cui1/Proca/Realmu0.5A0.1c0ISO1_chk
+plot_prefix = /cosma6/data/dp174/dc-cui1/Proca/Realmu0.5A0.1c0ISO1_plt
+#restart_file = /cosma6/data/dp174/dc-cui1/Proca/Realmu0.5A0.1c0ISO1_chk000100.3d.hdf5
 write_plot_ghosts = 0
 
 # Set up grid spacings and regrid params
@@ -20,7 +20,7 @@ L = 1280
 
 # Level data
 # Maximum number of times you can regrid above coarsest level
-max_level = 10 # There are (max_level+1) grids, so min is zero
+max_level = 9 # There are (max_level+1) grids, so min is zero
 # Frequency of regridding at each level
 # Need one for each level, ie max_level+1 items
 # Generally you do not need to regrid frequently on every level
@@ -84,7 +84,7 @@ bh_spin = 0.99 # This is a, so needs to be <= M
 # for extraction
 activate_extraction = 0
 write_extraction = 0
-r_min = 1.0
+r_min = 2.0
 r_max = 400.0
 num_points_phi = 24
 num_points_t = 36

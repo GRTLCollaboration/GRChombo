@@ -50,18 +50,9 @@ void ProcaFieldLevel::initialData()
     InitialConditions set_field(m_p.field_amplitude, m_p.potential_params.mass,
                                 m_p.center, m_p.bg_params, m_dx);
     BoxLoops::loop(set_field, m_state_new, m_state_new, FILL_GHOST_CELLS);
+    BoxLoops::loop(kerr_bh, m_state_new, m_state_diagnostics,
+                    SKIP_GHOST_CELLS);
 
-    // BoxLoops::loop(kerr_bh, m_state_new, m_state_diagnostics,
-    //                SKIP_GHOST_CELLS);
-
-    // now the gauss constraint
-    /*
-        fillAllGhosts();
-        ProcaConstraint enforce_constraint(m_p.center, m_p.bg_params,
-                                           m_p.potential_params.mass, m_dx);
-        BoxLoops::loop(enforce_constraint, m_state_new, m_state_new,
-                       EXCLUDE_GHOST_CELLS);
-    */
     // make excision data zero
     BoxLoops::loop(ExcisionProcaEvolution<ProcaField, IsotropicKerrFixedBG>(
                        m_dx, m_p.center, kerr_bh, 1.0),
@@ -74,12 +65,13 @@ void ProcaFieldLevel::specificPostTimeStep()
 {
     bool first_step = (m_time == m_dt);
 
-    // At any level, but after the coarsest timestep
-    bool calculate_fluxes = at_level_timestep_multiple(0);
+    // At any level, but after the 2nd coarsest timestep
+    int min_level = 1;
+    bool calculate_fluxes = at_level_timestep_multiple(min_level);
     if (calculate_fluxes)
     {
         // calculate the density of the PF, but excise the BH region completely
-        fillAllGhosts();
+        fillAllEvolutionGhosts();
         Potential potential(m_p.potential_params);
         ProcaField proca_field(potential, m_p.proca_damping);
         IsotropicKerrFixedBG kerr_bh(m_p.bg_params, m_dx);
@@ -88,18 +80,18 @@ void ProcaFieldLevel::specificPostTimeStep()
         FixedBGEnergyAndAngularMomFlux<ProcaField, IsotropicKerrFixedBG> fluxes(
             proca_field, kerr_bh, m_dx, m_p.center,
             m_p.extraction_params.zaxis_over_xaxis);
-        XSquared set_xsquared(m_p.potential_params, m_p.bg_params, m_p.center,
-                              m_dx);
-        BoxLoops::loop(make_compute_pack(densities, fluxes, set_xsquared),
+//        XSquared set_xsquared(m_p.potential_params, m_p.bg_params, m_p.center,
+//                              m_dx);
+        BoxLoops::loop(make_compute_pack(densities, fluxes), //, set_xsquared),
                        m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
         BoxLoops::loop(
             ExcisionProcaDiagnostics<ProcaField, IsotropicKerrFixedBG>(
-                m_dx, m_p.center, kerr_bh, 1.0),
+                m_dx, m_p.center, kerr_bh, m_p.r_min, m_p.r_max),
             m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS, disable_simd());
     }
 
-    // write out the integral after each coarse timestep
-    if (m_level == 0)
+    // write out the integral after each coarse but one timestep
+    if (m_level == min_level)
     {
         // integrate the densities and write to a file
         AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
@@ -120,12 +112,14 @@ void ProcaFieldLevel::specificPostTimeStep()
         integral_file.write_time_data_line(data_for_writing);
 
         // Now refresh the interpolator and do the interpolation
-        /*
-                m_gr_amr.m_interpolator->refresh();
-                FluxExtraction my_extraction(m_p.extraction_params, m_dt,
+        bool fill_ghosts = false;
+        m_gr_amr.m_interpolator->refresh(fill_ghosts);
+        m_gr_amr.fill_multilevel_ghosts(
+            VariableType::diagnostic, Interval(c_Edot, c_Jdot), 
+            min_level);
+        FluxExtraction my_extraction(m_p.extraction_params, m_dt,
            m_time, m_restart_time);
-                my_extraction.execute_query(m_gr_amr.m_interpolator);
-        */
+        my_extraction.execute_query(m_gr_amr.m_interpolator);
     }
 }
 
@@ -146,7 +140,7 @@ void ProcaFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
 
     // excise within horizon for evolution vars
     BoxLoops::loop(ExcisionProcaEvolution<ProcaField, IsotropicKerrFixedBG>(
-                       m_dx, m_p.center, kerr_bh, m_p.excision_width),
+                       m_dx, m_p.center, kerr_bh, 0.9),
                    a_soln, a_rhs, SKIP_GHOST_CELLS, disable_simd());
 }
 

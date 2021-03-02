@@ -38,37 +38,12 @@ class SimulationParameters : public ChomboParameters
         pp.load("proca_self_interaction", potential_params.self_interaction);
         pp.load("field_amplitude", field_amplitude);
         pp.load("proca_damping", proca_damping);
-        pp.load("excision_width", excision_width);
-
-        // extraction params
-        dx.fill(coarsest_dx);
-        origin.fill(coarsest_dx / 2.0);
+        pp.load("r_min", r_min);
+        pp.load("r_max", r_max);
 
         // Extraction params
-        pp.load("num_extraction_radii", extraction_params.num_extraction_radii,
-                1);
-        // Check for multiple extraction radii, otherwise load single
-        // radius/level (for backwards compatibility).
-        if (pp.contains("extraction_levels"))
-        {
-            pp.load("extraction_levels", extraction_params.extraction_levels,
-                    extraction_params.num_extraction_radii);
-        }
-        else
-        {
-            pp.load("extraction_level", extraction_params.extraction_levels, 1,
-                    0);
-        }
-        if (pp.contains("extraction_radii"))
-        {
-            pp.load("extraction_radii", extraction_params.extraction_radii,
-                    extraction_params.num_extraction_radii);
-        }
-        else
-        {
-            pp.load("extraction_radius", extraction_params.extraction_radii, 1,
-                    0.1);
-        }
+        extraction_params.num_extraction_radii = 2;
+        extraction_params.extraction_radii = {r_min, r_max};
         pp.load("num_points_phi", extraction_params.num_points_phi, 2);
         pp.load("num_points_t", extraction_params.num_points_t, 5);
         if (extraction_params.num_points_t % 2 == 0)
@@ -84,10 +59,8 @@ class SimulationParameters : public ChomboParameters
 
     // Problem specific parameters
     double field_amplitude;
-    double sigma, proca_damping, excision_width;
+    double sigma, proca_damping, r_min, r_max;
     int nan_check;
-    std::array<double, CH_SPACEDIM> origin,
-        dx; // location of coarsest origin and dx
     std::string integral_filename;
     // Collection of parameters necessary for the sims
     IsotropicKerrFixedBG::params_t bg_params;

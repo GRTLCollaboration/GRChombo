@@ -2,9 +2,9 @@
 
 verbosity = 0
 integral_filename = ProcaDensities
-chk_prefix = /cosma6/data/dp174/dc-cui1/Proca/Realmu0.5A0.1c0ISO_chk
-plot_prefix = /cosma6/data/dp174/dc-cui1/Proca/Realmu0.5A0.1c0ISO_plt
-#restart_file = /cosma6/data/dp174/dc-cui1/Proca/Realmu0.5A0.1c0ISO_chk000100.3d.hdf5
+chk_prefix = /cosma6/data/dp174/dc-cui1/Proca/Realmu0.5A0.01c0ISO2_chk
+plot_prefix = /cosma6/data/dp174/dc-cui1/Proca/Realmu0.5A0.01c0ISO2_plt
+#restart_file = /cosma6/data/dp174/dc-cui1/Proca/Realmu0.5A0.01c0ISO2_chk000100.3d.hdf5
 write_plot_ghosts = 0
 
 # Set up grid spacings and regrid params
@@ -61,10 +61,10 @@ nonzero_asymptotic_values = 0.0
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 100
+checkpoint_interval = 0
 plot_interval = 100
-num_plot_vars = 4
-plot_vars = rho rhoJ Edot Jdot
+num_plot_vars = 3
+plot_vars = Avec1 phi Z rho
 dt_multiplier = 0.2
 stop_time = 2000.0
 
@@ -84,9 +84,9 @@ bh_spin = 0.99 # This is a, so needs to be <= M
 # for extraction
 activate_extraction = 0
 write_extraction = 0
-r_min = 1.0
+r_min = 0.5
 r_max = 400.0
 num_points_phi = 24
-num_points_t = 36
+num_points_t = 24
 zaxis_over_xaxis = 1.0
 num_modes = 0
