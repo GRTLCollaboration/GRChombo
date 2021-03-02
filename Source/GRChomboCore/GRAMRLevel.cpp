@@ -175,15 +175,12 @@ void GRAMRLevel::postTimeStep()
 
     if (m_p.use_truncation_error_tagging && m_gr_amr.need_to_regrid(m_level))
     {
-        pout() << "GRAMRLevel::postTimeStep: need_to_regrid on level "
-               << m_level << " = true"
-               << "\n";
         for (int ivar = 0; ivar < m_p.num_truncation_error_vars; ++ivar)
         {
             const int var = m_p.truncation_error_vars[ivar].first;
             // copy state vars now before coarse fine averaging for
             // truncation error estimation
-            m_state_new.copyTo(Interval(var, var), m_truncation_error_state_old,
+            m_state_new.copyTo(Interval(var, var), m_state_truncation_error_old,
                                Interval(ivar, ivar));
         }
     }
@@ -220,8 +217,18 @@ void GRAMRLevel::preTagCells()
             // I hope this works given that m_fine_interp has been defined
             // with NUM_VARS comps.
             m_fine_interp.interpToFine(
-                m_truncation_error_state_coarse,
-                coarser_gr_amr_level_ptr->m_truncation_error_state_old);
+                m_state_truncation_error_coarse_alias,
+                coarser_gr_amr_level_ptr->m_state_truncation_error_old);
+        }
+        for (int ivar = 0; ivar < m_p.num_truncation_error_vars; ++ivar)
+        {
+            const int var = m_p.truncation_error_vars[ivar].first;
+            // copy these grid variables to m_state_truncation_error so that we
+            // can have all the quantities needed to compute truncation error
+            // in one object (m_state_truncation_error_coarse_alias is an alias
+            // to the second half)
+            m_state_new.copyTo(Interval(var, var), m_state_truncation_error,
+                               Interval(ivar, ivar));
         }
     }
     else
@@ -376,10 +383,14 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
     }
     if (m_p.use_truncation_error_tagging)
     {
-        m_truncation_error_state_old.define(
+        m_state_truncation_error.define(
+            level_domain, 2 * m_p.num_truncation_error_vars, IntVect::Zero);
+        m_state_truncation_error_old.define(
             level_domain, m_p.num_truncation_error_vars, IntVect::Zero);
-        m_truncation_error_state_coarse.define(
-            level_domain, m_p.num_truncation_error_vars, IntVect::Zero);
+        aliasLevelData(m_state_truncation_error_coarse_alias,
+                       &m_state_truncation_error,
+                       Interval(m_p.num_truncation_error_vars,
+                                2 * m_p.num_truncation_error_vars - 1));
     }
 }
 
@@ -416,10 +427,14 @@ void GRAMRLevel::initialGrid(const Vector<Box> &a_new_grids)
     }
     if (m_p.use_truncation_error_tagging)
     {
-        m_truncation_error_state_old.define(
+        m_state_truncation_error.define(
+            level_domain, 2 * m_p.num_truncation_error_vars, IntVect::Zero);
+        m_state_truncation_error_old.define(
             level_domain, m_p.num_truncation_error_vars, IntVect::Zero);
-        m_truncation_error_state_coarse.define(
-            level_domain, m_p.num_truncation_error_vars, IntVect::Zero);
+        aliasLevelData(m_state_truncation_error_coarse_alias,
+                       &m_state_truncation_error,
+                       Interval(m_p.num_truncation_error_vars,
+                                2 * m_p.num_truncation_error_vars - 1));
     }
 
     defineExchangeCopier(level_domain);
@@ -765,10 +780,14 @@ void GRAMRLevel::readCheckpointLevel(HDF5Handle &a_handle)
     }
     if (m_p.use_truncation_error_tagging)
     {
-        m_truncation_error_state_old.define(
+        m_state_truncation_error.define(
+            level_domain, 2 * m_p.num_truncation_error_vars, IntVect::Zero);
+        m_state_truncation_error_old.define(
             level_domain, m_p.num_truncation_error_vars, IntVect::Zero);
-        m_truncation_error_state_coarse.define(
-            level_domain, m_p.num_truncation_error_vars, IntVect::Zero);
+        aliasLevelData(m_state_truncation_error_coarse_alias,
+                       &m_state_truncation_error,
+                       Interval(m_p.num_truncation_error_vars,
+                                2 * m_p.num_truncation_error_vars - 1));
     }
 }
 
