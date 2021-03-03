@@ -93,10 +93,34 @@ class ChomboParameters
         pp.load("use_truncation_error_tagging", use_truncation_error_tagging,
                 false);
         if (use_truncation_error_tagging)
+        {
             UserVariables::load_vars_to_vector(
                 pp, "truncation_error_vars", "num_truncation_error_vars",
                 truncation_error_vars, num_truncation_error_vars);
 
+            if (pp.contains("truncation_error_regrid_thresholds"))
+            {
+                pout() << "Using multiple truncation error regrid thresholds."
+                       << std::endl;
+                // As for regrid_interval, the last element is irrelevant
+                pp.getarr("truncation_error_regrid_thresholds",
+                          truncation_error_regrid_thresholds, 0, max_level);
+                truncation_error_regrid_thresholds.resize(max_level + 1);
+                truncation_error_regrid_thresholds[max_level] =
+                    truncation_error_regrid_thresholds[max_level - 1];
+            }
+            else
+            {
+                pout() << "Using single truncation error regrid threshold."
+                       << std::endl;
+                double truncation_error_regrid_threshold;
+                pp.load("truncation_error_regrid_threshold",
+                        truncation_error_regrid_threshold,
+                        regrid_thresholds[0]);
+                truncation_error_regrid_thresholds = Vector<double>(
+                    max_level + 1, truncation_error_regrid_threshold);
+            }
+        }
         // time stepping outputs and regrid data
         pp.load("checkpoint_interval", checkpoint_interval, 1);
         pp.load("chk_prefix", checkpoint_prefix);
@@ -431,6 +455,7 @@ class ChomboParameters
 
     // For tagging
     Vector<double> regrid_thresholds;
+    Vector<double> truncation_error_regrid_thresholds;
 
     // For truncation error tagging (instead of normal tagging criterion)
     bool use_truncation_error_tagging;

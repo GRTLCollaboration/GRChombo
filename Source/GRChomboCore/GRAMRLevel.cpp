@@ -293,14 +293,18 @@ void GRAMRLevel::tagCellsImplem(IntVectSet &a_tags,
         const int ymax = bigEnd[1];
         const int zmax = bigEnd[2];
 
+        const double threshold =
+            (a_use_truncation_error_tagging)
+                ? m_p.truncation_error_regrid_thresholds[m_level]
+                : m_p.regrid_thresholds[m_level];
+
 #pragma omp parallel for collapse(3) schedule(static) default(shared)
         for (int iz = zmin; iz <= zmax; ++iz)
             for (int iy = ymin; iy <= ymax; ++iy)
                 for (int ix = xmin; ix <= xmax; ++ix)
                 {
                     IntVect iv(ix, iy, iz);
-                    if (tagging_criterion(iv, 0) >=
-                        m_p.regrid_thresholds[m_level])
+                    if (tagging_criterion(iv, 0) >= threshold)
                     {
 // local_tags |= is not thread safe.
 #pragma omp critical
