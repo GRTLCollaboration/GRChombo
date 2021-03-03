@@ -266,19 +266,19 @@ void GRAMRLevel::tagCellsImplem(IntVectSet &a_tags,
     {
         DataIndex di = dit0[ibox];
         const Box &b = level_domain[di];
-        const FArrayBox &state_fab = m_state_new[di];
-        const FArrayBox &state_truncation_error_fab =
-            m_state_truncation_error[di];
 
         // mod gradient
         FArrayBox tagging_criterion(b, 1);
         if (a_use_truncation_error_tagging)
         {
+            const FArrayBox &state_truncation_error_fab =
+                m_state_truncation_error[di];
             computeTruncationError(tagging_criterion,
                                    state_truncation_error_fab);
         }
         else
         {
+            const FArrayBox &state_fab = m_state_new[di];
             computeTaggingCriterion(tagging_criterion, state_fab);
         }
 
