@@ -11,7 +11,7 @@ r = 400
 symmetry = 2
 # make the plot
 fig = plt.figure()
-N = 250
+N = 2
 
 # volume integral dataset out
 data1 = np.loadtxt("Run0/ProcaDensities.dat")
@@ -41,7 +41,7 @@ plt.xlabel("time")
 plt.ylabel("Change in Cloud Mass")
 #plt.xlim(0, 1000)
 #plt.ylim(1e-1, 1e2)
-plt.legend()
+plt.legend(loc=0)
 plt.grid()
 
 # save as png image

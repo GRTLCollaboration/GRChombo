@@ -78,18 +78,18 @@ template <class matter_t, class background_t> class FixedBGMomentumFlux
         FOR1(i) { Ni_L[i] = Ni_L[i] / sqrt(mod_N2); }
 
         // the area element of the sphere
-        data_t rho2 =
-            simd_max(coords.x * coords.x + coords.y * coords.y, 1e-12);
-        data_t r2sintheta = sqrt(rho2) * R;
+        data_t rho2 = coords.x * coords.x + coords.y * coords.y;
+        data_t rho = sqrt(rho2);
+        rho = simd_max(rho, 1e-6);
+        data_t r2sintheta = rho * R;
         using namespace CoordinateTransformations;
         Tensor<2, data_t> spherical_gamma = cartesian_to_spherical_LL(
             metric_vars.gamma, coords.x, coords.y, coords.z);
-        data_t det_Sigma = area_element_sphere(spherical_gamma);
+        data_t sqrt_det_Sigma = area_element_sphere(spherical_gamma);
 
         // The integrand for the x-momentum flux out of a radial
         // shell at the current position
         data_t Mdot = 0;
-
         FOR1(i)
         {
             Mdot += -metric_vars.shift[i] * Ni_L[i] * emtensor.Si[0];
@@ -102,7 +102,7 @@ template <class matter_t, class background_t> class FixedBGMomentumFlux
 
         // the r2sintheta is taken care of by the integration of the flux
         // so just need the dA relating to the metric
-        Mdot *= sqrt(det_Sigma) / r2sintheta;
+        Mdot *= sqrt_det_Sigma / r2sintheta;
 
         // Now (minus) the x Momentum density with volume factor
         data_t xMom = -emtensor.Si[0] * sqrt(det_gamma);
@@ -135,12 +135,12 @@ template <class matter_t, class background_t> class FixedBGMomentumFlux
                 }
             }
             source[i] = source[i] * sqrt(det_gamma);
-            BHMom[i] *= sqrt(det_Sigma) / r2sintheta;
+            BHMom[i] *= sqrt_det_Sigma / r2sintheta;
         }
 
         // assign values of Stress integrand in the output box
         current_cell.store_vars(source[0], c_Source);
-        current_cell.store_vars(BHMom[0], c_BHMom);
+        current_cell.store_vars(sqrt_det_Sigma / r2sintheta, c_BHMom);
         current_cell.store_vars(Mdot, c_Stress);
         current_cell.store_vars(xMom, c_xMom);
     }

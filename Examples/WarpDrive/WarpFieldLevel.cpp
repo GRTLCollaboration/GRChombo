@@ -161,10 +161,14 @@ void WarpFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
 void WarpFieldLevel::specificPostTimeStep()
 {
     // Populate the Weyl Scalar values on the grid
-    fillAllGhosts();
-    BoxLoops::loop(Weyl4(m_p.extraction_params.extraction_center, m_dx),
-                   m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
     int min_level = m_p.extraction_params.min_extraction_level();
+    bool calculate_weyl = at_level_timestep_multiple(min_level);
+    if (calculate_weyl)
+    {
+        fillAllEvolutionGhosts();
+        BoxLoops::loop(Weyl4(m_p.extraction_params.extraction_center, m_dx),
+                   m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+    }
     if (m_level == min_level)
     {
         // Now refresh the interpolator and do the interpolation

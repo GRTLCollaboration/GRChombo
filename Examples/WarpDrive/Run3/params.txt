@@ -12,8 +12,8 @@ a3 = 1
 
 # Warp Bubble Initial data
 warp_acceleration = 0.0
-warp_speed = 0.5
-bubble_size = 25.0
+warp_speed = 0.1
+bubble_size = 50.0
 sigma_wall = 0.5
 
 # Set up grid spacings and regrid params

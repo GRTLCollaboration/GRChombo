@@ -10,7 +10,7 @@ from matplotlib.ticker import LinearLocator, FormatStrFormatter
 # Total ADM mass
 M = 1.0
 # The mode, as text
-mode = "20"
+mode = "21"
 # output data from running merger
 data = np.loadtxt("Weyl_integral_" + mode + ".dat")
 
@@ -38,7 +38,7 @@ plt.plot(timedata2, fluxdata2, '--', lw = 0.75, label="r2")
 # make the plot look nice
 plt.xlabel("time t / M")
 plt.ylabel("Re (Psi4) el, em = " + mode)
-plt.xlim(-100, 900)
+plt.xlim(-50, 100)
 #plt.ylim(1.85, 1.88)
 plt.legend()
 

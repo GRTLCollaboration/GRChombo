@@ -91,10 +91,10 @@ void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
 void ScalarFieldLevel::specificPostTimeStep()
 {
     // At any level, but after the coarsest timestep
-    double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
-    const double remainder = fmod(m_time, coarsest_dt);
-    if (min(abs(remainder), abs(remainder - coarsest_dt)) < 1.0e-8)
-    {
+//    double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
+//    const double remainder = fmod(m_time, coarsest_dt);
+//    if (min(abs(remainder), abs(remainder - coarsest_dt)) < 1.0e-8)
+//    {
         // calculate the density of the PF, but excise the BH region completely
         fillAllGhosts();
         ComplexScalarPotential potential(m_p.potential_params);
@@ -117,7 +117,7 @@ void ScalarFieldLevel::specificPostTimeStep()
                 m_dx, m_p.center, boosted_bh, m_p.inner_r, m_p.outer_r),
             m_state_diagnostics, m_state_diagnostics, SKIP_GHOST_CELLS,
             disable_simd());
-    }
+//    }
 
     // write out the integral after each coarse timestep
     if (m_level == 0)
@@ -146,8 +146,8 @@ void ScalarFieldLevel::specificPostTimeStep()
         // Now refresh the interpolator and do the interpolation
         bool fill_ghosts = false;
         m_gr_amr.m_interpolator->refresh(); //fill_ghosts);
-        //m_gr_amr.fill_multilevel_ghosts(
-        //    VariableType::diagnostic, Interval(c_Stress, c_BHMom));
+        m_gr_amr.fill_multilevel_ghosts(
+            VariableType::diagnostic, Interval(c_Edot, c_Stress));
 
         ForceExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
                                       m_restart_time);

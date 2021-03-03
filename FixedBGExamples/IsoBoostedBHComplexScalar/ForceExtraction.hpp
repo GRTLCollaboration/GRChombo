@@ -25,7 +25,7 @@ class ForceExtraction : public SpheroidalExtraction
                                a_restart_time)
     {
         add_var(c_Stress, VariableType::diagnostic);
-        add_var(c_BHMom, VariableType::diagnostic);
+        add_var(c_Edot, VariableType::diagnostic);
     }
 
     //! The old constructor which assumes it is called in specificPostTimeStep
@@ -41,7 +41,7 @@ class ForceExtraction : public SpheroidalExtraction
     enum M_VARS
     {
         m_Stress,
-        m_BHMom
+        m_Edot
     };
 
     //! Execute the query
@@ -56,11 +56,11 @@ class ForceExtraction : public SpheroidalExtraction
             write_extraction("Force4ExtractionOut_");
         }
 
-        // Setup to integrate Stress and BHMom
+        // Setup to integrate Stress and Edot
         std::vector<std::vector<double>> force_integrals(2);
         add_var_integrand(m_Stress, force_integrals[m_Stress],
                           IntegrationMethod::simpson);
-        add_var_integrand(m_BHMom, force_integrals[m_BHMom],
+        add_var_integrand(m_Edot, force_integrals[m_Edot],
                           IntegrationMethod::simpson);
 
         // do the integration over the surface
@@ -68,9 +68,9 @@ class ForceExtraction : public SpheroidalExtraction
 
         // write the integrals
         std::vector<std::string> labels(2);
-        labels[m_Stress] = "Force";
-        labels[m_BHMom] = "BHMom";
-        std::string filename = "Force_integrals";
+        labels[m_Stress] = "Stress";
+        labels[m_Edot] = "Edot";
+        std::string filename = "SurfaceIntegrals";
         write_integrals(filename, force_integrals, labels);
     }
 };
