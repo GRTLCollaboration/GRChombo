@@ -75,6 +75,9 @@ class GRAMR : public AMR
     // returns true if there needs to be a regrid on this or some coarser level
     // see AMR::needToRegrid.
     bool need_to_regrid(const int a_level) const;
+
+    // Cancel an upcoming regrid
+    void defer_regridding();
 };
 
 #endif /* GRAMR_HPP_ */

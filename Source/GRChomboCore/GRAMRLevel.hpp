@@ -58,6 +58,9 @@ class GRAMRLevel : public AMRLevel, public InterpSource
                         const ProblemDomain &a_problem_domain, int a_level,
                         int a_ref_ratio);
 
+    /// define grids and other objects
+    virtual void defineNewGrids(const Vector<Box> &a_new_grids);
+
     /// advance by one timestep
     virtual Real advance();
 

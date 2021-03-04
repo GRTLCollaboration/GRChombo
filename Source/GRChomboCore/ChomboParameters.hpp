@@ -331,6 +331,19 @@ class ChomboParameters
             grid_buffer_size >= ceil(num_ghosts / 2.0),
             "must be >= ceil(num_ghosts/max_ref_ratio) for proper nesting");
 
+        if (use_truncation_error_tagging)
+        {
+            for (int level = 1; level <= max_level; ++level)
+            {
+                std::string parameter_name =
+                    "regrid_interval[" + std::to_string(level) + "]";
+                check_parameter(
+                    parameter_name, regrid_interval[level],
+                    regrid_interval[level] % 2 == 0,
+                    "must be divisible by 2 with truncation error tagging");
+            }
+        }
+
         // check the restart_file exists and can be read if restarting from a
         // checkpoint
         if (restart_from_checkpoint)

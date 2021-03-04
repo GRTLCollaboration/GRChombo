@@ -67,3 +67,14 @@ bool GRAMR::need_to_regrid(const int a_level) const
     }
     return out;
 }
+
+void GRAMR::defer_regridding()
+{
+    for (int level = 0; level <= m_max_level; ++level)
+    {
+        if (m_steps_since_regrid[level] = 0)
+        {
+            m_steps_since_regrid[level] += m_regrid_intervals[level];
+        }
+    }
+}
