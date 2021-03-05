@@ -150,16 +150,18 @@ void AHFinder::solve(double a_dt, double a_time, double a_restart_time)
             {
                 auto pair = m_merger_pairs[i];
 
-                if (!((ah_solved[pair.first] == SKIPPED ||
-                       ah_solved[pair.first] == SOLVED) &&
-                      (ah_solved[pair.second] == SKIPPED ||
-                       ah_solved[pair.second] == SOLVED)))
+                if (ah_solved[pair.first] == NOT_SOLVED ||
+                    ah_solved[pair.second] == NOT_SOLVED)
                     continue; // continue if one of the 'parents' was not
-                              // solved/skipped yet
+                              // dealt with yet
 
                 if (!(m_apparent_horizons[pair.first]->has_been_found() &&
                       m_apparent_horizons[pair.second]->has_been_found()))
                 {
+                    if (m_apparent_horizons[i]->m_params.verbose > NONE)
+                    {
+                        pout() << "Skipping BH #" << i << std::endl;
+                    }
                     ++ahs_solved;
                     ah_solved[i] = SKIPPED;
                     continue; // skip if one of the parents was never found yet
@@ -175,6 +177,7 @@ void AHFinder::solve(double a_dt, double a_time, double a_restart_time)
                     }
                     ++ahs_solved;
                     ah_solved[i] = TOO_FAR;
+                    continue;
                 }
 
                 double initial_guess_merger;
@@ -186,6 +189,7 @@ void AHFinder::solve(double a_dt, double a_time, double a_restart_time)
                 // if distance is too large, ignore this one and move on
                 if (!do_solve)
                 {
+                    // already printed 'Skipping' when calling 'solve_merger'
                     ++ahs_solved;
                     ah_solved[i] = TOO_FAR;
                     continue;
@@ -220,6 +224,11 @@ void AHFinder::solve(double a_dt, double a_time, double a_restart_time)
             }
             else
             {
+                if (m_apparent_horizons[i]->m_params.verbose > NONE)
+                {
+                    pout() << "Skipping BH #" << i << ". Not good to go."
+                           << std::endl;
+                }
                 ++ahs_solved;
                 ah_solved[i] = SKIPPED;
             }
@@ -247,8 +256,33 @@ bool AHFinder::solve_merger(int ah1, int ah2, double &initial_guess_merger,
     auto center1 = AH1->get_center();
     auto center2 = AH2->get_center();
 
-    double initial_guess_sum =
-        (AH1->get_initial_guess() + AH2->get_initial_guess());
+    auto initial_guess1 = AH1->get_initial_guess();
+    auto initial_guess2 = AH2->get_initial_guess();
+
+    if (m_merger_pairs[ah1].first >= 0)
+    {
+        double merger_pre_factor =
+            std::max(m_apparent_horizons[m_merger_pairs[ah1].first]
+                         ->m_params.merger_pre_factor,
+                     m_apparent_horizons[m_merger_pairs[ah1].second]
+                         ->m_params.merger_pre_factor);
+        if (merger_pre_factor >
+            0.) // undo the factor is this a merger from a merger
+            initial_guess1 /= (merger_pre_factor * 4.);
+    }
+    if (m_merger_pairs[ah2].first >= 0)
+    {
+        double merger_pre_factor =
+            std::max(m_apparent_horizons[m_merger_pairs[ah2].first]
+                         ->m_params.merger_pre_factor,
+                     m_apparent_horizons[m_merger_pairs[ah2].second]
+                         ->m_params.merger_pre_factor);
+        if (merger_pre_factor >
+            0.) // undo the factor is this a merger from a merger
+            initial_guess2 /= (merger_pre_factor * 4.);
+    }
+
+    double initial_guess_sum = (initial_guess1 + initial_guess2);
 
     // some tests revealed it was about 1.2 * initial_guess_sum, but 1.5 to
     // ensure we don't catch the inner AH
@@ -304,6 +338,14 @@ bool AHFinder::solve_merger(int ah1, int ah2, double &initial_guess_merger,
             pout() << std::endl;
         }
     }
+    else
+    {
+        if (AH1->m_params.verbose > NONE)
+        {
+            pout() << "Original BH not yet found. Skipping solve for merger."
+                   << std::endl;
+        }
+    }
 
     return do_solve;
 }
@@ -333,7 +375,7 @@ void AHFinder::set_origins(
                     auto origin2 = m_apparent_horizons[m_merger_pairs[i].second]
                                        ->get_origin();
                     std::array<double, CH_SPACEDIM> origin;
-                    FOR1(i) { origin[i] = (origin1[i] + origin2[i]) / 2.; }
+                    FOR1(a) { origin[a] = (origin1[a] + origin2[a]) / 2.; }
                     m_apparent_horizons[i]->set_origin(origin);
                 }
             }

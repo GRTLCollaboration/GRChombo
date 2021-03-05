@@ -282,7 +282,7 @@ class SimulationParameters : public SimulationParametersBase
         warn_array_parameter(
             "momentumB", bh2_params.momentum,
             std::sqrt(ArrayTools::norm2(bh2_params.momentum)) <
-                0.3 * bh1_params.mass,
+                0.3 * bh2_params.mass,
             "approximation used for boosted BH only valid for small boosts");
         FOR1(idir)
         {
