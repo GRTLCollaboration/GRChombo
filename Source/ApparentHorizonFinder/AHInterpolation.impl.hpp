@@ -422,7 +422,7 @@ void AHInterpolation<SurfaceGeometry, AHFunction>::refresh_interpolator(
     if (printing_step && min_diagnostic_var != -1)
     {
         m_interpolator->fill_multilevel_ghosts(
-            VariableType::evolution,
+            VariableType::diagnostic,
             Interval(min_diagnostic_var, max_diagnostic_var));
     }
 }

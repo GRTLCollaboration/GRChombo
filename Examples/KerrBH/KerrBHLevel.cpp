@@ -50,9 +50,11 @@ void KerrBHLevel::initialData()
     BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
                    EXCLUDE_GHOST_CELLS);
 
+#ifdef USE_AHFINDER
     // Diagnostics needed for AHFinder
     BoxLoops::loop(Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3)),
                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+#endif
 }
 
 #ifdef CH_USE_HDF5
