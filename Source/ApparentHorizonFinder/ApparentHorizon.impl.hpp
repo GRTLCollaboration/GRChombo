@@ -938,7 +938,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
                         pout()
                             << "Old AH time step is different than current one "
                                "(this might happen if 'AH_print_interval != "
-                               "1').\n Recovering "
+                               "1').\nRecovering "
                             << old_centers_time_index.size()
                             << " old centers from interpolation, for accurate "
                                "prediction of next origin."
@@ -1041,8 +1041,9 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
     // because of it (if they happen not to be solved right from the restart)
     // fake_dt is relevant for the 'remove_duplicate_time_data' part
     double fake_dt = current_solve_dt * m_params.print_interval;
-    SmallDataIO file_cleanup(m_stats, fake_dt, current_time, current_time,
-                             SmallDataIO::APPEND, !m_printed_once);
+    SmallDataIO file_cleanup(m_stats, fake_dt, current_time + fake_dt,
+                             current_time, SmallDataIO::APPEND,
+                             !m_printed_once);
 
     file_cleanup.remove_duplicate_time_data();
 

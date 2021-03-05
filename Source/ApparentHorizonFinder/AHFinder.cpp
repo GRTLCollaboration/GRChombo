@@ -319,23 +319,31 @@ bool AHFinder::solve_merger(int ah1, int ah2, double &initial_guess_merger,
 
     if (AH1->has_been_found() && AH2->has_been_found())
     {
-        do_solve = merger_search_factor <= 0. || distance <= min_distance;
-
-        if (do_solve)
-            // make sure twice the radius of the guess is bigger than AH
-            // distance
-            CH_assert(min_distance <= 2. * initial_guess_merger);
-
-        if (AH1->m_params.verbose > NONE)
+        if (AH1->get_converged() && AH2->get_converged())
         {
-            pout() << "BHs #" << ah1 << " and #" << ah2
-                   << " at distance = " << distance;
-            // if distance is too large, ignore this one and move on
-            if (!do_solve)
-                pout() << " > minimum distance = " << min_distance
-                       << ". Skipping solve for merger...";
+            do_solve = merger_search_factor <= 0. || distance <= min_distance;
 
-            pout() << std::endl;
+            if (do_solve)
+                // make sure twice the radius of the guess is bigger than AH
+                // distance
+                CH_assert(min_distance <= 2. * initial_guess_merger);
+
+            if (AH1->m_params.verbose > NONE)
+            {
+                pout() << "BHs #" << ah1 << " and #" << ah2
+                       << " at distance = " << distance;
+                // if distance is too large, ignore this one and move on
+                if (!do_solve)
+                    pout() << " > minimum distance = " << min_distance
+                           << ". Skipping solve for merger...";
+
+                pout() << std::endl;
+            }
+        }
+        else
+        {
+            // if AH1 or AH2 was lost, probably merger is already around
+            do_solve = true;
         }
     }
     else
