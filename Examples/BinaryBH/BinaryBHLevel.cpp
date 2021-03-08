@@ -19,6 +19,7 @@
 #include "SixthOrderDerivatives.hpp"
 #include "SmallDataIO.hpp"
 #include "TraceARemoval.hpp"
+#include "TruncationErrorExtractionTagging.hpp"
 #include "TwoPuncturesInitialData.hpp"
 #include "Weyl4.hpp"
 #include "WeylExtraction.hpp"
@@ -126,6 +127,15 @@ void BinaryBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                                      m_p.activate_extraction),
                        current_state, tagging_criterion);
     }
+}
+
+void BinaryBHLevel::computeTruncationError(
+    FArrayBox &truncation_error, const FArrayBox &a_state_truncation_error)
+{
+    BoxLoops::loop(TruncationErrorExtractionTagging(
+                       m_dx, m_p.num_truncation_error_vars, m_level,
+                       m_p.activate_extraction, m_p.extraction_params),
+                   a_state_truncation_error, truncation_error);
 }
 
 void BinaryBHLevel::specificPostTimeStep()

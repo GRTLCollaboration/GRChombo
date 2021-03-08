@@ -46,6 +46,11 @@ class BinaryBHLevel : public GRAMRLevel
     computeTaggingCriterion(FArrayBox &tagging_criterion,
                             const FArrayBox &current_state) override;
 
+    /// Tag cells using truncation error
+    virtual void
+    computeTruncationError(FArrayBox &truncation_error,
+                           const FArrayBox &a_state_truncation_error) override;
+
     // to do post each time step on every level
     virtual void specificPostTimeStep() override;
 
