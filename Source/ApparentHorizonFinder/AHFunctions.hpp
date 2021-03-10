@@ -227,14 +227,16 @@ struct ExpansionFunction : AHFunctionDefault
         Tensor<1, double> s_L = get_level_function_derivative(geo_data, deriv);
         Tensor<2, double> Ds =
             get_level_function_2nd_covariant_derivative(geo_data, deriv, s_L);
-        Tensor<1, double> S_U = get_spatial_normal_U(s_L);
+        double norm_s;
+        Tensor<1, double> S_U;
+        get_spatial_normal_U_and_norm(S_U, norm_s, s_L);
 
         // calculate D_i S^i and S^i S^j K_ij
         double DiSi = 0.;
         double Kij_dot_Si_Sj = 0.;
         FOR2(a, b)
         {
-            DiSi += (g_UU[a][b] - S_U[a] * S_U[b]) * Ds[a][b];
+            DiSi += (g_UU[a][b] - S_U[a] * S_U[b]) * Ds[a][b] / norm_s;
             Kij_dot_Si_Sj += S_U[a] * S_U[b] * K[a][b];
         }
 
@@ -282,10 +284,18 @@ struct ExpansionFunction : AHFunctionDefault
     }
     Tensor<1, double> get_spatial_normal_U(const Tensor<1, double> &s_L) const
     {
+        Tensor<1, double> S_U;
+        double norm_s;
+        get_spatial_normal_U_and_norm(S_U, norm_s, s_L);
+        return S_U;
+    }
+    void get_spatial_normal_U_and_norm(Tensor<1, double> &S_U, double &norm_s,
+                                       const Tensor<1, double> &s_L) const
+    {
         // calculate S_U = the real 's' of Alcubierre
 
         // norm of s_L = | D_a L| (the 'u' in 6.7.12 of Alcubierre)
-        double norm_s = 0.0;
+        norm_s = 0.0;
         FOR2(a, b) { norm_s += g_UU[a][b] * s_L[a] * s_L[b]; }
         norm_s = sqrt(norm_s);
 
@@ -293,10 +303,7 @@ struct ExpansionFunction : AHFunctionDefault
         Tensor<1, double> s_U = {0.};
         FOR2(a, b) { s_U[a] += g_UU[a][b] * s_L[b]; }
 
-        Tensor<1, double> S_U = {0.};
         FOR1(a) { S_U[a] = s_U[a] / norm_s; }
-
-        return S_U;
     }
 
     Tensor<2, double> get_level_function_2nd_covariant_derivative(
