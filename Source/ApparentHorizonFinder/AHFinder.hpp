@@ -205,8 +205,8 @@ class AHFinder
     int add_ah(const AHSurfaceGeometry &a_coord_system, double a_initial_guess,
                const params &a_params,
                const typename AHFunction::params &a_func_params,
-               const std::string &a_stats = "stats",
-               const std::string &a_coords = "coords",
+               const std::string &a_stats = "stats_AH",
+               const std::string &a_coords = "coords_AH",
                bool solve_first_step = true);
 
     // returns the index of the AH in m_apparent_horizons

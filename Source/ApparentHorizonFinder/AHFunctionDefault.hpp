@@ -41,7 +41,7 @@ struct AHFunctionDefault
     ALWAYS_INLINE const Tensor<2, double> get_metric() const
     {
         // cartesian flat metric
-        Tensor<2, double> g;
+        Tensor<2, double> g = {0.};
         FOR1(i) { g[i][i] = 1.; }
         return g;
     }

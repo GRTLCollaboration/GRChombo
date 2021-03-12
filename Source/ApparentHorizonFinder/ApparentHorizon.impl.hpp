@@ -529,8 +529,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
         SmallDataIO file(m_stats, fake_dt, a_time, a_restart_time,
                          SmallDataIO::APPEND, !m_printed_once);
 
-        // not needed -> already done in restart:
-        // file.remove_duplicate_time_data();
+        file.remove_duplicate_time_data();
 
         // std::string coords_filename = file.get_new_file_number(fake_dt,
         // a_time);
@@ -1035,17 +1034,6 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
                       Chombo_MPI::comm);
 #endif
     }
-
-    // force 'remove_duplicate_time_data' here because merger AH might only run
-    // a long time after 'a_restart_time' and don't remove duplicate time data
-    // because of it (if they happen not to be solved right from the restart)
-    // fake_dt is relevant for the 'remove_duplicate_time_data' part
-    double fake_dt = current_solve_dt * m_params.print_interval;
-    SmallDataIO file_cleanup(m_stats, fake_dt, current_time + fake_dt,
-                             current_time, SmallDataIO::APPEND,
-                             !m_printed_once);
-
-    file_cleanup.remove_duplicate_time_data();
 
     // if t=0, solve only if it's a restart and if solve_first_step = true (it
     // may be false for example for a merger of a binary, for which we don't
