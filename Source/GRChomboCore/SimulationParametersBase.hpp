@@ -122,6 +122,23 @@ class SimulationParametersBase : public ChomboParameters
         }
 
         pp.load("write_extraction", extraction_params.write_extraction, false);
+
+        std::string extraction_path;
+        pp.load("extraction_subpath", extraction_path, std::string(""));
+        if (extraction_path != "" &&
+            extraction_path[extraction_path.size() - 1] != '/')
+            extraction_path += "/";
+        if (output_path != "./" && output_path != "")
+            extraction_path = output_path + extraction_path;
+
+        extraction_params.extraction_path = extraction_path;
+
+        // default names to Weyl extraction
+        pp.load("extraction_file_prefix",
+                extraction_params.extraction_file_prefix,
+                std::string("Weyl4_extraction_"));
+        pp.load("integral_file_prefix", extraction_params.integral_file_prefix,
+                std::string("Weyl4_mode_"));
     }
 
     void check_params()

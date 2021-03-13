@@ -1,7 +1,22 @@
 verbosity = 0
+
+#################################################
+# Filesystem parameters
+
+#output_path = "" # Main path for all files. Must exist!
 chk_prefix = BinaryBH_
 plot_prefix = BinaryBHPlot_
 #restart_file = BinaryBH_000360.3d.hdf5
+
+# subpaths - specify specific folders for hdf5, pout, extraction data
+# (these are created at runtime)
+hdf5_subpath = "hdf5"
+pout_subpath = "pout"
+extraction_subpath = "data"
+
+# change the name of output files
+#pout_prefix = "pout"
+#################################################
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
@@ -106,3 +121,4 @@ num_modes = 3
 modes = 2 0 # l m for spherical harmonics
         2 1
         2 2
+#integral_file_prefix = "Weyl4_mode_"

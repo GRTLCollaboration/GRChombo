@@ -73,12 +73,12 @@ void mainSetup(int argc, char *argv[])
 
     if (rank == 0)
     {
-        pout() << " number_procs = " << number_procs << endl;
+        std::cout << " number_procs = " << number_procs << endl;
 #ifdef _OPENMP
-        pout() << " threads = " << omp_get_max_threads() << endl;
+        std::cout << " threads = " << omp_get_max_threads() << endl;
 #endif
-        pout() << " simd width (doubles) = " << simd_traits<double>::simd_len
-               << endl;
+        std::cout << " simd width (doubles) = " << simd_traits<double>::simd_len
+                  << endl;
     }
 
     const int required_argc = 2;
@@ -129,13 +129,16 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     gr_amr.gridBufferSize(chombo_params.grid_buffer_size);
 
     // set checkpoint and plot intervals and prefixes
+#ifdef CH_USE_HDF5
     gr_amr.checkpointInterval(chombo_params.checkpoint_interval);
-    gr_amr.checkpointPrefix(chombo_params.checkpoint_prefix);
+    gr_amr.checkpointPrefix(chombo_params.hdf5_path +
+                            chombo_params.checkpoint_prefix);
     if (chombo_params.plot_interval != 0)
     {
         gr_amr.plotInterval(chombo_params.plot_interval);
-        gr_amr.plotPrefix(chombo_params.plot_prefix);
+        gr_amr.plotPrefix(chombo_params.hdf5_path + chombo_params.plot_prefix);
     }
+#endif
 
     // Number of coarse time steps from one regridding to the next
     gr_amr.regridIntervals(chombo_params.regrid_interval);
@@ -159,12 +162,18 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     // Set up input files
     if (!chombo_params.restart_from_checkpoint)
     {
+#ifdef CH_USE_HDF5
+        if (!GRParmParse::folder_exists(chombo_params.hdf5_path))
+            GRParmParse::mkdir_recursive(chombo_params.hdf5_path);
+#endif
+
         gr_amr.setupForNewAMRRun();
     }
     else
     {
 #ifdef CH_USE_HDF5
-        HDF5Handle handle(chombo_params.restart_file, HDF5Handle::OPEN_RDONLY);
+        HDF5Handle handle(chombo_params.hdf5_path + chombo_params.restart_file,
+                          HDF5Handle::OPEN_RDONLY);
         // read from checkpoint file
         gr_amr.setupForRestart(handle);
         handle.close();

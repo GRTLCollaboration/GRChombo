@@ -50,6 +50,9 @@ template <class SurfaceGeometry> class SurfaceExtraction
                                             //!< extraction for each surface
         bool write_extraction; //!< whether or not to write the extracted data
 
+        std::string extraction_path, integral_file_prefix,
+            extraction_file_prefix;
+
         int min_extraction_level()
         {
             return *(std::min_element(extraction_levels.begin(),

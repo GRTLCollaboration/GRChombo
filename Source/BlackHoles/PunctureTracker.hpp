@@ -36,7 +36,7 @@ class PunctureTracker
     //! if the puncture locations are required for Tagging Criteria
     void initial_setup(const std::vector<std::array<double, CH_SPACEDIM>>
                            &initial_puncture_coords,
-                       const std::string &a_checkpoint_prefix,
+                       const std::string &a_output_path,
                        const int a_min_level = 0);
 
     //! set puncture locations on start (or restart)

@@ -13,9 +13,12 @@
 //! Set punctures post restart
 void PunctureTracker::initial_setup(
     const std::vector<std::array<double, CH_SPACEDIM>> &initial_puncture_coords,
-    const std::string &a_checkpoint_prefix, const int a_min_level)
+    const std::string &a_output_path, const int a_min_level)
 {
-    m_punctures_filename = a_checkpoint_prefix + "Punctures";
+    if (!GRParmParse::folder_exists(a_output_path))
+        GRParmParse::mkdir_recursive(a_output_path);
+
+    m_punctures_filename = a_output_path + "punctures";
 
     // first set the puncture data
     // m_num_punctures is only set later

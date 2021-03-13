@@ -12,8 +12,10 @@
 
 // Other includes
 #include "ArrayTools.hpp"
+#include "unistd.h" // gives 'mkdir'
 #include <algorithm>
 #include <memory>
+#include <sys/stat.h> // gives 'stat' and 'S_ISDIR'
 #include <type_traits>
 
 // Chombo namespace
@@ -125,6 +127,65 @@ class GRParmParse : public ParmParse
     {
         load(name, vector, num_comp,
              std::vector<data_t>(num_comp, default_value));
+    }
+
+    static bool folder_exists(const std::string &path)
+    {
+        struct stat sb;
+        return (path == "") ||
+               (stat(path.c_str(), &sb) == 0 && S_ISDIR(sb.st_mode));
+    }
+
+    static bool mkdir_recursive(const std::string &path,
+                                MPI_Comm comm = Chombo_MPI::comm)
+    {
+#ifdef CH_MPI
+        // all processes should get here at the same time
+        /*
+        e.g. if doing:
+            if (!folder_exists(path))
+                mkdir_recursive(path);
+        We want to make sure the folder is not created until all
+        ranks have passed the 'folder_exists'
+        */
+        MPI_Barrier(comm);
+#endif
+
+        bool success = true;
+        if (procID() == 0)
+        {
+            // Windows compatible with opposite backslash
+            static const std::string delimeters = "/\\";
+            std::size_t found = path.find_first_of(delimeters);
+
+            // NB: this would be very beautiful recursively, but let's not do it
+            // because the function involves MPI_Barrier's
+            while (success && found != std::string::npos)
+            {
+                std::string subpath;
+                subpath = path.substr(0, found);
+
+                if (subpath != "." && subpath != "")
+                {
+                    // success if created or if not created because it already
+                    // exists
+                    success &=
+                        (mkdir(subpath.c_str(), 0700) == 0 || errno == EEXIST);
+                }
+                found = path.find_first_of(delimeters, found + 1);
+            }
+            // if path doesn't finish with "/", one more to do
+            if (found != path.size() - 1)
+                success &= (mkdir(path.c_str(), 0700) == 0 || errno == EEXIST);
+        }
+
+#ifdef CH_MPI
+        // all processes should wait to make sure folder structure is well set
+        // for everyone
+        MPI_Barrier(comm);
+#endif
+
+        return success;
     }
 
   protected:
