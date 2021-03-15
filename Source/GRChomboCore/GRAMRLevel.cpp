@@ -1102,3 +1102,43 @@ void GRAMRLevel::defineExchangeCopier(const DisjointBoxLayout &a_level_grids)
     IntVect iv_ghosts = m_num_ghosts * IntVect::Unit;
     m_exchange_copier.exchangeDefine(m_grown_grids, iv_ghosts);
 }
+
+// Note that this function is only called if the parameter
+// use_slurm_remaining_time == true so no need to guard with this
+bool GRAMRLevel::stopEvolution(bool &a_write_checkpoint)
+{
+    a_write_checkpoint = false;
+#if defined(USE_SLURM_INTEGRATION) && defined(CH_NAMESPACE)
+    // can only do this from the end of the second timestep onwards
+    if (m_time - m_restart_time > m_dt + m_gr_amr.timeEps() &&
+        m_gr_amr.in_slurm_job())
+    {
+        auto last_timestep_duration =
+            GRAMR::Clock::now() - m_last_timestep_walltime;
+
+        // double the last timestep duration
+        // just to be conservative
+        auto min_remaining_duration =
+            2.0 * last_timestep_duration + m_p.checkpoint_writing_duration;
+        auto remaining_duration = m_gr_amr.get_remaining_duration();
+
+        if (remaining_duration < min_remaining_duration)
+        {
+            pout() << "Remaining SLURM job walltime = "
+                   << std::chrono::duration_cast<std::chrono::seconds>(
+                          remaining_duration)
+                          .count()
+                   << "s\n";
+            pout() << "Threshold for stopping evolution = "
+                   << std::chrono::duration_cast<std::chrono::seconds>(
+                          min_remaining_duration)
+                          .count()
+                   << "s" << std::endl;
+            a_write_checkpoint = true;
+            return true;
+        }
+    }
+    m_last_timestep_walltime = GRAMR::Clock::now();
+#endif
+    return false;
+}

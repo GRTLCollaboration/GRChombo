@@ -3,10 +3,18 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
+#if defined(USE_SLURM_INTEGRATION) && defined(CH_NAMESPACE)
+#include <slurm/slurm.h>
+#endif
 #include "GRAMR.hpp"
 #include "GRAMRLevel.hpp"
 
-GRAMR::GRAMR() : m_interpolator(nullptr) {}
+GRAMR::GRAMR() : m_interpolator(nullptr)
+{
+#if defined(USE_SLURM_INTEGRATION) && defined(CH_NAMESPACE)
+    set_end_walltime();
+#endif
+}
 
 // Called after AMR object set up
 void GRAMR::set_interpolator(AMRInterpolator<Lagrange<4>> *a_interpolator)
@@ -53,3 +61,23 @@ void GRAMR::fill_multilevel_ghosts(const VariableType a_var_type,
         level.fillAllGhosts(a_var_type, a_comps);
     }
 }
+
+#if defined(USE_SLURM_INTEGRATION) && defined(CH_NAMESPACE)
+void GRAMR::set_end_walltime()
+{
+    uint32_t jobid;
+    int success = slurm_pid2jobid(getpid(), &jobid);
+    if (success == 0)
+    {
+        m_in_slurm_job = true;
+        long remaining_secs = slurm_get_rem_time(jobid);
+        end_walltime = Clock::now() + std::chrono::seconds(remaining_secs);
+    }
+    else
+    {
+        m_in_slurm_job = false;
+    }
+}
+
+bool GRAMR::in_slurm_job() { return m_in_slurm_job; }
+#endif /* USE_SLURM_INTEGRATION */

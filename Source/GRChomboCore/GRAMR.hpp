@@ -36,10 +36,32 @@ template <typename InterpAlgo> class AMRInterpolator;
 
 class GRAMR : public AMR
 {
-  private:
+  public:
     using Clock = std::chrono::steady_clock;
     using Hours = std::chrono::duration<double, std::ratio<3600, 1>>;
-    std::chrono::time_point<Clock> start_time = Clock::now();
+    const std::chrono::time_point<Clock> start_walltime = Clock::now();
+
+#if defined(USE_SLURM_INTEGRATION) && defined(CH_NAMESPACE)
+  private:
+    bool m_in_slurm_job;
+    std::chrono::time_point<Clock> end_walltime;
+
+    void set_end_walltime();
+
+  public:
+    bool in_slurm_job();
+
+    // defined here due to auto return types
+    auto get_remaining_duration()
+    {
+        if (!m_in_slurm_job)
+        {
+            return Clock::duration::max();
+        }
+
+        return end_walltime - Clock::now();
+    }
+#endif
 
   public:
     AMRInterpolator<Lagrange<4>> *m_interpolator; //!< The interpolator pointer
@@ -50,7 +72,7 @@ class GRAMR : public AMR
     auto get_walltime()
     {
         auto now = Clock::now();
-        auto duration = std::chrono::duration_cast<Hours>(now - start_time);
+        auto duration = std::chrono::duration_cast<Hours>(now - start_walltime);
 
         return duration.count();
     }

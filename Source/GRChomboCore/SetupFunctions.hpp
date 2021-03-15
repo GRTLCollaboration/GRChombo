@@ -156,6 +156,10 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
         eps /= chombo_params.ref_ratios[ilevel];
     gr_amr.timeEps(std::min(1.e-6, eps / 2.));
 
+#if defined(USE_SLURM_INTEGRATION) && defined(CH_NAMESPACE)
+    gr_amr.allowEvolutionStop(chombo_params.use_slurm_remaining_time);
+#endif
+
     // Set up input files
     if (!chombo_params.restart_from_checkpoint)
     {

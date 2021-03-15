@@ -19,6 +19,9 @@
 #include "unistd.h"
 #include <algorithm>
 #include <string>
+#if defined(USE_SLURM_INTEGRATION) && defined(CH_NAMESPACE)
+#include <chrono>
+#endif
 
 // Chombo namespace
 #include "UsingNamespace.H"
@@ -121,6 +124,15 @@ class ChomboParameters
         {
             pp.load("min_box_size", block_factor, 8);
         }
+
+#if defined(USE_SLURM_INTEGRATION) && defined(CH_NAMESPACE)
+        pp.load("use_slurm_remaining_time", use_slurm_remaining_time, true);
+        int checkpoint_writing_seconds;
+        pp.load("checkpoint_writing_seconds", checkpoint_writing_seconds, 120);
+
+        checkpoint_writing_duration =
+            std::chrono::seconds(checkpoint_writing_seconds);
+#endif /* USE_SLURM_INTEGRATION */
 
         if (pp.contains("check_params"))
             just_check_params = true;
@@ -406,6 +418,13 @@ class ChomboParameters
 
     std::array<double, CH_SPACEDIM> origin,
         dx; // location of coarsest origin and dx
+
+#if defined(USE_SLURM_INTEGRATION) && defined(CH_NAMESPACE)
+    bool use_slurm_remaining_time; // If in a SLURM job, will try to write a
+                                   // checkpoint and exit cleanly before running
+                                   // out of walltime
+    std::chrono::seconds checkpoint_writing_duration;
+#endif /* USE_SLURM_INTEGRATION */
 
     // Boundary conditions
     BoundaryConditions::params_t boundary_params; // set boundaries in each dir

@@ -21,6 +21,7 @@
 #include "InterpSource.hpp"
 #include "SimulationParameters.hpp"
 #include "UserVariables.hpp" // need NUM_VARS
+#include <chrono>
 #include <fstream>
 #include <limits>
 #include <sys/time.h>
@@ -178,6 +179,8 @@ class GRAMRLevel : public AMRLevel, public InterpSource
         const VariableType var_type = VariableType::evolution,
         const Interval &a_comps = Interval(0, std::numeric_limits<int>::max()));
 
+    virtual bool stopEvolution(bool &a_write_checkpoint) override;
+
   protected:
     /// Fill all evolution ghosts cells (i.e. those in m_state_new)
     virtual void
@@ -213,6 +216,10 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     GRLevelData m_state_diagnostics;
     Real m_dx; //!< grid spacing
     double m_restart_time;
+
+#if defined(USE_SLURM_INTEGRATION) && defined(CH_NAMESPACE)
+    std::chrono::time_point<GRAMR::Clock> m_last_timestep_walltime;
+#endif
 
     GRAMR &m_gr_amr; //!< The GRAMR object containing this GRAMRLevel
 
