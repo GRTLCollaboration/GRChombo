@@ -10,7 +10,7 @@ mu = 0.5
 r = 400
 a = 0.99
 symmetry = 2
-N = 100 # when to normalise to
+N = 1 # when to normalise to
 alpha = M * mu
 r_plus = M + np.sqrt(M*M - a*a)
 omega_Re = mu * (1.0 - 0.5 * alpha**2 - 0.33 * alpha **3.0)
@@ -25,7 +25,6 @@ labelstring = "M/M0"
 timedata = data1[:,0]
 dM = symmetry*data1[:,1]/symmetry*data1[N,1]
 plt.semilogy(timedata, dM, '-', lw = 1.0, label=labelstring)
-plt.semilogy(timedata, dM[N]*np.exp(2*omega_Im * timedata), '-', lw = 1.0, label="analytic")
 
 # volume integral dataset out
 data1 = np.loadtxt("Run0/ProcaDensities.dat")
@@ -33,6 +32,9 @@ labelstring = "J/J0"
 timedata = data1[:,0]
 dJ = symmetry*data1[:,2]/symmetry*data1[N,2]
 plt.semilogy(timedata, dJ, '-', lw = 1.0, label=labelstring)
+
+# analytic
+plt.semilogy(timedata, dM[N]*np.exp(2*omega_Im * timedata), '--', lw = 1.0, label="analytic")
 
 # make the plot look nice
 plt.xlabel("time")

@@ -87,7 +87,7 @@ class FixedBGEnergyAndAngularMomFlux
         using namespace CoordinateTransformations;
         Tensor<2, data_t> spherical_gamma = cartesian_to_spherical_LL(
             metric_vars.gamma, coords.x, coords.y, coords.z);
-        data_t det_Sigma = area_element_sphere(spherical_gamma);
+        data_t sqrt_det_Sigma = area_element_sphere(spherical_gamma);
 
         // dxdphi to convert tensor components to spherical polar
         Tensor<1, data_t> dxdphi;
@@ -120,7 +120,7 @@ class FixedBGEnergyAndAngularMomFlux
         // This factor of det_Sigma takes care of the surface element
         // The r2sintheta part is counted in the coordinate integration
         // so remove it here
-        Edot *= sqrt(det_Sigma) / r2sintheta;
+        Edot *= sqrt_det_Sigma / r2sintheta;
 
         // The integrand for the angular momentum flux out of a radial
         // shell at the current position
@@ -135,7 +135,7 @@ class FixedBGEnergyAndAngularMomFlux
                         gamma_UU[i][k] * Ni_L[k];
             }
         }
-        Jdot *= sqrt(det_Sigma) / r2sintheta;
+        Jdot *= sqrt_det_Sigma / r2sintheta;
 
         // assign values of fluxes in output box
         current_cell.store_vars(Edot, c_Edot);

@@ -110,9 +110,9 @@ G_Newton = 1.0
 #extraction params
 #default center to grid center, uncomment to change
 #extraction_center = 512 512 512
-num_extraction_radii = 3
-extraction_radii = 100.0 150.0 200.0
-extraction_levels = 0 0 0
+num_extraction_radii = 6
+extraction_radii = 100.0 150.0 200.0 250.0 300.0 350.0
+extraction_levels = 0 0 0 0 0 0
 num_points_phi = 24
 num_points_theta = 24
 num_modes = 3
