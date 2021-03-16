@@ -14,13 +14,13 @@ fig = plt.figure()
 N = 250
 
 # volume integral dataset out
-data1 = np.loadtxt("Run0/ProcaDensities.dat")
+data1 = np.loadtxt("Run1/ProcaDensities.dat")
 timedata = data1[:,0]
 dM = symmetry*data1[:,1] - symmetry*data1[N,1]
 #print(dM)
 
 # flux dataset out
-data1 = np.loadtxt("Run0/Flux_integrals.dat")
+data1 = np.loadtxt("Run1/Flux_integrals.dat")
 labelstring = "integral(Flux * dt)"
 timedata = data1[:,0]
 dt = timedata[1] - timedata[0]
