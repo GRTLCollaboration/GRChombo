@@ -139,11 +139,13 @@ class ChomboParameters
         pp.load("chk_prefix", checkpoint_prefix);
         pp.load("plot_prefix", plot_prefix);
 
+#ifdef CH_MPI
         // Again, cannot use default value
         if (pp.contains("pout_prefix"))
             pp.load("pout_prefix", pout_prefix);
         else
             pout_prefix = "pout";
+#endif
 
         std::string default_path = "";
         if (pp.contains("output_path"))
@@ -151,11 +153,13 @@ class ChomboParameters
         else
             output_path = default_path;
 
+#ifdef CH_MPI
         // user sets the 'subpath', we prepend 'output_path'
         if (pp.contains("pout_subpath"))
             pp.load("pout_subpath", pout_path);
         else
             pout_path = default_path;
+#endif
 
 #ifdef CH_USE_HDF5
         // user sets the 'subpath', we prepend 'output_path'
@@ -168,8 +172,10 @@ class ChomboParameters
         // add backslash to paths
         if (output_path != "" && output_path[output_path.size() - 1] != '/')
             output_path += "/";
+#ifdef CH_MPI
         if (pout_path != "" && pout_path[pout_path.size() - 1] != '/')
             pout_path += "/";
+#endif
 #ifdef CH_USE_HDF5
         if (hdf5_path != "" && hdf5_path[hdf5_path.size() - 1] != '/')
             hdf5_path += "/";
@@ -177,16 +183,20 @@ class ChomboParameters
 
         if (output_path != "./" && output_path != "")
         {
+#ifdef CH_MPI
+            pout_path = output_path + pout_path;
+#endif
 #ifdef CH_USE_HDF5
             hdf5_path = output_path + hdf5_path;
 #endif
-            pout_path = output_path + pout_path;
         }
 
+#ifdef CH_MPI
         // change pout base name!
         if (!FilesystemTools::directory_exists(pout_path))
             FilesystemTools::mkdir_recursive(pout_path);
         setPoutBaseName(pout_path + pout_prefix);
+#endif
 
         // only create hdf5 directory in setupAMRObject (when it becomes needed)
     }
@@ -472,9 +482,12 @@ class ChomboParameters
     int max_grid_size, block_factor;        // max and min box sizes
     double fill_ratio; // determines how fussy the regridding is about tags
     std::string checkpoint_prefix, plot_prefix, pout_prefix; // naming of files
-    std::string output_path, pout_path; // directory structure
+    std::string output_path; // base path to use for all files
+#ifdef CH_MPI
+    std::string pout_path; // base path for pout files
+#endif
 #ifdef CH_USE_HDF5
-    std::string hdf5_path;
+    std::string hdf5_path; // base path for pout files
 #endif
     bool write_plot_ghosts;
     int num_plot_vars;

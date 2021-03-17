@@ -6,6 +6,16 @@
 #ifndef FILESYSTEMTOOLS_HPP_
 #define FILESYSTEMTOOLS_HPP_
 
+// Chombo includes
+#include "SPMD.H" // gives procID()
+
+// Other includes
+#include "unistd.h"   // gives 'mkdir'
+#include <sys/stat.h> // gives 'stat' and 'S_ISDIR'
+
+// Chombo namespace
+#include "UsingNamespace.H"
+
 // Some filesystem useful functions
 
 // This should be changed in the future by the actual C++17 filesystem library
@@ -21,8 +31,7 @@ static bool directory_exists(const std::string &path)
                             S_ISDIR(stat_struct.st_mode));
 }
 
-static bool mkdir_recursive(const std::string &path,
-                            MPI_Comm comm = Chombo_MPI::comm)
+static bool mkdir_recursive(const std::string &path)
 {
 #ifdef CH_MPI
     // all processes should get here at the same time
@@ -31,7 +40,7 @@ static bool mkdir_recursive(const std::string &path,
     //         mkdir_recursive(path);
     // We want to make sure the directory is not created until all
     // ranks have passed the 'directory_exists'
-    MPI_Barrier(comm);
+    MPI_Barrier(Chombo_MPI::comm);
 #endif
 
     bool success = true;
@@ -65,11 +74,11 @@ static bool mkdir_recursive(const std::string &path,
 #ifdef CH_MPI
     // all processes should wait to make sure directory structure is well set
     // for everyone
-    MPI_Barrier(comm);
+    MPI_Barrier(Chombo_MPI::comm);
 #endif
 
     return success;
 }
-}; // namespace FilesystemTools
+} // namespace FilesystemTools
 
 #endif /* FILESYSTEMTOOLS_HPP_ */

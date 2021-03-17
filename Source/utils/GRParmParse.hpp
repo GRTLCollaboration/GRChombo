@@ -12,10 +12,8 @@
 
 // Other includes
 #include "ArrayTools.hpp"
-#include "unistd.h" // gives 'mkdir'
 #include <algorithm>
 #include <memory>
-#include <sys/stat.h> // gives 'stat' and 'S_ISDIR'
 #include <type_traits>
 
 // Chombo namespace
