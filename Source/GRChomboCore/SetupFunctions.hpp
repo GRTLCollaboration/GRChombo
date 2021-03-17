@@ -18,6 +18,7 @@ using std::cerr;
 using std::endl;
 #include "ChomboParameters.hpp"
 #include "DerivativeSetup.hpp"
+#include "FilesystemTools.hpp"
 #include "GRAMR.hpp"
 #include "GRParmParse.hpp"
 #include "IntegrationMethodSetup.hpp"
@@ -163,8 +164,8 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     if (!chombo_params.restart_from_checkpoint)
     {
 #ifdef CH_USE_HDF5
-        if (!GRParmParse::folder_exists(chombo_params.hdf5_path))
-            GRParmParse::mkdir_recursive(chombo_params.hdf5_path);
+        if (!FilesystemTools::directory_exists(chombo_params.hdf5_path))
+            FilesystemTools::mkdir_recursive(chombo_params.hdf5_path);
 #endif
 
         gr_amr.setupForNewAMRRun();

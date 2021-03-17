@@ -25,8 +25,12 @@ SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
       m_du(m_geom.du(m_params.num_points_u)),
       m_dv(m_geom.dv(m_params.num_points_v)), m_done_extraction(false)
 {
-    if (!GRParmParse::folder_exists(m_params.extraction_path))
-        GRParmParse::mkdir_recursive(m_params.extraction_path);
+    if (!FilesystemTools::directory_exists(m_params.data_path))
+        FilesystemTools::mkdir_recursive(m_params.data_path);
+
+    if (m_params.write_extraction &&
+        !FilesystemTools::directory_exists(m_params.extraction_path))
+        FilesystemTools::mkdir_recursive(m_params.extraction_path);
 
     // only interp points on rank 0
     if (procID() == 0)
@@ -419,8 +423,8 @@ void SurfaceExtraction<SurfaceGeometry>::write_integrals(
             CH_assert(vect.size() == m_params.num_surfaces);
         }
         // open file for writing
-        SmallDataIO integral_file(m_params.extraction_path + a_filename, m_dt,
-                                  m_time, m_restart_time, SmallDataIO::APPEND,
+        SmallDataIO integral_file(m_params.data_path + a_filename, m_dt, m_time,
+                                  m_restart_time, SmallDataIO::APPEND,
                                   m_first_step);
 
         // remove any duplicate data if this is a restart

@@ -8,11 +8,11 @@ chk_prefix = BinaryBH_
 plot_prefix = BinaryBHPlot_
 #restart_file = BinaryBH_000360.3d.hdf5
 
-# subpaths - specify specific folders for hdf5, pout, extraction data
+# subpaths - specific directories for hdf5, pout, extraction data
 # (these are created at runtime)
 hdf5_subpath = "hdf5"
 pout_subpath = "pout"
-extraction_subpath = "data"
+data_subpath = "data"
 
 # change the name of output files
 #pout_prefix = "pout"
@@ -121,4 +121,6 @@ num_modes = 3
 modes = 2 0 # l m for spherical harmonics
         2 1
         2 2
+write_extraction = 1
 #integral_file_prefix = "Weyl4_mode_"
+#extraction_subpath = "data/extraction" # directory for 'write_extraction = 1'

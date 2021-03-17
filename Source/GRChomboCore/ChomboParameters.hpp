@@ -13,6 +13,7 @@
 // General includes
 #include "ArrayTools.hpp"
 #include "BoundaryConditions.hpp"
+#include "FilesystemTools.hpp"
 #include "GRParmParse.hpp"
 #include "UserVariables.hpp"
 #include "VariableType.hpp"
@@ -141,21 +142,20 @@ class ChomboParameters
         else
             pout_prefix = "pout";
 
-        // folder structure ChomboParameters
         std::string default_path = "";
         if (pp.contains("output_path"))
             pp.load("output_path", output_path);
         else
             output_path = default_path;
 
-        // user sets the 'folder', we transform it into the full path
+        // user sets the 'subpath', we prepend 'output_path'
         if (pp.contains("pout_subpath"))
             pp.load("pout_subpath", pout_path);
         else
             pout_path = default_path;
 
 #ifdef CH_USE_HDF5
-        // user sets the 'folder', we transform it into the full path
+        // user sets the 'subpath', we prepend 'output_path'
         if (pp.contains("hdf5_subpath"))
             pp.load("hdf5_subpath", hdf5_path);
         else
@@ -181,11 +181,11 @@ class ChomboParameters
         }
 
         // change pout base name!
-        if (!GRParmParse::folder_exists(pout_path))
-            GRParmParse::mkdir_recursive(pout_path);
+        if (!FilesystemTools::directory_exists(pout_path))
+            FilesystemTools::mkdir_recursive(pout_path);
         setPoutBaseName(pout_path + pout_prefix);
 
-        // only create hdf5 folder in setupAMRObject (when it becomes needed)
+        // only create hdf5 directory in setupAMRObject (when it becomes needed)
     }
 
     void read_grid_params(GRParmParse &pp)
@@ -410,11 +410,9 @@ class ChomboParameters
                         "should be different to checkpoint_prefix");
 
         check_parameter("output_path", output_path,
-                        GRParmParse::folder_exists(output_path),
-                        "should be a valid folder");
-        check_parameter("pout_path", pout_path,
-                        GRParmParse::folder_exists(pout_path),
-                        "should be a valid folder");
+                        FilesystemTools::directory_exists(output_path),
+                        "should be a valid directory");
+        // pout directory exists - we create it in read_filesystem_params()
         // can't check hdf5 directory yet - only created after
 
         if (boundary_params.reflective_boundaries_exist)
@@ -469,7 +467,7 @@ class ChomboParameters
     int max_grid_size, block_factor;        // max and min box sizes
     double fill_ratio; // determines how fussy the regridding is about tags
     std::string checkpoint_prefix, plot_prefix, pout_prefix; // naming of files
-    std::string output_path, pout_path;                      // folder structure
+    std::string output_path, pout_path; // directory structure
 #ifdef CH_USE_HDF5
     std::string hdf5_path;
 #endif

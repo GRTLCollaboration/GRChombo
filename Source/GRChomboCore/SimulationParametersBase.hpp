@@ -123,14 +123,21 @@ class SimulationParametersBase : public ChomboParameters
 
         pp.load("write_extraction", extraction_params.write_extraction, false);
 
+        pp.load("data_subpath", data_path, std::string(""));
+        if (data_path != "" && data_path[data_path.size() - 1] != '/')
+            data_path += "/";
+        if (output_path != "./" && output_path != "")
+            data_path = output_path + data_path;
+
         std::string extraction_path;
-        pp.load("extraction_subpath", extraction_path, std::string(""));
+        pp.load("extraction_subpath", extraction_path, data_path);
         if (extraction_path != "" &&
             extraction_path[extraction_path.size() - 1] != '/')
             extraction_path += "/";
         if (output_path != "./" && output_path != "")
             extraction_path = output_path + extraction_path;
 
+        extraction_params.data_path = data_path;
         extraction_params.extraction_path = extraction_path;
 
         // default names to Weyl extraction
@@ -281,6 +288,8 @@ class SimulationParametersBase : public ChomboParameters
     // in your own SimulationParameters class.
     CCZ4_params_t<> ccz4_params;
     SphericalExtraction::params_t extraction_params;
+
+    std::string data_path;
 };
 
 #endif /* SIMULATIONPARAMETERSBASE_HPP_ */
