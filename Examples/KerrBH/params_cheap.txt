@@ -4,6 +4,7 @@ verbosity = 0
 chk_prefix = KerrBH_
 plot_prefix = KerrBHp_
 #restart_file = KerrBH_000060.3d.hdf5
+print_progress_only_to_rank_0 = 1
 
 # 'N' is the number of subdivisions in each direction of a cubic box
 # 'L' is the length of the longest side of the box, dx_coarsest = L/N
@@ -81,7 +82,7 @@ plot_interval = 0
 num_plot_vars = 0
 dt_multiplier = 0.25
 stop_time = 10.0
-max_steps = 2
+max_steps = 4
 
 #Lapse evolution
 lapse_power = 1.0

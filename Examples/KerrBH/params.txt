@@ -4,6 +4,7 @@ verbosity = 0
 chk_prefix = KerrBH_
 plot_prefix = KerrBHp_
 #restart_file = KerrBH_000060.3d.hdf5
+print_progress_only_to_rank_0 = 1
 
 # 'N' is the number of subdivisions in each direction of a cubic box
 # 'L' is the length of the longest side of the box, dx_coarsest = L/N
@@ -12,7 +13,7 @@ plot_prefix = KerrBHp_
 # NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full',
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
-N_full = 64
+N_full = 128
 L_full = 128
 
 # Spatial derivative order (only affects CCZ4 RHS)
@@ -36,7 +37,7 @@ max_level = 6 # There are (max_level+1) grids, so min is zero
 # Generally you do not need to regrid frequently on every level
 # Level Regridding:   0   1   2   3   4   5
 regrid_interval   =  50  25   5   5   5   5
-regrid_thresholds = 0.3 0.3 0.3 0.3 0.3 0.3
+regrid_thresholds = 0.1 0.1 0.1 0.1 0.1 0.1
 
 # Max box sizes
 max_grid_size = 16

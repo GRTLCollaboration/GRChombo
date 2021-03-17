@@ -120,6 +120,9 @@ class ChomboParameters
 
         if (pp.contains("check_params"))
             just_check_params = true;
+
+        pp.load("print_progress_only_to_rank_0", print_progress_only_to_rank_0,
+                false);
     }
 
     void read_filesystem_params(GRParmParse &pp)
@@ -290,6 +293,7 @@ class ChomboParameters
             L = (L_full * max_N) / max_N_full;
 
         coarsest_dx = L / max_N;
+        coarsest_dt = coarsest_dx * dt_multiplier;
 
         // grid spacing params
         dx.fill(coarsest_dx);
@@ -445,9 +449,10 @@ class ChomboParameters
     int verbosity;
     double L;                               // Physical sidelength of the grid
     std::array<double, CH_SPACEDIM> center; // grid center
-    IntVect ivN;        // The number of grid cells in each dimension
-    double coarsest_dx; // The coarsest resolution
-    int max_level;      // the max number of regriddings to do
+    IntVect ivN; // The number of grid cells in each dimension
+    double coarsest_dx,
+        coarsest_dt; // The coarsest resolution in space and time
+    int max_level;   // the max number of regriddings to do
     int max_spatial_derivative_order; // The maximum order of the spatial
                                       // derivatives - does nothing
                                       // in Chombo but can be used in examples
@@ -488,6 +493,7 @@ class ChomboParameters
     // For checking parameters and then exiting rather before instantiating
     // GRAMR (or child) object
     bool just_check_params = false;
+    bool print_progress_only_to_rank_0;
 
   protected:
     // the low and high corners of the domain taking into account reflective BCs

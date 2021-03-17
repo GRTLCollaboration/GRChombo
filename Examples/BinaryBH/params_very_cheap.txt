@@ -16,6 +16,7 @@ data_subpath = "data"
 
 # change the name of output files
 #pout_prefix = "pout"
+print_progress_only_to_rank_0 = 1
 #################################################
 
 # Set up grid spacings and regrid params
