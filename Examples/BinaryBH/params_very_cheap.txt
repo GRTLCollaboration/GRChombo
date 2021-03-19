@@ -38,16 +38,16 @@ print_progress_only_to_rank_0 = 1
 
 # provide 'offset' or 'center'
 
-massA = 1
-massB = 0.82
+massA = 0.5
+massB = 0.5
 
 offsetA = -2 0 0
-offsetB = 2 0 0
-# centerA = 6 8 8
+offsetB =  2 0 0
+# centerA =  6 8 8
 # centerB = 10 8 8
 
-momentumA = 0. -0.14025 0.0
-momentumB = 0.  0.14025 0.0
+momentumA = 0.0 -0.1 0.0
+momentumB = 0.0  0.1 0.0
 
 #################################################
 # Grid parameters
@@ -63,7 +63,7 @@ N_full = 32
 L_full = 16
 
 # Maximum number of times you can regrid above coarsest level
-max_level = 1 # There are (max_level+1) grids, so min is zero
+max_level = 2 # There are (max_level+1) grids, so min is zero
 
 # need max_level entries for regrid interval
 # Level Regridding: 0   1   2   3   4   5
@@ -128,7 +128,7 @@ max_spatial_derivative_order = 4 # can be 4 or 6
 nan_check = 1
 
 # Lapse evolution
-lapse_advec_coeff = 0.0
+lapse_advec_coeff = 1.0
 lapse_coeff = 2.0
 lapse_power = 1.0
 
@@ -164,7 +164,7 @@ num_extraction_radii = 1
 extraction_radii = 6.0
 extraction_levels = 0
 num_points_phi = 24
-num_points_theta = 35
+num_points_theta = 37
 num_modes = 3
 modes = 2 0 # l m for spherical harmonics
         2 1
