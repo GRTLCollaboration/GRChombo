@@ -104,5 +104,5 @@ G_Newton = 1.0
 # Scalar field initial data
 # data for https://arxiv.org/abs/1808.04668 (Fig 1)
 scalar_mass = 1.0
-f_axion = 0.05 # 1.0 stable, 0.06 oscillatory, 0.05 collapse
+f_axion = 1.0 # 1.0 stable, 0.06 oscillatory, 0.05 collapse
 initial_data_prefix = Oscillaton_data/
