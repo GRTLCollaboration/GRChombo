@@ -203,6 +203,7 @@ int main()
     params.kappa1 = 0.1;
     params.kappa2 = 0;
     params.kappa3 = 1;
+    params.covariantZ4 = true;
     params.shift_Gamma_coeff = 0.75;
     params.lapse_advec_coeff = 0;
     params.shift_advec_coeff = 0;
