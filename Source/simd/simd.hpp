@@ -42,6 +42,7 @@ template <typename t> struct simd_traits
 // architecture-specific files and simd_base.hpp
 template <typename t> struct simd
 {
+    static const int simd_len = simd_traits<t>::simd_len;
     t m_value;
 
     ALWAYS_INLINE
@@ -62,30 +63,30 @@ template <typename t> struct simd
     ALWAYS_INLINE
     static void store(double *ptr, const simd &a) { *ptr = a.m_value; }
 
-    ALWAYS_INLINE
-    simd &operator+=(const simd &a)
-    {
-        m_value += a.m_value;
-        return *this;
-    }
-    ALWAYS_INLINE
-    simd &operator-=(const simd &a)
-    {
-        m_value -= a.m_value;
-        return *this;
-    }
-    ALWAYS_INLINE
-    simd &operator*=(const simd &a)
-    {
-        m_value *= a.m_value;
-        return *this;
-    }
-    ALWAYS_INLINE
-    simd &operator/=(const simd &a)
-    {
-        m_value /= a.m_value;
-        return *this;
-    }
+    //   ALWAYS_INLINE
+    //  simd &operator+=(const simd &a)
+    //  {
+    //      m_value += a.m_value;
+    //      return *this;
+    //  }
+    //  ALWAYS_INLINE
+    //  simd &operator-=(const simd &a)
+    //  {
+    //      m_value -= a.m_value;
+    //      return *this;
+    //  }
+    //  ALWAYS_INLINE
+    //  simd &operator*=(const simd &a)
+    //  {
+    //      m_value *= a.m_value;
+    //      return *this;
+    //  }
+    //  ALWAYS_INLINE
+    //  simd &operator/=(const simd &a)
+    //  {
+    //      m_value /= a.m_value;
+    //      return *this;
+    //  }
 
     ALWAYS_INLINE
     t operator[](int index) const { return m_value; }
@@ -98,6 +99,32 @@ template <typename t> struct simd
     template <typename op_t> ALWAYS_INLINE simd foreach (op_t op, t arg) const
     {
         return simd(op(m_value, arg));
+    }
+
+    friend simd simd_conditional(const bool cond, const simd &true_value,
+                                 const simd &false_value)
+    {
+        return cond ? true_value : false_value;
+    }
+
+    friend ALWAYS_INLINE bool simd_compare_lt(const simd &a, const simd &b)
+    {
+        return a < b;
+    }
+
+    friend ALWAYS_INLINE bool simd_compare_gt(const simd &a, const simd &b)
+    {
+        return a > b;
+    }
+
+    friend ALWAYS_INLINE simd simd_min(const simd &a, const simd &b)
+    {
+        return (a <= b) ? a : b;
+    }
+
+    friend ALWAYS_INLINE simd simd_max(const simd &a, const simd &b)
+    {
+        return (a > b) ? a : b;
     }
 };
 
@@ -137,6 +164,7 @@ template <typename t> ALWAYS_INLINE t simd_max(const t &a, const t &b)
 {
     return (a > b) ? a : b;
 }
+
 //<-- End: Defining the simd specific calls for non-simd datatypes.
 
 #include "simdify.hpp"
