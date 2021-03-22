@@ -8,7 +8,7 @@
 
 GRCHOMBO_SOURCE = $(shell pwd)/../../Source
 
-ebase := BSSNTest
+ebase := BSSNMatterTest
 
 LibNames := BoxTools
 

@@ -53,6 +53,55 @@ void GRAMRLevel::define(AMRLevel *a_coarser_level_ptr,
                         m_num_ghosts);
 }
 
+void GRAMRLevel::defineNewGrids(const Vector<Box> &a_new_grids)
+{
+    const DisjointBoxLayout level_domain = m_grids = loadBalance(a_new_grids);
+
+    // reshape state with new grids
+    IntVect iv_ghosts = m_num_ghosts * IntVect::Unit;
+    m_state_new.define(level_domain, NUM_VARS, iv_ghosts);
+
+    // maintain interlevel stuff
+    defineExchangeCopier(level_domain);
+    m_coarse_average.define(level_domain, NUM_VARS, m_ref_ratio);
+    m_fine_interp.define(level_domain, NUM_VARS, m_ref_ratio, m_problem_domain);
+
+    if (NUM_DIAGNOSTIC_VARS > 0)
+    {
+        m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS,
+                                   iv_ghosts);
+    }
+    if (m_p.use_truncation_error_tagging)
+    {
+        m_fine_interp_truncation_error.define(level_domain,
+                                              m_p.num_truncation_error_vars,
+                                              m_ref_ratio, m_problem_domain);
+        m_state_truncation_error.define(
+            level_domain, 2 * m_p.num_truncation_error_vars, IntVect::Zero);
+        m_state_truncation_error_old.define(
+            level_domain, m_p.num_truncation_error_vars, IntVect::Zero);
+        aliasLevelData(m_state_truncation_error_coarse_alias,
+                       &m_state_truncation_error,
+                       Interval(m_p.num_truncation_error_vars,
+                                2 * m_p.num_truncation_error_vars - 1));
+    }
+
+    if (m_coarser_level_ptr != nullptr)
+    {
+        GRAMRLevel *coarser_gr_amr_level_ptr = gr_cast(m_coarser_level_ptr);
+        m_patcher.define(level_domain, coarser_gr_amr_level_ptr->m_grids,
+                         NUM_VARS, coarser_gr_amr_level_ptr->problemDomain(),
+                         m_ref_ratio, m_num_ghosts);
+        if (NUM_DIAGNOSTIC_VARS > 0)
+        {
+            m_patcher_diagnostics.define(
+                level_domain, coarser_gr_amr_level_ptr->m_grids,
+                NUM_DIAGNOSTIC_VARS, coarser_gr_amr_level_ptr->problemDomain(),
+                m_ref_ratio, m_num_ghosts);
+        }
+    }
+}
+
 /// Do casting from AMRLevel to GRAMRLevel and stop if this isn't possible
 const GRAMRLevel *GRAMRLevel::gr_cast(const AMRLevel *const amr_level_ptr)
 {
@@ -183,6 +232,18 @@ void GRAMRLevel::postTimeStep()
     if (m_verbosity)
         pout() << "GRAMRLevel::postTimeStep " << m_level << endl;
 
+    if (m_p.use_truncation_error_tagging && m_gr_amr.need_to_regrid(m_level))
+    {
+        for (int ivar = 0; ivar < m_p.num_truncation_error_vars; ++ivar)
+        {
+            const int var = m_p.truncation_error_vars[ivar].first;
+            // copy state vars now before coarse fine averaging for
+            // truncation error estimation
+            m_state_new.copyTo(Interval(var, var), m_state_truncation_error_old,
+                               Interval(ivar, ivar));
+        }
+    }
+
     if (m_finer_level_ptr != nullptr)
     {
         GRAMRLevel *finer_gr_amr_level_ptr = gr_cast(m_finer_level_ptr);
@@ -206,16 +267,52 @@ void GRAMRLevel::postTimeStep()
 void GRAMRLevel::preTagCells()
 {
     CH_TIME("GRAMRLevel::preTagCells");
-    fillAllEvolutionGhosts(); // We need filled ghost cells to calculate
-                              // gradients etc
+    if (m_p.use_truncation_error_tagging)
+    {
+        if (m_coarser_level_ptr != nullptr)
+        {
+            GRAMRLevel *coarser_gr_amr_level_ptr = gr_cast(m_coarser_level_ptr);
+            // interpolate from coarser level
+            m_fine_interp_truncation_error.interpToFine(
+                m_state_truncation_error_coarse_alias,
+                coarser_gr_amr_level_ptr->m_state_truncation_error_old);
+        }
+        for (int ivar = 0; ivar < m_p.num_truncation_error_vars; ++ivar)
+        {
+            const int var = m_p.truncation_error_vars[ivar].first;
+            // copy these grid variables to m_state_truncation_error so that we
+            // can have all the quantities needed to compute truncation error
+            // in one object (m_state_truncation_error_coarse_alias is an alias
+            // to the second half)
+            m_state_new.copyTo(Interval(var, var), m_state_truncation_error,
+                               Interval(ivar, ivar));
+        }
+    }
+    else
+        fillAllEvolutionGhosts(); // We need filled ghost cells to calculate
+                                  // gradients etc
+}
+
+// tag cells that need to be refined
+void GRAMRLevel::tagCells(IntVectSet &a_tags)
+{
+    tagCellsImplem(a_tags, m_p.use_truncation_error_tagging);
+}
+
+// create tags at initialization
+void GRAMRLevel::tagCellsInit(IntVectSet &a_tags)
+{
+    // can't use truncation error tagging for the initial grids
+    tagCellsImplem(a_tags, false);
 }
 
 // create tags
-void GRAMRLevel::tagCells(IntVectSet &a_tags)
+void GRAMRLevel::tagCellsImplem(IntVectSet &a_tags,
+                                bool a_use_truncation_error_tagging)
 {
-    CH_TIME("GRAMRLevel::tagCells");
+    CH_TIME("GRAMRLevel::tagCellsImplem");
     if (m_verbosity)
-        pout() << "GRAMRLevel::tagCells " << m_level << endl;
+        pout() << "GRAMRLevel::tagCellsImplem " << m_level << endl;
 
     preTagCells();
 
@@ -228,14 +325,25 @@ void GRAMRLevel::tagCells(IntVectSet &a_tags)
     {
         DataIndex di = dit0[ibox];
         const Box &b = level_domain[di];
-        const FArrayBox &state_fab = m_state_new[di];
-        const FArrayBox &state_fab_diagnostics = m_state_diagnostics[di];
 
         // mod gradient
         FArrayBox tagging_criterion(b, 1);
-        computeTaggingCriterion(tagging_criterion, state_fab);
-        computeDiagnosticsTaggingCriterion(tagging_criterion,
-                                           state_fab_diagnostics);
+        if (a_use_truncation_error_tagging)
+        {
+            const FArrayBox &state_truncation_error_fab =
+                m_state_truncation_error[di];
+            computeTruncationError(tagging_criterion,
+                                   state_truncation_error_fab);
+        }
+        else
+        {
+	    const FArrayBox &state_fab_diagnostics = m_state_diagnostics[di];	  
+            const FArrayBox &state_fab = m_state_new[di];
+            computeTaggingCriterion(tagging_criterion, state_fab);
+            computeDiagnosticsTaggingCriterion(tagging_criterion,
+					       state_fab_diagnostics);
+        }
+	
 
         const IntVect &smallEnd = b.smallEnd();
         const IntVect &bigEnd = b.bigEnd();
@@ -248,14 +356,18 @@ void GRAMRLevel::tagCells(IntVectSet &a_tags)
         const int ymax = bigEnd[1];
         const int zmax = bigEnd[2];
 
+        const double threshold =
+            (a_use_truncation_error_tagging)
+                ? m_p.truncation_error_regrid_thresholds[m_level]
+                : m_p.regrid_thresholds[m_level];
+
 #pragma omp parallel for collapse(3) schedule(static) default(shared)
         for (int iz = zmin; iz <= zmax; ++iz)
             for (int iy = ymin; iy <= ymax; ++iy)
                 for (int ix = xmin; ix <= xmax; ++ix)
                 {
                     IntVect iv(ix, iy, iz);
-                    if (tagging_criterion(iv, 0) >=
-                        m_p.regrid_thresholds[m_level])
+                    if (tagging_criterion(iv, 0) >= threshold)
                     {
 // local_tags |= is not thread safe.
 #pragma omp critical
@@ -277,11 +389,12 @@ void GRAMRLevel::tagCells(IntVectSet &a_tags)
     a_tags = local_tags;
 }
 
-// create tags at initialization
-void GRAMRLevel::tagCellsInit(IntVectSet &a_tags)
+void GRAMRLevel::computeTruncationError(
+    FArrayBox &tagging_criterion, const FArrayBox &a_state_truncation_error)
 {
-    // the default is to use the standard tagging function
-    tagCells(a_tags);
+    BoxLoops::loop(
+        TruncationErrorTagging(m_p.num_truncation_error_vars, m_level),
+        a_state_truncation_error, tagging_criterion);
 }
 
 // regrid
@@ -295,7 +408,6 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
     m_level_grids = a_new_grids;
 
     mortonOrdering(m_level_grids);
-    const DisjointBoxLayout level_domain = m_grids = loadBalance(a_new_grids);
 
     // save data for later copy, including boundary cells
     m_state_new.copyTo(m_state_new.interval(), m_state_old,
@@ -304,29 +416,12 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
     // Specifically copy boundary cells
     copyBdyGhosts(m_state_new, m_state_old);
 
-    // reshape state with new grids
-    IntVect iv_ghosts = m_num_ghosts * IntVect::Unit;
-    m_state_new.define(level_domain, NUM_VARS, iv_ghosts);
-
-    // maintain interlevel stuff
-    defineExchangeCopier(level_domain);
-    m_coarse_average.define(level_domain, NUM_VARS, m_ref_ratio);
-    m_fine_interp.define(level_domain, NUM_VARS, m_ref_ratio, m_problem_domain);
+    // define new grids, LevelDatas, patchers and interpolators
+    defineNewGrids(a_new_grids);
 
     if (m_coarser_level_ptr != nullptr)
     {
         GRAMRLevel *coarser_gr_amr_level_ptr = gr_cast(m_coarser_level_ptr);
-        m_patcher.define(level_domain, coarser_gr_amr_level_ptr->m_grids,
-                         NUM_VARS, coarser_gr_amr_level_ptr->problemDomain(),
-                         m_ref_ratio, m_num_ghosts);
-        if (NUM_DIAGNOSTIC_VARS > 0)
-        {
-            m_patcher_diagnostics.define(
-                level_domain, coarser_gr_amr_level_ptr->m_grids,
-                NUM_DIAGNOSTIC_VARS, coarser_gr_amr_level_ptr->problemDomain(),
-                m_ref_ratio, m_num_ghosts);
-        }
-
         // interpolate from coarser level
         m_fine_interp.interpToFine(m_state_new,
                                    coarser_gr_amr_level_ptr->m_state_new);
@@ -352,12 +447,8 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
     // enforce solution BCs (overwriting any interpolation)
     fillBdyGhosts(m_state_new);
 
-    m_state_old.define(level_domain, NUM_VARS, iv_ghosts);
-    if (NUM_DIAGNOSTIC_VARS > 0)
-    {
-        m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS,
-                                   iv_ghosts);
-    }
+    IntVect iv_ghosts = m_num_ghosts * IntVect::Unit;
+    m_state_old.define(m_grids, NUM_VARS, iv_ghosts);
 }
 
 /// things to do after regridding
@@ -381,35 +472,10 @@ void GRAMRLevel::initialGrid(const Vector<Box> &a_new_grids)
 
     m_level_grids = a_new_grids;
 
-    const DisjointBoxLayout level_domain = m_grids = loadBalance(a_new_grids);
-
+    // define new grids, LevelDatas, patchers and interpolators
+    defineNewGrids(a_new_grids);
     IntVect iv_ghosts = m_num_ghosts * IntVect::Unit;
-    m_state_new.define(level_domain, NUM_VARS, iv_ghosts);
-    m_state_old.define(level_domain, NUM_VARS, iv_ghosts);
-    if (NUM_DIAGNOSTIC_VARS > 0)
-    {
-        m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS,
-                                   iv_ghosts);
-    }
-
-    defineExchangeCopier(level_domain);
-    m_coarse_average.define(level_domain, NUM_VARS, m_ref_ratio);
-    m_fine_interp.define(level_domain, NUM_VARS, m_ref_ratio, m_problem_domain);
-
-    if (m_coarser_level_ptr != nullptr)
-    {
-        GRAMRLevel *coarser_gr_amr_level_ptr = gr_cast(m_coarser_level_ptr);
-        m_patcher.define(level_domain, coarser_gr_amr_level_ptr->m_grids,
-                         NUM_VARS, coarser_gr_amr_level_ptr->problemDomain(),
-                         m_ref_ratio, m_num_ghosts);
-        if (NUM_DIAGNOSTIC_VARS > 0)
-        {
-            m_patcher_diagnostics.define(
-                level_domain, coarser_gr_amr_level_ptr->m_grids,
-                NUM_DIAGNOSTIC_VARS, coarser_gr_amr_level_ptr->problemDomain(),
-                m_ref_ratio, m_num_ghosts);
-        }
-    }
+    m_state_old.define(m_grids, NUM_VARS, iv_ghosts);
 }
 
 // things to do after initialization
@@ -584,6 +650,13 @@ void GRAMRLevel::readCheckpointHeader(HDF5Handle &a_handle)
                               "checkpoint does not match solver");
         }
     }
+
+    // can't regrid before the first timestep on a restart if using
+    // truncation error tagging so defer it.
+    if (m_p.use_truncation_error_tagging)
+    {
+        m_gr_amr.defer_regridding();
+    }
 }
 
 void GRAMRLevel::readCheckpointLevel(HDF5Handle &a_handle)
@@ -678,15 +751,15 @@ void GRAMRLevel::readCheckpointLevel(HDF5Handle &a_handle)
                       "a Vector<Box>");
     }
 
-    // create level domain
-    const DisjointBoxLayout level_domain = m_grids = loadBalance(grids);
+    // define new grids, LevelDatas, patchers and interpolators
+    defineNewGrids(grids);
 
     if (m_verbosity)
         pout() << "read level domain: " << endl;
-    LayoutIterator lit = level_domain.layoutIterator();
+    LayoutIterator lit = m_grids.layoutIterator();
     for (lit.begin(); lit.ok(); ++lit)
     {
-        const Box &b = level_domain[lit()];
+        const Box &b = m_grids[lit()];
         if (m_verbosity)
             pout() << lit().intCode() << ": " << b << endl;
         m_level_grids.push_back(b);
@@ -694,45 +767,17 @@ void GRAMRLevel::readCheckpointLevel(HDF5Handle &a_handle)
     if (m_verbosity)
         pout() << endl;
 
-    // maintain interlevel stuff
-    IntVect iv_ghosts = m_num_ghosts * IntVect::Unit;
-
-    defineExchangeCopier(level_domain);
-    m_coarse_average.define(level_domain, NUM_VARS, m_ref_ratio);
-    m_fine_interp.define(level_domain, NUM_VARS, m_ref_ratio, m_problem_domain);
-
-    if (m_coarser_level_ptr != nullptr)
-    {
-        GRAMRLevel *coarser_gr_amr_level_ptr = gr_cast(m_coarser_level_ptr);
-        m_patcher.define(level_domain, coarser_gr_amr_level_ptr->m_grids,
-                         NUM_VARS, coarser_gr_amr_level_ptr->problemDomain(),
-                         m_ref_ratio, m_num_ghosts);
-        if (NUM_DIAGNOSTIC_VARS > 0)
-        {
-            m_patcher_diagnostics.define(
-                level_domain, coarser_gr_amr_level_ptr->m_grids,
-                NUM_DIAGNOSTIC_VARS, coarser_gr_amr_level_ptr->problemDomain(),
-                m_ref_ratio, m_num_ghosts);
-        }
-    }
-
-    // reshape state with new grids
-    m_state_new.define(level_domain, NUM_VARS, iv_ghosts);
     bool redefine_data = false;
     Interval comps(0, NUM_VARS - 1);
     const int data_status = read<FArrayBox>(a_handle, m_state_new, "data",
-                                            level_domain, comps, redefine_data);
+                                            m_grids, comps, redefine_data);
     if (data_status != 0)
     {
         MayDay::Error("GRAMRLevel::readCheckpointLevel: file does not contain "
                       "state data");
     }
-    m_state_old.define(level_domain, NUM_VARS, iv_ghosts);
-    if (NUM_DIAGNOSTIC_VARS > 0)
-    {
-        m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS,
-                                   iv_ghosts);
-    }
+    IntVect iv_ghosts = m_num_ghosts * IntVect::Unit;
+    m_state_old.define(m_grids, NUM_VARS, iv_ghosts);
 }
 
 void GRAMRLevel::writePlotLevel(HDF5Handle &a_handle) const

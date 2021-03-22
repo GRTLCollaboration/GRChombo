@@ -36,7 +36,10 @@ class ChomboParameters
     {
         pp.load("verbosity", verbosity, 0);
         // Grid setup
-        pp.load("num_ghosts", num_ghosts, 3);
+        pp.load("max_spatial_derivative_order", max_spatial_derivative_order,
+                4);
+        pp.load("num_ghosts", num_ghosts,
+                (max_spatial_derivative_order == 6) ? 4 : 3);
         pp.load("tag_buffer_size", tag_buffer_size, 3);
         pp.load("grid_buffer_size", grid_buffer_size, 8);
         pp.load("dt_multiplier", dt_multiplier, 0.25);
@@ -86,7 +89,38 @@ class ChomboParameters
             pp.load("regrid_threshold", regrid_threshold, 0.5);
             regrid_thresholds = Vector<double>(max_level + 1, regrid_threshold);
         }
+        // default to normal tagging criterion
+        pp.load("use_truncation_error_tagging", use_truncation_error_tagging,
+                false);
+        if (use_truncation_error_tagging)
+        {
+            UserVariables::load_vars_to_vector(
+                pp, "truncation_error_vars", "num_truncation_error_vars",
+                truncation_error_vars, num_truncation_error_vars);
 
+            if (pp.contains("truncation_error_regrid_thresholds"))
+            {
+                pout() << "Using multiple truncation error regrid thresholds."
+                       << std::endl;
+                // As for regrid_interval, the last element is irrelevant
+                pp.getarr("truncation_error_regrid_thresholds",
+                          truncation_error_regrid_thresholds, 0, max_level);
+                truncation_error_regrid_thresholds.resize(max_level + 1);
+                truncation_error_regrid_thresholds[max_level] =
+                    truncation_error_regrid_thresholds[max_level - 1];
+            }
+            else
+            {
+                pout() << "Using single truncation error regrid threshold."
+                       << std::endl;
+                double truncation_error_regrid_threshold;
+                pp.load("truncation_error_regrid_threshold",
+                        truncation_error_regrid_threshold,
+                        regrid_thresholds[0]);
+                truncation_error_regrid_thresholds = Vector<double>(
+                    max_level + 1, truncation_error_regrid_threshold);
+            }
+        }
         // time stepping outputs and regrid data
         pp.load("checkpoint_interval", checkpoint_interval, 1);
         pp.load("chk_prefix", checkpoint_prefix);
@@ -245,45 +279,50 @@ class ChomboParameters
                                          (ivN[idir] + 1) * coarsest_dx;
         }
 
-        // Grid center
-        // now that L is surely set, get center
+        // First work out the default center ignoring reflective BCs
+        // but taking into account different grid lengths in each direction
+        std::array<double, CH_SPACEDIM> default_center;
 #if CH_SPACEDIM == 3
-        pp.load("center", center,
-                {0.5 * Ni[0] * coarsest_dx, 0.5 * Ni[1] * coarsest_dx,
-                 0.5 * Ni[2] * coarsest_dx}); // default to center
+        default_center = {0.5 * Ni[0] * coarsest_dx, 0.5 * Ni[1] * coarsest_dx,
+                          0.5 * Ni[2] * coarsest_dx};
 #elif CH_SPACEDIM == 2
-        pp.load("center", center,
-                {0.5 * Ni[0] * coarsest_dx,
-                 0.5 * Ni[1] * coarsest_dx}); // default to center
+        default_center = {0.5 * Ni[0] * coarsest_dx, 0.5 * Ni[1] * coarsest_dx};
 #endif
-
+        // Now take into account reflective BCs
         FOR1(idir)
         {
             if ((boundary_params.lo_boundary[idir] ==
                  BoundaryConditions::REFLECTIVE_BC) &&
                 (boundary_params.hi_boundary[idir] !=
                  BoundaryConditions::REFLECTIVE_BC))
-                center[idir] = 0.;
+                default_center[idir] = 0.;
             else if ((boundary_params.hi_boundary[idir] ==
                       BoundaryConditions::REFLECTIVE_BC) &&
                      (boundary_params.lo_boundary[idir] !=
                       BoundaryConditions::REFLECTIVE_BC))
-                center[idir] = coarsest_dx * Ni[idir];
+                default_center[idir] = coarsest_dx * Ni[idir];
         }
-        pout() << "Center has been set to: ";
-        FOR1(idir) { pout() << center[idir] << " "; }
-        pout() << endl;
+
+        pp.load("center", center, default_center); // default to center
     }
 
     void check_params()
     {
         check_parameter("L", L, L > 0.0, "must be > 0.0");
         check_parameter("max_level", max_level, max_level >= 0, "must be >= 0");
-        // the following check assumes you will be taking some fourth (or
-        // higher) order one-sided derivatives
-        check_parameter("num_ghosts", num_ghosts,
-                        (num_ghosts >= 3) && (num_ghosts <= block_factor),
-                        "must be >= 3 and <= block_factor/min_box_size");
+        check_parameter("max_spatial_derivative_order",
+                        max_spatial_derivative_order,
+                        max_spatial_derivative_order == 4 ||
+                            max_spatial_derivative_order == 6,
+                        "only 4 and 6 are supported");
+        // the following check assumes you will be taking one-sided derivatives
+        // of the order given by max_spatial_derivative_order
+        check_parameter(
+            "num_ghosts", num_ghosts,
+            (num_ghosts >= ((max_spatial_derivative_order == 6) ? 4 : 3)) &&
+                (num_ghosts <= block_factor),
+            "must be >= 3 (4th order derivatives) or 4 (6th order derivatives) "
+            "and <= min_box_size (aka block_factor)");
         check_parameter("tag_buffer_size", tag_buffer_size,
                         tag_buffer_size >= 0, "must be >= 0");
         // assume ref_ratio is always 2
@@ -291,6 +330,19 @@ class ChomboParameters
             "grid_buffer_size", grid_buffer_size,
             grid_buffer_size >= ceil(num_ghosts / 2.0),
             "must be >= ceil(num_ghosts/max_ref_ratio) for proper nesting");
+
+        if (use_truncation_error_tagging)
+        {
+            for (int level = 1; level <= max_level; ++level)
+            {
+                std::string parameter_name =
+                    "regrid_interval[" + std::to_string(level) + "]";
+                check_parameter(
+                    parameter_name, regrid_interval[level],
+                    regrid_interval[level] % 2 == 0,
+                    "must be divisible by 2 with truncation error tagging");
+            }
+        }
 
         // check the restart_file exists and can be read if restarting from a
         // checkpoint
@@ -363,16 +415,31 @@ class ChomboParameters
                                 "parity type undefined");
             }
         }
+
+        // checks for truncation error tagging
+        check_parameter("max_level", max_level,
+                        !use_truncation_error_tagging || max_level > 1,
+                        "must be > 1 if using truncation error tagging");
+        bool using_only_evolution_vars = true;
+        for (const auto &var : truncation_error_vars)
+            using_only_evolution_vars &=
+                (var.second == VariableType::evolution);
+        check_parameter("truncation_error_vars", truncation_error_vars,
+                        using_only_evolution_vars,
+                        "must use only evolution vars");
     }
 
     // General parameters
     int verbosity;
     double L;                               // Physical sidelength of the grid
     std::array<double, CH_SPACEDIM> center; // grid center
-    IntVect ivN;            // The number of grid cells in each dimension
-    double coarsest_dx;     // The coarsest resolution
-    int max_level;          // the max number of regriddings to do
-    int num_ghosts;         // must be at least 3 for KO dissipation
+    IntVect ivN;        // The number of grid cells in each dimension
+    double coarsest_dx; // The coarsest resolution
+    int max_level;      // the max number of regriddings to do
+    int max_spatial_derivative_order; // The maximum order of the spatial
+                                      // derivatives - does nothing
+                                      // in Chombo but can be used in examples
+    int num_ghosts;         // min dependent on max_spatial_derivative_order
     int tag_buffer_size;    // Amount the tagged region is grown by
     int grid_buffer_size;   // Number of cells between level
     Vector<int> ref_ratios; // ref ratios between levels
@@ -401,6 +468,12 @@ class ChomboParameters
 
     // For tagging
     Vector<double> regrid_thresholds;
+    Vector<double> truncation_error_regrid_thresholds;
+
+    // For truncation error tagging (instead of normal tagging criterion)
+    bool use_truncation_error_tagging;
+    int num_truncation_error_vars;
+    std::vector<std::pair<int, VariableType>> truncation_error_vars;
 
     // For checking parameters and then exiting rather before instantiating
     // GRAMR (or child) object
@@ -433,6 +506,33 @@ class ChomboParameters
             std::ostringstream error_message_ss;
             error_message_ss << "Parameter: " << a_name << " = " << a_value
                              << " is invalid: " << a_invalid_explanation;
+            error(error_message_ss.str());
+        }
+    }
+
+    // template <>
+    void check_parameter(const std::string &a_name,
+                         std::vector<std::pair<int, VariableType>> a_value,
+                         const bool a_valid,
+                         const std::string &a_invalid_explanation)
+    {
+        if (a_valid)
+            return;
+        else
+        {
+            std::ostringstream error_message_ss;
+            error_message_ss << "Parameter: " << a_name << " =";
+            for (const auto &var : a_value)
+            {
+                error_message_ss << " ";
+                if (var.second == VariableType::evolution)
+                    error_message_ss
+                        << UserVariables::variable_names[var.first];
+                else
+                    error_message_ss
+                        << DiagnosticVariables::variable_names[var.first];
+            }
+            error_message_ss << " is invalid: " << a_invalid_explanation;
             error(error_message_ss.str());
         }
     }

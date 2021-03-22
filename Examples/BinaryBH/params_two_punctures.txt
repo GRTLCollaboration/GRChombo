@@ -1,7 +1,5 @@
 # See the wiki page for an explanation of the params!
 # https://github.com/GRChombo/GRChombo/wiki/Guide-to-parameters
-# and a guide to this specific example at
-# https://github.com/GRChombo/GRChombo/wiki/Running-the-BBH-example
 
 # location / naming of output files (must give full path)
 verbosity = 0
@@ -19,9 +17,6 @@ plot_prefix = BinaryBHPlot_
 N_full = 64
 L_full = 512
 
-# Spatial derivative order (only affects CCZ4 RHS)
-max_spatial_derivative_order = 4 # can be 4 or 6
-
 # Defaults to center of grid L/2
 # uncomment to change
 #center = 256.0 256.0 256.0
@@ -30,12 +25,6 @@ max_spatial_derivative_order = 4 # can be 4 or 6
 # ensure horizons resolved
 track_punctures = 1
 puncture_tracking_level = 5
-massA = 0.48847892320123
-offsetA = 0.0 6.10679 0.0
-momentumA = -0.0841746 -0.000510846 0.0
-massB = 0.48847892320123
-offsetB = 0.0 -6.10679 0.0
-momentumB =  0.0841746  0.000510846 0.0
 
 # regridding control, specify threshold (same on each level)
 regrid_threshold = 0.05
@@ -100,7 +89,7 @@ eta = 1.0
 kappa1 = 0.1
 kappa2 = 0
 kappa3 = 1.0
-covariantZ4 = 1 # 0: keep kappa1; 1 [default]: replace kappa1 -> kappa1/lapse
+covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
 
 # coefficient for KO numerical dissipation
 sigma = 1.0
@@ -123,3 +112,42 @@ modes = 2 0 # l m for spherical harmonics
         4 2
         4 3
         4 4
+
+
+### Two Punctures params
+
+# Main BH params
+# Either calculate target masses or set bare masses explicitly below
+TP_calculate_target_masses = true
+TP_target_mass_plus = 0.5
+TP_target_mass_minus = 0.5
+#TP_adm_tol = 1e-10
+#TP_mass_plus = 0.9773790195003562
+#TP_mass_minus = 0.4758625198306865
+# offset in x direction (or z if TP_swap_xz set true)
+TP_offset_plus = 6.10679
+TP_offset_minus = -6.10679
+#TP_swap_xz = false
+TP_momentum_plus = -0.000510846 0.0841746 0.0
+TP_momentum_minus = 0.000510846 -0.0841746 0.0
+TP_spin_plus = 0.0 0.0 0.0
+TP_spin_minus = 0.0 0.0 0.0
+
+# Solver params
+#TP_npoints_A = 30
+#TP_npoints_B = 30
+#TP_npoints_phi = 16;
+#TP_Newton_tol = 1e-10
+#TP_Newton_maxit = 5
+TP_epsilon = 1e-6
+#TP_Tiny = 0.0
+#TP_Extend_Radius = 0.0
+
+# Initial data params
+TP_use_spectral_interpolation = true
+TP_initial_lapse = psi^n
+TP_initial_lapse_psi_exponent = -2.0
+
+# Debug output
+#TP_do_residuum_debug_output = false
+#TP_do_initial_debug_output = false
