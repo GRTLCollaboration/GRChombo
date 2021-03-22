@@ -10,8 +10,8 @@
 #include "SPMD.H" // gives procID()
 
 // Other includes
-#include "unistd.h"   // gives 'mkdir'
 #include <sys/stat.h> // gives 'stat' and 'S_ISDIR'
+#include <unistd.h>   // gives 'mkdir'
 
 // Chombo namespace
 #include "UsingNamespace.H"

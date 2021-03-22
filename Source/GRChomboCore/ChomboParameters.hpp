@@ -170,18 +170,18 @@ class ChomboParameters
 #endif
 
         // add backslash to paths
-        if (output_path != "" && output_path[output_path.size() - 1] != '/')
+        if (!output_path.empty() && output_path.back() != '/')
             output_path += "/";
 #ifdef CH_MPI
-        if (pout_path != "" && pout_path[pout_path.size() - 1] != '/')
+        if (!pout_path.empty() && pout_path.back() != '/')
             pout_path += "/";
 #endif
 #ifdef CH_USE_HDF5
-        if (hdf5_path != "" && hdf5_path[hdf5_path.size() - 1] != '/')
+        if (!hdf5_path.empty() && hdf5_path.back() != '/')
             hdf5_path += "/";
 #endif
 
-        if (output_path != "./" && output_path != "")
+        if (output_path != "./" && !output_path.empty())
         {
 #ifdef CH_MPI
             pout_path = output_path + pout_path;

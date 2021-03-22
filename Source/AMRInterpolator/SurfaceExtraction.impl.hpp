@@ -25,12 +25,17 @@ SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
       m_du(m_geom.du(m_params.num_points_u)),
       m_dv(m_geom.dv(m_params.num_points_v)), m_done_extraction(false)
 {
-    if (!FilesystemTools::directory_exists(m_params.data_path))
-        FilesystemTools::mkdir_recursive(m_params.data_path);
+    // check folders only in first two timesteps
+    // (or at m_first_step if this is not the first two timesteps)
+    if (m_time < m_restart_time + 1.5 * m_dt || m_first_step)
+    {
+        if (!FilesystemTools::directory_exists(m_params.data_path))
+            FilesystemTools::mkdir_recursive(m_params.data_path);
 
-    if (m_params.write_extraction &&
-        !FilesystemTools::directory_exists(m_params.extraction_path))
-        FilesystemTools::mkdir_recursive(m_params.extraction_path);
+        if (m_params.write_extraction &&
+            !FilesystemTools::directory_exists(m_params.extraction_path))
+            FilesystemTools::mkdir_recursive(m_params.extraction_path);
+    }
 
     // only interp points on rank 0
     if (procID() == 0)

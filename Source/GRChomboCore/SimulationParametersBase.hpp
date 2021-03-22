@@ -61,9 +61,9 @@ class SimulationParametersBase : public ChomboParameters
         // directory to store data (extraction files, puncture data, constraint
         // norms)
         pp.load("data_subpath", data_path, std::string(""));
-        if (data_path != "" && data_path[data_path.size() - 1] != '/')
+        if (!data_path.empty() && data_path.back() != '/')
             data_path += "/";
-        if (output_path != "./" && output_path != "")
+        if (output_path != "./" && !output_path.empty())
             data_path = output_path + data_path;
 
         // Extraction params
@@ -142,10 +142,9 @@ class SimulationParametersBase : public ChomboParameters
 
             std::string extraction_path;
             pp.load("extraction_subpath", extraction_path, data_path);
-            if (extraction_path != "" &&
-                extraction_path[extraction_path.size() - 1] != '/')
+            if (!extraction_path.empty() && extraction_path.back() != '/')
                 extraction_path += "/";
-            if (output_path != "./" && output_path != "")
+            if (output_path != "./" && !output_path.empty())
                 extraction_path = output_path + extraction_path;
 
             extraction_params.data_path = data_path;
