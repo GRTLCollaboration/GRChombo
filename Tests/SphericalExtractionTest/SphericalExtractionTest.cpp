@@ -92,7 +92,7 @@ int runSphericalExtractionTest(int argc, char *argv[])
     spherical_extraction_hi.write_extraction("ExtractionOutHi_");
 
     // real part is the zeroth componenent and imaginary part is first component
-    auto extracted_harmonic = [](std::vector<double> &data, double, double,
+    SphericalExtraction::complex_function_t extracted_harmonic = [](std::vector<double> &data, double, double,
                                  double) {
         return std::make_pair(data[0], data[1]);
     };
