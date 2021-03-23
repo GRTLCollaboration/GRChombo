@@ -45,6 +45,14 @@ using std::endl;
 // Chombo namespace
 #include "UsingNamespace.H"
 
+// real part is the zeroth componenent and imaginary part is first component
+std::pair<double, double> extracted_harmonic_free(std::vector<double> &data,
+                                                  double r, double theta,
+                                                  double phi)
+{
+    return std::make_pair(data[0], data[1]);
+}
+
 int runSphericalExtractionTest(int argc, char *argv[])
 {
     // Load the parameter file and construct the SimulationParameter class
@@ -91,11 +99,8 @@ int runSphericalExtractionTest(int argc, char *argv[])
     spherical_extraction_hi.extract(&interpolator);
     spherical_extraction_hi.write_extraction("ExtractionOutHi_");
 
-    // real part is the zeroth componenent and imaginary part is first component
-    auto extracted_harmonic = [](std::vector<double> &data, double, double,
-                                 double) {
-        return std::make_pair(data[0], data[1]);
-    };
+    SphericalExtraction::complex_function_t extracted_harmonic =
+        extracted_harmonic_free;
 
     // add the spherical harmonic mode integrands for each resolution and for
     // the trapezium rule, Simpson's rule and Boole's rule
