@@ -1,0 +1,39 @@
+#begin  -- dont change this line
+# Module commands:
+# module use /lustre/projects/bristol/modules-a64fx/modulefiles
+# module use /lustre/software/aarch64/modulefiles
+# module load gcc/11-20210221
+# module load openmpi/4.1.0/gcc-11.0
+# module load hdf5-parallel/1.10.7/gcc-11-openmpi-4.1.0
+# module load /software/aarch64/tools/arm-compiler/21.0/moduledeps/gnu10/10.2.0/armpl-AArch64/21.0.0
+# module unload gnu10/10.2.0
+# module unload /software/aarch64/tools/arm-compiler/21.0/modulefiles/binutils/10.2.0 
+
+DIM            = 3
+DEBUG          = FALSE
+PRECISION      = DOUBLE
+OPT            = HIGH 
+PROFILE        = FALSE
+CXX            = g++
+FC             = gfortran
+MPI            = TRUE
+OPENMPCC       = TRUE
+MPICXX         = mpicxx
+USE_64         = TRUE
+USE_HDF        = TRUE
+XTRACONFIG     = .GCC.11.0
+#XTRACXXFLAGS   = -std=c++17
+HDFINCFLAGS    = -I${HDF5_INSTALL_PATH}/include
+HDFLIBFLAGS    = -L${HDF5_INSTALL_PATH}/lib -lhdf5 -lz
+HDFMPIINCFLAGS = -I${HDF5_INSTALL_PATH}/include
+HDFMPILIBFLAGS = -L${HDF5_INSTALL_PATH}/lib -lhdf5 -lz
+# The following line puts all of the Chombo code in a Chombo namespace
+NAMESPACE      = TRUE
+USE_MT         = FALSE
+cxxdbgflags    = -g -O0
+fdbgflags      = -g -O0
+cxxoptflags    = -g -Ofast -mcpu=a64fx -msve-vector-bits=512 -funsafe-math-optimizations -fno-finite-math-only
+foptflags      = -g -Ofast -mcpu=a64fx -msve-vector-bits=512 -funsafe-math-optimizations
+syslibflags    = -L${ARMPL_DIR}/lib -larmpl
+
+#end  -- dont change this line
