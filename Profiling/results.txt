@@ -1,0 +1,22 @@
+modules used:
+ 1) /software/aarch64/tools/arm-compiler/21.0/modulefiles/binutils/10.2.0
+ 2) /software/aarch64/tools/arm-compiler/21.0/modulefiles/arm21/21.0
+ 3) tools/arm-compiler-a64fx/21.0
+ 4) openmpi/4.1.0/arm-21.0
+ 5) hdf5-parallel/1.10.7/arm-21.0-openmpi-4.1.0
+
+compiler flags:
+-Ofast -mcpu=a64fx -msve-vector-bits=512 -funsafe-math-optimizations -fno-finite-math-only
+
+Results:
+num MPI ranks | num OpenMP threads | SVE intrinsics | time (mins)
+24              2                    N                1.53502
+24              2                    Y                1.168
+12              4                    N                1.7976
+12              4                    Y                0.8451
+8               6                    N                1.39442
+8               6                    Y                0.762569
+4               12                   N                1.5732
+4               12                   Y                1.01305
+
+

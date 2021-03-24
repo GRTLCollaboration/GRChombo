@@ -1,0 +1,211 @@
+ number_procs = 8
+ threads = 6
+ simd width (doubles) = 8
+Parameter: num_ghosts not found in parameter file. It has been set to its default value = 3.
+Parameter: tag_buffer_size not found in parameter file. It has been set to its default value = 3.
+Parameter: grid_buffer_size not found in parameter file. It has been set to its default value = 8.
+Parameter: fill_ratio not found in parameter file. It has been set to its default value = 0.7.
+Parameter: extrapolation_order not found in parameter file. It has been set to its default value = 1.
+You are using non periodic boundary conditions.
+The boundary params chosen are:  
+---------------------------------
+- Sommerfeld boundaries in direction high 0
+The non zero asymptotic values of the variables in this direction are : 
+chi = 1    h11 = 1    h22 = 1    h33 = 1    lapse = 1    
+
+- Sommerfeld boundaries in direction low 0
+The non zero asymptotic values of the variables in this direction are : 
+chi = 1    h11 = 1    h22 = 1    h33 = 1    lapse = 1    
+
+- Sommerfeld boundaries in direction high 1
+The non zero asymptotic values of the variables in this direction are : 
+chi = 1    h11 = 1    h22 = 1    h33 = 1    lapse = 1    
+
+- Sommerfeld boundaries in direction low 1
+The non zero asymptotic values of the variables in this direction are : 
+chi = 1    h11 = 1    h22 = 1    h33 = 1    lapse = 1    
+
+- Sommerfeld boundaries in direction high 2
+The non zero asymptotic values of the variables in this direction are : 
+chi = 1    h11 = 1    h22 = 1    h33 = 1    lapse = 1    
+
+- Reflective boundaries in direction low 2
+The variables that are parity odd in this direction are : 
+h13    h23    A13    A23    Gamma3    shift3    B3    Mom3    Weyl4_Im    
+
+---------------------------------
+Parameter: center not found in parameter file. It has been set to its default value = 16 16 0.
+Parameter: ignore_checkpoint_name_mismatch not found in parameter file. It has been set to its default value = 0.
+Using single regrid threshold.
+Parameter: write_plot_ghosts not found in parameter file. It has been set to its default value = 0.
+Parameter: min_chi not found in parameter file. It has been set to its default value = 0.0001.
+Parameter: min_lapse not found in parameter file. It has been set to its default value = 0.0001.
+Parameter: extraction_center not found in parameter file. It has been set to its default value = 16 16 0.
+Parameter: write_extraction not found in parameter file. It has been set to its default value = 0.
+Parameter: calculate_constraint_norms not found in parameter file. It has been set to its default value = 0.
+Parameter: centerA not found in parameter file. It has been set to its default value = 16 16 0.
+Parameter: centerB not found in parameter file. It has been set to its default value = 16 16 0.
+Parameter: num_ghosts not found in parameter file. It has been set to its default value = 3.
+Parameter: tag_buffer_size not found in parameter file. It has been set to its default value = 3.
+Parameter: grid_buffer_size not found in parameter file. It has been set to its default value = 8.
+Parameter: fill_ratio not found in parameter file. It has been set to its default value = 0.7.
+You are using non periodic boundary conditions.
+The boundary params chosen are:  
+---------------------------------
+- Sommerfeld boundaries in direction high 0
+The non zero asymptotic values of the variables in this direction are : 
+chi = 1    h11 = 1    h22 = 1    h33 = 1    lapse = 1    
+
+- Sommerfeld boundaries in direction low 0
+The non zero asymptotic values of the variables in this direction are : 
+chi = 1    h11 = 1    h22 = 1    h33 = 1    lapse = 1    
+
+- Sommerfeld boundaries in direction high 1
+The non zero asymptotic values of the variables in this direction are : 
+chi = 1    h11 = 1    h22 = 1    h33 = 1    lapse = 1    
+
+- Sommerfeld boundaries in direction low 1
+The non zero asymptotic values of the variables in this direction are : 
+chi = 1    h11 = 1    h22 = 1    h33 = 1    lapse = 1    
+
+- Sommerfeld boundaries in direction high 2
+The non zero asymptotic values of the variables in this direction are : 
+chi = 1    h11 = 1    h22 = 1    h33 = 1    lapse = 1    
+
+- Reflective boundaries in direction low 2
+The variables that are parity odd in this direction are : 
+h13    h23    A13    A23    Gamma3    shift3    B3    Mom3    Weyl4_Im    
+
+---------------------------------
+Parameter: center not found in parameter file. It has been set to its default value = 16 16 0.
+Parameter: ignore_checkpoint_name_mismatch not found in parameter file. It has been set to its default value = 0.
+Using single regrid threshold.
+Parameter: write_plot_ghosts not found in parameter file. It has been set to its default value = 0.
+GRAMRLevel::advance level 0 at time 0 (0 M/hr). Boxes on this rank: 1 / 4
+GRAMRLevel::advance level 1 at time 0 (0 M/hr). Boxes on this rank: 4 / 32
+GRAMRLevel::advance level 2 at time 0 (0 M/hr). Boxes on this rank: 6 / 48
+GRAMRLevel::advance level 3 at time 0 (0 M/hr). Boxes on this rank: 10 / 80
+GRAMRLevel::advance level 4 at time 0 (0 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0 (0 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.0078125 (3.62953 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 4 at time 0.015625 (6.95612 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.015625 (6.72977 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.0234375 (9.72033 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 3 at time 0.03125 (12.4902 M/hr). Boxes on this rank: 10 / 80
+GRAMRLevel::advance level 4 at time 0.03125 (11.9964 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.03125 (11.6553 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.0390625 (14.0486 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 4 at time 0.046875 (16.3316 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.046875 (15.9138 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.0546875 (18.0025 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 2 at time 0.0625 (19.9636 M/hr). Boxes on this rank: 6 / 48
+GRAMRLevel::advance level 3 at time 0.0625 (19.5284 M/hr). Boxes on this rank: 10 / 80
+GRAMRLevel::advance level 4 at time 0.0625 (18.9066 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.0625 (18.4807 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.0703125 (20.2361 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 4 at time 0.078125 (21.9258 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.078125 (21.4724 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.0859375 (23.0148 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 3 at time 0.09375 (24.4626 M/hr). Boxes on this rank: 10 / 80
+GRAMRLevel::advance level 4 at time 0.09375 (23.7817 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.09375 (23.3272 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.101562 (24.6983 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 4 at time 0.109375 (26.0264 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.109375 (25.552 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.117188 (26.8127 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 1 at time 0.125 (27.9886 M/hr). Boxes on this rank: 4 / 32
+GRAMRLevel::advance level 2 at time 0.125 (27.6918 M/hr). Boxes on this rank: 6 / 48
+GRAMRLevel::advance level 3 at time 0.125 (27.2731 M/hr). Boxes on this rank: 10 / 80
+GRAMRLevel::advance level 4 at time 0.125 (26.6706 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.125 (26.248 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.132812 (27.3188 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 4 at time 0.140625 (28.3836 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.140625 (27.959 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.148438 (28.961 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 3 at time 0.15625 (29.9511 M/hr). Boxes on this rank: 10 / 80
+GRAMRLevel::advance level 4 at time 0.15625 (29.3562 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.15625 (28.938 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.164062 (29.8712 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 4 at time 0.171875 (30.7619 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.171875 (30.3337 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.179688 (31.2141 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 2 at time 0.1875 (32.06 M/hr). Boxes on this rank: 6 / 48
+GRAMRLevel::advance level 3 at time 0.1875 (31.685 M/hr). Boxes on this rank: 10 / 80
+GRAMRLevel::advance level 4 at time 0.1875 (31.1737 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.1875 (30.7408 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.195312 (31.5637 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 4 at time 0.203125 (32.3646 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.203125 (31.9766 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.210938 (32.7296 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 3 at time 0.21875 (33.4738 M/hr). Boxes on this rank: 10 / 80
+GRAMRLevel::advance level 4 at time 0.21875 (32.9861 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.21875 (32.5745 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.226562 (33.3083 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 4 at time 0.234375 (34.0173 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.234375 (33.6377 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.242188 (34.2982 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 0 at time 0.25 (31.2207 M/hr). Boxes on this rank: 1 / 4
+GRAMRLevel::advance level 1 at time 0.25 (31.0496 M/hr). Boxes on this rank: 4 / 32
+GRAMRLevel::advance level 2 at time 0.25 (30.7989 M/hr). Boxes on this rank: 6 / 48
+GRAMRLevel::advance level 3 at time 0.25 (30.4061 M/hr). Boxes on this rank: 10 / 80
+GRAMRLevel::advance level 4 at time 0.25 (29.9567 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.25 (29.5975 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.257812 (30.1431 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 4 at time 0.265625 (30.7352 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.265625 (30.4694 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.273438 (31.0319 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 3 at time 0.28125 (31.5736 M/hr). Boxes on this rank: 10 / 80
+GRAMRLevel::advance level 4 at time 0.28125 (31.161 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.28125 (30.8984 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.289062 (31.4364 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 4 at time 0.296875 (31.9787 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.296875 (31.713 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.304688 (32.2283 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 2 at time 0.3125 (32.718 M/hr). Boxes on this rank: 6 / 48
+GRAMRLevel::advance level 3 at time 0.3125 (32.4176 M/hr). Boxes on this rank: 10 / 80
+GRAMRLevel::advance level 4 at time 0.3125 (32.0989 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.3125 (31.8492 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.320312 (32.3332 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 4 at time 0.328125 (32.8285 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.328125 (32.5751 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.335938 (33.0219 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 3 at time 0.34375 (33.4871 M/hr). Boxes on this rank: 10 / 80
+GRAMRLevel::advance level 4 at time 0.34375 (33.1798 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.34375 (32.9334 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.351562 (33.3852 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 4 at time 0.359375 (33.8345 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.359375 (33.5903 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.367188 (34.0253 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 1 at time 0.375 (34.4581 M/hr). Boxes on this rank: 4 / 32
+GRAMRLevel::advance level 2 at time 0.375 (34.3051 M/hr). Boxes on this rank: 6 / 48
+GRAMRLevel::advance level 3 at time 0.375 (34.0893 M/hr). Boxes on this rank: 10 / 80
+GRAMRLevel::advance level 4 at time 0.375 (33.7929 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.375 (33.5514 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.382812 (33.9685 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 4 at time 0.390625 (34.3828 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.390625 (34.1538 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.398438 (34.5598 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 3 at time 0.40625 (34.967 M/hr). Boxes on this rank: 10 / 80
+GRAMRLevel::advance level 4 at time 0.40625 (34.6844 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.40625 (34.4412 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.414062 (34.846 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 4 at time 0.421875 (35.2322 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.421875 (35.0132 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.429688 (35.3879 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 2 at time 0.4375 (35.7651 M/hr). Boxes on this rank: 6 / 48
+GRAMRLevel::advance level 3 at time 0.4375 (35.5556 M/hr). Boxes on this rank: 10 / 80
+GRAMRLevel::advance level 4 at time 0.4375 (35.2822 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.4375 (35.0693 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.445312 (35.4282 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 4 at time 0.453125 (35.7924 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.453125 (35.5764 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.460938 (35.9314 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 3 at time 0.46875 (36.2718 M/hr). Boxes on this rank: 10 / 80
+GRAMRLevel::advance level 4 at time 0.46875 (36.0072 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.46875 (35.7934 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.476562 (36.1357 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 4 at time 0.484375 (36.4831 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.484375 (36.2609 M/hr). Boxes on this rank: 8 / 64
+GRAMRLevel::advance level 5 at time 0.492188 (36.5284 M/hr). Boxes on this rank: 8 / 64
+Total simulation time (mins): 0.762569.
+GRChombo finished.
