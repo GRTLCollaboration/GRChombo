@@ -68,7 +68,7 @@ Weyl4::compute_EB_fields(const Vars<data_t> &vars,
         for (int l = 0; l < 4; ++l)
         {
             epsilon3_LLL[i][j][k] += n_U[l] * epsilon4[i][j][k][l] *
-                                     vars.lapse / vars.chi / sqrt(vars.chi);
+                                     vars.lapse / (vars.chi * sqrt(vars.chi));
         }
     }
     // rasing indices
