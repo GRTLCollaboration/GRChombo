@@ -128,10 +128,15 @@ template <typename t> struct simd
     }
 };
 
-#include "simd_base.hpp" //Define all the simd-functions whose implementation does not depend on the architecture
+// Define all the simd-functions whose implementation does not depend on the
+// architecture
+#include "simd_base.hpp"
 
+// Define simd-functions whose implementation depends on the architecture
 #if defined(__x86_64__)
-#include "x64/x64.hpp" //Define simd-functions whose implementation depends on the architecture
+#include "x64/x64.hpp"
+#elif defined(__aarch64__)
+#include "arm/arm.hpp"
 #endif
 
 // We have defined various simd-specific calls (simd_compare_lt,
