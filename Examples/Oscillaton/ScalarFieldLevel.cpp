@@ -133,6 +133,7 @@ void ScalarFieldLevel::specificUpdateODE(GRLevelData &a_soln,
 
 void ScalarFieldLevel::preTagCells()
 {
+  if (m_gr_amr.s_step == 0) {
     // Pre tagging - fill ghost cells and calculate Ham terms
     fillAllEvolutionGhosts();
     Potential potential(m_p.potential_params);
@@ -143,6 +144,14 @@ void ScalarFieldLevel::preTagCells()
                        Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
     // fillAllGhosts();
+  }
+
+  else {
+
+    GRAMRLevel::preTagCells();
+    
+  }
+  
 }
 
 void ScalarFieldLevel::computeDiagnosticsTaggingCriterion(
@@ -160,3 +169,4 @@ void ScalarFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
     //            FixedGridsTaggingCriterion(m_dx, m_level, 2.0 * m_p.L,
     //            m_p.center), current_state, tagging_criterion);
 }
+
