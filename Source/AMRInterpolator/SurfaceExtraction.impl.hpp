@@ -25,6 +25,18 @@ SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
       m_du(m_geom.du(m_params.num_points_u)),
       m_dv(m_geom.dv(m_params.num_points_v)), m_done_extraction(false)
 {
+    // check folders only in first two timesteps
+    // (or at m_first_step if this is not the first two timesteps)
+    if (m_time < m_restart_time + 1.5 * m_dt || m_first_step)
+    {
+        if (!FilesystemTools::directory_exists(m_params.data_path))
+            FilesystemTools::mkdir_recursive(m_params.data_path);
+
+        if (m_params.write_extraction &&
+            !FilesystemTools::directory_exists(m_params.extraction_path))
+            FilesystemTools::mkdir_recursive(m_params.extraction_path);
+    }
+
     // only interp points on rank 0
     if (procID() == 0)
     {
@@ -330,7 +342,8 @@ void SurfaceExtraction<SurfaceGeometry>::write_extraction(
     CH_assert(m_done_extraction);
     if (procID() == 0)
     {
-        SmallDataIO extraction_file(a_file_prefix, m_dt, m_time, m_restart_time,
+        SmallDataIO extraction_file(m_params.extraction_path + a_file_prefix,
+                                    m_dt, m_time, m_restart_time,
                                     SmallDataIO::NEW, m_first_step);
 
         for (int isurface = 0; isurface < m_params.num_surfaces; ++isurface)
@@ -415,8 +428,9 @@ void SurfaceExtraction<SurfaceGeometry>::write_integrals(
             CH_assert(vect.size() == m_params.num_surfaces);
         }
         // open file for writing
-        SmallDataIO integral_file(a_filename, m_dt, m_time, m_restart_time,
-                                  SmallDataIO::APPEND, m_first_step);
+        SmallDataIO integral_file(m_params.data_path + a_filename, m_dt, m_time,
+                                  m_restart_time, SmallDataIO::APPEND,
+                                  m_first_step);
 
         // remove any duplicate data if this is a restart
         integral_file.remove_duplicate_time_data();

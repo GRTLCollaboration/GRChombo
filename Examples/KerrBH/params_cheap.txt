@@ -1,9 +1,47 @@
-#Params for runtime inputs
+# See the wiki page for an explanation of the params!
+# https://github.com/GRChombo/GRChombo/wiki/Guide-to-parameters
+
+#################################################
+# Filesystem parameters
 
 verbosity = 0
+
+# location / naming of output files
+# output_path = "" # Main path for all files. Must exist!
 chk_prefix = KerrBH_
 plot_prefix = KerrBHp_
-#restart_file = KerrBH_000060.3d.hdf5
+# restart_file = KerrBH_000060.3d.hdf5
+
+# HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
+checkpoint_interval = 1
+# set to 0 to turn off plot files (except at t=0 and t=stop_time)
+# set to -1 to never ever print plotfiles
+plot_interval = 0
+num_plot_vars = 0
+# plot_vars = 
+
+# subpaths - specific directories for hdf5, pout, extraction data
+# (these are created at runtime)
+hdf5_subpath = "hdf5"
+pout_subpath = "pout"
+data_subpath = "data"
+
+# change the name of output files
+# pout_prefix = "pout"
+print_progress_only_to_rank_0 = 1
+
+# ignore_checkpoint_name_mismatch = 0
+# write_plot_ghosts = 0
+
+#################################################
+# Initial Data parameters
+
+kerr_mass = 1.0
+kerr_spin = 0.5
+# kerr_center = 64 64 64 # defauts to center
+
+#################################################
+# Grid parameters
 
 # 'N' is the number of subdivisions in each direction of a cubic box
 # 'L' is the length of the longest side of the box, dx_coarsest = L/N
@@ -15,38 +53,30 @@ plot_prefix = KerrBHp_
 N_full = 64
 L_full = 128
 
-# Spatial derivative order (only affects CCZ4 RHS)
-max_spatial_derivative_order = 4 # can be 4 or 6
-
-# Params for Kerr BH
-kerr_mass = 1.0
-kerr_spin = 0.5
-# This is now defaulted to center of the grid so it does not need to be updated
-# when changing L (unless one wants to put the BH somewhere off center)
-#kerr_center = 64 64 64
-
-# Regridding
-
-# Level data
 # Maximum number of times you can regrid above coarsest level
-max_level = 4 #4 There are (max_level+1) grids, so min is zero
+max_level = 4 # There are (max_level+1) grids, so min is zero
 
 # Frequency of regridding at each level and thresholds on the tagging
-# Need one for each level, ie max_level+1 items
+# Need one for each level except the top one, ie max_level items
 # Generally you do not need to regrid frequently on every level
-# Level Regridding:   0   1   2   3   4   5   6
-regrid_interval   =  50  25   5   5   5   5   5
+# Level Regridding:   0   1   2   3   4
+regrid_interval   =  50  25   5   5   5
 regrid_thresholds = 0.3 0.3 0.3 0.3 0.3
 
-# Max box sizes
-max_grid_size = 16
-# Min box size
-block_factor = 16
-# Determines how exactly regridding tries to fit the tagging
-fill_ratio = 0.75
+# Max and min box sizes
+max_box_size = 16
+min_box_size = 16
 
-#boundaries and periodicity of grid
-#Periodic directions - 0 = false, 1 = true
+# tag_buffer_size = 3
+# grid_buffer_size = 8
+# fill_ratio = 0.7
+# num_ghosts = 3
+# center = 256.0 256.0 256.0 # defaults to center of the grid
+
+#################################################
+# Boundary Conditions parameters
+
+# Periodic directions - 0 = false, 1 = true
 isPeriodic = 0 0 0
 # if not periodic, then specify the boundary type
 # 0 = static, 1 = sommerfeld, 2 = reflective
@@ -67,48 +97,50 @@ vars_parity            = 0 0 4 6 0 5 0    #chi and hij
 vars_parity_diagnostic = 0 1 2 3          #Ham and Mom
 
 # if sommerfeld boundaries selected, must select
-# asymptotic values (in order given by UserVariables.hpp)
-vars_asymptotic_values = 1.0 1.0 0.0 0.0 1.0 0.0 1.0 #chi and hij
-                         0.0 0.0 0.0 0.0 0.0 0.0 0.0 #K and Aij
-                         0.0 0.0 0.0 0.0             #Theta and Gamma
-                         1.0 0.0 0.0 0.0 0.0 0.0 0.0 #lapse shift and B
+# non zero asymptotic values
+num_nonzero_asymptotic_vars = 5
+nonzero_asymptotic_vars = chi h11 h22 h33 lapse
+nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 
-# Set up time steps
+# if you are using extrapolating BC:
+# extrapolation_order = 1
+# num_extrapolating_vars = -1
+# extrapolating_vars =
+
+#################################################
+# Evolution parameters
+
 # dt will be dx*dt_multiplier on each grid level
-# HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 1
-plot_interval = 0
-num_plot_vars = 0
 dt_multiplier = 0.25
-stop_time = 10.0
-max_steps = 2
+# stop_time = 20.0
+max_steps = 4
 
-#Lapse evolution
-lapse_power = 1.0
+# Spatial derivative order (only affects CCZ4 RHS)
+max_spatial_derivative_order = 4 # can be 4 or 6
+
+nan_check = 1
+
+# Lapse evolution
+lapse_advec_coeff = 1.0
 lapse_coeff = 2.0
-lapse_advec_coeff = 1 # 1 makes the lapse gauge 1+log slicing
+lapse_power = 1.0
 
-# Shift evolution coefficients
-shift_advec_coeff = 0 # Usually no advection for beta
-shift_Gamma_coeff = 0.75 #
-eta = 1.0 # This is gamma driver, usually of order 1/M_ADM of spacetime
+# Shift evolution
+shift_advec_coeff = 0.0 # Usually no advection for beta
+shift_Gamma_coeff = 0.75
+eta = 1.0 # eta of gamma driver, should be of order ~1/M_ADM of spacetime
 
 # CCZ4 parameters
-# if using BSSN the kappa values should be zero
-formulation = 1  # 1 for BSSN, 0 for CCZ4
-kappa1 = 0
-kappa2 = 0
-kappa3 = 0
+formulation = 1 # 1 for BSSN, 0 for CCZ4
+kappa1 = 0.
+kappa2 = 0.
+kappa3 = 0.
 covariantZ4 = 1 # 0: keep kappa1; 1 [default]: replace kappa1 -> kappa1/lapse
 
 # coefficient for KO numerical dissipation
-# NB must be less than 0.5 for stability
 sigma = 0.3
 
-#extraction params
-activate_extraction = 0
-num_extraction_radii = 3
-extraction_radii = 30. 40. 50.
-extraction_levels = 1 1 0
-num_points_phi = 50
-num_points_theta = 52
+# min_chi = 1.e-4
+# min_lapse = 1.e-4
+
+#################################################
