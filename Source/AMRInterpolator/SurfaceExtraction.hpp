@@ -13,6 +13,7 @@
 // Other inclues
 #include "AMRInterpolator.hpp"
 #include "DimensionDefinitions.hpp"
+#include "FilesystemTools.hpp"
 #include "IntegrationMethod.hpp"
 #include "InterpolationQuery.hpp"
 #include "Lagrange.hpp"
@@ -50,10 +51,13 @@ template <class SurfaceGeometry> class SurfaceExtraction
                                             //!< extraction for each surface
         bool write_extraction; //!< whether or not to write the extracted data
 
+        std::string data_path, integral_file_prefix;
+        std::string extraction_path, extraction_file_prefix;
+
         std::vector<int>
             radii_idxs_for_extrapolation; // 2 for 2nd order, 3 for 3rd order
 
-        int min_extraction_level() const
+        int min_extraction_level()
         {
             return *(std::min_element(extraction_levels.begin(),
                                       extraction_levels.end()));

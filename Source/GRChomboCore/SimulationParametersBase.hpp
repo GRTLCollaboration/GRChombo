@@ -58,70 +58,105 @@ class SimulationParametersBase : public ChomboParameters
         pp.load("min_chi", min_chi, 1e-4);
         pp.load("min_lapse", min_lapse, 1e-4);
 
+        // directory to store data (extraction files, puncture data, constraint
+        // norms)
+        pp.load("data_subpath", data_path, std::string(""));
+        if (!data_path.empty() && data_path.back() != '/')
+            data_path += "/";
+        if (output_path != "./" && !output_path.empty())
+            data_path = output_path + data_path;
+
         // Extraction params
-        pp.load("num_extraction_radii", extraction_params.num_extraction_radii,
-                1);
-        // Check for multiple extraction radii, otherwise load single
-        // radius/level (for backwards compatibility).
-        if (pp.contains("extraction_levels"))
-        {
-            pp.load("extraction_levels", extraction_params.extraction_levels,
-                    extraction_params.num_extraction_radii);
-        }
-        else
-        {
-            pp.load("extraction_level", extraction_params.extraction_levels, 1,
-                    0);
-        }
-        if (pp.contains("extraction_radii"))
-        {
-            pp.load("extraction_radii", extraction_params.extraction_radii,
-                    extraction_params.num_extraction_radii);
-        }
-        else
-        {
-            pp.load("extraction_radius", extraction_params.extraction_radii, 1,
-                    0.1);
-        }
+        pp.load("activate_extraction", activate_extraction, false);
 
-        pp.load("num_points_phi", extraction_params.num_points_phi, 2);
-        pp.load("num_points_theta", extraction_params.num_points_theta, 5);
-        if (extraction_params.num_points_theta % 2 == 0)
+        if (activate_extraction)
         {
-            extraction_params.num_points_theta += 1;
-            pout() << "Parameter: num_points_theta incompatible with Simpson's "
-                   << "rule so increased by 1.\n";
-        }
-        pp.load("extraction_center", extraction_params.center, center);
+            pp.load("num_extraction_radii",
+                    extraction_params.num_extraction_radii, 1);
 
-        if (pp.contains("modes"))
-        {
-            pp.load("num_modes", extraction_params.num_modes);
-            std::vector<int> extraction_modes_vect(2 *
-                                                   extraction_params.num_modes);
-            pp.load("modes", extraction_modes_vect,
+            // Check for multiple extraction radii, otherwise load single
+            // radius/level (for backwards compatibility).
+            if (pp.contains("extraction_levels"))
+            {
+                pp.load("extraction_levels",
+                        extraction_params.extraction_levels,
+                        extraction_params.num_extraction_radii);
+            }
+            else
+            {
+                pp.load("extraction_level", extraction_params.extraction_levels,
+                        1, 0);
+            }
+            if (pp.contains("extraction_radii"))
+            {
+                pp.load("extraction_radii", extraction_params.extraction_radii,
+                        extraction_params.num_extraction_radii);
+            }
+            else
+            {
+                pp.load("extraction_radius", extraction_params.extraction_radii,
+                        1, 0.1);
+            }
+
+            pp.load("num_points_phi", extraction_params.num_points_phi, 2);
+            pp.load("num_points_theta", extraction_params.num_points_theta, 5);
+            if (extraction_params.num_points_theta % 2 == 0)
+            {
+                extraction_params.num_points_theta += 1;
+                pout() << "Parameter: num_points_theta incompatible with "
+                          "Simpson's "
+                       << "rule so increased by 1.\n";
+            }
+            pp.load("extraction_center", extraction_params.center, center);
+
+            if (pp.contains("modes"))
+            {
+                pp.load("num_modes", extraction_params.num_modes);
+                std::vector<int> extraction_modes_vect(
                     2 * extraction_params.num_modes);
-            extraction_params.modes.resize(extraction_params.num_modes);
-            for (int i = 0; i < extraction_params.num_modes; ++i)
-            {
-                extraction_params.modes[i].first = extraction_modes_vect[2 * i];
-                extraction_params.modes[i].second =
-                    extraction_modes_vect[2 * i + 1];
+                pp.load("modes", extraction_modes_vect,
+                        2 * extraction_params.num_modes);
+                extraction_params.modes.resize(extraction_params.num_modes);
+                for (int i = 0; i < extraction_params.num_modes; ++i)
+                {
+                    extraction_params.modes[i].first =
+                        extraction_modes_vect[2 * i];
+                    extraction_params.modes[i].second =
+                        extraction_modes_vect[2 * i + 1];
+                }
             }
-        }
-        else
-        {
-            // by default extraction (l,m) = (2,0), (2,1) and (2,2)
-            extraction_params.num_modes = 3;
-            extraction_params.modes.resize(3);
-            for (int i = 0; i < 3; ++i)
+            else
             {
-                extraction_params.modes[i].first = 2;
-                extraction_params.modes[i].second = i;
+                // by default extraction (l,m) = (2,0), (2,1) and (2,2)
+                extraction_params.num_modes = 3;
+                extraction_params.modes.resize(3);
+                for (int i = 0; i < 3; ++i)
+                {
+                    extraction_params.modes[i].first = 2;
+                    extraction_params.modes[i].second = i;
+                }
             }
-        }
 
-        pp.load("write_extraction", extraction_params.write_extraction, false);
+            pp.load("write_extraction", extraction_params.write_extraction,
+                    false);
+
+            std::string extraction_path;
+            pp.load("extraction_subpath", extraction_path, data_path);
+            if (!extraction_path.empty() && extraction_path.back() != '/')
+                extraction_path += "/";
+            if (output_path != "./" && !output_path.empty())
+                extraction_path = output_path + extraction_path;
+
+            extraction_params.data_path = data_path;
+            extraction_params.extraction_path = extraction_path;
+
+            // default names to Weyl extraction
+            pp.load("extraction_file_prefix",
+                    extraction_params.extraction_file_prefix,
+                    std::string("Weyl4_extraction_"));
+            pp.load("integral_file_prefix",
+                    extraction_params.integral_file_prefix,
+                    std::string("Weyl4_mode_"));
 
         if (pp.contains("extraction_extrapolation_order"))
         {
@@ -131,6 +166,7 @@ class SimulationParametersBase : public ChomboParameters
                     extraction_params.radii_idxs_for_extrapolation,
                     extrapolation_order);
             extraction_params.validate_extrapolation_radii();
+        }
         }
     }
 
@@ -214,45 +250,57 @@ class SimulationParametersBase : public ChomboParameters
                        "usually O(1/M_ADM) so typically O(1) in code units");
 
         // Now extraction parameters
-        FOR1(idir)
+        if (activate_extraction)
         {
-            std::string center_name =
-                "extraction_center[" + std::to_string(idir) + "]";
-            double center_in_dir = extraction_params.center[idir];
-            check_parameter(center_name, center_in_dir,
-                            (center_in_dir >= reflective_domain_lo[idir]) &&
-                                (center_in_dir <= reflective_domain_hi[idir]),
-                            "must be in the computational domain after "
-                            "applying reflective symmetry");
-            for (int iradius = 0;
-                 iradius < extraction_params.num_extraction_radii; ++iradius)
-            {
-                std::string radius_name =
-                    "extraction_radii[" + std::to_string(iradius) + "]";
-                double radius = extraction_params.extraction_radii[iradius];
-                if (idir == 0)
-                    check_parameter(radius_name, radius, radius >= 0.0,
-                                    "must be >= 0.0");
-                check_parameter(
-                    radius_name, radius,
-                    (center_in_dir - radius >= reflective_domain_lo[idir]) &&
-                        (center_in_dir + radius <= reflective_domain_hi[idir]),
-                    "extraction sphere must lie within the computational "
-                    "domain after applying reflective symmetry");
-            }
-        }
-        for (int imode = 0; imode < extraction_params.num_modes; ++imode)
-        {
-            auto &mode = extraction_params.modes[imode];
-            int l = mode.first;
-            int m = mode.second;
-            std::string mode_name = "modes[" + std::to_string(imode) + "]";
-            std::string value_str = "(" + std::to_string(mode.first) + ", " +
-                                    std::to_string(mode.second) + ")";
-            check_parameter(mode_name, value_str, (l >= 2) && (abs(m) <= l),
-                            "l must be >= 2 and m must satisfy -l <= m <= l");
-        }
+            check_parameter(
+                "num_extraction_radii", extraction_params.num_extraction_radii,
+                extraction_params.num_extraction_radii > 0,
+                "must be bigger than 0 when activate_extraction = 1");
 
+            FOR1(idir)
+            {
+                std::string center_name =
+                    "extraction_center[" + std::to_string(idir) + "]";
+                double center_in_dir = extraction_params.center[idir];
+                check_parameter(
+                    center_name, center_in_dir,
+                    (center_in_dir >= reflective_domain_lo[idir]) &&
+                        (center_in_dir <= reflective_domain_hi[idir]),
+                    "must be in the computational domain after "
+                    "applying reflective symmetry");
+                for (int iradius = 0;
+                     iradius < extraction_params.num_extraction_radii;
+                     ++iradius)
+                {
+                    std::string radius_name =
+                        "extraction_radii[" + std::to_string(iradius) + "]";
+                    double radius = extraction_params.extraction_radii[iradius];
+                    if (idir == 0)
+                        check_parameter(radius_name, radius, radius >= 0.0,
+                                        "must be >= 0.0");
+                    check_parameter(
+                        radius_name, radius,
+                        (center_in_dir - radius >=
+                         reflective_domain_lo[idir]) &&
+                            (center_in_dir + radius <=
+                             reflective_domain_hi[idir]),
+                        "extraction sphere must lie within the computational "
+                        "domain after applying reflective symmetry");
+                }
+            }
+            for (int imode = 0; imode < extraction_params.num_modes; ++imode)
+            {
+                auto &mode = extraction_params.modes[imode];
+                int l = mode.first;
+                int m = mode.second;
+                std::string mode_name = "modes[" + std::to_string(imode) + "]";
+                std::string value_str = "(" + std::to_string(mode.first) +
+                                        ", " + std::to_string(mode.second) +
+                                        ")";
+                check_parameter(
+                    mode_name, value_str, (l >= 2) && (abs(m) <= l),
+                    "l must be >= 2 and m must satisfy -l <= m <= l");
+            }
         int extrapolation_order =
             extraction_params.radii_idxs_for_extrapolation.size();
         if (extrapolation_order > 1)
@@ -261,6 +309,8 @@ class SimulationParametersBase : public ChomboParameters
         else if (extrapolation_order ==
                  1) // 1 radius only because other were invalid
             pout() << "Extraction radii not valid." << std::endl;
+        }
+
     }
 
   protected:
@@ -277,12 +327,16 @@ class SimulationParametersBase : public ChomboParameters
 
     int formulation; // Whether to use BSSN or CCZ4
 
-    // Collection of parameters necessary for the CCZ4 RHS and extraction
+    // Collection of parameters necessary for the CCZ4 RHS
     // Note the gauge parameters are specific to MovingPunctureGauge
     // If you are using a different gauge, you need to load your parameters
     // in your own SimulationParameters class.
     CCZ4_params_t<> ccz4_params;
+
+    bool activate_extraction;
     SphericalExtraction::params_t extraction_params;
+
+    std::string data_path;
 };
 
 #endif /* SIMULATIONPARAMETERSBASE_HPP_ */

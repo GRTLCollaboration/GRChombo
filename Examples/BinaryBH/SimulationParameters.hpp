@@ -34,9 +34,7 @@ class SimulationParameters : public SimulationParametersBase
     /// Read shared parameters
     void read_shared_params(GRParmParse &pp)
     {
-        // Do we want Weyl extraction, puncture tracking and constraint norm
-        // calculation?
-        pp.load("activate_extraction", activate_extraction, false);
+        // Do we want puncture tracking and constraint norm calculation?
         pp.load("track_punctures", track_punctures, false);
         pp.load("puncture_tracking_level", puncture_tracking_level, max_level);
         pp.load("calculate_constraint_norms", calculate_constraint_norms,
@@ -297,9 +295,9 @@ class SimulationParameters : public SimulationParametersBase
                         "must be between 0 and max_level (inclusive)");
     }
 
-    // Initial data
-    bool activate_extraction, track_punctures, calculate_constraint_norms;
+    bool track_punctures, calculate_constraint_norms;
     int puncture_tracking_level;
+
     // Collection of parameters necessary for initial conditions
     // Set these even in the case of TwoPunctures as they are used elsewhere
     // e.g. for puncture tracking/tagging
