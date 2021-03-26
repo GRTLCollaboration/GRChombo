@@ -153,7 +153,7 @@ num_extraction_radii = 3
 extraction_radii = 30. 40. 50.
 extraction_levels = 2 1 0
 num_points_phi = 50
-num_points_theta = 52
+num_points_theta = 51
 # num_modes = 3
 # modes = 2 0 # l m for spherical harmonics
 #        2 1

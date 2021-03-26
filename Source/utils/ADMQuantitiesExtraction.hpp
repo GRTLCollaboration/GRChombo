@@ -58,7 +58,6 @@ class ADMQuantitiesExtraction : public SphericalExtraction
 
         int J_index = m_c_Madm >= 0 ? 1 : 0;
 
-        // now calculate and write the requested spherical harmonic modes
         std::vector<std::vector<double>> out_integrals(num_integrals);
 
         if (m_c_Madm >= 0)

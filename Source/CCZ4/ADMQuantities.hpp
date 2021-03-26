@@ -80,8 +80,8 @@ class ADMQuantities
             data_t Madm = 0.0;
             FOR4(i, j, k, l)
             {
-                Madm += dS_L[i] / (16. * M_PI * m_G_Newton) *
-                        pow(vars.chi, -1.5) * h_UU[j][k] * h_UU[i][l] *
+                Madm += dS_L[i] / (16. * M_PI * m_G_Newton) /
+                        (vars.chi * sqrt(vars.chi)) * h_UU[j][k] * h_UU[i][l] *
                         (vars.chi * (d1.h[l][k][j] - d1.h[j][k][l]) -
                          (vars.h[l][k] * d1.chi[j] - vars.h[j][k] * d1.chi[l]));
             }

@@ -556,13 +556,14 @@ SurfaceExtraction<SurfaceGeometry>::richardson_extrapolation(
 
     // already validated the radii
     int extrapolation_order = m_params.radii_idxs_for_extrapolation.size();
+    int num_comps = integrals.size();
 
-    if (extrapolation_order < 2)
+    if (extrapolation_order < 2 || num_comps == 0 ||
+        integrals[0].size() < extrapolation_order)
     {
         return std::vector<double>();
     }
 
-    int num_comps = integrals.size();
     std::vector<double> extrapolations(num_comps);
 
     if (extrapolation_order == 3)
