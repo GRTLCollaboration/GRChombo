@@ -30,7 +30,8 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("scalar_mass", potential_params.scalar_mass, 1.0);
         pp.load("f_axion", potential_params.f_axion, 0.05);
         pp.load("initial_data_prefix", initial_data_prefix);
-        pout() << "f_axion is " << potential_params.f_axion << endl;
+        pp.load("inner_r", inner_r, 0.0);
+        pp.load("outer_r", outer_r, 200.0);
     }
 
     void check_params()
@@ -44,7 +45,7 @@ class SimulationParameters : public SimulationParametersBase
     }
 
     // Initial data for matter and potential and BH
-    double G_Newton;
+    double G_Newton, inner_r, outer_r;
     Potential::params_t potential_params;
     std::string initial_data_prefix;
 };

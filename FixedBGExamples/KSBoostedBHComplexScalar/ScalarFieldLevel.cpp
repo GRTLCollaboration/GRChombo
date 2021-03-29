@@ -16,7 +16,7 @@
 #include "FixedGridsTaggingCriterion.hpp"
 
 // Problem specific includes
-#include "BoostedIsotropicBHFixedBG.hpp"
+#include "BoostedKerrSchildBHFixedBG.hpp"
 #include "ComplexScalarPotential.hpp"
 #include "ExcisionDiagnostics.hpp"
 #include "ExcisionEvolution.hpp"
@@ -47,8 +47,8 @@ void ScalarFieldLevel::initialData()
     // First set everything to zero ... we don't want undefined values in
     // constraints etc, then initial conditions for fields
     SetValue set_zero(0.0);
-    BoostedIsotropicBHFixedBG boosted_bh(m_p.bg_params,
-                                         m_dx); // just calculates chi
+    BoostedKerrSchildBHFixedBG boosted_bh(m_p.bg_params,
+                                          m_dx); // just calculates chi
     InitialConditions set_phi(m_p.field_amplitude_re, m_p.field_amplitude_im,
                               m_p.potential_params.scalar_mass, m_p.center,
                               m_p.bg_params, m_dx);
@@ -59,7 +59,7 @@ void ScalarFieldLevel::initialData()
 
     // excise within horizon, no simd
     BoxLoops::loop(
-        ExcisionEvolution<ScalarFieldWithPotential, BoostedIsotropicBHFixedBG>(
+        ExcisionEvolution<ScalarFieldWithPotential, BoostedKerrSchildBHFixedBG>(
             m_dx, m_p.center, boosted_bh),
         m_state_new, m_state_new, SKIP_GHOST_CELLS, disable_simd());
 }
@@ -76,14 +76,14 @@ void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     // zero these
     ComplexScalarPotential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
-    BoostedIsotropicBHFixedBG boosted_bh(m_p.bg_params, m_dx);
-    FixedBGEvolution<ScalarFieldWithPotential, BoostedIsotropicBHFixedBG>
+    BoostedKerrSchildBHFixedBG boosted_bh(m_p.bg_params, m_dx);
+    FixedBGEvolution<ScalarFieldWithPotential, BoostedKerrSchildBHFixedBG>
         my_matter(scalar_field, boosted_bh, m_p.sigma, m_dx, m_p.center);
     BoxLoops::loop(my_matter, a_soln, a_rhs, SKIP_GHOST_CELLS);
 
     // excise within horizon, no simd
     BoxLoops::loop(
-        ExcisionEvolution<ScalarFieldWithPotential, BoostedIsotropicBHFixedBG>(
+        ExcisionEvolution<ScalarFieldWithPotential, BoostedKerrSchildBHFixedBG>(
             m_dx, m_p.center, boosted_bh),
         a_soln, a_rhs, SKIP_GHOST_CELLS, disable_simd());
 }
@@ -91,33 +91,32 @@ void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
 void ScalarFieldLevel::specificPostTimeStep()
 {
     // At any level, but after the coarsest timestep
-//    double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
-//    const double remainder = fmod(m_time, coarsest_dt);
-//    if (min(abs(remainder), abs(remainder - coarsest_dt)) < 1.0e-8)
-//    {
-        // calculate the density of the PF, but excise the BH region completely
-        fillAllGhosts();
-        ComplexScalarPotential potential(m_p.potential_params);
-        ScalarFieldWithPotential scalar_field(potential);
-        BoostedIsotropicBHFixedBG boosted_bh(m_p.bg_params, m_dx);
-        FixedBGDensityAndAngularMom<ScalarFieldWithPotential,
-                                    BoostedIsotropicBHFixedBG>
-            densities(scalar_field, boosted_bh, m_dx, m_p.center);
-        FixedBGEnergyAndAngularMomFlux<ScalarFieldWithPotential,
-                                       BoostedIsotropicBHFixedBG>
-            energy_fluxes(scalar_field, boosted_bh, m_dx, m_p.center);
-        FixedBGMomentumFlux<ScalarFieldWithPotential, BoostedIsotropicBHFixedBG>
-            mom_fluxes(scalar_field, boosted_bh, m_dx, m_p.center);
-        BoxLoops::loop(make_compute_pack(densities, mom_fluxes, energy_fluxes),
-                       m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
-        // excise within horizon
-        BoxLoops::loop(
-            ExcisionDiagnostics<ScalarFieldWithPotential,
-                                BoostedIsotropicBHFixedBG>(
-                m_dx, m_p.center, boosted_bh, m_p.inner_r, m_p.outer_r),
-            m_state_diagnostics, m_state_diagnostics, SKIP_GHOST_CELLS,
-            disable_simd());
-//    }
+    //    double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
+    //    const double remainder = fmod(m_time, coarsest_dt);
+    //    if (min(abs(remainder), abs(remainder - coarsest_dt)) < 1.0e-8)
+    //    {
+    // calculate the density of the PF, but excise the BH region completely
+    fillAllGhosts();
+    ComplexScalarPotential potential(m_p.potential_params);
+    ScalarFieldWithPotential scalar_field(potential);
+    BoostedKerrSchildBHFixedBG boosted_bh(m_p.bg_params, m_dx);
+    FixedBGDensityAndAngularMom<ScalarFieldWithPotential,
+                                BoostedKerrSchildBHFixedBG>
+        densities(scalar_field, boosted_bh, m_dx, m_p.center);
+    FixedBGEnergyAndAngularMomFlux<ScalarFieldWithPotential,
+                                   BoostedKerrSchildBHFixedBG>
+        energy_fluxes(scalar_field, boosted_bh, m_dx, m_p.center);
+    FixedBGMomentumFlux<ScalarFieldWithPotential, BoostedKerrSchildBHFixedBG>
+        mom_fluxes(scalar_field, boosted_bh, m_dx, m_p.center);
+    BoxLoops::loop(make_compute_pack(densities, mom_fluxes, energy_fluxes),
+                   m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
+    // excise within horizon
+    BoxLoops::loop(ExcisionDiagnostics<ScalarFieldWithPotential,
+                                       BoostedKerrSchildBHFixedBG>(
+                       m_dx, m_p.center, boosted_bh, m_p.inner_r, m_p.outer_r),
+                   m_state_diagnostics, m_state_diagnostics, SKIP_GHOST_CELLS,
+                   disable_simd());
+    //    }
 
     // write out the integral after each coarse timestep
     if (m_level == 0)
@@ -145,9 +144,9 @@ void ScalarFieldLevel::specificPostTimeStep()
 
         // Now refresh the interpolator and do the interpolation
         bool fill_ghosts = false;
-        m_gr_amr.m_interpolator->refresh(); //fill_ghosts);
-        m_gr_amr.fill_multilevel_ghosts(
-            VariableType::diagnostic, Interval(c_Edot, c_Stress));
+        m_gr_amr.m_interpolator->refresh(); // fill_ghosts);
+        m_gr_amr.fill_multilevel_ghosts(VariableType::diagnostic,
+                                        Interval(c_Edot, c_Stress));
 
         ForceExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
                                       m_restart_time);

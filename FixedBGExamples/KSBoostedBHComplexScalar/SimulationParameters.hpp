@@ -10,7 +10,7 @@
 #include "ChomboParameters.hpp"
 #include "GRParmParse.hpp"
 // Problem specific includes:
-#include "BoostedIsotropicBHFixedBG.hpp"
+#include "BoostedKerrSchildBHFixedBG.hpp"
 #include "ComplexScalarPotential.hpp"
 #include "SpheroidalExtraction.hpp"
 
@@ -71,7 +71,7 @@ class SimulationParameters : public ChomboParameters
     //        dx; // location of coarsest origin and dx
     std::string integral_filename;
     // Collection of parameters necessary for the sims
-    BoostedIsotropicBHFixedBG::params_t bg_params;
+    BoostedKerrSchildBHFixedBG::params_t bg_params;
     SpheroidalExtraction::params_t extraction_params;
     ComplexScalarPotential::params_t potential_params;
 };

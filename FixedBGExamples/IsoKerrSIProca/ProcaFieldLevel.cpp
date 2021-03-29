@@ -50,8 +50,7 @@ void ProcaFieldLevel::initialData()
     InitialConditions set_field(m_p.field_amplitude, m_p.potential_params.mass,
                                 m_p.center, m_p.bg_params, m_dx);
     BoxLoops::loop(set_field, m_state_new, m_state_new, FILL_GHOST_CELLS);
-    BoxLoops::loop(kerr_bh, m_state_new, m_state_diagnostics,
-                    SKIP_GHOST_CELLS);
+    BoxLoops::loop(kerr_bh, m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
 
     // make excision data zero
     BoxLoops::loop(ExcisionProcaEvolution<ProcaField, IsotropicKerrFixedBG>(
@@ -80,8 +79,9 @@ void ProcaFieldLevel::specificPostTimeStep()
         FixedBGEnergyAndAngularMomFlux<ProcaField, IsotropicKerrFixedBG> fluxes(
             proca_field, kerr_bh, m_dx, m_p.center,
             m_p.extraction_params.zaxis_over_xaxis);
-//        XSquared set_xsquared(m_p.potential_params, m_p.bg_params, m_p.center,
-//                              m_dx);
+        //        XSquared set_xsquared(m_p.potential_params, m_p.bg_params,
+        //        m_p.center,
+        //                              m_dx);
         BoxLoops::loop(make_compute_pack(densities, fluxes), //, set_xsquared),
                        m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
         BoxLoops::loop(
@@ -114,11 +114,10 @@ void ProcaFieldLevel::specificPostTimeStep()
         // Now refresh the interpolator and do the interpolation
         bool fill_ghosts = false;
         m_gr_amr.m_interpolator->refresh(fill_ghosts);
-        m_gr_amr.fill_multilevel_ghosts(
-            VariableType::diagnostic, Interval(c_Edot, c_Jdot), 
-            min_level);
-        FluxExtraction my_extraction(m_p.extraction_params, m_dt,
-           m_time, m_restart_time);
+        m_gr_amr.fill_multilevel_ghosts(VariableType::diagnostic,
+                                        Interval(c_Edot, c_Jdot), min_level);
+        FluxExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
+                                     m_restart_time);
         my_extraction.execute_query(m_gr_amr.m_interpolator);
     }
 }

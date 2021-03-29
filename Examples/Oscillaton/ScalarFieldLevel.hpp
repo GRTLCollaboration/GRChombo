@@ -47,6 +47,9 @@ class ScalarFieldLevel : public GRAMRLevel
     virtual void specificUpdateODE(GRLevelData &a_soln,
                                    const GRLevelData &a_rhs, Real a_dt);
 
+    //! To do after each timestep
+    virtual void specificPostTimeStep();
+
     /// Things to do before tagging cells (i.e. filling ghosts)
     virtual void preTagCells() override;
 

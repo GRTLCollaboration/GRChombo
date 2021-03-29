@@ -31,7 +31,7 @@ class Potential
     {
         // The potential value at phi
         // 1/2 m^2 phi^2
-        //V_of_phi = 0.5 * pow(m_params.scalar_mass * vars.phi, 2.0);
+        // V_of_phi = 0.5 * pow(m_params.scalar_mass * vars.phi, 2.0);
 
         // Axion potential
         V_of_phi = pow(m_params.scalar_mass * m_params.f_axion, 2.0) *
@@ -39,7 +39,7 @@ class Potential
 
         // The potential gradient at phi
         // m^2 phi
-        //dVdphi = pow(m_params.scalar_mass, 2.0) * vars.phi;
+        // dVdphi = pow(m_params.scalar_mass, 2.0) * vars.phi;
 
         // Axion potential
         dVdphi = m_params.f_axion * pow(m_params.scalar_mass, 2.0) *

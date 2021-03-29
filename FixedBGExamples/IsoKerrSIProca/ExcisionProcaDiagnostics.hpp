@@ -33,8 +33,8 @@ template <class matter_t, class background_t> class ExcisionProcaDiagnostics
   public:
     ExcisionProcaDiagnostics(const double a_dx,
                              const std::array<double, CH_SPACEDIM> a_center,
-                             background_t a_background,
-                             const double a_r_min, const double a_r_max)
+                             background_t a_background, const double a_r_min,
+                             const double a_r_max)
         : m_dx(a_dx), m_deriv(m_dx), m_center(a_center), m_r_max(a_r_max),
           m_r_min(a_r_min), m_background(a_background)
     {

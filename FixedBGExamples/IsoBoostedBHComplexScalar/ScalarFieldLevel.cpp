@@ -21,11 +21,9 @@
 #include "ExcisionDiagnostics.hpp"
 #include "ExcisionEvolution.hpp"
 #include "FixedBGComplexScalarField.hpp"
-#include "FixedBGDensityAndAngularMom.hpp"
-#include "FixedBGEnergyAndAngularMomFlux.hpp"
+#include "FixedBGConservedQuantities.hpp"
 #include "FixedBGEvolution.hpp"
-#include "FixedBGMomentumFlux.hpp"
-#include "ForceExtraction.hpp"
+#include "FluxExtraction.hpp"
 #include "InitialConditions.hpp"
 
 // Things to do at each advance step, after the RK4 is calculated
@@ -91,66 +89,62 @@ void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
 void ScalarFieldLevel::specificPostTimeStep()
 {
     // At any level, but after the coarsest timestep
-//    double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
-//    const double remainder = fmod(m_time, coarsest_dt);
-//    if (min(abs(remainder), abs(remainder - coarsest_dt)) < 1.0e-8)
-//    {
-        // calculate the density of the PF, but excise the BH region completely
+    int min_level = 0;
+    bool calculate_quantities = at_level_timestep_multiple(min_level);
+
+    if (calculate_quantities)
+    {
         fillAllGhosts();
         ComplexScalarPotential potential(m_p.potential_params);
         ScalarFieldWithPotential scalar_field(potential);
         BoostedIsotropicBHFixedBG boosted_bh(m_p.bg_params, m_dx);
-        FixedBGDensityAndAngularMom<ScalarFieldWithPotential,
-                                    BoostedIsotropicBHFixedBG>
-            densities(scalar_field, boosted_bh, m_dx, m_p.center);
-        FixedBGEnergyAndAngularMomFlux<ScalarFieldWithPotential,
-                                       BoostedIsotropicBHFixedBG>
-            energy_fluxes(scalar_field, boosted_bh, m_dx, m_p.center);
-        FixedBGMomentumFlux<ScalarFieldWithPotential, BoostedIsotropicBHFixedBG>
-            mom_fluxes(scalar_field, boosted_bh, m_dx, m_p.center);
-        BoxLoops::loop(make_compute_pack(densities, mom_fluxes, energy_fluxes),
-                       m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
-        // excise within horizon
+        FixedBGConservedQuantities<ScalarFieldWithPotential,
+                                   BoostedIsotropicBHFixedBG>
+            conserved_quantities(scalar_field, boosted_bh, m_dx, m_p.center);
+        BoxLoops::loop(conserved_quantities, m_state_new, m_state_diagnostics,
+                       SKIP_GHOST_CELLS);
+        // excise within horizon and outside extraction radius
         BoxLoops::loop(
             ExcisionDiagnostics<ScalarFieldWithPotential,
                                 BoostedIsotropicBHFixedBG>(
                 m_dx, m_p.center, boosted_bh, m_p.inner_r, m_p.outer_r),
             m_state_diagnostics, m_state_diagnostics, SKIP_GHOST_CELLS,
             disable_simd());
-//    }
+    }
 
-    // write out the integral after each coarse timestep
+    // write out the integral after each coarse timestep on rank 0
     if (m_level == 0)
     {
         bool first_step = (m_time == m_dt);
-
-        // integrate the densities and write to a file
+        // integrate the densities and sources and write to a file
         AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
-        double source_sum = amr_reductions.sum(c_Source);
-        double xMom_sum = amr_reductions.sum(c_xMom);
-        double rho_sum = amr_reductions.sum(c_rho);
+        double rhoE_sum = amr_reductions.sum(c_rhoE);
+        double sourceE_sum = amr_reductions.sum(c_SourceE);
+        double rhoM_sum = amr_reductions.sum(c_rhoM);
+        double sourceM_sum = amr_reductions.sum(c_SourceM);
 
-        SmallDataIO integral_file(m_p.integral_filename, m_dt, m_time,
+        SmallDataIO integral_file("VolumeIntegrals", m_dt, m_time,
                                   m_restart_time, SmallDataIO::APPEND,
                                   first_step);
         // remove any duplicate data if this is post restart
         integral_file.remove_duplicate_time_data();
-        std::vector<double> data_for_writing = {source_sum, xMom_sum, rho_sum};
+        std::vector<double> data_for_writing = {rhoE_sum, sourceE_sum, rhoM_sum,
+                                                sourceM_sum};
         // write data
         if (first_step)
         {
-            integral_file.write_header_line({"Source", "x_Mom", "rho"});
+            integral_file.write_header_line(
+                {"rhoE", "sourceE", "rhoM", "sourceM"});
         }
         integral_file.write_time_data_line(data_for_writing);
 
         // Now refresh the interpolator and do the interpolation
         bool fill_ghosts = false;
-        m_gr_amr.m_interpolator->refresh(); //fill_ghosts);
-        m_gr_amr.fill_multilevel_ghosts(
-            VariableType::diagnostic, Interval(c_Edot, c_Stress));
-
-        ForceExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
-                                      m_restart_time);
+        m_gr_amr.m_interpolator->refresh(fill_ghosts);
+        m_gr_amr.fill_multilevel_ghosts(VariableType::diagnostic,
+                                        Interval(c_Edot, c_Mdot));
+        FluxExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
+                                     m_restart_time);
         my_extraction.execute_query(m_gr_amr.m_interpolator);
     }
 }

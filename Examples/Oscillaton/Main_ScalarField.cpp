@@ -40,6 +40,11 @@ int runGRChombo(int argc, char *argv[])
     DefaultLevelFactory<ScalarFieldLevel> scalar_field_level_fact(gr_amr,
                                                                   sim_params);
     setupAMRObject(gr_amr, scalar_field_level_fact);
+    AMRInterpolator<Lagrange<4>> interpolator(
+        gr_amr, sim_params.origin, sim_params.dx, sim_params.boundary_params,
+        sim_params.verbosity);
+    gr_amr.set_interpolator(
+        &interpolator); // also sets puncture_tracker interpolator
 
     // Engage! Run the evolution
     gr_amr.run(sim_params.stop_time, sim_params.max_steps);
