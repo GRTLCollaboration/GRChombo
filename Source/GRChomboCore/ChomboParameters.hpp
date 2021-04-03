@@ -381,7 +381,7 @@ class ChomboParameters
         if (restart_from_checkpoint)
         {
             bool restart_file_exists =
-                (access(restart_file.c_str(), R_OK) == 0);
+                (access((hdf5_path + restart_file).c_str(), R_OK) == 0);
             check_parameter("restart_file", restart_file, restart_file_exists,
                             "file cannot be opened for reading");
         }
