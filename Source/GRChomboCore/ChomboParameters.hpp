@@ -493,10 +493,10 @@ class ChomboParameters
 #ifdef CH_USE_HDF5
     std::string checkpoint_prefix, plot_prefix; // naming of files
 #endif
-    std::string pout_prefix; // pout file prefix
     std::string output_path; // base path to use for all files
 #ifdef CH_MPI
-    std::string pout_path; // base path for pout files
+    std::string pout_prefix; // pout file prefix
+    std::string pout_path;   // base path for pout files
 #endif
 #ifdef CH_USE_HDF5
     std::string hdf5_path; // base path for pout files
