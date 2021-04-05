@@ -55,8 +55,10 @@ class ChomboParameters
         // L's, N's and center
         read_grid_params(pp);
 
+#ifdef CH_USE_HDF5
         pp.load("ignore_checkpoint_name_mismatch",
                 ignore_checkpoint_name_mismatch, false);
+#endif
 
         pp.load("max_level", max_level, 0);
         // the reference ratio is hard coded to 2
@@ -93,12 +95,13 @@ class ChomboParameters
         pp.load("plot_interval", plot_interval, 0);
         pp.load("stop_time", stop_time, 1.0);
         pp.load("max_steps", max_steps, 1000000);
+#ifdef CH_USE_HDF5
         pp.load("write_plot_ghosts", write_plot_ghosts, false);
 
         // load vars to write to plot files
         UserVariables::load_vars_to_vector(pp, "plot_vars", "num_plot_vars",
                                            plot_vars, num_plot_vars);
-
+#endif
         // alias the weird chombo names to something more descriptive
         // for these box params, and default to some reasonable values
         if (pp.contains("max_grid_size"))
@@ -129,15 +132,15 @@ class ChomboParameters
     {
         // In this function, cannot use default value - it may print a 'default
         // message' to pout and a 'setPoutBaseName' must happen before
-
         restart_from_checkpoint = pp.contains("restart_file");
+#ifdef CH_USE_HDF5
         if (restart_from_checkpoint)
         {
             pp.load("restart_file", restart_file);
         }
-
         pp.load("chk_prefix", checkpoint_prefix);
         pp.load("plot_prefix", plot_prefix);
+#endif
 
 #ifdef CH_MPI
         // Again, cannot use default value
@@ -378,13 +381,15 @@ class ChomboParameters
 
         // check the restart_file exists and can be read if restarting from a
         // checkpoint
+#ifdef CH_USE_HDF5
         if (restart_from_checkpoint)
         {
             bool restart_file_exists =
-                (access(restart_file.c_str(), R_OK) == 0);
+                (access((hdf5_path + restart_file).c_str(), R_OK) == 0);
             check_parameter("restart_file", restart_file, restart_file_exists,
                             "file cannot be opened for reading");
         }
+#endif
 
         check_parameter("dt_multiplier", dt_multiplier, dt_multiplier > 0.0,
                         "must be > 0.0");
@@ -419,9 +424,11 @@ class ChomboParameters
         // (MR); while this would technically work (any plot files would just
         // overwrite a checkpoint file), I think a user would only ever do
         // this unintentinally
+#ifdef CH_USE_HDF5
         check_parameter("plot_prefix", plot_prefix,
                         plot_interval <= 0 || plot_prefix != checkpoint_prefix,
                         "should be different to checkpoint_prefix");
+#endif
 
         check_parameter("output_path", output_path,
                         FilesystemTools::directory_exists(output_path),
@@ -474,25 +481,30 @@ class ChomboParameters
     Vector<int> regrid_interval; // steps between regrid at each level
     int max_steps;
     bool restart_from_checkpoint; // whether or not to restart or start afresh
-    std::string restart_file;     // The path to the restart_file
-    bool ignore_checkpoint_name_mismatch;   // ignore mismatch of variable names
-                                            // between restart file and program
+#ifdef CH_USE_HDF5
+    std::string restart_file;             // The path to the restart_file
+    bool ignore_checkpoint_name_mismatch; // ignore mismatch of variable names
+                                          // between restart file and program
+#endif
     double dt_multiplier, stop_time;        // The Courant factor and stop time
     int checkpoint_interval, plot_interval; // Steps between outputs
     int max_grid_size, block_factor;        // max and min box sizes
     double fill_ratio; // determines how fussy the regridding is about tags
-    std::string checkpoint_prefix, plot_prefix, pout_prefix; // naming of files
+#ifdef CH_USE_HDF5
+    std::string checkpoint_prefix, plot_prefix; // naming of files
+#endif
     std::string output_path; // base path to use for all files
 #ifdef CH_MPI
-    std::string pout_path; // base path for pout files
+    std::string pout_prefix; // pout file prefix
+    std::string pout_path;   // base path for pout files
 #endif
 #ifdef CH_USE_HDF5
     std::string hdf5_path; // base path for pout files
-#endif
     bool write_plot_ghosts;
     int num_plot_vars;
     std::vector<std::pair<int, VariableType>>
         plot_vars; // vars to write to plot file
+#endif
 
     std::array<double, CH_SPACEDIM> origin,
         dx; // location of coarsest origin and dx
