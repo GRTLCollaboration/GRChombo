@@ -176,19 +176,21 @@ void ScalarFieldLevel::specificPostTimeStep()
 
         // integrate the densities and write to a file
         AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
-        double rho_sum = amr_reductions.sum(c_rho2);
-        double source_sum = amr_reductions.sum(c_source2);
+        double rho1_sum = amr_reductions.sum(c_rho1);
+        double rho2_sum = amr_reductions.sum(c_rho2);
+        double source1_sum = amr_reductions.sum(c_source1);
+        double source2_sum = amr_reductions.sum(c_source2);
 
         SmallDataIO integral_file("VolumeIntegrals", m_dt, m_time,
                                   m_restart_time, SmallDataIO::APPEND,
                                   first_step);
         // remove any duplicate data if this is post restart
         integral_file.remove_duplicate_time_data();
-        std::vector<double> data_for_writing = {rho_sum, source_sum};
+        std::vector<double> data_for_writing = {rho1_sum, rho2_sum, source1_sum, source2_sum};
         // write data
         if (first_step)
         {
-            integral_file.write_header_line({"rho", "source"});
+            integral_file.write_header_line({"rho1", "rho2", "source1", "source2"});
         }
         integral_file.write_time_data_line(data_for_writing);
 

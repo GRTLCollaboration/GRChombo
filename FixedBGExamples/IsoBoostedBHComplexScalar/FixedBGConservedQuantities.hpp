@@ -285,6 +285,11 @@ template <class matter_t, class background_t> class FixedBGConservedQuantities
         }
         sourceE *= det_gamma;
 
+        // MOM QUANTITIES
+        // LL METHOD
+
+        // write me!
+
         // assign values of Momentum quantities in the output box
         current_cell.store_vars(rhoM, c_rhoM);
         current_cell.store_vars(Mdot, c_Mdot);

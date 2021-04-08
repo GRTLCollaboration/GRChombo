@@ -52,11 +52,11 @@ template <class matter_t> class MatterEnergy
         const emtensor_t<data_t> emtensor =
             my_matter.compute_emtensor(vars, d1, h_UU, chris.ULL);
         const data_t det_gamma = pow(vars.chi, -3.0);
-        Tensor<2, data_t> vars_gamma, vars_Kij;
+        Tensor<2, data_t> vars_gamma, vars_K_tensor;
         FOR2(i, j)
         {
             vars_gamma[i][j] = vars.h[i][j] / vars.chi;
-            vars_Kij[i][j] =
+            vars_K_tensor[i][j] =
                 1.0 / vars.chi * (vars.A[i][j] + 1.0 / 3.0 * vars.h[i][j]);
         }
         const auto gamma_UU = compute_inverse_sym(vars_gamma);
@@ -85,10 +85,42 @@ template <class matter_t> class MatterEnergy
         data_t sqrt_det_Sigma = area_element_sphere(spherical_gamma);
 
         // calculate according to Landau Lifshitz method
-        data_t g = vars.lapse * vars.lapse * det_gamma;
-        data_t rho1 = sqrt_det_Sigma / r2sintheta * Ni_L[0]; // CHECK THE SAME
-        data_t flux1 = sqrt(det_gamma) * si_L[0];            // AS ME
-        data_t source1 = 0.0; // ADD EXPRESSIONS HERE
+        data_t rho1 = emtensor.rho * det_gamma;
+
+        // Energy flux
+        data_t flux1 = 0.0;
+        FOR1(i)
+        {
+            flux1 += -si_L[i] * vars.shift[i] * emtensor.rho;
+
+            FOR1(j)
+            {
+                flux1 += vars.lapse * si_L[i] * emtensor.Si[j] *
+                        gamma_UU[i][j];
+            }
+        }
+        flux1 *= det_gamma;
+
+        // calculate the E source (should be zero?)
+        data_t dlapsedt = -2.0 * vars.lapse * vars.K;
+        data_t source1 = emtensor.rho * dlapsedt / vars.lapse;
+        FOR1(i)
+        {
+            source1 += -vars.shift[i] * emtensor.rho *
+                       d1.lapse[i] / vars.lapse;
+            FOR1(j)
+            {
+                source1 += 2.0 * gamma_UU[i][j] * emtensor.Si[i] *
+                           d1.lapse[j];
+                FOR2(k, l)
+                {
+                    source1 += -vars.lapse * emtensor.Sij[i][j] *
+                               gamma_UU[i][k] * gamma_UU[j][l] *
+                               vars_K_tensor[k][l];
+                }
+            }
+        }
+        source1 *= det_gamma;
 
         // calculate according to Killing vector method
         data_t rho2 = -emtensor.rho * vars.lapse;
@@ -113,7 +145,7 @@ template <class matter_t> class MatterEnergy
         }
         flux2 *= sqrt_det_Sigma / r2sintheta;
 
-        data_t dlapsedt = -2.0 * vars.lapse * vars.K;
+        // the KV method source
         Tensor<1, data_t> dbetadt;
         FOR1(i) { dbetadt[i] = vars.B[i]; }
         data_t source2 = -emtensor.rho * dlapsedt;
@@ -129,8 +161,8 @@ template <class matter_t> class MatterEnergy
                 {
                     source2 +=
                         emtensor.Si[i] * vars.shift[j] *
-                            (-vars.lapse * gamma_UU[i][k] * vars_Kij[k][j] +
-                             vars.shift[i] * vars.shift[k] * vars_Kij[j][k] /
+                            (-vars.lapse * gamma_UU[i][k] * vars_K_tensor[k][j] +
+                             vars.shift[i] * vars.shift[k] * vars_K_tensor[j][k] /
                                  vars.lapse +
                              vars.shift[k] * chris_phys[i][j][k]) +
                         emtensor.Sij[k][j] * gamma_UU[i][k] * vars.lapse *
@@ -139,7 +171,7 @@ template <class matter_t> class MatterEnergy
                     {
                         source2 += -vars.lapse * vars.lapse * gamma_UU[i][k] *
                                        gamma_UU[j][l] * emtensor.Sij[k][l] *
-                                       vars_Kij[i][j] +
+                                       vars_K_tensor[i][j] +
                                    vars.lapse * gamma_UU[i][k] *
                                        emtensor.Sij[k][j] * vars.shift[l] *
                                        chris_phys[j][l][i];

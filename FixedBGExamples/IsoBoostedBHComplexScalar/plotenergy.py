@@ -19,8 +19,8 @@ dM = symmetry*data1[:,1] - symmetry*data1[0,1]
 Source = symmetry*data1[:,2]
 
 
-data1 = np.loadtxt("LandauLif/VolumeIntegrals.dat")
-dM2 = symmetry*data1[:,1] - symmetry*data1[0,1]
+#data1 = np.loadtxt("VolumeIntegrals.dat")
+#dM2 = symmetry*data1[:,1] - symmetry*data1[0,1]
 
 # flux dataset out
 data1 = np.loadtxt("SurfaceIntegrals.dat")
@@ -42,7 +42,7 @@ plt.plot(timedata, FEodt, '-', lw = 1.0, label="Edot outer dt")
 plt.plot(timedata, FEidt, '-', lw = 1.0, label="Edot inner dt")
 plt.plot(timedata, Source_dt, '-', lw = 1.0, label="Source")
 plt.plot(timedata, dM, '-', lw = 1.0, label="M-M0")
-plt.plot(timedata, dM2, '-', lw = 1.0, label="M-M0 LL")
+#plt.plot(timedata, dM2, '-', lw = 1.0, label="M-M0 LL")
 plt.plot(timedata, FEodt - FEidt + Source_dt, '--', lw = 1.0, label="check M-M0")
 
 # make the plot look nice
