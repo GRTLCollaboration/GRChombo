@@ -9,8 +9,8 @@
 #include "DefaultLevelFactory.hpp"
 #include "GRAMRLevel.hpp"
 // Problem specific includes
-#include "Potential.hpp"
-#include "ScalarField.hpp"
+#include "ComplexScalarPotential.hpp"
+#include "FixedBGComplexScalarField.hpp"
 
 //!  A class for the evolution of a scalar field, minimally coupled to gravity
 /*!
@@ -28,7 +28,8 @@ class ScalarFieldLevel : public GRAMRLevel
     using GRAMRLevel::GRAMRLevel;
 
     // Typedef for scalar field
-    typedef ScalarField<Potential> ScalarFieldWithPotential;
+    typedef FixedBGComplexScalarField<ComplexScalarPotential>
+        ScalarFieldWithPotential;
 
     //! Things to do at the end of the advance step, after RK4 calculation
     virtual void specificAdvance();
@@ -36,27 +37,15 @@ class ScalarFieldLevel : public GRAMRLevel
     //! Initialize data for the field and metric variables
     virtual void initialData();
 
-    //! routines to do before outputting plot file
+    //! routines to do before outputing plot file
     virtual void prePlotLevel();
 
     //! RHS routines used at each RK4 step
     virtual void specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
                                  const double a_time);
 
-    //! Things to do in UpdateODE step, after soln + rhs update
-    virtual void specificUpdateODE(GRLevelData &a_soln,
-                                   const GRLevelData &a_rhs, Real a_dt);
-
     //! To do after each timestep
     virtual void specificPostTimeStep();
-
-    /// Things to do before tagging cells (i.e. filling ghosts)
-    virtual void preTagCells() override;
-
-    //! Tell Chombo how to tag cells for regridding
-    virtual void computeDiagnosticsTaggingCriterion(
-        FArrayBox &tagging_criterion,
-        const FArrayBox &current_state_diagnostics);
 
     //! Tell Chombo how to tag cells for regridding
     virtual void computeTaggingCriterion(FArrayBox &tagging_criterion,

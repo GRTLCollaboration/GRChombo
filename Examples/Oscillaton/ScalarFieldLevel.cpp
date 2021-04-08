@@ -21,8 +21,12 @@
 #include "HamTaggingCriterion.hpp"
 
 // Problem specific includes
+#include "AMRReductions.hpp"
 #include "ComputePack.hpp"
+#include "ExcisionDiagnostics.hpp"
+#include "FluxExtraction.hpp"
 #include "GammaCalculator.hpp"
+#include "MatterEnergy.hpp"
 #include "OscillatonInitial.hpp"
 #include "Potential.hpp"
 #include "ScalarField.hpp"
@@ -48,7 +52,7 @@ void ScalarFieldLevel::initialData()
 {
     CH_TIME("ScalarFieldLevel::initialData");
     if (m_verbosity)
-       pout() << "ScalarFieldLevel::initialData " << m_level << endl;
+        pout() << "ScalarFieldLevel::initialData " << m_level << endl;
 
     // information about the csv file data
     const int lines = 100002;
@@ -78,10 +82,9 @@ void ScalarFieldLevel::initialData()
     }
 
     // Initial conditions for scalar field - Oscillaton
-    BoxLoops::loop(SetValue(0.0),
-                   m_state_new, m_state_new, FILL_GHOST_CELLS);
-    BoxLoops::loop(SetValue(0.0),
-                   m_state_diagnostics, m_state_diagnostics, FILL_GHOST_CELLS);
+    BoxLoops::loop(SetValue(0.0), m_state_new, m_state_new, FILL_GHOST_CELLS);
+    BoxLoops::loop(SetValue(0.0), m_state_diagnostics, m_state_diagnostics,
+                   FILL_GHOST_CELLS);
     BoxLoops::loop(OscillatonInitial(m_p.L, m_dx, m_p.center, spacing,
                                      lapse_values, grr_values, Pi_values),
                    m_state_new, m_state_new, FILL_GHOST_CELLS, disable_simd());
@@ -103,6 +106,14 @@ void ScalarFieldLevel::prePlotLevel()
                        Interval(c_Mom, c_Mom), c_Ham_abs_sum,
                        Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+    BoxLoops::loop(
+        MatterEnergy<ScalarFieldWithPotential>(scalar_field, m_dx, m_p.center),
+        m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+    // excise within horizon
+    BoxLoops::loop(
+        ExcisionDiagnostics(m_dx, m_p.center, m_p.inner_r, m_p.outer_r),
+        m_state_diagnostics, m_state_diagnostics, SKIP_GHOST_CELLS,
+        disable_simd());
 }
 
 // Things to do in RHS update, at each RK4 step
@@ -132,6 +143,68 @@ void ScalarFieldLevel::specificUpdateODE(GRLevelData &a_soln,
     BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
 }
 
+void ScalarFieldLevel::specificPostTimeStep()
+{
+    // At any level, but after the coarsest timestep
+    double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
+    const double remainder = fmod(m_time, coarsest_dt);
+    if (min(abs(remainder), abs(remainder - coarsest_dt)) < 1.0e-8)
+    {
+        // calculate the density of the PF, but excise the BH region completely
+        fillAllGhosts();
+        Potential potential(m_p.potential_params);
+        ScalarFieldWithPotential scalar_field(potential);
+        BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
+                           scalar_field, m_dx, m_p.G_Newton, c_Ham,
+                           Interval(c_Mom, c_Mom), c_Ham_abs_sum,
+                           Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
+                       m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+        BoxLoops::loop(MatterEnergy<ScalarFieldWithPotential>(scalar_field,
+                                                              m_dx, m_p.center),
+                       m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+        // excise within horizon
+        BoxLoops::loop(
+            ExcisionDiagnostics(m_dx, m_p.center, m_p.inner_r, m_p.outer_r),
+            m_state_diagnostics, m_state_diagnostics, SKIP_GHOST_CELLS,
+            disable_simd());
+    }
+
+    // write out the integral after each coarse timestep
+    if (m_level == 0)
+    {
+        bool first_step = (m_time == m_dt);
+
+        // integrate the densities and write to a file
+        AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
+        double rho1_sum = amr_reductions.sum(c_rho1);
+        double rho2_sum = amr_reductions.sum(c_rho2);
+        double source1_sum = amr_reductions.sum(c_source1);
+        double source2_sum = amr_reductions.sum(c_source2);
+
+        SmallDataIO integral_file("VolumeIntegrals", m_dt, m_time,
+                                  m_restart_time, SmallDataIO::APPEND,
+                                  first_step);
+        // remove any duplicate data if this is post restart
+        integral_file.remove_duplicate_time_data();
+        std::vector<double> data_for_writing = {rho1_sum, rho2_sum, source1_sum, source2_sum};
+        // write data
+        if (first_step)
+        {
+            integral_file.write_header_line({"rho1", "rho2", "source1", "source2"});
+        }
+        integral_file.write_time_data_line(data_for_writing);
+
+        // Now refresh the interpolator and do the interpolation
+        bool fill_ghosts = false;
+        m_gr_amr.m_interpolator->refresh(fill_ghosts);
+        m_gr_amr.fill_multilevel_ghosts(VariableType::diagnostic,
+                                        Interval(c_flux1, c_flux2));
+        FluxExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
+                                     m_restart_time);
+        my_extraction.execute_query(m_gr_amr.m_interpolator);
+    }
+}
+
 void ScalarFieldLevel::preTagCells()
 {
     // Pre tagging - fill ghost cells and calculate Ham terms
@@ -143,7 +216,6 @@ void ScalarFieldLevel::preTagCells()
                        Interval(c_Mom, c_Mom), c_Ham_abs_sum,
                        Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-    //fillAllGhosts();
 }
 
 void ScalarFieldLevel::computeDiagnosticsTaggingCriterion(
@@ -156,8 +228,8 @@ void ScalarFieldLevel::computeDiagnosticsTaggingCriterion(
 void ScalarFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                                const FArrayBox &current_state)
 {
-//        Fixed grids tagging
-//        BoxLoops::loop(
-//            FixedGridsTaggingCriterion(m_dx, m_level, 2.0 * m_p.L,
-//            m_p.center), current_state, tagging_criterion);
+    //        Fixed grids tagging
+    //        BoxLoops::loop(
+    //            FixedGridsTaggingCriterion(m_dx, m_level, 2.0 * m_p.L,
+    //            m_p.center), current_state, tagging_criterion);
 }

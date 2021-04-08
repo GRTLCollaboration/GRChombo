@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef EXCISIONPROCADIAGNOSTICS_HPP_
-#define EXCISIONPROCADIAGNOSTICS_HPP_
+#ifndef EXCISIONDIAGNOSTICS_HPP_
+#define EXCISIONDIAGNOSTICS_HPP_
 
 #include "CCZ4Geometry.hpp"
 #include "Cell.hpp"
@@ -17,39 +17,39 @@
 
 //! Does excision for fixed BG BH solutions
 //! Note that it is does not using simd so one must set disable_simd()
-template <class matter_t, class background_t> class ExcisionProcaDiagnostics
+template <class matter_t, class background_t> class ExcisionDiagnostics
 {
-    // Use matter_t class
-    using Vars = typename matter_t::template Vars<double>;
-
   protected:
     const double m_dx;                              //!< The grid spacing
     const std::array<double, CH_SPACEDIM> m_center; //!< The BH center
     const FourthOrderDerivatives m_deriv;
     const background_t m_background;
-    const double m_r_min;
-    const double m_r_max;
+    const double m_inner_r;
+    const double m_outer_r;
 
   public:
-    ExcisionProcaDiagnostics(const double a_dx,
-                             const std::array<double, CH_SPACEDIM> a_center,
-                             background_t a_background, const double a_r_min,
-                             const double a_r_max)
-        : m_dx(a_dx), m_deriv(m_dx), m_center(a_center), m_r_max(a_r_max),
-          m_r_min(a_r_min), m_background(a_background)
+    ExcisionDiagnostics(const double a_dx,
+                        const std::array<double, CH_SPACEDIM> a_center,
+                        background_t a_background, const double a_inner_r,
+                        const double a_outer_r)
+        : m_dx(a_dx), m_deriv(m_dx), m_center(a_center),
+          m_background(a_background), m_inner_r(a_inner_r), m_outer_r(a_outer_r)
     {
     }
 
     void compute(const Cell<double> current_cell) const
     {
         const Coordinates<double> coords(current_cell, m_dx, m_center);
-        double r = coords.get_radius();
-        if ((r < m_r_min) || (r > m_r_max))
+        double horizon_distance = m_background.excise(current_cell);
+        if ((coords.get_radius() < m_inner_r) ||
+            (coords.get_radius() > m_outer_r))
         {
             current_cell.store_vars(0.0, c_rho);
             current_cell.store_vars(0.0, c_rhoJ);
+            current_cell.store_vars(0.0, c_xMom);
+            current_cell.store_vars(0.0, c_Source);
         } // else do nothing
     }
 };
 
-#endif /* EXCISIONPROCADIAGNOSTICS_HPP_ */
+#endif /* EXCISIONDIAGNOSTICS_HPP_ */

@@ -6,11 +6,11 @@
 #ifndef OSCILLATONINITIAL_HPP_
 #define OSCILLATONINITIAL_HPP_
 
+#include "ADMConformalVars.hpp"
 #include "Cell.hpp"
 #include "CoordinateTransformations.hpp"
 #include "Coordinates.hpp"
 #include "MatterCCZ4.hpp"
-#include "ADMConformalVars.hpp"
 #include "ScalarField.hpp"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"
@@ -78,7 +78,7 @@ class OscillatonInitial
                            (r / m_spacing - indxL) *
                                (m_grr_values[indxH] - m_grr_values[indxL]);
         Tensor<2, double> spherical_gamma;
-        FOR2(i,j) {spherical_gamma[i][j] = 0.0;}
+        FOR2(i, j) { spherical_gamma[i][j] = 0.0; }
         spherical_gamma[0][0] = grr;
         spherical_gamma[1][1] = r * r;
         spherical_gamma[2][2] = r2sin2theta; //

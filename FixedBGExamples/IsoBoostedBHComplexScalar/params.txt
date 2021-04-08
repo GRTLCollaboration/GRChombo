@@ -1,31 +1,31 @@
 #Params for runtime inputs
 
 verbosity = 0
-integral_filename = RhoIntegral
-chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost_chk
-plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Boost_plt
-#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost_chk000700.3d.hdf5
+chk_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Integrals/FixedBoostLL_chk
+plot_prefix = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Integrals/FixedBoostLL_plt
+#restart_file = /home/dc-cui1/rds/rds-dirac-dp131/dc-cui1/Boost/Dina_chk001500.3d.hdf5
 
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
-N1 = 64
-N2 = 32
-N3 = 32
+N1 = 128
+N2 = 64
+N3 = 64
 
 # Length of longest box side, dx_coarsest = L/N(max)
 # NB if non cubic, this determines dx for all sides
-L = 4096
+L = 1280
 
 # Regridding
 tag_buffer_size = 0
+#regrid_length = 2048
 
 # Level data
 # Maximum number of times you can regrid above coarsest level
-max_level = 8 # There are (max_level+1) grids, so min is zero
+max_level = 6 # There are (max_level+1) grids, so min is zero
 # Frequency of regridding at each level
 # Need one for each level, ie max_level+1 items
 # Generally you do not need to regrid frequently on every level
-regrid_interval = 0 0 0 0 0 0 0 0 0 0 0
+regrid_interval = 0 0 0 0 0 0 0 0 0 0 0 0 0
 
 # Max box size
 max_grid_size = 16
@@ -35,13 +35,14 @@ tag_buffer_size = 0
 
 #boundaries and periodicity of grid
 #Periodic directions - 0 = false, 1 = true
-isPeriodic = 1 0 0
+isPeriodic = 0 0 0
 
 # if not periodic, then specify the boundary type
 # 0 = static, 1 = sommerfeld, 2 = reflective, 3 = extrapolating
+# 4 = mixed, 5 = fudge
 # (see BoundaryConditions.hpp for details)
-hi_boundary = 0 3 3
-lo_boundary = 0 2 2
+hi_boundary = 3 3 3
+lo_boundary = 3 2 2
 #center = 512.0 512.0 0.0
 
 # if reflective boundaries selected, must select 
@@ -50,10 +51,10 @@ lo_boundary = 0 2 2
 # 1,2,3 = odd x, y, z
 # 4,5,6 = odd xy, yz, xz
 vars_parity            = 0 0 0 0   #phi and Pi
-                         0 0 0 0    #chi and rho rhoJ
+vars_parity_diagnostic = 0 0 0 0 0 0 0 0 0 0 0 0 #chi and rho rhoJ
 
 # specify non zero asympotitic vars
-num_nonzero_asymptotic_vars = 1
+num_nonzero_asymptotic_vars = 0
 nonzero_asymptotic_vars = chi
 nonzero_asymptotic_values = 1.0
 
@@ -61,38 +62,36 @@ nonzero_asymptotic_values = 1.0
 # (the rest are assumed to be all sommerfeld)
 #num_extrapolating_vars = 2
 #extrapolating_vars = phi Pi
-extrapolation_order = 1
+extrapolation_order = 0
 
 # Set up time steps
 # dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 100
-plot_interval = 5
-num_plot_vars = 4
-plot_vars = phi_Re phi_Im rho Stress
+checkpoint_interval = 1000
+plot_interval = 10
+num_plot_vars = 6
+plot_vars = rhoE rhoM Edot Mdot SourceE SourceM
 dt_multiplier = 0.05
-stop_time = 5000.0
+stop_time = 500.0
 
 # coefficient for KO numerical dissipation
-# NB must be less than 0.5 for stability
-sigma = 1.0
+sigma = 0.5
 
 # SF Initial data
 scalar_mass = 0.05
-field_amplitude = 0.1
+field_amplitude_re = 0.1
+field_amplitude_im = 0.1
 # not used
 f_axion = 0.0
 
-# Boosted BH initial data, boost in x direction, spin in z direction
+# Boosted BH initial data, boost in x direction
 bh_mass = 1.0
-bh_velocity = 0.1 # This is a, so needs to be <= M
+bh_velocity = 0.5
+inner_r = 4.0
+outer_r = 200.0
 
 # for extraction
 activate_extraction = 1
 write_extraction = 0
-num_extraction_radii = 3
-extraction_radii = 200.0 300.0 400.0
-extraction_levels = 1 1 1
-num_points_phi = 24
-num_points_t = 24
-zaxis_over_xaxis = 1.0
+num_points_phi = 36
+num_points_theta = 24
