@@ -8,7 +8,7 @@
 
 GRCHOMBO_SOURCE = $(shell pwd)/../../Source
 
-ebase := Weyl4Test
+ebase := MatterWeyl4Test
 
 LibNames := BoxTools
 
