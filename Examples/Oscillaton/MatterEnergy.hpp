@@ -57,7 +57,7 @@ template <class matter_t> class MatterEnergy
         {
             vars_gamma[i][j] = vars.h[i][j] / vars.chi;
             vars_K_tensor[i][j] =
-                1.0 / vars.chi * (vars.A[i][j] + 1.0 / 3.0 * vars.h[i][j]);
+                1.0 / vars.chi * (vars.A[i][j] + 1.0 / 3.0 * vars.h[i][j] * vars.K);
         }
         const auto gamma_UU = compute_inverse_sym(vars_gamma);
         const Tensor<3, data_t> chris_phys =
@@ -103,20 +103,24 @@ template <class matter_t> class MatterEnergy
 
         // calculate the E source (should be zero?)
         data_t dlapsedt = -2.0 * vars.lapse * vars.K;
-        data_t source1 = emtensor.rho * dlapsedt / vars.lapse;
+        data_t source1 = - emtensor.rho * vars.lapse * vars.K;
         FOR1(i)
         {
-            source1 += -vars.shift[i] * emtensor.rho *
-                       d1.lapse[i] / vars.lapse;
+            source1 += d1.shift[i][i] * emtensor.rho;
             FOR1(j)
             {
-                source1 += 2.0 * gamma_UU[i][j] * emtensor.Si[i] *
-                           d1.lapse[j];
-                FOR2(k, l)
+                source1 += - gamma_UU[i][j] * emtensor.Si[i] * d1.lapse[j]
+                    - emtensor.rho * vars.shift[i] * vars.shift[j] * vars_K_tensor[i][j] / vars.lapse;
+                FOR1(k)
                 {
-                    source1 += -vars.lapse * emtensor.Sij[i][j] *
+                    source1 += vars.lapse * gamma_UU[i][j] * chris_phys[k][k][j] * emtensor.Si[i];
+                
+                FOR1(l)
+                {
+                    source1 += vars.lapse * emtensor.Sij[i][j] *
                                gamma_UU[i][k] * gamma_UU[j][l] *
                                vars_K_tensor[k][l];
+                }
                 }
             }
         }
@@ -152,30 +156,18 @@ template <class matter_t> class MatterEnergy
         FOR1(i)
         {
             source2 += emtensor.Si[i] * dbetadt[i];
-            FOR1(j)
+            FOR2(j,k)
             {
-                source2 += emtensor.Si[i] * (-vars.shift[i] / vars.lapse *
-                                                 vars.shift[j] * d1.lapse[j] +
-                                             vars.shift[j] * d1.shift[i][j]);
-                FOR1(k)
+                source2 +=
+                    emtensor.Sij[i][j] * gamma_UU[i][k] * vars.lapse *
+                        d1.shift[j][k];
+                FOR1(l)
                 {
-                    source2 +=
-                        emtensor.Si[i] * vars.shift[j] *
-                            (-vars.lapse * gamma_UU[i][k] * vars_K_tensor[k][j] +
-                             vars.shift[i] * vars.shift[k] * vars_K_tensor[j][k] /
-                                 vars.lapse +
-                             vars.shift[k] * chris_phys[i][j][k]) +
-                        emtensor.Sij[k][j] * gamma_UU[i][k] * vars.lapse *
-                            d1.shift[j][i];
-                    FOR1(l)
-                    {
-                        source2 += -vars.lapse * vars.lapse * gamma_UU[i][k] *
-                                       gamma_UU[j][l] * emtensor.Sij[k][l] *
-                                       vars_K_tensor[i][j] +
-                                   vars.lapse * gamma_UU[i][k] *
-                                       emtensor.Sij[k][j] * vars.shift[l] *
-                                       chris_phys[j][l][i];
-                    }
+                    source2 += - vars.lapse * vars.lapse * gamma_UU[i][k] *
+                                   gamma_UU[j][l] * emtensor.Sij[k][l] *
+                                   vars_K_tensor[i][j] +
+                     emtensor.Sij[i][j] * gamma_UU[i][k] * vars.lapse * vars.shift[l] *
+                                  chris_phys[j][k][l];
                 }
             }
         }

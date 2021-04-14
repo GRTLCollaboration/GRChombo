@@ -142,78 +142,7 @@ template <class matter_t, class background_t> class FixedBGConservedQuantities
             sourceM[i] = sourceM[i] * sqrt(det_gamma);
             BHMom[i] *= sqrt_det_Sigma / r2sintheta;
         }
-        /*
-                // ENERGY QUANTITIES
-                // KV METHOD
-                // Energy density
-                data_t rhoE = emtensor.rho * metric_vars.lapse;
-                FOR1(i) { rhoE += - emtensor.Si[i] * metric_vars.shift[i]; }
-                rhoE *= sqrt(det_gamma);
 
-                // Energy flux
-                data_t Edot = 0.0;
-                FOR1(i)
-                {
-                    Edot += metric_vars.lapse * Ni_L[i] * emtensor.rho *
-                            metric_vars.shift[i];
-
-                    FOR1(j)
-                    {
-                        Edot +=
-                            -Ni_L[i] * emtensor.Si[j] *
-                            (metric_vars.shift[i] * metric_vars.shift[j] +
-                             metric_vars.lapse * metric_vars.lapse *
-           gamma_UU[i][j]);
-                        FOR1(k)
-                        {
-                            Edot += Ni_L[i] * metric_vars.lapse * gamma_UU[i][j]
-           * metric_vars.shift[k] * emtensor.Sij[j][k];
-                        }
-                    }
-                }
-                Edot *= sqrt_det_Sigma / r2sintheta;
-
-                // calculate the E source (should be zero?)
-                data_t dlapsedt = 0.0;
-                Tensor<1, data_t> dbetadt;
-                FOR1(i) { dbetadt[i] = 0.0; }
-                data_t sourceE = -emtensor.rho * dlapsedt;
-                FOR1(i)
-                {
-                    sourceE += emtensor.Si[i] * dbetadt[i];
-                    FOR1(j)
-                    {
-                        sourceE += emtensor.Si[i] *
-                                   (-metric_vars.shift[i] / metric_vars.lapse *
-                                        metric_vars.shift[j] *
-           metric_vars.d1_lapse[j] + metric_vars.shift[j] *
-           metric_vars.d1_shift[i][j]); FOR1(k)
-                        {
-                            sourceE +=
-                                emtensor.Si[i] * metric_vars.shift[j] *
-                                    (-metric_vars.lapse * gamma_UU[i][k] *
-                                         metric_vars.K_tensor[k][j] +
-                                     metric_vars.shift[i] * metric_vars.shift[k]
-           * metric_vars.K_tensor[j][k] / metric_vars.lapse +
-                                     metric_vars.shift[k] *
-           chris_phys.ULL[i][j][k]) + emtensor.Sij[k][j] * gamma_UU[i][k] *
-                                    metric_vars.lapse *
-           metric_vars.d1_shift[j][i];
-                            FOR1(l)
-                            {
-                                sourceE +=
-                                    -metric_vars.lapse * metric_vars.lapse *
-                                        gamma_UU[i][k] * gamma_UU[j][l] *
-                                        emtensor.Sij[k][l] *
-           metric_vars.K_tensor[i][j] + metric_vars.lapse * gamma_UU[i][k] *
-                                        emtensor.Sij[k][j] *
-           metric_vars.shift[l] * chris_phys.ULL[j][l][i];
-                            }
-                        }
-                    }
-                }
-                sourceE *= sqrt(det_gamma);
-        */
         // ANGULAR MOM J QUANTITIES
         // KV METHOD
         // Change basis
@@ -242,53 +171,8 @@ template <class matter_t, class background_t> class FixedBGConservedQuantities
         Jdot *= sqrt_det_Sigma / r2sintheta;
 
         // ADD J SOURCE??
-
-        // LL METHODS
-        // ------------------------------
-        // ENERGY QUANTITIES
-        // LL METHOD
-        // Energy density
-        data_t rhoE = emtensor.rho * det_gamma;
-
-        // Energy flux
-        data_t Edot = 0.0;
-        FOR1(i)
-        {
-            Edot += -si_L[i] * metric_vars.shift[i] * emtensor.rho;
-
-            FOR1(j)
-            {
-                Edot += metric_vars.lapse * si_L[i] * emtensor.Si[j] *
-                        gamma_UU[i][j];
-            }
-        }
-        Edot *= det_gamma;
-
-        // calculate the E source (should be zero?)
-        data_t dlapsedt = 0.0;
-        data_t sourceE = emtensor.rho * dlapsedt / metric_vars.lapse;
-        FOR1(i)
-        {
-            sourceE += -metric_vars.shift[i] * emtensor.rho *
-                       metric_vars.d1_lapse[i] / metric_vars.lapse;
-            FOR1(j)
-            {
-                sourceE += 2.0 * gamma_UU[i][j] * emtensor.Si[i] *
-                           metric_vars.d1_lapse[j];
-                FOR2(k, l)
-                {
-                    sourceE += -metric_vars.lapse * emtensor.Sij[i][j] *
-                               gamma_UU[i][k] * gamma_UU[j][l] *
-                               metric_vars.K_tensor[k][l];
-                }
-            }
-        }
-        sourceE *= det_gamma;
-
-        // MOM QUANTITIES
-        // LL METHOD
-
-        // write me!
+        data_t sourceJ = 0.0;
+        FOR1(i) {sourceJ += sourceM[i] * dxdphi[i];}
 
         // assign values of Momentum quantities in the output box
         current_cell.store_vars(rhoM, c_rhoM);
@@ -296,13 +180,14 @@ template <class matter_t, class background_t> class FixedBGConservedQuantities
         current_cell.store_vars(sourceM[0], c_SourceM);
 
         // assign values of Energy quantities in the output box
-        current_cell.store_vars(rhoE, c_rhoE);
-        current_cell.store_vars(Edot, c_Edot);
-        current_cell.store_vars(sourceE, c_SourceE);
+//        current_cell.store_vars(rhoE, c_rhoE);
+//        current_cell.store_vars(Edot, c_Edot);
+//        current_cell.store_vars(sourceE, c_SourceE);
 
         // assign values of Angular Mom quantities in output box
         current_cell.store_vars(rhoJ, c_rhoJ);
         current_cell.store_vars(Jdot, c_Jdot);
+        current_cell.store_vars(sourceJ, c_SourceJ);
 
         // check BH Mom for fixed BG
         current_cell.store_vars(BHMom[0], c_BHMom);

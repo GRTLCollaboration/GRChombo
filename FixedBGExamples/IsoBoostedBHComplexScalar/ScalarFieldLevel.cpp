@@ -118,8 +118,8 @@ void ScalarFieldLevel::specificPostTimeStep()
         bool first_step = (m_time == m_dt);
         // integrate the densities and sources and write to a file
         AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
-        double rhoE_sum = amr_reductions.sum(c_rhoE);
-        double sourceE_sum = amr_reductions.sum(c_SourceE);
+        double rhoJ_sum = amr_reductions.sum(c_rhoJ);
+        double sourceJ_sum = amr_reductions.sum(c_SourceJ);
         double rhoM_sum = amr_reductions.sum(c_rhoM);
         double sourceM_sum = amr_reductions.sum(c_SourceM);
 
@@ -128,13 +128,13 @@ void ScalarFieldLevel::specificPostTimeStep()
                                   first_step);
         // remove any duplicate data if this is post restart
         integral_file.remove_duplicate_time_data();
-        std::vector<double> data_for_writing = {rhoE_sum, sourceE_sum, rhoM_sum,
+        std::vector<double> data_for_writing = {rhoJ_sum, sourceJ_sum, rhoM_sum,
                                                 sourceM_sum};
         // write data
         if (first_step)
         {
             integral_file.write_header_line(
-                {"rhoE", "sourceE", "rhoM", "sourceM"});
+                {"rhoJ", "sourceJ", "rhoM", "sourceM"});
         }
         integral_file.write_time_data_line(data_for_writing);
 

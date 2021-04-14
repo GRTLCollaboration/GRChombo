@@ -70,7 +70,7 @@ extrapolation_order = 0
 checkpoint_interval = 1000
 plot_interval = 10
 num_plot_vars = 6
-plot_vars = rhoE rhoM Edot Mdot SourceE SourceM
+plot_vars = rhoJ rhoM Jdot Mdot SourceJ SourceM
 dt_multiplier = 0.05
 stop_time = 500.0
 

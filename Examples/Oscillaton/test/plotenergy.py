@@ -15,8 +15,8 @@ fig = plt.figure()
 # volume integral dataset out
 data1 = np.loadtxt("VolumeIntegrals.dat")
 timedata = data1[:,0]
-dM = symmetry*data1[:,2] - symmetry*data1[0,2]
-Source = symmetry*data1[:,4]
+dM = symmetry*data1[:,1] - symmetry*data1[0,1]
+Source = symmetry*data1[:,3]
 #print(dM)
 
 # flux dataset out
@@ -24,7 +24,7 @@ data1 = np.loadtxt("SurfaceIntegrals.dat")
 labelstring = "integral(Flux * dt)"
 timedata = data1[:,0]
 dt = timedata[1] - timedata[0]
-NetEoFlux = data1[:,2]
+NetEoFlux = data1[:,1]
 #NetEiFlux = data1[:,2]
 FEodt = np.zeros_like(timedata)
 #FEidt = np.zeros_like(timedata)
