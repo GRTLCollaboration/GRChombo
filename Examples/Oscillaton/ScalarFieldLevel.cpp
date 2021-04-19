@@ -117,7 +117,7 @@ void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     // Calculate MatterCCZ4 right hand side with matter_t = ScalarField
     Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
-    MatterCCZ4<ScalarFieldWithPotential> my_ccz4_matter(
+    MatterCCZ4RHS<ScalarFieldWithPotential> my_ccz4_matter(
         scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
         m_p.G_Newton);
     BoxLoops::loop(my_ccz4_matter, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
@@ -133,25 +133,23 @@ void ScalarFieldLevel::specificUpdateODE(GRLevelData &a_soln,
 
 void ScalarFieldLevel::preTagCells()
 {
-  if (m_gr_amr.s_step == 0) {
-    // Pre tagging - fill ghost cells and calculate Ham terms
-    fillAllEvolutionGhosts();
-    Potential potential(m_p.potential_params);
-    ScalarFieldWithPotential scalar_field(potential);
-    BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
-                       scalar_field, m_dx, m_p.G_Newton, c_Ham,
-                       Interval(c_Mom, c_Mom), c_Ham_abs_sum,
-                       Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
-                   m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-    // fillAllGhosts();
-  }
-
-  else {
-
-    GRAMRLevel::preTagCells();
-    
-  }
-  
+    if (m_gr_amr.s_step == 0)
+    {
+        // Pre tagging - fill ghost cells and calculate Ham terms
+        fillAllEvolutionGhosts();
+        Potential potential(m_p.potential_params);
+        ScalarFieldWithPotential scalar_field(potential);
+        BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
+                           scalar_field, m_dx, m_p.G_Newton, c_Ham,
+                           Interval(c_Mom, c_Mom), c_Ham_abs_sum,
+                           Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
+                       m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+        // fillAllGhosts();
+    }
+    else
+    {
+        preTagCellsTruncationTagging();
+    }
 }
 
 void ScalarFieldLevel::computeDiagnosticsTaggingCriterion(
@@ -169,4 +167,3 @@ void ScalarFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
     //            FixedGridsTaggingCriterion(m_dx, m_level, 2.0 * m_p.L,
     //            m_p.center), current_state, tagging_criterion);
 }
-
