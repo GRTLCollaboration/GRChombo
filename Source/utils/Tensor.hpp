@@ -14,7 +14,7 @@
 template <int rank, class data_t, int size = DEFAULT_TENSOR_DIM> class Tensor
 {
     template <int, class, int> friend class Tensor;
-    typedef typename Tensor<rank - 1, data_t>::arr_t arr_t[size];
+    typedef typename Tensor<rank - 1, data_t, size>::arr_t arr_t[size];
     arr_t arr;
 
   public:

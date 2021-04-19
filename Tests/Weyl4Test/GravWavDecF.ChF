@@ -78,7 +78,7 @@ c ----- d2gammadxdy -- 2nd derivative of conformal metric
 c ----- dgammadx -- 1st derivative of conformal metric
 c ----- chris - conformal christoffel symbols
 c ----- chriss - christoffel symbols (non-conformal)
-c ----- chris1st - confrmal christoffel symbols, all lowered
+c ----- chris1st - conformal christoffel symbols, all lowered
 c ----- R - Ricci tensor on the slice from conformal metric
 c ----- Rchi - (Rfull - R)
 c ----- Rfull - Ricci tensor on the slice from full metric
