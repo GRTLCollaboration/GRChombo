@@ -286,8 +286,14 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::predict_next_origin()
     {
         FOR1(a)
         {
-            new_center[a] += (m_old_centers[0][a] + m_old_centers[2][a] -
-                              2. * m_old_centers[1][a]);
+            if (!m_interp.get_interpolator()->get_boundary_reflective(Side::Lo,
+                                                                      a) &&
+                !m_interp.get_interpolator()->get_boundary_reflective(Side::Hi,
+                                                                      a))
+            {
+                new_center[a] += (m_old_centers[0][a] + m_old_centers[2][a] -
+                                  2. * m_old_centers[1][a]);
+            }
         }
         if (m_params.verbose > AHFinder::SOME)
         {
@@ -303,7 +309,13 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::predict_next_origin()
     {
         FOR1(a)
         {
-            new_center[a] += (m_old_centers[0][a] - m_old_centers[1][a]);
+            if (!m_interp.get_interpolator()->get_boundary_reflective(Side::Lo,
+                                                                      a) &&
+                !m_interp.get_interpolator()->get_boundary_reflective(Side::Hi,
+                                                                      a))
+            {
+                new_center[a] += (m_old_centers[0][a] - m_old_centers[1][a]);
+            }
         }
 
         if (m_params.verbose > AHFinder::SOME)
