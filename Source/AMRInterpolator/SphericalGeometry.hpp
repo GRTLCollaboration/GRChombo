@@ -66,13 +66,13 @@ class SphericalGeometry
     //! returns the theta coordinate associated to the theta/u index
     ALWAYS_INLINE double u(int a_itheta, int a_num_points_theta) const
     {
-        return a_itheta * du(a_num_points_theta);
+        return a_itheta * du(a_num_points_theta) + get_domain_u_min();
     }
 
     //! returns the phi coordinate associated to the phi/v index
     ALWAYS_INLINE double v(int a_iphi, int a_num_points_phi) const
     {
-        return a_iphi * dv(a_num_points_phi);
+        return a_iphi * dv(a_num_points_phi) + get_domain_v_min();
     }
 
     ALWAYS_INLINE bool is_u_periodic() const { return false; }
