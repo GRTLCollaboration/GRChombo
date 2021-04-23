@@ -100,17 +100,11 @@ Real GRAMRLevel::advance()
 {
     CH_TIME("GRAMRLevel::advance");
 
-    // Work out roughly how fast the evolution is going since restart
-    double speed = (m_time - m_restart_time) / m_gr_amr.get_walltime();
-
-    // Get information on number of boxes on this level (helps with better load
-    // balancing)
-    const DisjointBoxLayout &level_domain = m_state_new.disjointBoxLayout();
-    int nbox = level_domain.dataIterator().size();
-    int total_nbox = level_domain.size();
-    pout() << "GRAMRLevel::advance level " << m_level << " at time " << m_time
-           << " (" << speed << " M/hr)"
-           << ". Boxes on this rank: " << nbox << " / " << total_nbox << endl;
+    // if 'print_progress_only_to_rank_0', still print if it's level 0 or
+    // t=restart_time
+    if (!m_p.print_progress_only_to_rank_0 || (procID() == 0) ||
+        m_time == m_restart_time)
+        printProgress("GRAMRLevel::advance");
 
     // copy soln to old state to save it
     m_state_new.copyTo(m_state_new.interval(), m_state_old,
@@ -342,6 +336,12 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
         m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS,
                                    iv_ghosts);
     }
+
+    // if 'print_progress_only_to_rank_0', print progress only on regrids
+    // (except for rank 0, which kept doing prints)
+    // print here instead of 'postRegrid' to avoid prints in reverse level order
+    if (m_p.print_progress_only_to_rank_0 && (procID() != 0))
+        printProgress("GRAMRLevel::regrid");
 }
 
 /// things to do after regridding
@@ -986,15 +986,14 @@ double GRAMRLevel::get_dx() const { return m_dx; }
 
 bool GRAMRLevel::at_level_timestep_multiple(int a_level) const
 {
-    const double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
-    double target_dt = coarsest_dt;
+    double target_dt = m_p.coarsest_dt;
     for (int ilevel = 0; ilevel < a_level; ++ilevel)
     {
         target_dt /= m_p.ref_ratios[ilevel];
     }
     // get difference to nearest multiple of target_dt
     const double time_remainder = remainder(m_time, target_dt);
-    return (abs(time_remainder) < m_gr_amr.timeEps() * coarsest_dt);
+    return (abs(time_remainder) < m_gr_amr.timeEps() * m_p.coarsest_dt);
 }
 
 void GRAMRLevel::fillAllGhosts(const VariableType var_type,
@@ -1098,4 +1097,20 @@ void GRAMRLevel::defineExchangeCopier(const DisjointBoxLayout &a_level_grids)
 
     IntVect iv_ghosts = m_num_ghosts * IntVect::Unit;
     m_exchange_copier.exchangeDefine(m_grown_grids, iv_ghosts);
+}
+
+void GRAMRLevel::printProgress(const std::string &from) const
+{
+    // Work out roughly how fast the evolution is going since restart
+    double speed = (m_time - m_restart_time) / m_gr_amr.get_walltime();
+
+    // Get information on number of boxes on this level (helps with better
+    // load balancing)
+    const DisjointBoxLayout &level_domain = m_state_new.disjointBoxLayout();
+    int nbox = level_domain.dataIterator().size();
+    int total_nbox = level_domain.size();
+
+    pout() << from << " level " << m_level << " at time " << m_time << " ("
+           << speed << " M/hr)"
+           << ". Boxes on this rank: " << nbox << " / " << total_nbox << endl;
 }

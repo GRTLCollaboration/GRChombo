@@ -84,7 +84,7 @@ is more senstitive).
 class AHFinder
 {
   public:
-    struct params
+    struct params // prepend with 'AH_' in params file
     {
         int num_ranks; //!< number of ranks for PETSc sub-communicator (default
                        //!< 0, which is 'all')
@@ -152,6 +152,13 @@ class AHFinder
         int extra_contain_diagnostic; // not a parameter (set internally);
                                       // counts how many
 
+        std::string stats_path,
+            stats_prefix; //!< name for stats file with
+                          //!< area, spin and AH origin/center
+        std::string coords_path,
+            coords_prefix; //!< name for coords file with AH
+                           //!< coordinates at each time step
+
         void read_params(GRParmParse &pp, const ChomboParameters &a_p);
     };
 
@@ -190,12 +197,6 @@ class AHFinder
            double a_initial_guess, //!< Initial guess for radius (or whatever
                                    //!< coordinate you're solving for)
            const params &a_params, //!< set of AH parameters
-           const std::string &a_stats =
-               "stats_AH", //!< name for stats file with
-                           //!< area, spin and AH origin/center
-           const std::string &a_coords =
-               "coords_AH",             //!< name for coords file with AH
-                                        //!< coordinates at each time step)
            bool solve_first_step = true //!< whether or not to solve if t=0
     );
 
@@ -205,8 +206,6 @@ class AHFinder
     int add_ah(const AHSurfaceGeometry &a_coord_system, double a_initial_guess,
                const params &a_params,
                const typename AHFunction::params &a_func_params,
-               const std::string &a_stats = "stats_AH",
-               const std::string &a_coords = "coords_AH",
                bool solve_first_step = true);
 
     // returns the index of the AH in m_apparent_horizons

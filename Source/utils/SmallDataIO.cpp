@@ -88,7 +88,9 @@ SmallDataIO::SmallDataIO(std::string a_filename_prefix, double a_dt,
         m_file.open(m_filename, file_openmode);
         if (!m_file)
         {
-            MayDay::Error("SmallDataIO::error opening file for writing");
+            MayDay::Error((std::string("SmallDataIO::error opening file '") +
+                           m_filename + "' for writing")
+                              .c_str());
         }
     }
 }

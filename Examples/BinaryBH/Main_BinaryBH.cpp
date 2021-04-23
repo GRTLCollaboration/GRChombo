@@ -55,7 +55,7 @@ int runGRChombo(int argc, char *argv[])
         int puncture_tracker_min_level = sim_params.max_level - 1;
         bh_amr.m_puncture_tracker.initial_setup(
             {sim_params.bh1_params.center, sim_params.bh2_params.center},
-            sim_params.checkpoint_prefix, puncture_tracker_min_level);
+            "punctures", sim_params.data_path, puncture_tracker_min_level);
     }
 
     // The line below selects the problem that is simulated

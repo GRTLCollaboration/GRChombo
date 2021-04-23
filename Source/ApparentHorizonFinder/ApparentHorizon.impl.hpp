@@ -541,8 +541,8 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
         // write stats
         double fake_dt =
             a_dt * m_params.solve_interval * m_params.print_interval;
-        SmallDataIO file(m_stats, fake_dt, a_time, a_restart_time,
-                         SmallDataIO::APPEND, !m_printed_once);
+        SmallDataIO file(m_params.stats_path + m_stats, fake_dt, a_time,
+                         a_restart_time, SmallDataIO::APPEND, !m_printed_once);
 
         file.remove_duplicate_time_data();
 
@@ -622,7 +622,8 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
 
         // write coordinates
         m_interp.interpolate_extra_vars(m_params.extra_vars);
-        write_coords_file(a_dt, a_time, a_restart_time, m_coords,
+        write_coords_file(a_dt, a_time, a_restart_time,
+                          m_params.coords_path + m_coords,
                           m_params.print_geometry_data);
     }
 }
@@ -725,7 +726,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
     // READ STATS
 
     // get centre from stats file
-    std::string file = m_stats + ".dat";
+    std::string file = m_params.stats_path + m_stats + ".dat";
     auto stats = SmallDataIO::read(file);
 
     int idx = 0;
@@ -876,8 +877,9 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
 
         if (m_params.verbose > AHFinder::NONE)
         {
-            pout() << "Setting origin from stats file '" << m_stats << "' at ("
-                   << origin[0] << "," << origin[1]
+            pout() << "Setting origin from stats file '"
+                   << m_params.stats_path + m_stats << "' at (" << origin[0]
+                   << "," << origin[1]
 #if CH_SPACEDIM == 3
                    << "," << origin[2]
 #endif
@@ -1011,15 +1013,10 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
         ////////////////////
 
         // determine last step in which there was an AH output
-
-        // the lines commented below also work, but not if there's only one
-        // stats, as then 'old_print_dt' can't be defined std::string
-        // coords_filename = SmallDataIO::get_new_filename(m_coords,
-        // old_print_dt, current_time);
-
         int coords_file_number = stats[1][idx];
-        std::string coords_filename = SmallDataIO::get_new_filename(
-            m_coords, 1. /*fake dt*/, coords_file_number);
+        std::string coords_filename =
+            SmallDataIO::get_new_filename(m_params.coords_path + m_coords,
+                                          1. /*fake dt*/, coords_file_number);
 
         auto coords = SmallDataIO::read(coords_filename);
 

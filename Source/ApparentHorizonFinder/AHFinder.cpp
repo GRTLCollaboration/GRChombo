@@ -9,6 +9,7 @@
 
 #include "AHInterpolation.hpp"
 #include "ApparentHorizon.hpp"
+#include "FilesystemTools.hpp"
 
 AHFinder::~AHFinder()
 {
@@ -20,21 +21,27 @@ AHFinder::~AHFinder()
 
 int AHFinder::add_ah(const AHSurfaceGeometry &a_coord_system,
                      double a_initial_guess, const AHFinder::params &a_params,
-                     const std::string &a_stats, const std::string &a_coords,
                      bool solve_first_step)
 {
     return add_ah(a_coord_system, a_initial_guess, a_params,
-                  AHFunction::params(), a_stats, a_coords, solve_first_step);
+                  AHFunction::params(), solve_first_step);
 }
 
 int AHFinder::add_ah(const AHSurfaceGeometry &a_coord_system,
                      double a_initial_guess, const AHFinder::params &a_params,
                      const typename AHFunction::params &a_func_params,
-                     const std::string &a_stats, const std::string &a_coords,
                      bool solve_first_step)
 {
     if (!AHFinder::m_initialized)
+    {
         AHFinder::PETSc_initialize(a_params.num_ranks);
+
+        if (!FilesystemTools::directory_exists(a_params.stats_path))
+            FilesystemTools::mkdir_recursive(a_params.stats_path);
+
+        if (!FilesystemTools::directory_exists(a_params.coords_path))
+            FilesystemTools::mkdir_recursive(a_params.coords_path);
+    }
 
     // determine how many AH there are already
     const int num_ah = m_apparent_horizons.size();
@@ -45,8 +52,9 @@ int AHFinder::add_ah(const AHSurfaceGeometry &a_coord_system,
     m_apparent_horizons.push_back(
         new ApparentHorizon<AHSurfaceGeometry, AHFunction>(
             interp, a_initial_guess, a_params, a_func_params,
-            a_stats + std::to_string(num_ah + 1),
-            a_coords + std::to_string(num_ah + 1) + "_", solve_first_step));
+            a_params.stats_prefix + std::to_string(num_ah + 1),
+            a_params.coords_prefix + std::to_string(num_ah + 1) + "_",
+            solve_first_step));
     m_merger_pairs.push_back({-1, -1});
 
     return num_ah;
@@ -70,16 +78,10 @@ int AHFinder::add_ah_merger(int ah1, int ah2, const params &a_params)
         m_apparent_horizons[ah1]->get_ah_interp().get_coord_system();
     coord_system.set_origin(origin_merger);
 
-    std::string stats = m_apparent_horizons[ah1]->m_stats;
-    std::string coords = m_apparent_horizons[ah1]->m_coords;
-    // remove number of AH1 from file names
-    stats = stats.substr(0, stats.size() - std::to_string(ah1).size());
-    coords = coords.substr(0, coords.size() - std::to_string(ah1).size() - 1);
-
     auto &function_to_optimize_params = m_apparent_horizons[ah1]->m_func_params;
 
     int num = add_ah(coord_system, initial_guess_merger, a_params,
-                     function_to_optimize_params, stats, coords, do_solve);
+                     function_to_optimize_params, do_solve);
     m_merger_pairs[num] = {ah1, ah2};
 
     return num;
@@ -454,13 +456,13 @@ void AHFinder::params::read_params(GRParmParse &pp, const ChomboParameters &a_p)
     num_extra_vars = 0;
     extra_contain_diagnostic = 0;
 
-    int AH_num_write_vars;
-    pp.load("AH_num_write_vars", AH_num_write_vars, 0);
-    if (AH_num_write_vars > 0)
+    int AH_num_extra_vars;
+    pp.load("AH_num_extra_vars", AH_num_extra_vars, 0);
+    if (AH_num_extra_vars > 0)
     {
-        std::vector<std::string> AH_write_var_names(AH_num_write_vars, "");
-        pp.load("AH_write_vars", AH_write_var_names, AH_num_write_vars);
-        for (const std::string &full_name : AH_write_var_names)
+        std::vector<std::string> AH_extra_var_names(AH_num_extra_vars, "");
+        pp.load("AH_extra_vars", AH_extra_var_names, AH_num_extra_vars);
+        for (const std::string &full_name : AH_extra_var_names)
         {
             std::string var_name = full_name;
 
@@ -479,7 +481,7 @@ void AHFinder::params::read_params(GRParmParse &pp, const ChomboParameters &a_p)
                 var_name = var_name.substr(3);
             }
 
-            // first assume write_var is a normal evolution var
+            // first assume extra_var is a normal evolution var
             int var = UserVariables::variable_name_to_enum(var_name);
             VariableType var_type = VariableType::evolution;
             if (var < 0)
@@ -511,6 +513,22 @@ void AHFinder::params::read_params(GRParmParse &pp, const ChomboParameters &a_p)
             }
         }
     }
+
+    stats_path = a_p.data_path;
+
+    if (pp.contains("coords_subpath"))
+    {
+        pp.load("coords_subpath", coords_path);
+        if (!coords_path.empty() && coords_path.back() != '/')
+            coords_path += "/";
+        if (a_p.output_path != "./" && !a_p.output_path.empty())
+            coords_path = a_p.output_path + coords_path;
+    }
+    else
+        coords_path = stats_path;
+
+    pp.load("stats_prefix", stats_prefix, std::string("stats_AH"));
+    pp.load("coords_prefix", coords_prefix, std::string("coords_AH"));
 }
 
 /////////////////////////////////////////////////////////

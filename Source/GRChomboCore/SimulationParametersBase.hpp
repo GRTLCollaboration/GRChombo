@@ -63,12 +63,15 @@ class SimulationParametersBase : public ChomboParameters
         pp.load("min_lapse", min_lapse, 1e-4);
 
         // Extraction params
-        pp.load("num_extraction_radii", extraction_params.num_extraction_radii,
-                0);
-        // Check for multiple extraction radii, otherwise load single
-        // radius/level (for backwards compatibility).
-        if (extraction_params.num_extraction_radii > 0)
+        pp.load("activate_extraction", activate_extraction, false);
+
+        if (activate_extraction)
         {
+            pp.load("num_extraction_radii",
+                    extraction_params.num_extraction_radii, 1);
+
+            // Check for multiple extraction radii, otherwise load single
+            // radius/level (for backwards compatibility).
             if (pp.contains("extraction_levels"))
             {
                 pp.load("extraction_levels",
@@ -132,8 +135,29 @@ class SimulationParametersBase : public ChomboParameters
 
             pp.load("write_extraction", extraction_params.write_extraction,
                     false);
-            pp.load<std::string>("extraction_prefix",
-                                 extraction_params.extraction_prefix, "");
+
+            std::string extraction_path;
+            if (pp.contains("extraction_subpath"))
+            {
+                pp.load("extraction_subpath", extraction_path);
+                if (!extraction_path.empty() && extraction_path.back() != '/')
+                    extraction_path += "/";
+                if (output_path != "./" && !output_path.empty())
+                    extraction_path = output_path + extraction_path;
+            }
+            else
+                extraction_path = data_path;
+
+            extraction_params.data_path = data_path;
+            extraction_params.extraction_path = extraction_path;
+
+            // default names to Weyl extraction
+            pp.load("extraction_file_prefix",
+                    extraction_params.extraction_file_prefix,
+                    std::string("Weyl4_extraction_"));
+            pp.load("integral_file_prefix",
+                    extraction_params.integral_file_prefix,
+                    std::string("Weyl4_mode_"));
         }
 
 #ifdef USE_AHFINDER
@@ -224,8 +248,12 @@ class SimulationParametersBase : public ChomboParameters
                        "usually O(1/M_ADM) so typically O(1) in code units");
 
         // Now extraction parameters
-        if (extraction_params.num_extraction_radii > 0)
+        if (activate_extraction)
         {
+            check_parameter(
+                "num_extraction_radii", extraction_params.num_extraction_radii,
+                extraction_params.num_extraction_radii > 0,
+                "must be bigger than 0 when activate_extraction = 1");
 
             FOR1(idir)
             {
@@ -288,11 +316,13 @@ class SimulationParametersBase : public ChomboParameters
 
     int formulation; // Whether to use BSSN or CCZ4
 
-    // Collection of parameters necessary for the CCZ4 RHS and extraction
+    // Collection of parameters necessary for the CCZ4 RHS
     // Note the gauge parameters are specific to MovingPunctureGauge
     // If you are using a different gauge, you need to load your parameters
     // in your own SimulationParameters class.
     CCZ4_params_t<> ccz4_params;
+
+    bool activate_extraction;
     spherical_extraction_params_t extraction_params;
 
 #ifdef USE_AHFINDER

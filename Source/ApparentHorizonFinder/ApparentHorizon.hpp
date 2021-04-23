@@ -32,7 +32,7 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
                                 //!< coordinate you're solving for)
         const AHFinder::params &a_params, //!< set of AH parameters
         const std::string &a_stats =
-            "stats.dat", //!< name for output file with area, spin and AH origin
+            "stats", //!< name for output file with area, spin and AH origin
         const std::string &a_coords =
             "coords_", //!< name for output file with AH coordinates at each
                        //!< time step
@@ -45,7 +45,7 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
                     const AHFinder::params &a_params,
                     const typename AHFunction::params &a_func_params,
                     const std::string &a_stats = "stats",
-                    const std::string &a_coords = "coords",
+                    const std::string &a_coords = "coords_",
                     bool solve_first_step = true);
     ~ApparentHorizon();
 
