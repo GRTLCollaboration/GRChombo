@@ -91,40 +91,6 @@ AHInterpolation<SurfaceGeometry, AHFunction>::get_coord_system() const
 }
 
 template <class SurfaceGeometry, class AHFunction>
-bool AHInterpolation<SurfaceGeometry, AHFunction>::is_u_periodic() const
-{
-    return m_coord_system.is_u_periodic();
-}
-template <class SurfaceGeometry, class AHFunction>
-double AHInterpolation<SurfaceGeometry, AHFunction>::get_domain_u_min() const
-{
-    return m_coord_system.get_domain_u_min();
-}
-template <class SurfaceGeometry, class AHFunction>
-double AHInterpolation<SurfaceGeometry, AHFunction>::get_domain_u_max() const
-{
-    return m_coord_system.get_domain_u_max();
-}
-
-#if CH_SPACEDIM == 3
-template <class SurfaceGeometry, class AHFunction>
-bool AHInterpolation<SurfaceGeometry, AHFunction>::is_v_periodic() const
-{
-    return m_coord_system.is_v_periodic();
-}
-template <class SurfaceGeometry, class AHFunction>
-double AHInterpolation<SurfaceGeometry, AHFunction>::get_domain_v_min() const
-{
-    return m_coord_system.get_domain_v_min();
-}
-template <class SurfaceGeometry, class AHFunction>
-double AHInterpolation<SurfaceGeometry, AHFunction>::get_domain_v_max() const
-{
-    return m_coord_system.get_domain_v_max();
-}
-#endif
-
-template <class SurfaceGeometry, class AHFunction>
 std::vector<std::string>
 AHInterpolation<SurfaceGeometry, AHFunction>::get_labels() const
 {
@@ -143,13 +109,6 @@ void AHInterpolation<SurfaceGeometry, AHFunction>::set_origin(
     const std::array<double, CH_SPACEDIM> &origin)
 {
     m_coord_system.set_origin(origin);
-}
-
-template <class SurfaceGeometry, class AHFunction>
-const std::array<double, CH_SPACEDIM> &
-AHInterpolation<SurfaceGeometry, AHFunction>::get_origin() const
-{
-    return m_coord_system.get_origin();
 }
 
 template <class SurfaceGeometry, class AHFunction>
@@ -254,26 +213,6 @@ bool AHInterpolation<SurfaceGeometry, AHFunction>::fit_in_grid(double &x,
 #endif
 
     return out_of_grid;
-}
-
-template <class SurfaceGeometry, class AHFunction>
-double AHInterpolation<SurfaceGeometry, AHFunction>::get_grid_coord(int a_dir,
-                                                                    double f,
-                                                                    double u
-#if CH_SPACEDIM == 3
-                                                                    ,
-                                                                    double v
-#endif
-) const
-{
-    CH_TIME("AHInterpolation::get_grid_coord");
-
-    return m_coord_system.get_grid_coord(a_dir, f, u
-#if CH_SPACEDIM == 3
-                                         ,
-                                         v
-#endif
-    );
 }
 
 //! triplet of functions to be used together in blocks of code that require

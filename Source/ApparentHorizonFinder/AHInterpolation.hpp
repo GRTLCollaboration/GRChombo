@@ -61,35 +61,15 @@ template <class SurfaceGeometry, class AHFunction> class AHInterpolation
     const AMRInterpolator<Lagrange<4>> *get_interpolator() const;
     const SurfaceGeometry &get_coord_system() const;
 
-    // several of the methods below just call the correspondent method of the
-    // CoordSystem, as these are needed in the 'ApparentHorizon' class
-    bool is_u_periodic() const;
-    double get_domain_u_min() const; //!< lower bound of (u,v) coordinates
-    double get_domain_u_max() const; //!< upper bound of (u,v) coordinates
-#if CH_SPACEDIM == 3
-    bool is_v_periodic() const;
-    double get_domain_v_min() const; //!< lower bound of (u,v) coordinates
-    double get_domain_v_max() const; //!< upper bound of (u,v) coordinates
-#endif
-
     std::vector<std::string> get_labels() const; //!< get all names (u, v, f)
 
     void set_origin(
         const std::array<double, CH_SPACEDIM> &); //!< set origin of CoordSystem
-    const std::array<double, CH_SPACEDIM> &
-    get_origin() const; //!< get origin of CoordSystem
 
     void refresh_interpolator(
         bool printing_step,
         const std::map<std::string, std::tuple<int, VariableType, int>>
             &extra_vars); //!< refresh AMRInterpolator 'm_interpolator'
-
-    double get_grid_coord(int a_dir, double f, double u
-#if CH_SPACEDIM == 3
-                          ,
-                          double v
-#endif
-    ) const; //!< transform from spherical to cartesian
 
     //! returns whether any pointis outside of grid (==> diverging)
     bool set_coordinates(const std::vector<double> &f,

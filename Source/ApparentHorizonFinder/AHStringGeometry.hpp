@@ -17,6 +17,7 @@
 // Other includes
 #include "AHGeometryData.hpp"
 #include "AlwaysInline.hpp"
+#include "IntegrationMethod.hpp"
 #include <array>
 
 // Chombo namespace
@@ -45,16 +46,30 @@ class AHStringGeometry
         return fake_origin;
     }
 
-    ALWAYS_INLINE double get_domain_u_min() const { return 0.; }
+    static ALWAYS_INLINE double get_domain_u_min() { return 0.; }
     ALWAYS_INLINE double get_domain_u_max() const { return m_string_length; }
 
-    ALWAYS_INLINE bool is_u_periodic() const { return true; }
+    //! returns the grid spacing in u
+    ALWAYS_INLINE double du(int a_num_points_u) const
+    {
+        return (get_domain_u_max() - get_domain_u_min()) /
+               (double)(a_num_points_u);
+    }
 
-    ALWAYS_INLINE std::string param_name() const { return "y"; }
+    //! returns the u coordinate associated to the u/u index
+    ALWAYS_INLINE double u(int a_iu, int a_num_points_u) const
+    {
+        return a_iu * du(a_num_points_u) + get_domain_u_min();
+    }
 
-    ALWAYS_INLINE std::string u_name() const { return "x"; }
+    static ALWAYS_INLINE bool is_u_periodic() { return true; }
 
-    ALWAYS_INLINE double get_grid_coord(int a_dir, double a_y, double a_x) const
+    static ALWAYS_INLINE std::string param_name() { return "y"; }
+
+    static ALWAYS_INLINE std::string u_name() { return "x"; }
+
+    static ALWAYS_INLINE double get_grid_coord(int a_dir, double a_y,
+                                               double a_x)
     {
         switch (a_dir)
         {
@@ -67,7 +82,20 @@ class AHStringGeometry
         }
     }
 
-    AHGeometryData get_geometry_data(double y, double x) const
+    static const IntegrationMethod &
+    get_recommended_integration_method_u(int a_num_points_u)
+    {
+        static const IntegrationMethod &simpson = IntegrationMethod::simpson;
+        static const IntegrationMethod &trapezium =
+            IntegrationMethod::trapezium;
+        if (simpson.is_valid(a_num_points_u, is_u_periodic()))
+            return simpson;
+        MayDay::Warning("Use an odd number of 'u' points to use simpson rule. "
+                        "Defaulting to trapezium.");
+        return trapezium;
+    }
+
+    static AHGeometryData get_geometry_data(double y, double x)
     {
         CH_TIME("AHStringGeometry::get_geometry_data");
 

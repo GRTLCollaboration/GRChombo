@@ -1,5 +1,5 @@
 verbosity = 0
-N = 32
+N = 64
 L = 16
 
 chk_prefix = TestChk_
@@ -18,10 +18,12 @@ checkpoint_interval = 1
 # extraction params
 num_extraction_radii = 2
 extraction_radii = 4. 6.
-num_points_phi_lo = 12
-num_points_theta_lo = 13 # choose "multiple of 3 and of 4" + 1, to be compatible with Simpson, Simpson 3/8 and with Boole
+num_points_phi_lo = 60
+num_points_theta_lo = 60 # multiple of 3,4,5
 
 # Spherical Harmonic to set and extract
-es = 0
-el = 2
-em = 0
+# needed to choose a complicated mode, otherwise computation
+# is too precise (since we use 60 points) and doesn't converge
+es = -1
+el = 6
+em = 1

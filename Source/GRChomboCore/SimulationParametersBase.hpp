@@ -19,7 +19,7 @@
 
 #include "SphericalExtraction.hpp"
 // add this type alias here for backwards compatibility
-using extraction_params_t = SphericalExtraction::params_t;
+using extraction_params_t = spherical_extraction_params_t;
 
 class SimulationParametersBase : public ChomboParameters
 {
@@ -293,7 +293,7 @@ class SimulationParametersBase : public ChomboParameters
     // If you are using a different gauge, you need to load your parameters
     // in your own SimulationParameters class.
     CCZ4_params_t<> ccz4_params;
-    SphericalExtraction::params_t extraction_params;
+    spherical_extraction_params_t extraction_params;
 
 #ifdef USE_AHFINDER
     bool AH_activate;

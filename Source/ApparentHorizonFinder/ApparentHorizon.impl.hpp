@@ -62,10 +62,13 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::ApparentHorizon(
       m_max_F(0.), m_min_F(0.), m_ave_F(0.), m_std_F(0.),
 
       m_integration_methods({
+          a_interp.get_coord_system().get_recommended_integration_method_u(
+              a_params.num_points_u)
 #if CH_SPACEDIM == 3
-          IntegrationMethod::simpson,
+              ,
+              a_interp.get_coord_system().get_recommended_integration_method_v(
+                  a_params.num_points_v)
 #endif
-              IntegrationMethod::simpson
       }),
 
       m_area(NAN), m_spin(NAN), m_mass(NAN), m_irreducible_mass(NAN),
@@ -75,12 +78,12 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::ApparentHorizon(
 
       m_interp(a_interp), m_interp_plus(a_interp), m_interp_minus(a_interp),
 
-      m_periodic_u(a_interp.is_u_periodic()),
+      m_periodic_u(a_interp.get_coord_system().is_u_periodic()),
       m_num_global_u(a_params.num_points_u)
 
 #if CH_SPACEDIM == 3
       ,
-      m_periodic_v(a_interp.is_v_periodic()),
+      m_periodic_v(a_interp.get_coord_system().is_v_periodic()),
       m_num_global_v(a_params.num_points_v)
 #endif
 {
@@ -135,7 +138,7 @@ template <class SurfaceGeometry, class AHFunction>
 const std::array<double, CH_SPACEDIM> &
 ApparentHorizon<SurfaceGeometry, AHFunction>::get_origin() const
 {
-    return m_interp.get_origin();
+    return m_interp.get_coord_system().get_origin();
 }
 
 template <class SurfaceGeometry, class AHFunction>
@@ -236,7 +239,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::reset_initial_guess()
     if (!AHFinder::is_rank_active())
         return;
 
-    auto origin = m_interp.get_origin();
+    auto origin = get_origin();
 
     // verify origin +- initial guess is inside the grid
     bool out_of_grid = m_interp.is_in_grid(origin, m_initial_guess);
@@ -1320,10 +1323,12 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::check_integration_methods()
 {
     // check if integration methods are valid given periodicity and number of
     // points
-    bool valid_u = m_integration_methods[0].is_valid(m_params.num_points_u,
-                                                     m_interp.is_u_periodic());
+    bool valid_u = m_integration_methods[0].is_valid(
+        m_params.num_points_u, m_interp.get_coord_system().is_u_periodic());
 
-    IntegrationMethod method_default = IntegrationMethod::trapezium;
+    const IntegrationMethod &method_default_u =
+        m_interp.get_coord_system().get_recommended_integration_method_u(
+            m_num_global_u);
     if (!valid_u)
     {
         std::string warn =
@@ -1332,12 +1337,15 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::check_integration_methods()
             "Reverting to trapezium rule.";
         MayDay::Warning(warn.c_str());
         pout() << warn << std::endl;
-        m_integration_methods[0] = method_default;
+        m_integration_methods[0] = method_default_u;
     }
 
 #if CH_SPACEDIM == 3
-    bool valid_v = m_integration_methods[1].is_valid(m_params.num_points_v,
-                                                     m_interp.is_v_periodic());
+    bool valid_v = m_integration_methods[1].is_valid(
+        m_params.num_points_v, m_interp.get_coord_system().is_v_periodic());
+    const IntegrationMethod &method_default_v =
+        m_interp.get_coord_system().get_recommended_integration_method_v(
+            m_num_global_v);
     if (!valid_v)
     {
         std::string warn =
@@ -1346,7 +1354,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::check_integration_methods()
             "Reverting to trapezium rule.";
         MayDay::Warning(warn.c_str());
         pout() << warn << std::endl;
-        m_integration_methods[1] = method_default;
+        m_integration_methods[1] = method_default_v;
     }
 #endif
 }
@@ -1418,7 +1426,8 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_spin_dimensionless(
                     CH_assert(norm2 >= 0.);
 
                     double weight = m_integration_methods[1].weight(
-                        v, m_params.num_points_v, m_interp.is_v_periodic());
+                        v, m_params.num_points_v,
+                        m_interp.get_coord_system().is_v_periodic());
 
                     integral += sqrt(norm2) * weight * m_dv;
                 }
@@ -1569,7 +1578,8 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
                 double det = TensorAlgebra::compute_determinant(g_horizon);
 
                 double weight = m_integration_methods[0].weight(
-                    u, m_params.num_points_u, m_interp.is_u_periodic());
+                    u, m_params.num_points_u,
+                    m_interp.get_coord_system().is_u_periodic());
 
                 FOR1(a)
                 {
@@ -1587,7 +1597,8 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
                 idx++;
             }
             double weight = m_integration_methods[1].weight(
-                v, m_params.num_points_v, m_interp.is_v_periodic());
+                v, m_params.num_points_v,
+                m_interp.get_coord_system().is_v_periodic());
             FOR1(a) { integrals[a] += weight * m_dv * inner_integral[a]; }
         }
 
@@ -1703,7 +1714,8 @@ double ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_area()
                 double det = TensorAlgebra::compute_determinant(g_horizon);
 
                 double weight = m_integration_methods[0].weight(
-                    u, m_params.num_points_u, m_interp.is_u_periodic());
+                    u, m_params.num_points_u,
+                    m_interp.get_coord_system().is_u_periodic());
 
                 double element = sqrt(det) * weight * m_du;
 
@@ -1720,7 +1732,8 @@ double ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_area()
             }
 #if CH_SPACEDIM == 3
             double weight = m_integration_methods[1].weight(
-                v, m_params.num_points_v, m_interp.is_v_periodic());
+                v, m_params.num_points_v,
+                m_interp.get_coord_system().is_v_periodic());
             integral += weight * m_dv * inner_integral;
 #elif CH_SPACEDIM == 2
             integral += inner_integral;
@@ -1802,13 +1815,13 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_center()
             {
                 for (unsigned i = 0; i < CH_SPACEDIM; ++i)
                 {
-                    double coord_i =
-                        m_interp.get_grid_coord(i, m_F[idx], m_u[idx]
+                    double coord_i = m_interp.get_coord_system().get_grid_coord(
+                        i, m_F[idx], m_u[idx]
 #if CH_SPACEDIM == 3
-                                                ,
-                                                m_v[idx]
+                        ,
+                        m_v[idx]
 #endif
-                        );
+                    );
 
                     // temp[i] += point[i]; // old method
                     if (coord_i > max_temp[i])

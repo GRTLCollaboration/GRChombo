@@ -30,4 +30,7 @@ block_factor = 16
 kerr_mass = 10.
 kerr_spin = 5.
 kerr_spin_direction = 1. 0. 0.
-#initial_guess = 5
+#AH_initial_guess = 5
+
+AH_num_points_u = 21
+AH_num_points_v = 20

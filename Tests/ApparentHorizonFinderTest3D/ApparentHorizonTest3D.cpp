@@ -60,7 +60,16 @@ int runApparentHorizonTest3D(int argc, char *argv[])
     int status = 0;
 
 #ifdef USE_AHFINDER
-    AHFinder::params AH_params = {1, 15, 20, 1, 1, false, false, 0, 0., -1.};
+    AHFinder::params AH_params = {1,
+                                  sim_params.AH_num_points_u,
+                                  sim_params.AH_num_points_v,
+                                  1,
+                                  1,
+                                  false,
+                                  false,
+                                  0,
+                                  0.,
+                                  -1.};
     AH_params.verbose = 3;
 
     // Set up interpolator and PETSc subcommunicator when AH extraction is
@@ -70,7 +79,7 @@ int runApparentHorizonTest3D(int argc, char *argv[])
         sim_params.verbosity);
     bh_amr.set_interpolator(&interpolator);
 
-    AHSphericalGeometry sph(sim_params.center);
+    AHSurfaceGeometry sph(sim_params.center);
     bh_amr.m_ah_finder.add_ah(sph, sim_params.initial_guess, AH_params);
 
     if (!bh_amr.m_ah_finder.get(0)->get_converged())

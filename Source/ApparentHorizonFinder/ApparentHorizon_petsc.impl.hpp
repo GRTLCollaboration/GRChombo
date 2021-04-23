@@ -33,13 +33,6 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::initialise_PETSc()
     if (!AHFinder::is_rank_active())
         return;
 
-    const double lo_u = m_interp.get_domain_u_min();
-    const double hi_u = m_interp.get_domain_u_max();
-#if CH_SPACEDIM == 3 // lo_v, hi_v not used otherwise
-    const double lo_v = m_interp.get_domain_v_min();
-    const double hi_v = m_interp.get_domain_v_max();
-#endif
-
 #if PETSC_VERSION_LT(3, 5, 0)
 #define DM_BOUNDARY_PERIODIC DMDA_BOUNDARY_PERIODIC
 #define DM_BOUNDARY_GHOSTED DMDA_BOUNDARY_PERIODIC
@@ -68,8 +61,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::initialise_PETSc()
 
     DMSetUp(m_dmda);
 
-    // reload -> is it the same value?
-#if CH_SPACEDIM == 3 // lo_v, hi_v not used otherwise
+#if CH_SPACEDIM == 3
     DMDAGetInfo(m_dmda, NULL, &m_num_global_u, &m_num_global_v, NULL, NULL,
                 NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
 #elif CH_SPACEDIM == 2
@@ -77,12 +69,10 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::initialise_PETSc()
                 NULL, NULL, NULL, NULL, NULL, NULL);
 #endif
 
-    m_du =
-        (hi_u - lo_u) / (m_periodic_u ? m_num_global_u : (m_num_global_u - 1));
+    m_du = m_interp.get_coord_system().du(m_num_global_u);
 
 #if CH_SPACEDIM == 3
-    m_dv =
-        (hi_v - lo_v) / (m_periodic_v ? m_num_global_v : (m_num_global_v - 1));
+    m_dv = m_interp.get_coord_system().dv(m_num_global_v);
 #endif
 
 #if CH_SPACEDIM == 3
@@ -112,10 +102,12 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::initialise_PETSc()
         for (int u = m_umin; u < m_umax; ++u)
         {
 #if CH_SPACEDIM == 3
-            m_u[(v - m_vmin) * m_nu + (u - m_umin)] = lo_u + u * m_du;
-            m_v[(v - m_vmin) * m_nu + (u - m_umin)] = lo_v + v * m_dv;
+            m_u[(v - m_vmin) * m_nu + (u - m_umin)] =
+                m_interp.get_coord_system().u(u, m_num_global_u);
+            m_v[(v - m_vmin) * m_nu + (u - m_umin)] =
+                m_interp.get_coord_system().v(v, m_num_global_v);
 #elif CH_SPACEDIM == 2
-            m_u[u - m_umin] = lo_u + u * m_du;
+            m_u[u - m_umin] = m_interp.get_coord_system().u(u, m_num_global_u);
 #endif
         }
     }
@@ -202,7 +194,6 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::interpolate_ah(
     // check if number of points changed
     bool points_changed = false;
     const double du = old_coords[0][1] - old_coords[0][0];
-    const double lo_u = m_interp.get_domain_u_min();
 
 #if CH_SPACEDIM == 3
     // assumes ordering in file is done first by fixed 'v', varying 'u'
@@ -214,7 +205,6 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::interpolate_ah(
     int old_number_of_v = old_coords[0].size() / old_number_of_u;
     const double dv =
         old_coords[1][old_number_of_u] - old_coords[1][old_number_of_u - 1];
-    const double lo_v = m_interp.get_domain_v_min();
     // int total_new_points = m_num_global_u * m_num_global_v;
 
     points_changed |= (old_number_of_v != m_num_global_v);
@@ -246,9 +236,9 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::interpolate_ah(
             {
 #if CH_SPACEDIM == 3
                 int idx_global = v * m_num_global_u + u;
+                double val_v = m_interp.get_coord_system().v(v, m_num_global_v);
                 int idx_local = (v - m_vmin) * m_nu + (u - m_umin);
-                if (std::abs((lo_v + v * m_dv) - old_coords[1][idx_global]) >
-                    1.e-7)
+                if (std::abs(val_v - old_coords[1][idx_global]) > 1.e-7)
                     MayDay::Error(
                         "'v' coordinates incompatible with restart data");
 #elif CH_SPACEDIM == 2
@@ -256,8 +246,8 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::interpolate_ah(
                 int idx_local = (u - m_umin);
 #endif
 
-                if (std::abs((lo_u + u * m_du) - old_coords[0][idx_global]) >
-                    1.e-7)
+                double val_u = m_interp.get_coord_system().u(u, m_num_global_u);
+                if (std::abs(val_u - old_coords[0][idx_global]) > 1.e-7)
                     MayDay::Error(
                         "'u' coordinates incompatible with restart data");
 
@@ -286,16 +276,18 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::interpolate_ah(
 #if CH_SPACEDIM == 3
     SimpleArrayBox<CH_SPACEDIM - 1> box(
         {old_number_of_u, old_number_of_v}, old_coords[CH_SPACEDIM - 1],
-        {m_interp.is_u_periodic(), m_interp.is_v_periodic()});
+        {m_interp.get_coord_system().is_u_periodic(),
+         m_interp.get_coord_system().is_v_periodic()});
     SimpleInterpSource<CH_SPACEDIM - 1> source(
         {old_number_of_u, old_number_of_v},
-        {m_interp.is_u_periodic(), m_interp.is_v_periodic()});
+        {m_interp.get_coord_system().is_u_periodic(),
+         m_interp.get_coord_system().is_v_periodic()});
 #elif CH_SPACEDIM == 2
-    SimpleArrayBox<CH_SPACEDIM - 1> box({old_number_of_u},
-                                        old_coords[CH_SPACEDIM - 1],
-                                        {m_interp.is_u_periodic()});
-    SimpleInterpSource<CH_SPACEDIM - 1> source({old_number_of_u},
-                                               {m_interp.is_u_periodic()});
+    SimpleArrayBox<CH_SPACEDIM - 1> box(
+        {old_number_of_u}, old_coords[CH_SPACEDIM - 1],
+        {m_interp.get_coord_system().is_u_periodic()});
+    SimpleInterpSource<CH_SPACEDIM - 1> source(
+        {old_number_of_u}, {m_interp.get_coord_system().is_u_periodic()});
 #endif
 
     const int Order = 4;
@@ -314,7 +306,7 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::interpolate_ah(
 #if CH_SPACEDIM == 3
     for (int v = m_vmin; v < m_vmax; ++v)
     {
-        double v_val = lo_v + v * m_dv;
+        double v_val = m_interp.get_coord_system().v(v, m_num_global_v);
         double v_old_idx = v_val / dv;
         // round such that we don't get AMRInterpolator errors
         // (e.g. the last point idx=N-1 should be exact, and not being exact was
@@ -327,7 +319,7 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::interpolate_ah(
 #endif
         for (int u = m_umin; u < m_umax; ++u)
         {
-            double u_val = lo_u + u * m_du;
+            double u_val = m_interp.get_coord_system().u(u, m_num_global_u);
             double u_old_idx = u_val / du;
             // round such that we don't get AMRInterpolator errors (same as for
             // 'v')

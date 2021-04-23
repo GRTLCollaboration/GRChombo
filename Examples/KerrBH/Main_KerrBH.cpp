@@ -53,7 +53,7 @@ int runGRChombo(int argc, char *argv[])
 #ifdef USE_AHFINDER
     if (sim_params.AH_activate)
     {
-        AHSphericalGeometry sph(sim_params.kerr_params.center);
+        AHSurfaceGeometry sph(sim_params.kerr_params.center);
 
 #ifdef USE_CHI_CONTOURS // uncomment in UserVariables
         std::string str_chi = std::to_string(sim_params.look_for_chi_contour);
