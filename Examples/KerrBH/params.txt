@@ -171,7 +171,9 @@ AH_verbose = 2
 AH_num_extra_vars = 1
 AH_extra_vars = chi
 
-# coords_subpath = "data/coords"
+# AH_coords_subpath = "data/coords"
+# AH_stats_prefix = "stats_AH"
+# AH_coords_prefix = "coords_AH"
 
 #################################################
 

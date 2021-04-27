@@ -516,9 +516,9 @@ void AHFinder::params::read_params(GRParmParse &pp, const ChomboParameters &a_p)
 
     stats_path = a_p.data_path;
 
-    if (pp.contains("coords_subpath"))
+    if (pp.contains("AH_coords_subpath"))
     {
-        pp.load("coords_subpath", coords_path);
+        pp.load("AH_coords_subpath", coords_path);
         if (!coords_path.empty() && coords_path.back() != '/')
             coords_path += "/";
         if (a_p.output_path != "./" && !a_p.output_path.empty())
@@ -527,8 +527,8 @@ void AHFinder::params::read_params(GRParmParse &pp, const ChomboParameters &a_p)
     else
         coords_path = stats_path;
 
-    pp.load("stats_prefix", stats_prefix, std::string("stats_AH"));
-    pp.load("coords_prefix", coords_prefix, std::string("coords_AH"));
+    pp.load("AH_stats_prefix", stats_prefix, std::string("stats_AH"));
+    pp.load("AH_coords_prefix", coords_prefix, std::string("coords_AH"));
 }
 
 /////////////////////////////////////////////////////////

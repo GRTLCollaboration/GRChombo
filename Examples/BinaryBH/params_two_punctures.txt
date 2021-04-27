@@ -214,7 +214,9 @@ AH_num_points_v = 48
 
 AH_set_origins_to_punctures = 1
 
-# coords_subpath = "data/coords"
+# AH_coords_subpath = "data/coords"
+# AH_stats_prefix = "stats_AH"
+# AH_coords_prefix = "coords_AH"
 
 #################################################
 # Two Punctures parameters
