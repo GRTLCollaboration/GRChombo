@@ -154,12 +154,14 @@ class AHFinder
         int extra_contain_diagnostic; // not a parameter (set internally);
                                       // counts how many
 
-        std::string stats_path,
-            stats_prefix; //!< name for stats file with
-                          //!< area, spin and AH origin/center
-        std::string coords_path,
-            coords_prefix; //!< name for coords file with AH
-                           //!< coordinates at each time step
+        std::string stats_path = "",
+                    stats_prefix =
+                        "stats_AH"; //!< name for stats file with
+                                    //!< area, spin and AH origin/center
+        std::string coords_path = "",
+                    coords_prefix =
+                        "coords_AH"; //!< name for coords file with AH
+                                     //!< coordinates at each time step
 
         void read_params(GRParmParse &pp, const ChomboParameters &a_p);
     };

@@ -10,7 +10,7 @@ verbosity = 0
 # output_path = "" # Main path for all files. Must exist!
 chk_prefix = SingleBH_
 plot_prefix = SingleBHPlot_
-#restart_file = SingleBH_000004.3d.hdf5
+# restart_file = SingleBH_000004.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 2
@@ -52,8 +52,6 @@ momentum = 0. -0.1 0.0
 # NB - the N values need to be multiples of the block_factor
 N_full = 32
 L_full = 16
-
-L_full = 128
 
 # Maximum number of times you can regrid above coarsest level
 max_level = 4 # There are (max_level+1) grids, so min is zero
