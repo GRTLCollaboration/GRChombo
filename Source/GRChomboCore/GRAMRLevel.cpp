@@ -982,8 +982,6 @@ void GRAMRLevel::copySolnData(GRLevelData &dest, const GRLevelData &src)
     copyBdyGhosts(src, dest);
 }
 
-double GRAMRLevel::get_dx() const { return m_dx; }
-
 bool GRAMRLevel::at_level_timestep_multiple(int a_level) const
 {
     double target_dt = m_p.coarsest_dt;

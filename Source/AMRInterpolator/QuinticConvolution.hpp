@@ -21,10 +21,9 @@ template <int N_DIMS> class QuinticConvolution
     QuinticConvolution(const InterpSource<N_DIMS> &source,
                        bool verbosity = false);
 
-    // evalCoord is in 'index' coordinates, not physical coordinates
+    // eval_index is in 'index' coordinates, not physical coordinates
     void setup(const std::array<int, N_DIMS> &deriv,
-               const std::array<double, N_DIMS> &dx,
-               const std::array<double, N_DIMS> &evalCoord);
+               const std::array<double, N_DIMS> &eval_index);
 
     // any class with a method:
     // Real get(const IntVect &a_iv, int a_comp) const

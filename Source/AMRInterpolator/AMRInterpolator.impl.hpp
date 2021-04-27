@@ -45,9 +45,7 @@ void AMRInterpolator<InterpAlgo>::refresh(const bool a_fill_ghosts)
 {
     CH_TIME("AMRInterpolator::refresh");
 
-    const Vector<AMRLevel *> &levels =
-        const_cast<GRAMR &>(m_gr_amr).getAMRLevels();
-    m_num_levels = levels.size();
+    m_num_levels = const_cast<GRAMR &>(m_gr_amr).getAMRLevels().size();
 
     m_mem_level.clear();
     m_mem_box.clear();
@@ -280,7 +278,7 @@ void AMRInterpolator<InterpAlgo>::computeLevelLayouts()
 }
 
 template <typename InterpAlgo>
-InterpolationLayout
+typename AMRInterpolator<InterpAlgo>::InterpolationLayout
 AMRInterpolator<InterpAlgo>::findBoxes(InterpolationQuery &query)
 {
     CH_TIME("AMRInterpolator::findBoxes");
@@ -518,7 +516,7 @@ found_all_points:
 
 template <typename InterpAlgo>
 void AMRInterpolator<InterpAlgo>::prepareMPI(InterpolationQuery &query,
-                                             const InterpolationLayout layout)
+                                             const InterpolationLayout &layout)
 {
     CH_TIME("AMRInterpolator::prepareMPI");
 
@@ -740,7 +738,7 @@ void AMRInterpolator<InterpAlgo>::calculateAnswers(InterpolationQuery &query)
 
             typedef std::vector<typename InterpolationQuery::out_t> comps_t;
             comps_t &comps = deriv_it->second;
-            algo.setup(deriv, m_dx[level_idx], grid_coord);
+            algo.setup(deriv, grid_coord);
 
             for (typename comps_t::iterator it = comps.begin();
                  it != comps.end(); ++it)

@@ -962,7 +962,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
                 }
 
                 int rows = stats[0].size();
-                SimpleInterpSource<1> source({rows});
+                SimpleInterpSource<1> source({rows}, {old_print_dt});
                 SimpleArrayBox<1> box_x({rows}, stats[cols - CH_SPACEDIM]);
                 SimpleArrayBox<1> box_y({rows}, stats[cols - CH_SPACEDIM + 1]);
 #if CH_SPACEDIM == 3
@@ -975,8 +975,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
                 {
                     std::array<double, CH_SPACEDIM> old_center;
 
-                    interpolator.setup({0}, {old_print_dt},
-                                       {old_centers_time_index[i]});
+                    interpolator.setup({0}, {old_centers_time_index[i]});
                     old_center[0] = interpolator.interpData(box_x);
                     old_center[1] = interpolator.interpData(box_y);
 #if CH_SPACEDIM == 3

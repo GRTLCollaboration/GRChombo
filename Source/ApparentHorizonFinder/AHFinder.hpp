@@ -35,7 +35,6 @@
 #include "AHData.hpp"
 #include "AHDeriv.hpp"
 #include "AHGeometryData.hpp"
-#include "AMRInterpolator.hpp"
 #include "BoundaryConditions.hpp"
 #include "ChomboParameters.hpp"
 #include "Lagrange.hpp"
@@ -47,6 +46,9 @@
 // declare classes, define them later
 template <class SurfaceGeometry, class AHFunction> class AHInterpolation;
 template <class SurfaceGeometry, class AHFunction> class ApparentHorizon;
+
+// Forward declaration for AMRInterpolator
+template <typename InterpAlgo> class AMRInterpolator;
 
 /*
 TF:

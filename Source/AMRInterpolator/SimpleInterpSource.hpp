@@ -12,13 +12,15 @@
 // Relevant to be able to use Interpolation classes by themselves
 template <int N_DIMS> class SimpleInterpSource : public InterpSource<N_DIMS>
 {
-    LevelData<FArrayBox> m_fake;
-
     std::array<int, N_DIMS> m_points_per_dir;
     std::array<bool, N_DIMS> m_is_periodic;
+    std::array<double, N_DIMS> m_dxs;
+
+    LevelData<FArrayBox> m_fake;
 
   public:
     SimpleInterpSource(std::array<int, N_DIMS> a_points_per_dir,
+                       std::array<double, N_DIMS> a_dxs,
                        std::array<bool, N_DIMS> a_is_periodic = {false})
         : m_points_per_dir(a_points_per_dir), m_is_periodic(a_is_periodic)
     {
@@ -28,7 +30,8 @@ template <int N_DIMS> class SimpleInterpSource : public InterpSource<N_DIMS>
     getLevelData(const VariableType var_type = VariableType::evolution) const
     {
         return m_fake;
-    };
+    }
+
     bool contains(const std::array<double, N_DIMS> &point) const
     {
         bool in = true;
@@ -40,7 +43,9 @@ template <int N_DIMS> class SimpleInterpSource : public InterpSource<N_DIMS>
         }
         return in;
     };
-    void fillAllGhosts(const VariableType var_type = VariableType::evolution){};
+
+    double get_dx(int dir) const { return m_dxs[dir]; };
+    std::array<double, N_DIMS> get_dxs() const { return m_dxs; }
 };
 
 #endif /* SIMPLEINTERPSOURCE_H_ */

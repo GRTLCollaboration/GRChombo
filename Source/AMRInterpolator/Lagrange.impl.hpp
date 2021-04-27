@@ -159,20 +159,21 @@ Lagrange<Order, N_DIMS>::Lagrange(const InterpSource<N_DIMS> &source,
 }
 
 template <int Order, int N_DIMS>
-void Lagrange<Order, N_DIMS>::setup(const std::array<int, N_DIMS> &deriv,
-                                    const std::array<double, N_DIMS> &dx,
-                                    const std::array<double, N_DIMS> &evalCoord)
+void Lagrange<Order, N_DIMS>::setup(
+    const std::array<int, N_DIMS> &deriv,
+    const std::array<double, N_DIMS> &eval_index)
 {
+    std::array<double, N_DIMS> dxs = m_source.get_dxs();
     pair<std::vector<IntVect>, std::vector<double>> result =
-        generateStencil(deriv, dx, evalCoord);
+        generateStencil(deriv, dxs, eval_index);
     m_interp_points = result.first;
     m_interp_weights = result.second;
 
     /*
-    pout() << TAG << "Stencil: coord = { ";
+    pout() << TAG << "Stencil: point = { ";
     for (int i = 0; i < N_DIMS; ++i)
     {
-        pout() << evalCoord[i] << " ";
+        pout() << eval_index[i] << " ";
     }
     pout() << "}, weights = { ";
     for (int i = 0; i < m_interp_weights.size(); ++i)
@@ -241,7 +242,7 @@ template <int Order, int N_DIMS>
 pair<std::vector<IntVect>, std::vector<double>>
 Lagrange<Order, N_DIMS>::generateStencil(
     const std::array<int, N_DIMS> &deriv, const std::array<double, N_DIMS> &dx,
-    const std::array<double, N_DIMS> &evalCoord, int dim)
+    const std::array<double, N_DIMS> &eval_index, int dim)
 {
     std::vector<IntVect> out_points;
     std::vector<double> out_weights;
@@ -265,20 +266,20 @@ Lagrange<Order, N_DIMS>::generateStencil(
     int points_min = Order + deriv[dim];
     int points_max = Order + deriv[dim];
 
-    std::array<double, N_DIMS> interp_coord = evalCoord;
+    std::array<double, N_DIMS> interp_point = eval_index;
 
-    // TF: assume nearest point is at 'std::round(evalCoord[dim])'
+    // TF: assume nearest point is at 'std::round(eval_index[dim])'
     // this used to be an argument, but I think this assumption should always
     // hold
-    int candidate = std::round(evalCoord[dim]);
-    int grown_direction = (candidate - evalCoord[dim] < 0) ? DOWN : UP;
+    int candidate = std::round(eval_index[dim]);
+    int grown_direction = (candidate - eval_index[dim] < 0) ? DOWN : UP;
 
     while ((can_grow[DOWN] || can_grow[UP]) &&
            (points_max - points_min < Order + deriv[dim]))
     {
-        interp_coord[dim] = candidate;
+        interp_point[dim] = candidate;
 
-        if (m_source.contains(interp_coord))
+        if (m_source.contains(interp_point))
         {
             int idx =
                 (grown_direction == DOWN) ? (--points_min) : (points_max++);
@@ -304,12 +305,12 @@ Lagrange<Order, N_DIMS>::generateStencil(
 
     const Stencil my_weights =
         getStencil(stencil_width, deriv[dim], dx[dim],
-                   evalCoord[dim] - my_points[points_min]);
+                   eval_index[dim] - my_points[points_min]);
 
     if (m_verbosity)
     {
         pout() << TAG << "Stencil: dim = " << dim
-               << ", coord = " << evalCoord[dim] << ", points = { ";
+               << ", point = " << eval_index[dim] << ", points = { ";
         for (int i = points_min; i < points_max; ++i)
         {
             pout() << my_points[i] << " ";
@@ -327,13 +328,13 @@ Lagrange<Order, N_DIMS>::generateStencil(
     // first.
     for (int i = 0; i < stencil_width; ++i)
     {
-        interp_coord[dim] = my_points[i + points_min];
+        interp_point[dim] = my_points[i + points_min];
 
         if (dim > 0)
         {
             // Descend to the next dimension
             pair<std::vector<IntVect>, std::vector<double>> sub_result =
-                generateStencil(deriv, dx, interp_coord, dim - 1);
+                generateStencil(deriv, dx, interp_point, dim - 1);
             std::vector<IntVect> &sub_points = sub_result.first;
             std::vector<double> &sub_weights = sub_result.second;
 
@@ -353,8 +354,8 @@ Lagrange<Order, N_DIMS>::generateStencil(
             if (my_weights[i] != 0)
             {
                 out_points.push_back(IntVect(D_DECL6(
-                    interp_coord[0], interp_coord[1], interp_coord[2],
-                    interp_coord[3], interp_coord[4], interp_coord[5])));
+                    interp_point[0], interp_point[1], interp_point[2],
+                    interp_point[3], interp_point[4], interp_point[5])));
                 out_weights.push_back(my_weights[i]);
             }
         }

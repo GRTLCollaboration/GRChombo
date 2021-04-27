@@ -13,6 +13,9 @@
  */
 #endif
 
+// Chombo includes
+#include "parstream.H" //Gives us pout()
+
 // General includes:
 #include <algorithm>
 #include <cmath>
@@ -20,13 +23,14 @@
 #include <iostream>
 #include <sys/time.h>
 
-#include "parstream.H" //Gives us pout()
-
 #include "Lagrange.hpp"
 #include "QuinticConvolution.hpp"
 #include "SetupFunctions.hpp"
 #include "SimpleArrayBox.hpp"
 #include "SimpleInterpSource.hpp"
+
+// Chombo namespace
+#include "UsingNamespace.H"
 
 // cell centered grid
 // double get_dx(double L, int num_points_u) { return L / num_points_u; }
@@ -67,18 +71,22 @@ int runInterpolatorTest(int argc, char *argv[])
         f[i] = func(x, L);
     }
 
-    SimpleInterpSource<1> source({num_points_u});
+    // Note that the 2nd argument of .setup 'dx' does not matter for 0th order
+    // interpolation -> set to 0
+    SimpleInterpSource<1> source({num_points_u}, {0.});
     SimpleArrayBox<1> box({num_points_u}, f);
 
     double test_point =
         M_PI; // just because it's irrational, hence for sure not in the grid
+    double test_index = get_idx(test_point, m_dx);
 
-    Lagrange<4, 1> interpolator1(source, true);
-    interpolator1.setup({0}, {m_dx}, {get_idx(test_point, m_dx)});
+    bool verbosity = true;
+    Lagrange<4, 1> interpolator1(source, verbosity);
+    interpolator1.setup({0}, {test_index});
     double val1 = interpolator1.interpData(box);
 
-    QuinticConvolution<1> interpolator2(source, true);
-    interpolator2.setup({0}, {m_dx}, {get_idx(test_point, m_dx)});
+    QuinticConvolution<1> interpolator2(source, verbosity);
+    interpolator2.setup({0}, {test_index});
     double val2 = interpolator2.interpData(box);
 
     double exact = func(test_point, L);
@@ -105,10 +113,10 @@ int main(int argc, char *argv[])
     int status = runInterpolatorTest(argc, argv);
 
     if (status == 0)
-        pout() << "Interpolator test passed." << endl;
+        std::cout << "Interpolator test passed." << endl;
     else
-        pout() << "Interpolator test failed with return code " << status
-               << endl;
+        std::cout << "Interpolator test failed with return code " << status
+                  << endl;
 
     mainFinalize();
     return status;

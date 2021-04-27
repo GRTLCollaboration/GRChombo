@@ -17,11 +17,7 @@
 // Our includes
 #include "BoundaryConditions.hpp"
 #include "GRAMR.hpp"
-#include "InterpSource.hpp"
-#include "InterpolationAlgorithm.hpp"
-#include "InterpolationLayout.hpp"
 #include "InterpolationQuery.hpp"
-
 #include "MPIContext.hpp"
 #include "UserVariables.hpp"
 
@@ -32,6 +28,19 @@
 
 template <typename InterpAlgo> class AMRInterpolator
 {
+    struct InterpolationLayout
+    {
+        std::vector<int> rank;
+        std::vector<int> level_idx;
+        std::vector<int> box_idx;
+
+        InterpolationLayout(int num_points)
+            : rank(num_points, -1), level_idx(num_points, -1),
+              box_idx(num_points, -1)
+        {
+        }
+    };
+
   public:
     // constructor for backward compatibility
     // (adds an artificial BC with only periodic BC)
@@ -67,7 +76,7 @@ template <typename InterpAlgo> class AMRInterpolator
     InterpolationLayout findBoxes(InterpolationQuery &query);
 
     void prepareMPI(InterpolationQuery &query,
-                    const InterpolationLayout layout);
+                    const InterpolationLayout &layout);
     void exchangeMPIQuery();
     void calculateAnswers(InterpolationQuery &query);
     void exchangeMPIAnswer();

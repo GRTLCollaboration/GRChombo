@@ -274,34 +274,32 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::interpolate_ah(
     // start interpolating
 
 #if CH_SPACEDIM == 3
+    // local, no derivative
+    std::array<int, CH_SPACEDIM - 1> derivs = {0, 0};
+    std::array<double, CH_SPACEDIM - 1> dxs = {du, dv};
+
     SimpleArrayBox<CH_SPACEDIM - 1> box(
         {old_number_of_u, old_number_of_v}, old_coords[CH_SPACEDIM - 1],
         {m_interp.get_coord_system().is_u_periodic(),
          m_interp.get_coord_system().is_v_periodic()});
     SimpleInterpSource<CH_SPACEDIM - 1> source(
-        {old_number_of_u, old_number_of_v},
+        {old_number_of_u, old_number_of_v}, dxs,
         {m_interp.get_coord_system().is_u_periodic(),
          m_interp.get_coord_system().is_v_periodic()});
 #elif CH_SPACEDIM == 2
+    std::array<int, CH_SPACEDIM - 1> derivs = {0};
+    std::array<double, CH_SPACEDIM - 1> dxs = {du};
+
     SimpleArrayBox<CH_SPACEDIM - 1> box(
         {old_number_of_u}, old_coords[CH_SPACEDIM - 1],
         {m_interp.get_coord_system().is_u_periodic()});
     SimpleInterpSource<CH_SPACEDIM - 1> source(
-        {old_number_of_u}, {m_interp.get_coord_system().is_u_periodic()});
+        {old_number_of_u}, dxs, {m_interp.get_coord_system().is_u_periodic()});
 #endif
 
     const int Order = 4;
     bool verbose = false;
     Lagrange<Order, CH_SPACEDIM - 1> interpolator4(source, verbose);
-
-#if CH_SPACEDIM == 3
-    // local, no derivative
-    std::array<int, CH_SPACEDIM - 1> derivs = {0, 0};
-    std::array<double, CH_SPACEDIM - 1> dxs = {du, dv};
-#elif CH_SPACEDIM == 2
-    std::array<int, CH_SPACEDIM - 1> derivs = {0};
-    std::array<double, CH_SPACEDIM - 1> dxs = {du};
-#endif
 
 #if CH_SPACEDIM == 3
     for (int v = m_vmin; v < m_vmax; ++v)
@@ -338,7 +336,7 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::interpolate_ah(
             std::array<double, CH_SPACEDIM - 1> evalCoord = {u_old_idx};
 #endif
 
-            interpolator4.setup(derivs, dxs, evalCoord);
+            interpolator4.setup(derivs, evalCoord);
             m_F[idx_local] = interpolator4.interpData(box);
 
 #if CH_SPACEDIM == 3
