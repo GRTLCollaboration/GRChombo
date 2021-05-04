@@ -3,7 +3,7 @@
 verbosity = 0
 chk_prefix = Oscillaton_
 plot_prefix = Oscillaton_p_
-#restart_file = Oscillaton_000000.3d.hdf5
+restart_file = Oscillaton_000050.3d.hdf5
 
 # 'N' is the number of subdivisions in each direction of a cubic box
 # 'L' is the length of the longest side of the box, dx_coarsest = L/N
@@ -28,8 +28,8 @@ regrid_threshold = 0.05
 use_truncation_error_tagging = true
 num_truncation_error_vars = 4
 truncation_error_vars = chi K phi Pi
-#truncation_error_regrid_threshold = 5.0e-3 #can add 's'
-truncation_error_regrid_threshold = 5.0e-20
+truncation_error_regrid_threshold = 5.0e-3 #can add 's'
+#truncation_error_regrid_threshold = 5.0e-20
 
 # Level data
 # Maximum number of times you can regrid above coarsest level
@@ -80,7 +80,7 @@ plot_interval = 1
 num_plot_vars = 4
 plot_vars = chi phi Ham_abs_sum Ham
 dt_multiplier = 0.25
-stop_time = 2.5
+stop_time = 250
 
 #Lapse evolution
 lapse_power = 1.0
@@ -110,5 +110,5 @@ G_Newton = 1.0
 # Scalar field initial data
 # data for https://arxiv.org/abs/1808.04668 (Fig 1)
 scalar_mass = 1.0
-f_axion = 1.0 # 1.0 stable, 0.06 oscillatory, 0.05 collapse
+f_axion = 0.05 # 1.0 stable, 0.06 oscillatory, 0.05 collapse
 initial_data_prefix = Oscillaton_data/
