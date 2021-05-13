@@ -266,6 +266,11 @@ void GRAMRLevel::postTimeStep()
 // things to do before tagging cells using truncation tagging
 void GRAMRLevel::preTagCellsTruncationTagging()
 {
+    if (m_verbosity)
+    {
+        pout() << "GRAMRLevel::preTagCellsTruncationTagging " << m_level
+               << endl;
+    }
     CH_TIME("GRAMRLevel::preTagCellsTruncationTagging");
     if (m_coarser_level_ptr != nullptr)
     {
@@ -291,6 +296,8 @@ void GRAMRLevel::preTagCellsTruncationTagging()
 void GRAMRLevel::preTagCells()
 {
     CH_TIME("GRAMRLevel::preTagCells");
+    if (m_verbosity)
+        pout() << "GRAMRLevel::preTagCells " << m_level << endl;
     if (m_p.use_truncation_error_tagging)
     {
         preTagCellsTruncationTagging();
