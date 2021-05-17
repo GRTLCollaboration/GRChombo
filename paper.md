@@ -40,14 +40,14 @@ The 2015 detection of gravitational waves (GWs) from a binary black hole merger 
 \begin{equation}
    R_{\mu \nu} - \frac{1}{2} R g_{\mu \nu} = 8 \pi G T_{\mu\nu} ~.
 \end{equation}
-This concise form obscures the nature of the equations from those unfamiliar with the notation - expanded out, it is a set of second order partial differential equations for the metric tensor field $g_{\mu\nu}$, which describes the curvature of spacetime in the presence of matter with stress-energy $T_{\mu\nu}$, i.e.
+This concise form obscures the nature of the equations from those unfamiliar with the notation --  expanded out, it is a set of second order partial differential equations for the metric tensor field $g_{\mu\nu}$, which describes the curvature of spacetime in the presence of matter with stress-energy $T_{\mu\nu}$, i.e.,
 \begin{equation}
    \partial_t \partial_t g_{\mu\nu} = \partial_x \partial_x g_{\mu\nu} + \partial_y \partial_y g_{\mu\nu} + \partial_z \partial_z g_{\mu\nu} + {\rm non ~ linear ~ cross ~ terms} 
           + 8 \pi G T_{\mu\nu}
 \end{equation}
-where the indices $\mu, \nu$ run over the spacetime indices - in 4 dimensions, $t, x, y, z$. Given that $g_{\mu\nu}$ is symmetric in its indices, this gives a set of ten coupled, non linear wave equations, sourced by the stress-energy of any matter present in the spacetime.
+where the indices $\mu, \nu$ run over the spacetime indices -- in 4 dimensions, $t, x, y, z$. Given that $g_{\mu\nu}$ is symmetric in its indices, this gives a set of ten coupled non-linear partial differential equations, sourced by the stress-energy of any matter present in the spacetime.
 
-Aalytic solutions to the Einstein equation are rare and in general the equations must be solved numerically. One common approach to this problem is to specify an initial spatial distribution for the metric and matter fields (subject to certain constraints), and then solve a time evolution for all metric and matter quantities, thus populating their values thoughout the four dimensional spacetime. The canonical example of this is the simulation of two black holes in orbit around each other, which permits extraction of the gravitational wave signal produced during the merger. Such numerical results have been instrumental in discovering signals in the noisy LIGO/VIRGO detector data, as well as confirming the predictions of GR to a high precision in the strong field regime.
+Analytic solutions to the Einstein equation are rare and in general the equations must be solved numerically. One common approach to this problem is to specify an initial spatial distribution for the metric and matter fields (subject to certain constraints), and then solve a time evolution for all metric and matter quantities, thus populating their values thoughout the four dimensional spacetime. The canonical example of this is the simulation of two black holes in orbit around each other, which permits extraction of the gravitational wave signal produced during the merger. Such numerical results have been instrumental in discovering signals in the noisy LIGO/VIRGO detector data, as well as confirming the predictions of GR to a high precision in the strong field regime.
 
 GRChombo is an open-source code for performing NR time evolutions. Whilst GRChombo uses standard techniques in NR, it focusses on applications in theoretical physics where adaptability, both in terms of grid structure, and in terms of code modification, are key drivers. 
 
@@ -57,7 +57,7 @@ Since its first initial announcement in 2015 [@Clough:2015sqa], the GRChombo cod
 
 The key features of GRChombo are as follows:
 
-- BSSN/CCZ4 formalism with moving puncture: GRChombo evolves the Einstein equation in the BSSN [@Nakamura:1987zz;@Shibata:1995we;@Baumgarte:1998te] or CCZ4 [@Gundlach:2005eh;@Alic:2011gg] formalism with conformal factor $\chi = det(\gamma_{ij})^{-1/3}$. Singularities of black holes are managed using the moving puncture gauge conditions [@Campanelli:2005dd;@Baker:2005vv], and Kreiss-Oliger dissipation is used to control errors, both from truncation and the interpolation associated with regridding.
+- BSSN/CCZ4 formalism with moving punctures: GRChombo evolves the Einstein equation in the BSSN [@Nakamura:1987zz;@Shibata:1995we;@Baumgarte:1998te] or CCZ4 [@Gundlach:2005eh;@Alic:2011gg] formalism with conformal factor $\chi = det(\gamma_{ij})^{-1/3}$. Singularities of black holes are managed using the moving puncture gauge conditions [@Campanelli:2005dd;@Baker:2005vv], and Kreiss-Oliger dissipation is used to control errors, both from truncation and the interpolation associated with regridding.
 
 - Boundary Conditions: The code implements periodic, Sommerfeld (radiative), extrapolating and reflective boundary conditions.
 
@@ -76,7 +76,7 @@ The key features of GRChombo are as follows:
  
 **A clear Statement of Need that illustrates the research purpose of the software. The software should have an obvious research application. The software should be a significant contribution to the available open source software that either enables some new research challenges to be addressed or makes addressing research challenges significantly better (e.g., faster, easier, simpler). The software should be feature-complete (no half-baked solutions) and designed for maintainable extension (not one-off modifications). Include a list of key references, including to other software addressing related needs.**
 
-While GRChombo is not the first open sourced NR code (e.g. the Einstein Toolkit (http://einsteintoolkit.org/), it incorporate several unique features as detailed above which has made it one of the premier code for numerical relativity, especially in the study of fundamental physics beyond standard black holes or neutron stars mergers. In particular, GRChombo's highly flexiible adaptive mesh refinement scheme allows for complicated ``many-boxes-in-many-boxes'' topology , enabling users to simulate non-trivial systems (such as ring configurations @Helfer:2018qgv) beyond the standard binary mergers. Nevertheless, we envisage that with its extreme scalability and AMR capabilities, it will play a leading role in the continuing efforts to simulate ``standard'' binary mergers to the required sensitivities required for the upcoming LISA space mission. Finally, GRChombo's object-oriented and template base code base allows for rapid modification for non-standard problems such as higher dimensional (Cite Pau papers) or modified gravity systems.
+While GRChombo is not the first open sourced NR code (e.g., the Einstein Toolkit (http://einsteintoolkit.org/), it incorporates several unique features as detailed above which has made it one of the premier codes for numerical relativity, especially in the study of fundamental physics beyond standard black holes or neutron stars mergers. In particular, GRChombo's highly flexiible adaptive mesh refinement scheme allows for complicated ``many-boxes-in-many-boxes'' topology , enabling users to simulate non-trivial systems (such as ring configurations [@Figueras:2015hkb,@Helfer:2018qgv]) beyond the standard compact binary mergers. Nevertheless, we envisage that with its extreme scalability and AMR capabilities, it will play a leading role in the continuing efforts to simulate ``standard'' binary mergers to the required sensitivities required for the upcoming LISA space mission. Finally, GRChombo's object-oriented and template base code base allows for rapid modification for non-standard problems such as higher dimensional [@Figueras:2015hkb;@Figueras:2017zwa;@Bantilan:2019bvf;@Andrade:2020dgc] or modified gravity systems.
 
 
 
@@ -92,7 +92,7 @@ The fundamental physics problems for which the code has been used include:
 
 ![Cosmology \label{fig:cosmo}](figures/cosmo.png){ width=60% }
 
-- the study of modified gravity, and violation of cosmic censorship [@Figueras:2020dzx;@Bantilan:2019bvf;@Figueras:2017zwa;@Figueras:2015hkb].
+- the study of modified gravity, and violation of cosmic censorship [@Figueras:2015hkb;@Figueras:2017zwa;@Bantilan:2019bvf;@Figueras:2020dzx;Andrade:2020dgc].
 
 ![Cosmic censorship \label{fig:blackstring}](figures/blackstring.png){ width=60% }
 
@@ -111,6 +111,6 @@ The fundamental physics problems for which the code has been used include:
 # Acknowledgements
 
 The GRChombo collaboration acknowledges support to its members by The Royal Society, ERC, UKRI/STFC, INTEL, PRACE and DiRAC.
-**(Add more detail?)**
+**(Add more detail? We probably need to add the references to these grants)**
 
 # References
