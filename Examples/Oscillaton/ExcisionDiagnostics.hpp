@@ -42,8 +42,6 @@ class ExcisionDiagnostics
         {
             current_cell.store_vars(0.0, c_rho1);
             current_cell.store_vars(0.0, c_rho2);
-            current_cell.store_vars(0.0, c_flux1);
-            current_cell.store_vars(0.0, c_flux2);
             current_cell.store_vars(0.0, c_source1);
             current_cell.store_vars(0.0, c_source2);
         } // else do nothing
