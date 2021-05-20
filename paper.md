@@ -135,7 +135,7 @@ bibliography: paper.bib
 
 The 2015 detection of gravitational waves (GWs) from a binary black hole merger [@Abbott:2016blz] was a breakthrough moment for science. More detections have since been made by the Advanced LIGO/Virgo network [@TheVirgo:2014hva;@TheLIGOScientific:2014jea;@Aasi:2013wya] and future ground and space based detectors [@Somiya:2011np;@Saleem:2021iwi;@Audley:2017drz;@Luo:2015ght;@Hu:2017mde] will further expand our reach. 
 
-<!-- Strong gravity regimes are described by the *Einstein Field Equation* (EFE) of General Relativity [@Einstein:1916vd]. 
+Strong gravity regimes are described by the *Einstein Field Equation* (EFE) of General Relativity [@Einstein:1916vd]. 
 \begin{equation}
    R_{\mu \nu} - \frac{1}{2} R g_{\mu \nu} = 8 \pi G T_{\mu\nu} ~.
 \end{equation}
@@ -245,7 +245,7 @@ GRChombo users have benefitted from the provision of HPC resources from:
 
   * the Argo cluster at ICTP, Trieste, Italy
 
-... **(add your HPC resources here)** -->
+... **(add your HPC resources here)**
 
 # References
 
