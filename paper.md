@@ -108,24 +108,24 @@ authors:
 affiliations:
 - name: Departament de Fısica Quantica i Astrofisica, Institut de Ciencies del Cosmos, Universitat de Barcelona, Marti i Franques 1, 08028 Barcelona, Spain
   index: 1
-# - name: School of Mathematical Sciences, Queen Mary University of London, Mile End Road, London E1 4NS, United Kingdom
-#    index: 2
-# - name: Theoretical Particle Physics and Cosmology, King's College London, Strand, London, WC2R 2LS, United Kingdom
-#    index: 3  
-# - name: Astrophysics, Oxford University, Denys Wilkinson Building, Keble Road, Oxford OX1 3RH, United Kingdom
-#    index: 4
-# - name: Department of Applied Mathematics and Theoretical Physics (DAMTP), University of Cambridge, Center for Mathematical Sciences, Wilberforce Road, Cambridge CB3 0WA, United Kingdom
-#    index: 5
-# - name: Argonne National Laboratory (ANL), 9700 S. Cass Avenue, Argonne, IL 60439-4815, United States
-#    index: 6
-# - name: Intel Parallel Computing Center, University of Cambridge, Center for Mathematical Sciences, Wilberforce Road, Cambridge CB3 0WA, United Kingdom
-#    index: 7
-# - name: Henry A. Rowland Department of Physics & Astronomy, Johns Hopkins University, 3701 San Martin Drive, Baltimore, Maryland (MD) 21218, United States
-#    index: 8
-# - name: University of Louvain, Place de l'Université 1, B-1348 Louvain-la-Neuve, Belgium
-#    index: 9
-# - name: Department of Physics, Bogazici University, 34342 Bebek, 80820 Istanbul, Turkey
-#    index: 10
+- name: School of Mathematical Sciences, Queen Mary University of London, Mile End Road, London E1 4NS, United Kingdom
+   index: 2
+- name: Theoretical Particle Physics and Cosmology, King's College London, Strand, London, WC2R 2LS, United Kingdom
+   index: 3  
+- name: Astrophysics, Oxford University, Denys Wilkinson Building, Keble Road, Oxford OX1 3RH, United Kingdom
+   index: 4
+- name: Department of Applied Mathematics and Theoretical Physics (DAMTP), University of Cambridge, Center for Mathematical Sciences, Wilberforce Road, Cambridge CB3 0WA, United Kingdom
+   index: 5
+- name: Argonne National Laboratory (ANL), 9700 S. Cass Avenue, Argonne, IL 60439-4815, United States
+   index: 6
+- name: Intel Parallel Computing Center, University of Cambridge, Center for Mathematical Sciences, Wilberforce Road, Cambridge CB3 0WA, United Kingdom
+   index: 7
+- name: Henry A. Rowland Department of Physics & Astronomy, Johns Hopkins University, 3701 San Martin Drive, Baltimore, Maryland (MD) 21218, United States
+   index: 8
+- name: University of Louvain, Place de l'Université 1, B-1348 Louvain-la-Neuve, Belgium
+   index: 9
+- name: Department of Physics, Bogazici University, 34342 Bebek, 80820 Istanbul, Turkey
+   index: 10
 date: 1 June 2021
 bibliography: paper.bib
 
