@@ -9,123 +9,123 @@ tags:
   - general relativity
   - numerical relativity
 authors:
-  - name: Tomas Andrade
-    orcid: 0000-0002-2472-114X
-    affiliation: 1
-  - name: Llibert Areste Salo
-    orcid: 0000-0002-3812-8523
-    affiliation: 2
-  - name: Josu Aurrekoetxea
-    orcid: 0000-0001-9584-5791
-    affiliation: 3
-  - name: Jamie Bamber
-    orcid: 0000-0001-7181-3365
-    affiliation: 4
-  - name: Katy Clough
-    orcid: 0000-0001-8841-1522
-    affiliation: 4
-  - name: Robin Croft
-    orcid: 0000-0002-1236-6566
-    affiliation: 5
-  - name: Eloy de Jong
-    orcid: 0000-0002-4505-0808
-    affiliation: 3
-  - name: Amelia Drew
-    orcid: 0000-0001-8252-602X
-    affiliation: 5
-  - name: Alexandro Duran
-    #orcid: tbc
-    affiliation: 6
-  - name: Pedro Ferreira
-    orcid: 0000-0002-3021-2851
-    affiliation: 4
-  - name: Pau Figueras
-    orcid: 0000-0000-0000-0000
-    affiliation: 2
-  - name: Hal Finkel
-    orcid: 0000-0002-7551-7122
-    affiliation: 7
-  - name: Tiago Fran\c{c}a
-    orcid: 0000-0002-1718-151X
-    affiliation: 2
-  - name: Boxuan Ge
-    orcid: 0000-0003-0738-3473
-    affiliation: 3    
-  - name: Chenxia Gu
-    orcid: 0000-0001-9537-6139
-    affiliation: 2
-  - name: Thomas Helfer
-    orcid: 0000-0001-6880-1005
-    affiliation: 8
-  - name: Juha Jäykkä
-    orcid: 0000-0002-5929-3931
-    affiliation: 5
-  - name: Cristian Joana
-    orcid: 0000-0003-4642-3028
-    affiliation: 9
-  - name: Markus Kunesch
-    orcid: 0000-0003-3818-7897
-    affiliation: 5
-  - name: Kacper Kornet
-    orcid: 0000-0001-8376-8231
-    affiliation: 5
-  - name: Eugene A. Lim
-    orcid: 0000-0002-6227-9540
-    affiliation: 3
-  - name: Francesco Muia
-    orcid: 0000-0002-4872-6172
-    affiliation: 5
-  - name: Zainab Nazari
-    orcid: 0000-0002-2955-7262
-    affiliation: 10
-  - name: Miren Radia
-    orcid: 0000-0001-8861-2025
-    affiliation: 5
-  - name: Justin Ripley
-    orcid: 0000-0001-7192-0021
-    affiliation: 5
-  - name: Paul Shellard
-    #orcid: tbc
-    affiliation: 5
-  - name: Ulrich Sperhake
-    orcid: 0000-0002-3134-7088
-    affiliation: 5
-  - name: Dina Traykova
-    orcid: 0000-0002-3451-0987
-    affiliation: 4
-  - name: Saran Tunyasuvunakool
-    orcid: 0000-0002-1620-6797
-    affiliation: 5
-  - name: Zipeng Wang
-    orcid: 0000-0002-3574-2122
-    affiliation: 8
-  - name: James Widdicombe
-    orcid: 0000-0003-2269-4544
-    affiliation: 3
-  - name: Kaze Wong
-    orcid: 0000-0001-8432-7788
-    affiliation: 8
+- name: Tomas Andrade
+  orcid: 0000-0002-2472-114X
+  affiliation: 1
+- name: Llibert Areste Salo
+  orcid: 0000-0002-3812-8523
+  affiliation: 2
+- name: Josu Aurrekoetxea
+  orcid: 0000-0001-9584-5791
+  affiliation: 3
+- name: Jamie Bamber
+  orcid: 0000-0001-7181-3365
+  affiliation: 4
+- name: Katy Clough
+  orcid: 0000-0001-8841-1522
+  affiliation: 4
+- name: Robin Croft
+  orcid: 0000-0002-1236-6566
+  affiliation: 5
+- name: Eloy de Jong
+  orcid: 0000-0002-4505-0808
+  affiliation: 3
+- name: Amelia Drew
+  orcid: 0000-0001-8252-602X
+  affiliation: 5
+- name: Alexandro Duran
+  #orcid: tbc
+  affiliation: 6
+- name: Pedro Ferreira
+  orcid: 0000-0002-3021-2851
+  affiliation: 4
+- name: Pau Figueras
+  orcid: 0000-0000-0000-0000
+  affiliation: 2
+- name: Hal Finkel
+  orcid: 0000-0002-7551-7122
+  affiliation: 7
+- name: Tiago Fran\c{c}a
+  orcid: 0000-0002-1718-151X
+  affiliation: 2
+- name: Boxuan Ge
+  orcid: 0000-0003-0738-3473
+  affiliation: 3    
+- name: Chenxia Gu
+  orcid: 0000-0001-9537-6139
+  affiliation: 2
+- name: Thomas Helfer
+  orcid: 0000-0001-6880-1005
+  affiliation: 8
+- name: Juha Jäykkä
+  orcid: 0000-0002-5929-3931
+  affiliation: 5
+- name: Cristian Joana
+  orcid: 0000-0003-4642-3028
+  affiliation: 9
+- name: Markus Kunesch
+  orcid: 0000-0003-3818-7897
+  affiliation: 5
+- name: Kacper Kornet
+  orcid: 0000-0001-8376-8231
+  affiliation: 5
+- name: Eugene A. Lim
+  orcid: 0000-0002-6227-9540
+  affiliation: 3
+- name: Francesco Muia
+  orcid: 0000-0002-4872-6172
+  affiliation: 5
+- name: Zainab Nazari
+  orcid: 0000-0002-2955-7262
+  affiliation: 10
+- name: Miren Radia
+  orcid: 0000-0001-8861-2025
+  affiliation: 5
+- name: Justin Ripley
+  orcid: 0000-0001-7192-0021
+  affiliation: 5
+- name: Paul Shellard
+  #orcid: tbc
+  affiliation: 5
+- name: Ulrich Sperhake
+  orcid: 0000-0002-3134-7088
+  affiliation: 5
+- name: Dina Traykova
+  orcid: 0000-0002-3451-0987
+  affiliation: 4
+- name: Saran Tunyasuvunakool
+  orcid: 0000-0002-1620-6797
+  affiliation: 5
+- name: Zipeng Wang
+  orcid: 0000-0002-3574-2122
+  affiliation: 8
+- name: James Widdicombe
+  orcid: 0000-0003-2269-4544
+  affiliation: 3
+- name: Kaze Wong
+  orcid: 0000-0001-8432-7788
+  affiliation: 8
 affiliations:
- - name: Departament de Fısica Quantica i Astrofisica, Institut de Ciencies del Cosmos, Universitat de Barcelona, Marti i Franques 1, 08028 Barcelona, Spain
-   index: 1
- - name: School of Mathematical Sciences, Queen Mary University of London, Mile End Road, London E1 4NS, United Kingdom
-   index: 2
-  - name: Theoretical Particle Physics and Cosmology, King's College London, Strand, London, WC2R 2LS, United Kingdom
-   index: 3  
- - name: Astrophysics, Oxford University, Denys Wilkinson Building, Keble Road, Oxford OX1 3RH, United Kingdom
-   index: 4
- - name: Department of Applied Mathematics and Theoretical Physics (DAMTP), University of Cambridge, Center for Mathematical Sciences, Wilberforce Road, Cambridge CB3 0WA, United Kingdom
-   index: 5
+- name: Departament de Fısica Quantica i Astrofisica, Institut de Ciencies del Cosmos, Universitat de Barcelona, Marti i Franques 1, 08028 Barcelona, Spain
+  index: 1
+- name: School of Mathematical Sciences, Queen Mary University of London, Mile End Road, London E1 4NS, United Kingdom
+  index: 2
+- name: Theoretical Particle Physics and Cosmology, King's College London, Strand, London, WC2R 2LS, United Kingdom
+  index: 3  
+- name: Astrophysics, Oxford University, Denys Wilkinson Building, Keble Road, Oxford OX1 3RH, United Kingdom
+  index: 4
+- name: Department of Applied Mathematics and Theoretical Physics (DAMTP), University of Cambridge, Center for Mathematical Sciences, Wilberforce Road, Cambridge CB3 0WA, United Kingdom
+  index: 5
 - name: Argonne National Laboratory (ANL), 9700 S. Cass Avenue, Argonne, IL 60439-4815, United States
-   index: 6
- - name: Intel Parallel Computing Center, University of Cambridge, Center for Mathematical Sciences, Wilberforce Road, Cambridge CB3 0WA, United Kingdom
-   index: 7
+  index: 6
+- name: Intel Parallel Computing Center, University of Cambridge, Center for Mathematical Sciences, Wilberforce Road, Cambridge CB3 0WA, United Kingdom
+  index: 7
 - name: Henry A. Rowland Department of Physics & Astronomy, Johns Hopkins University, 3701 San Martin Drive, Baltimore, Maryland (MD) 21218, United States
-   index: 8
- - name: University of Louvain, Place de l'Université 1, B-1348 Louvain-la-Neuve, Belgium
-   index: 9
- - name: Department of Physics, Bogazici University, 34342 Bebek, 80820 Istanbul, Turkey
-   index: 10
+  index: 8
+- name: University of Louvain, Place de l'Université 1, B-1348 Louvain-la-Neuve, Belgium
+  index: 9
+- name: Department of Physics, Bogazici University, 34342 Bebek, 80820 Istanbul, Turkey
+  index: 10
 date: 1 June 2021
 bibliography: paper.bib
 
@@ -133,16 +133,16 @@ bibliography: paper.bib
 
 # Summary
 
-The 2015 detection of gravitational waves (GWs) from a binary black hole merger [@Abbott:2016blz] was a breakthrough moment for science. More detections have since been made by the Advanced LIGO/Virgo network [TheVirgo:2014hva;TheLIGOScientific:2014jea;Aasi:2013wya] and future ground and space based detectors [Somiya:2011np;Saleem:2021iwi;Audley:2017drz;Luo:2015ght;Hu:2017mde] will further expand our reach. 
+The 2015 detection of gravitational waves (GWs) from a binary black hole merger [@Abbott:2016blz] was a breakthrough moment for science. More detections have since been made by the Advanced LIGO/Virgo network [@TheVirgo:2014hva;@TheLIGOScientific:2014jea;@Aasi:2013wya] and future ground and space based detectors [@Somiya:2011np;@Saleem:2021iwi;@Audley:2017drz;@Luo:2015ght;@Hu:2017mde] will further expand our reach. 
 
-Strong gravity regimes are described by the *Einstein Field Equation* (EFE) of General Relativity [@Einstein:1916vd. 
+Strong gravity regimes are described by the *Einstein Field Equation* (EFE) of General Relativity [@Einstein:1916vd]. 
 \begin{equation}
    R_{\mu \nu} - \frac{1}{2} R g_{\mu \nu} = 8 \pi G T_{\mu\nu} ~.
 \end{equation}
 Analytic solutions to the EFE only exist where there is a high degree of symmetry; in general the equations must be solved numerically. The need for observational predictions has thus led to the development of *numerical relativity* (NR), methods for numerically solving the above expression, typically utilising high performance computing (HPC) resources.
 Expanding out the tensorial notation, the EFE is a set of second order partial differential equations for the metric tensor field $g_{\mu\nu}$, which describes the curvature of spacetime in the presence of matter with stress-energy $T_{\mu\nu}$, i.e.,
 \begin{equation}
-   \partial_t \partial_t g_{\mu\nu} = \partial_x \partial_x g_{\mu\nu} + \partial_y \partial_y g_{\mu\nu} + \partial_z \partial_z g_{\mu\nu} + {\rm non ~ linear ~ cross ~ terms} 
+   \partial_t \partial_t g_{\mu\nu} \sim \partial_x \partial_x g_{\mu\nu} + \partial_y \partial_y g_{\mu\nu} + \partial_z \partial_z g_{\mu\nu} + {\rm non ~ linear ~ cross ~ terms} 
           + 8 \pi G T_{\mu\nu}
 \end{equation}
 where the indices $\mu, \nu$ run over the spacetime indices -- in 4 dimensions, $t, x, y, z$. Given that $g_{\mu\nu}$ is symmetric in its indices, this gives a set of ten coupled non-linear partial differential equations, sourced by the stress-energy of any matter present in the spacetime.
@@ -161,7 +161,7 @@ The key features of GRChombo are as follows:
 
 - Boundary Conditions: The code implements periodic, Sommerfeld (radiative), extrapolating and reflective boundary conditions.
 
-- Initial Conditions: The current examples provide analytic or semi-analytic initial data for black hole binaries, Kerr black holes and scalar matter. The code also incorporates a standalone version of the TwoPunctures code [Ansorg:2004ds] for accurate binary BH data of arbitrary spins, masses and momenta.
+- Initial Conditions: The current examples provide analytic or semi-analytic initial data for black hole binaries, Kerr black holes and scalar matter. The code also incorporates a standalone version of the TwoPunctures code [@Ansorg:2004ds] for accurate binary BH data of arbitrary spins, masses and momenta.
 
 - Diagnostics: GRChombo has routines for finding black hole horizons, calculating spacetime masses, angular momenta, densities, fluxes and extracting gravitational waves. 
 
@@ -175,35 +175,35 @@ The code continues to be actively developed with a number of ongoing projects to
 
 # Statement of Need
 
-Several 3+1D NR codes using the moving puncture formulation already exist and are under active development. The Einstein Toolkit (http://einsteintoolkit.org/), with its related Cactus (http://cactuscode.org) [@Loffler:2011ay;@Schnetter:2003rb], and Kranc (http://kranccode.org) [@Husa:2004ip] infrastructure used by LEAN [@Sperhake:2006cy;@Zilhao:2010sr] and Canuda (https://bitbucket.org/canuda) [@Witek:2018dmd]. Other notable but non public codes include \texttt{BAM} [@Marronetti:2007ya;@Brugmann:2008zz], AMSS-NCKU [@Galaviz:2010mx], PAMR/AMRD and HAD [@Neilsen:2007ua;@East:2011aa]. Codes such as SPeC [@Pfeiffer:2002wt] and bamps [@Hilditch:2015aba] implement the generalised harmonic formulation of the Einstein equations using a pseudospectral method, and discontinuous Galerkin methods are used in SpECTRE (https://spectre-code.org) [deppe_nils_2021_4734670;@Kidder:2016hev] (see also [@Cao:2018vhw]). NRPy (http://astro.phys.wvu.edu/bhathome) [@Ruchlin:2017com] is a code aimed for use on non HPC systems, which generate C code from Python, and uses adapted coordinate systems to minimise computational costs. CosmoGRaPH (https://cwru-pat.github.io/cosmograph) [@Mertens:2015ttp] and GRAMSES [@Barrera-Hinojosa:2019mzo] are among several NR codes targeted at cosmological applications (see [@Adamek:2020jmr] for a comparison) and which also employ particle methods. Simflowny (https://bitbucket.org/iac3/simflowny/wiki/Home) [@Palenzuela:2018sly], like CosmoGRaPH, is based on the SAMRAI infrastructure, and has targeted fluid and MHD applications. GRAthena++ [Daszuta:2021ecf] makes use of oct-tree AMR to maximise scaling.
+Several 3+1D NR codes using the moving puncture formulation already exist and are under active development. The Einstein Toolkit (http://einsteintoolkit.org/), with its related Cactus (http://cactuscode.org) [@Loffler:2011ay;@Schnetter:2003rb], and Kranc (http://kranccode.org) [@Husa:2004ip] infrastructure used by LEAN [@Sperhake:2006cy;@Zilhao:2010sr] and Canuda (https://bitbucket.org/canuda) [@Witek:2018dmd]. Other notable but non public codes include \texttt{BAM} [@Marronetti:2007ya;@Brugmann:2008zz], AMSS-NCKU [@Galaviz:2010mx], PAMR/AMRD and HAD [@Neilsen:2007ua;@East:2011aa]. Codes such as SPeC [@Pfeiffer:2002wt] and bamps [@Hilditch:2015aba] implement the generalised harmonic formulation of the Einstein equations using a pseudospectral method, and discontinuous Galerkin methods are used in SpECTRE (https://spectre-code.org) [@deppe_nils_2021_4734670;@Kidder:2016hev] (see also [@Cao:2018vhw]). NRPy (http://astro.phys.wvu.edu/bhathome) [@Ruchlin:2017com] is a code aimed for use on non HPC systems, which generate C code from Python, and uses adapted coordinate systems to minimise computational costs. CosmoGRaPH (https://cwru-pat.github.io/cosmograph) [@Mertens:2015ttp] and GRAMSES [@Barrera-Hinojosa:2019mzo] are among several NR codes targeted at cosmological applications (see [@Adamek:2020jmr] for a comparison) and which also employ particle methods. Simflowny (https://bitbucket.org/iac3/simflowny/wiki/Home) [@Palenzuela:2018sly], like CosmoGRaPH, is based on the SAMRAI infrastructure, and has targeted fluid and MHD applications. GRAthena++ [@Daszuta:2021ecf] makes use of oct-tree AMR to maximise scaling.
 
-While GRChombo is not the only open source NR code, its unique features (detailed above) have made it one of the premier codes for numerical relativity, especially in the study of fundamental physics beyond standard binary mergers. In particular, GRChombo's highly flexible adaptive mesh refinement scheme allows for complicated "many-boxes-in-many-boxes" topology , enabling users to simulate non-trivial systems, such as ring-like configurations [@Figueras:2015hkb,@Helfer:2018qgv] and inhomogeneous cosmological spacetimes [Joana:2020rxm;@Aurrekoetxea:2019fhr;@Clough:2017efm;@Clough:2016ymm]. Nevertheless, with its efficient scalability and AMR capabilities, it can also play a leading role in the continuing efforts to simulate ``standard'' binary mergers to the required sensitivities required for the upcoming LISA space mission [Radia:2021hjs]. Finally, GRChombo's object-oriented and template-based code can be rapidly modified for non-standard problems such as higher dimensional spacetimes [@Figueras:2015hkb;@Figueras:2017zwa;@Bantilan:2019bvf;@Andrade:2020dgc], modified gravity systems [@Figueras:2020dzx] and additional fundamental fields [Nazari:2020fmk;@Muia:2019coe;@Widdicombe:2019woy;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl;Bamber:2020bpu;@Clough:2019jpm;@Alexandre:2018crg].
+While GRChombo is not the only open source NR code, its unique features (detailed above) have made it one of the premier codes for numerical relativity, especially in the study of fundamental physics beyond standard binary mergers. In particular, GRChombo's highly flexible adaptive mesh refinement scheme allows for complicated "many-boxes-in-many-boxes" topology , enabling users to simulate non-trivial systems, such as ring-like configurations [@Figueras:2015hkb,@Helfer:2018qgv] and inhomogeneous cosmological spacetimes [@Joana:2020rxm;@Aurrekoetxea:2019fhr;@Clough:2017efm;@Clough:2016ymm]. Nevertheless, with its efficient scalability and AMR capabilities, it can also play a leading role in the continuing efforts to simulate ``standard'' binary mergers to the required sensitivities required for the upcoming LISA space mission [@Radia:2021hjs]. Finally, GRChombo's object-oriented and template-based code can be rapidly modified for non-standard problems such as higher dimensional spacetimes [@Figueras:2015hkb;@Figueras:2017zwa;@Bantilan:2019bvf;@Andrade:2020dgc], modified gravity systems [@Figueras:2020dzx] and additional fundamental fields [@Nazari:2020fmk;@Muia:2019coe;@Widdicombe:2019woy;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl;@Bamber:2020bpu;@Clough:2019jpm;@Alexandre:2018crg].
 
 # Key research projects using GRChombo
 
 The wide range of fundamental physics problems for which the code has been used so far includes:
 
-- the simulation of pre-inflationary spacetimes in early universe cosmology [Joana:2020rxm;@Aurrekoetxea:2019fhr;@Clough:2017efm;@Clough:2016ymm].
+- the simulation of pre-inflationary spacetimes in early universe cosmology [@Joana:2020rxm;@Aurrekoetxea:2019fhr;@Clough:2017efm;@Clough:2016ymm].
 
 ![Cosmology \label{fig:cosmo}](figures/cosmo.png){ width=60% }
 
-- the study of modified gravity, and violation of cosmic censorship [@Figueras:2020dzx;Andrade:2020dgc;@Bantilan:2019bvf;@Figueras:2017zwa;@Figueras:2015hkb].
+- the study of modified gravity, and violation of cosmic censorship [@Figueras:2020dzx;@Andrade:2020dgc;@Bantilan:2019bvf;@Figueras:2017zwa;@Figueras:2015hkb].
 
 ![Cosmic censorship \label{fig:blackstring}](figures/blackstring.png){ width=60% }
 
-- the formation, collapse and collisions of exotic compact objects (ECOs) and dark matter stars [Nazari:2020fmk;@Muia:2019coe;@Widdicombe:2019woy;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl].
+- the formation, collapse and collisions of exotic compact objects (ECOs) and dark matter stars [@Nazari:2020fmk;@Muia:2019coe;@Widdicombe:2019woy;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl].
 
 ![Exotic compact objects \label{fig:axionstar}](figures/oscillotons.png){ width=60% }
 
-- Gravitational wave emission from cosmic string collapse [Aurrekoetxea:2020tuw;@Helfer:2018qgv] and cosmic string networks [@Drew:2019mzc].
+- Gravitational wave emission from cosmic string collapse [@Aurrekoetxea:2020tuw;@Helfer:2018qgv] and cosmic string networks [@Drew:2019mzc].
 
 ![Cosmic strings. \label{fig:cosmicstring}](figures/cosmicstring.png){ width=60% }
 
-- The study of light bosonic dark matter and neutrino-like particles in black holes environments [Bamber:2020bpu;@Clough:2019jpm;@Alexandre:2018crg].
+- The study of light bosonic dark matter and neutrino-like particles in black holes environments [@Bamber:2020bpu;@Clough:2019jpm;@Alexandre:2018crg].
 
 ![Black hole environments. \label{fig:dm}](figures/superradiance.png){ width=60% }
 
-- The study of gravitational recoil in unequal mass binaries [Radia:2021hjs].
+- The study of gravitational recoil in unequal mass binaries [@Radia:2021hjs].
 
 ![Black hole recoil. \label{fig:recoil}](figures/kick.png){ width=60% }
 
@@ -217,19 +217,19 @@ In particular, PF and KC acknowledge support from the European Research Council 
 
 GRChombo users have benefitted from the provision of HPC resources from:
 
-* DiRAC (Distributed Research utilising Advanced Computing) resources under the projects ACSP218 and ACSP191, ACTP183. Systems used include: 
+  * DiRAC (Distributed Research utilising Advanced Computing) resources under the projects ACSP218 and ACSP191, ACTP183. Systems used include: 
 
     - Cambridge Service for Data Driven Discovery (CSD3), part of which is operated by the University of Cambridge Research Computing on behalf of the STFC DiRAC HPC Facility (www.dirac.ac.uk). The DiRAC component of CSD3 was funded by BEIS capital funding via STFC capital grants ST/P002307/1 and ST/R002452/1 and STFC operations grant ST/R00689X/1. DiRAC is part of the National e-Infrastructure.
 
     - DiRAC Data Intensive service at Leicester, operated by the University of Leicester IT Services, which forms part of the STFC DiRAC HPC Facility (www.dirac.ac.uk). The equipment was funded by BEIS capital funding via STFC capital grants ST/K000373/1 and ST/R002363/1 and STFC DiRAC Operations grant ST/R001014/1. DiRAC is part of the National e-Infrastructure.
 
-    -  DiRAC@Durham facility managed by the Institute for Computational Cosmology on behalf of the STFC DiRAC HPC Facility (www.dirac.ac.uk). The equipment was funded by BEIS capital funding via STFC capital grants ST/P002293/1 and ST/R002371/1, Durham University and STFC operations grant ST/R000832/1. DiRAC is part of the National e-Infrastructure.
+    -  DiRAC at Durham facility managed by the Institute for Computational Cosmology on behalf of the STFC DiRAC HPC Facility (www.dirac.ac.uk). The equipment was funded by BEIS capital funding via STFC capital grants ST/P002293/1 and ST/R002371/1, Durham University and STFC operations grant ST/R000832/1. DiRAC is part of the National e-Infrastructure.
 
     - DIRAC Shared Memory Processing system at the University of Cambridge, operated by the COSMOS Project at the Department of Applied Mathematics and Theoretical Physics on behalf of the STFC DiRAC HPC Facility (www.dirac.ac.uk). This equipment was funded by BIS National E-infrastructure capital grant ST/J005673/1, STFC capital grant ST/H008586/1, and STFC DiRAC Operations grant ST/K00333X/1. DiRAC is part of the National e-Infrastructure.
 
     - DiRAC Complexity system, operated by the University of Leicester IT Services, which forms part of the STFC DiRAC HPC Facility (www.dirac.ac.uk ). This equipment is funded by BIS National E-Infrastructure capital grant ST/K000373/1 and STFC DiRAC Operations grant ST/K0003259/1. DiRAC is part of the National e-Infrastructure.
 
-* PRACE (Partnership for Advanced Computing in Europe) resources under grant numbers 2018194669, 2020225359. Systems used include:
+  * PRACE (Partnership for Advanced Computing in Europe) resources under grant numbers 2018194669, 2020225359. Systems used include:
 
     - SuperMUCNG, Leibniz Supercomputing Center (LRZ), Germany
 
@@ -239,11 +239,11 @@ GRChombo users have benefitted from the provision of HPC resources from:
 
     - Marenostrum (BSC), Spain
 
-* Marconi (CINECA), Italy
+  * Marconi (CINECA), Italy
 
-* the Glamdring cluster, Astrophysics, Oxford, UK
+  * the Glamdring cluster, Astrophysics, Oxford, UK
 
-* the Argo cluster at ICTP, Trieste, Italy
+  * the Argo cluster at ICTP, Trieste, Italy
 
 ... **(add your HPC resources here)**
 
