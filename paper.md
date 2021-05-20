@@ -247,7 +247,5 @@ GRChombo users have benefitted from the provision of HPC resources from:
 
 ... **(add your HPC resources here)**
 
-\end{itemize}
-
 # References
 
