@@ -9,136 +9,102 @@ tags:
   - general relativity
   - numerical relativity
 authors:
-
   - name: Tomas Andrade
     orcid: 0000-0002-2472-114X
     affiliation: 1
-
   - name: Llibert Areste Salo
     orcid: 0000-0002-3812-8523
     affiliation: 2
-
   - name: Josu Aurrekoetxea
     orcid: 0000-0001-9584-5791
     affiliation: 3
-
   - name: Jamie Bamber
     orcid: 0000-0001-7181-3365
     affiliation: 4
-
   - name: Katy Clough
     orcid: 0000-0001-8841-1522
     affiliation: 4
-
   - name: Robin Croft
     orcid: 0000-0002-1236-6566
     affiliation: 5
-
   - name: Eloy de Jong
     orcid: 0000-0002-4505-0808
     affiliation: 3
-
   - name: Amelia Drew
     orcid: 0000-0001-8252-602X
     affiliation: 5
-
   - name: Alexandro Duran
     #orcid: tbc
     affiliation: 6
-
   - name: Pedro Ferreira
     orcid: 0000-0002-3021-2851
     affiliation: 4
-
   - name: Pau Figueras
     orcid: 0000-0000-0000-0000
     affiliation: 2
-
   - name: Hal Finkel
     orcid: 0000-0002-7551-7122
     affiliation: 7
-
   - name: Tiago Fran\c{c}a
     orcid: 0000-0002-1718-151X
     affiliation: 2
-
   - name: Boxuan Ge
     orcid: 0000-0003-0738-3473
     affiliation: 3    
-
   - name: Chenxia Gu
     orcid: 0000-0001-9537-6139
     affiliation: 2
-
   - name: Thomas Helfer
     orcid: 0000-0001-6880-1005
     affiliation: 8
-
   - name: Juha Jäykkä
     orcid: 0000-0002-5929-3931
     affiliation: 5
-
   - name: Cristian Joana
     orcid: 0000-0003-4642-3028
     affiliation: 9
-
   - name: Markus Kunesch
     orcid: 0000-0003-3818-7897
     affiliation: 5
-
   - name: Kacper Kornet
     orcid: 0000-0001-8376-8231
     affiliation: 5
-
   - name: Eugene A. Lim
     orcid: 0000-0002-6227-9540
     affiliation: 3
-
   - name: Francesco Muia
     orcid: 0000-0002-4872-6172
     affiliation: 5
-
   - name: Zainab Nazari
     orcid: 0000-0002-2955-7262
     affiliation: 10
-
   - name: Miren Radia
     orcid: 0000-0001-8861-2025
     affiliation: 5
-
   - name: Justin Ripley
     orcid: 0000-0001-7192-0021
     affiliation: 5
-
   - name: Paul Shellard
     #orcid: tbc
     affiliation: 5
-
   - name: Ulrich Sperhake
     orcid: 0000-0002-3134-7088
     affiliation: 5
-
   - name: Dina Traykova
     orcid: 0000-0002-3451-0987
     affiliation: 4
-
   - name: Saran Tunyasuvunakool
     orcid: 0000-0002-1620-6797
     affiliation: 5
-
   - name: Zipeng Wang
     orcid: 0000-0002-3574-2122
     affiliation: 8
-
   - name: James Widdicombe
     orcid: 0000-0003-2269-4544
     affiliation: 3
-
   - name: Kaze Wong
     orcid: 0000-0001-8432-7788
     affiliation: 8
-
-
 affiliations:
  - name: Departament de Fısica Quantica i Astrofisica, Institut de Ciencies del Cosmos, Universitat de Barcelona, Marti i Franques 1, 08028 Barcelona, Spain
    index: 1
@@ -160,8 +126,7 @@ affiliations:
    index: 9
  - name: Department of Physics, Bogazici University, 34342 Bebek, 80820 Istanbul, Turkey
    index: 10
-
-date: 1 June 2020
+date: 1 June 2021
 bibliography: paper.bib
 
 ---
@@ -202,7 +167,7 @@ The key features of GRChombo are as follows:
 
 - C++ class structure: GRChombo is written in the C++ language, and makes heavy use of object oriented programming (OOP) and templating.
 
-- Parallelism: GRChombo uses hybrid OpenMP/MPI  parallelism with explicit vectorisation of the evolution equations via intrinsics, and is AVX-512 compliant. Our code strong scales efficiently to several thousand CPU-cores for a typical BH binary problem, and further for larger probem sizes. 
+- Parallelism: GRChombo uses hybrid OpenMP/MPI  parallelism with explicit vectorisation of the evolution equations via intrinsics, and is AVX-512 compliant. Our code strong scales efficiently to several thousand CPU-cores for a typical BH binary problem, and further for larger problem sizes. 
 
 - Adaptive Mesh Refinement: Chombo provides Berger-Oliger style [@Berger:1984zza] AMR with block-structured  Berger-Rigoutsos grid generation. The tagging of refinement regions is fully flexible and can be based on truncation error or other user-defined measures.
 
@@ -254,25 +219,25 @@ GRChombo users have benefitted from the provision of HPC resources from:
 
 * DiRAC (Distributed Research utilising Advanced Computing) resources under the projects ACSP218 and ACSP191, ACTP183. Systems used include: 
 
-    ** Cambridge Service for Data Driven Discovery (CSD3), part of which is operated by the University of Cambridge Research Computing on behalf of the STFC DiRAC HPC Facility (www.dirac.ac.uk). The DiRAC component of CSD3 was funded by BEIS capital funding via STFC capital grants ST/P002307/1 and ST/R002452/1 and STFC operations grant ST/R00689X/1. DiRAC is part of the National e-Infrastructure.
+    - Cambridge Service for Data Driven Discovery (CSD3), part of which is operated by the University of Cambridge Research Computing on behalf of the STFC DiRAC HPC Facility (www.dirac.ac.uk). The DiRAC component of CSD3 was funded by BEIS capital funding via STFC capital grants ST/P002307/1 and ST/R002452/1 and STFC operations grant ST/R00689X/1. DiRAC is part of the National e-Infrastructure.
 
-    ** DiRAC Data Intensive service at Leicester, operated by the University of Leicester IT Services, which forms part of the STFC DiRAC HPC Facility (www.dirac.ac.uk). The equipment was funded by BEIS capital funding via STFC capital grants ST/K000373/1 and ST/R002363/1 and STFC DiRAC Operations grant ST/R001014/1. DiRAC is part of the National e-Infrastructure.
+    - DiRAC Data Intensive service at Leicester, operated by the University of Leicester IT Services, which forms part of the STFC DiRAC HPC Facility (www.dirac.ac.uk). The equipment was funded by BEIS capital funding via STFC capital grants ST/K000373/1 and ST/R002363/1 and STFC DiRAC Operations grant ST/R001014/1. DiRAC is part of the National e-Infrastructure.
 
-    **  DiRAC@Durham facility managed by the Institute for Computational Cosmology on behalf of the STFC DiRAC HPC Facility (www.dirac.ac.uk). The equipment was funded by BEIS capital funding via STFC capital grants ST/P002293/1 and ST/R002371/1, Durham University and STFC operations grant ST/R000832/1. DiRAC is part of the National e-Infrastructure.
+    -  DiRAC@Durham facility managed by the Institute for Computational Cosmology on behalf of the STFC DiRAC HPC Facility (www.dirac.ac.uk). The equipment was funded by BEIS capital funding via STFC capital grants ST/P002293/1 and ST/R002371/1, Durham University and STFC operations grant ST/R000832/1. DiRAC is part of the National e-Infrastructure.
 
-    ** DIRAC Shared Memory Processing system at the University of Cambridge, operated by the COSMOS Project at the Department of Applied Mathematics and Theoretical Physics on behalf of the STFC DiRAC HPC Facility (www.dirac.ac.uk). This equipment was funded by BIS National E-infrastructure capital grant ST/J005673/1, STFC capital grant ST/H008586/1, and STFC DiRAC Operations grant ST/K00333X/1. DiRAC is part of the National e-Infrastructure.
+    - DIRAC Shared Memory Processing system at the University of Cambridge, operated by the COSMOS Project at the Department of Applied Mathematics and Theoretical Physics on behalf of the STFC DiRAC HPC Facility (www.dirac.ac.uk). This equipment was funded by BIS National E-infrastructure capital grant ST/J005673/1, STFC capital grant ST/H008586/1, and STFC DiRAC Operations grant ST/K00333X/1. DiRAC is part of the National e-Infrastructure.
 
-    ** DiRAC Complexity system, operated by the University of Leicester IT Services, which forms part of the STFC DiRAC HPC Facility (www.dirac.ac.uk ). This equipment is funded by BIS National E-Infrastructure capital grant ST/K000373/1 and STFC DiRAC Operations grant ST/K0003259/1. DiRAC is part of the National e-Infrastructure.
+    - DiRAC Complexity system, operated by the University of Leicester IT Services, which forms part of the STFC DiRAC HPC Facility (www.dirac.ac.uk ). This equipment is funded by BIS National E-Infrastructure capital grant ST/K000373/1 and STFC DiRAC Operations grant ST/K0003259/1. DiRAC is part of the National e-Infrastructure.
 
 * PRACE (Partnership for Advanced Computing in Europe) resources under grant numbers 2018194669, 2020225359. Systems used include:
 
-    ** SuperMUCNG, Leibniz Supercomputing Center (LRZ), Germany
+    - SuperMUCNG, Leibniz Supercomputing Center (LRZ), Germany
 
-    ** JUWELS, Juelich Supercomputing Centre (JSC), Germany
+    - JUWELS, Juelich Supercomputing Centre (JSC), Germany
 
-    ** Cartesius (SURF), Netherlands
+    - Cartesius (SURF), Netherlands
 
-    ** Marenostrum (BSC), Spain
+    - Marenostrum (BSC), Spain
 
 * Marconi (CINECA), Italy
 
@@ -284,6 +249,5 @@ GRChombo users have benefitted from the provision of HPC resources from:
 
 \end{itemize}
 
-**(Add the references to these and other grants held by authors)**
-
 # References
+
