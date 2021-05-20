@@ -133,7 +133,7 @@ bibliography: paper.bib
 
 # Summary
 
-The 2015 detection of gravitational waves (GWs) from a binary black hole merger [@Abbott:2016blz] was a breakthrough moment for science. More detections have since been made by the Advanced LIGO/Virgo network [TheVirgo:2014hva;TheLIGOScientific:2014jea;Aasi:2013wya] and future ground and space based detectors [Somiya:2011np;Saleem:2021iwi;Audley:2017drz;Luo:2015ght;Hu:2017mde] will further expand our reach. 
+The 2015 detection of gravitational waves (GWs) from a binary black hole merger [@Abbott:2016blz] was a breakthrough moment for science. More detections have since been made by the Advanced LIGO/Virgo network [@TheVirgo:2014hva;@TheLIGOScientific:2014jea;@Aasi:2013wya] and future ground and space based detectors [@Somiya:2011np;@Saleem:2021iwi;@Audley:2017drz;@Luo:2015ght;@Hu:2017mde] will further expand our reach. 
 
 Strong gravity regimes are described by the *Einstein Field Equation* (EFE) of General Relativity [@Einstein:1916vd]. 
 \begin{equation}
@@ -161,7 +161,7 @@ The key features of GRChombo are as follows:
 
 - Boundary Conditions: The code implements periodic, Sommerfeld (radiative), extrapolating and reflective boundary conditions.
 
-- Initial Conditions: The current examples provide analytic or semi-analytic initial data for black hole binaries, Kerr black holes and scalar matter. The code also incorporates a standalone version of the TwoPunctures code [Ansorg:2004ds] for accurate binary BH data of arbitrary spins, masses and momenta.
+- Initial Conditions: The current examples provide analytic or semi-analytic initial data for black hole binaries, Kerr black holes and scalar matter. The code also incorporates a standalone version of the TwoPunctures code [@Ansorg:2004ds] for accurate binary BH data of arbitrary spins, masses and momenta.
 
 - Diagnostics: GRChombo has routines for finding black hole horizons, calculating spacetime masses, angular momenta, densities, fluxes and extracting gravitational waves. 
 
@@ -175,35 +175,35 @@ The code continues to be actively developed with a number of ongoing projects to
 
 # Statement of Need
 
-Several 3+1D NR codes using the moving puncture formulation already exist and are under active development. The Einstein Toolkit (http://einsteintoolkit.org/), with its related Cactus (http://cactuscode.org) [@Loffler:2011ay;@Schnetter:2003rb], and Kranc (http://kranccode.org) [@Husa:2004ip] infrastructure used by LEAN [@Sperhake:2006cy;@Zilhao:2010sr] and Canuda (https://bitbucket.org/canuda) [@Witek:2018dmd]. Other notable but non public codes include \texttt{BAM} [@Marronetti:2007ya;@Brugmann:2008zz], AMSS-NCKU [@Galaviz:2010mx], PAMR/AMRD and HAD [@Neilsen:2007ua;@East:2011aa]. Codes such as SPeC [@Pfeiffer:2002wt] and bamps [@Hilditch:2015aba] implement the generalised harmonic formulation of the Einstein equations using a pseudospectral method, and discontinuous Galerkin methods are used in SpECTRE (https://spectre-code.org) [deppe_nils_2021_4734670;@Kidder:2016hev] (see also [@Cao:2018vhw]). NRPy (http://astro.phys.wvu.edu/bhathome) [@Ruchlin:2017com] is a code aimed for use on non HPC systems, which generate C code from Python, and uses adapted coordinate systems to minimise computational costs. CosmoGRaPH (https://cwru-pat.github.io/cosmograph) [@Mertens:2015ttp] and GRAMSES [@Barrera-Hinojosa:2019mzo] are among several NR codes targeted at cosmological applications (see [@Adamek:2020jmr] for a comparison) and which also employ particle methods. Simflowny (https://bitbucket.org/iac3/simflowny/wiki/Home) [@Palenzuela:2018sly], like CosmoGRaPH, is based on the SAMRAI infrastructure, and has targeted fluid and MHD applications. GRAthena++ [Daszuta:2021ecf] makes use of oct-tree AMR to maximise scaling.
+Several 3+1D NR codes using the moving puncture formulation already exist and are under active development. The Einstein Toolkit (http://einsteintoolkit.org/), with its related Cactus (http://cactuscode.org) [@Loffler:2011ay;@Schnetter:2003rb], and Kranc (http://kranccode.org) [@Husa:2004ip] infrastructure used by LEAN [@Sperhake:2006cy;@Zilhao:2010sr] and Canuda (https://bitbucket.org/canuda) [@Witek:2018dmd]. Other notable but non public codes include \texttt{BAM} [@Marronetti:2007ya;@Brugmann:2008zz], AMSS-NCKU [@Galaviz:2010mx], PAMR/AMRD and HAD [@Neilsen:2007ua;@East:2011aa]. Codes such as SPeC [@Pfeiffer:2002wt] and bamps [@Hilditch:2015aba] implement the generalised harmonic formulation of the Einstein equations using a pseudospectral method, and discontinuous Galerkin methods are used in SpECTRE (https://spectre-code.org) [deppe_nils_2021_4734670;@Kidder:2016hev] (see also [@Cao:2018vhw]). NRPy (http://astro.phys.wvu.edu/bhathome) [@Ruchlin:2017com] is a code aimed for use on non HPC systems, which generate C code from Python, and uses adapted coordinate systems to minimise computational costs. CosmoGRaPH (https://cwru-pat.github.io/cosmograph) [@Mertens:2015ttp] and GRAMSES [@Barrera-Hinojosa:2019mzo] are among several NR codes targeted at cosmological applications (see [@Adamek:2020jmr] for a comparison) and which also employ particle methods. Simflowny (https://bitbucket.org/iac3/simflowny/wiki/Home) [@Palenzuela:2018sly], like CosmoGRaPH, is based on the SAMRAI infrastructure, and has targeted fluid and MHD applications. GRAthena++ [@Daszuta:2021ecf] makes use of oct-tree AMR to maximise scaling.
 
-While GRChombo is not the only open source NR code, its unique features (detailed above) have made it one of the premier codes for numerical relativity, especially in the study of fundamental physics beyond standard binary mergers. In particular, GRChombo's highly flexible adaptive mesh refinement scheme allows for complicated "many-boxes-in-many-boxes" topology , enabling users to simulate non-trivial systems, such as ring-like configurations [@Figueras:2015hkb,@Helfer:2018qgv] and inhomogeneous cosmological spacetimes [Joana:2020rxm;@Aurrekoetxea:2019fhr;@Clough:2017efm;@Clough:2016ymm]. Nevertheless, with its efficient scalability and AMR capabilities, it can also play a leading role in the continuing efforts to simulate ``standard'' binary mergers to the required sensitivities required for the upcoming LISA space mission [Radia:2021hjs]. Finally, GRChombo's object-oriented and template-based code can be rapidly modified for non-standard problems such as higher dimensional spacetimes [@Figueras:2015hkb;@Figueras:2017zwa;@Bantilan:2019bvf;@Andrade:2020dgc], modified gravity systems [@Figueras:2020dzx] and additional fundamental fields [Nazari:2020fmk;@Muia:2019coe;@Widdicombe:2019woy;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl;Bamber:2020bpu;@Clough:2019jpm;@Alexandre:2018crg].
+While GRChombo is not the only open source NR code, its unique features (detailed above) have made it one of the premier codes for numerical relativity, especially in the study of fundamental physics beyond standard binary mergers. In particular, GRChombo's highly flexible adaptive mesh refinement scheme allows for complicated "many-boxes-in-many-boxes" topology , enabling users to simulate non-trivial systems, such as ring-like configurations [@Figueras:2015hkb,@Helfer:2018qgv] and inhomogeneous cosmological spacetimes [@Joana:2020rxm;@Aurrekoetxea:2019fhr;@Clough:2017efm;@Clough:2016ymm]. Nevertheless, with its efficient scalability and AMR capabilities, it can also play a leading role in the continuing efforts to simulate ``standard'' binary mergers to the required sensitivities required for the upcoming LISA space mission [@Radia:2021hjs]. Finally, GRChombo's object-oriented and template-based code can be rapidly modified for non-standard problems such as higher dimensional spacetimes [@Figueras:2015hkb;@Figueras:2017zwa;@Bantilan:2019bvf;@Andrade:2020dgc], modified gravity systems [@Figueras:2020dzx] and additional fundamental fields [@Nazari:2020fmk;@Muia:2019coe;@Widdicombe:2019woy;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl;Bamber:2020bpu;@Clough:2019jpm;@Alexandre:2018crg].
 
 # Key research projects using GRChombo
 
 The wide range of fundamental physics problems for which the code has been used so far includes:
 
-- the simulation of pre-inflationary spacetimes in early universe cosmology [Joana:2020rxm;@Aurrekoetxea:2019fhr;@Clough:2017efm;@Clough:2016ymm].
+- the simulation of pre-inflationary spacetimes in early universe cosmology [@Joana:2020rxm;@Aurrekoetxea:2019fhr;@Clough:2017efm;@Clough:2016ymm].
 
 ![Cosmology \label{fig:cosmo}](figures/cosmo.png){ width=60% }
 
-- the study of modified gravity, and violation of cosmic censorship [@Figueras:2020dzx;Andrade:2020dgc;@Bantilan:2019bvf;@Figueras:2017zwa;@Figueras:2015hkb].
+- the study of modified gravity, and violation of cosmic censorship [@Figueras:2020dzx;@Andrade:2020dgc;@Bantilan:2019bvf;@Figueras:2017zwa;@Figueras:2015hkb].
 
 ![Cosmic censorship \label{fig:blackstring}](figures/blackstring.png){ width=60% }
 
-- the formation, collapse and collisions of exotic compact objects (ECOs) and dark matter stars [Nazari:2020fmk;@Muia:2019coe;@Widdicombe:2019woy;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl].
+- the formation, collapse and collisions of exotic compact objects (ECOs) and dark matter stars [@Nazari:2020fmk;@Muia:2019coe;@Widdicombe:2019woy;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl].
 
 ![Exotic compact objects \label{fig:axionstar}](figures/oscillotons.png){ width=60% }
 
-- Gravitational wave emission from cosmic string collapse [Aurrekoetxea:2020tuw;@Helfer:2018qgv] and cosmic string networks [@Drew:2019mzc].
+- Gravitational wave emission from cosmic string collapse [@Aurrekoetxea:2020tuw;@Helfer:2018qgv] and cosmic string networks [@Drew:2019mzc].
 
 ![Cosmic strings. \label{fig:cosmicstring}](figures/cosmicstring.png){ width=60% }
 
-- The study of light bosonic dark matter and neutrino-like particles in black holes environments [Bamber:2020bpu;@Clough:2019jpm;@Alexandre:2018crg].
+- The study of light bosonic dark matter and neutrino-like particles in black holes environments [@Bamber:2020bpu;@Clough:2019jpm;@Alexandre:2018crg].
 
 ![Black hole environments. \label{fig:dm}](figures/superradiance.png){ width=60% }
 
-- The study of gravitational recoil in unequal mass binaries [Radia:2021hjs].
+- The study of gravitational recoil in unequal mass binaries [@Radia:2021hjs].
 
 ![Black hole recoil. \label{fig:recoil}](figures/kick.png){ width=60% }
 
