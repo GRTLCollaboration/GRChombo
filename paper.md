@@ -13,8 +13,8 @@ authors:
   orcid: 0000-0002-2472-114X
   affiliation: 1
 - name: Llibert Areste Salo
-    orcid: 0000-0002-3812-8523
-    affiliation: 2
+  orcid: 0000-0002-3812-8523
+  affiliation: 2
 # - name: Josu Aurrekoetxea
 #     orcid: 0000-0001-9584-5791
 #     affiliation: 3
@@ -108,8 +108,8 @@ authors:
 affiliations:
 - name: Departament de Fısica Quantica i Astrofisica, Institut de Ciencies del Cosmos, Universitat de Barcelona, Marti i Franques 1, 08028 Barcelona, Spain
   index: 1
-# - name: School of Mathematical Sciences, Queen Mary University of London, Mile End Road, London E1 4NS, United Kingdom
-#    index: 2
+- name: School of Mathematical Sciences, Queen Mary University of London, Mile End Road, London E1 4NS, United Kingdom
+  index: 2
 # - name: Theoretical Particle Physics and Cosmology, King's College London, Strand, London, WC2R 2LS, United Kingdom
 #    index: 3  
 # - name: Astrophysics, Oxford University, Denys Wilkinson Building, Keble Road, Oxford OX1 3RH, United Kingdom
