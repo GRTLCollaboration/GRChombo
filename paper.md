@@ -33,9 +33,9 @@ authors:
 - name: Amelia Drew
   orcid: 0000-0001-8252-602X
   affiliation: 5
-- name: Alexandro Duran
+- name: Alejandro Duran
   #orcid: tbc
-  affiliation: 6
+  affiliation: 7
 - name: Pedro Ferreira
   orcid: 0000-0002-3021-2851
   affiliation: 4
@@ -44,7 +44,7 @@ authors:
   affiliation: 2
 - name: Hal Finkel
   orcid: 0000-0002-7551-7122
-  affiliation: 7
+  affiliation: 6
 - name: Tiago Fran\c{c}a
   orcid: 0000-0002-1718-151X
   affiliation: 2
@@ -114,7 +114,7 @@ affiliations:
   index: 3  
 - name: Astrophysics, Oxford University, Denys Wilkinson Building, Keble Road, Oxford OX1 3RH, United Kingdom
   index: 4
-- name: Department of Applied Mathematics and Theoretical Physics (DAMTP), University of Cambridge, Center for Mathematical Sciences, Wilberforce Road, Cambridge CB3 0WA, United Kingdom
+- name: Department of Applied Mathematics and Theoretical Physics (DAMTP), University of Cambridge, Centre for Mathematical Sciences, Wilberforce Road, Cambridge CB3 0WA, United Kingdom
   index: 5
 - name: Argonne National Laboratory (ANL), 9700 S. Cass Avenue, Argonne, IL 60439-4815, United States
   index: 6
@@ -199,13 +199,13 @@ The wide range of fundamental physics problems for which the code has been used 
 
 ![Cosmic strings. \label{fig:cosmicstring}](figures/cosmicstring.png){ width=60% }
 
-- The study of light bosonic dark matter and neutrino-like particles in black holes environments [@Bamber:2020bpu;@Clough:2019jpm;@Alexandre:2018crg].
+- the study of light bosonic dark matter and neutrino-like particles in black holes environments [@Bamber:2020bpu;@Clough:2019jpm;@Alexandre:2018crg].
 
 ![Black hole environments. \label{fig:dm}](figures/superradiance.png){ width=60% }
 
 - The study of gravitational recoil in unequal mass binaries [@Radia:2021hjs].
 
-![Black hole recoil. \label{fig:recoil}](figures/kick.png){ width=60% }
+![Black hole recoil. \label{fig:recoil}](figures/kick.svg){ width=60% }
 
 # Acknowledgements
 
@@ -215,9 +215,9 @@ In particular, PF and KC acknowledge support from the European Research Council 
 
 ... **(add your acknowledgements here)**
 
-GRChombo users have benefitted from the provision of HPC resources from:
+GRChombo users have benefited from the provision of HPC resources from:
 
-  * DiRAC (Distributed Research utilising Advanced Computing) resources under the projects ACSP218 and ACSP191, ACTP183. Systems used include: 
+  * DiRAC (Distributed Research utilising Advanced Computing) resources under the projects ACSP218, ACSP191, ACTP183 and ACTP186. Systems used include: 
 
     - Cambridge Service for Data Driven Discovery (CSD3), part of which is operated by the University of Cambridge Research Computing on behalf of the STFC DiRAC HPC Facility (www.dirac.ac.uk). The DiRAC component of CSD3 was funded by BEIS capital funding via STFC capital grants ST/P002307/1 and ST/R002452/1 and STFC operations grant ST/R00689X/1. DiRAC is part of the National e-Infrastructure.
 
@@ -238,6 +238,8 @@ GRChombo users have benefitted from the provision of HPC resources from:
     - Cartesius (SURF), Netherlands
 
     - Marenostrum (BSC), Spain
+    
+  * the Frontera cluster at TACC (Texas Advanced Computing Center) under project number PHY20043.
 
   * Marconi (CINECA), Italy
 
