@@ -77,7 +77,7 @@ authors:
   affiliation: 5
 - name: Zainab Nazari
   orcid: 0000-0002-2955-7262
-  affiliation: 10
+  affiliation: 10, 11
 - name: Miren Radia
   orcid: 0000-0001-8861-2025
   affiliation: 5
@@ -126,6 +126,8 @@ affiliations:
   index: 9
 - name: Department of Physics, Bogazici University, 34342 Bebek, 80820 Istanbul, Turkey
   index: 10
+- name: HECAP Section, Abdus Salam International Centre for Theoretical Physics, 34151, Trieste, Italy
+  index: 11
 date: 1 June 2021
 bibliography: paper.bib
 
