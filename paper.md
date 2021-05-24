@@ -249,6 +249,8 @@ GRChombo users have benefited from the provision of HPC resources from:
 
   * the Argo cluster at ICTP, Trieste, Italy
 
+  * Consortium des Équipements de Calcul Intensif (CÉCI), funded by the Fonds de la Recherche Scientifique de Belgique (F.R.S.-FNRS), Belgium
+
 ... **(add your HPC resources here)**
 
 # References
