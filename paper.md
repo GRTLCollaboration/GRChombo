@@ -122,7 +122,7 @@ affiliations:
   index: 7
 - name: Henry A. Rowland Department of Physics & Astronomy, Johns Hopkins University, 3701 San Martin Drive, Baltimore, Maryland (MD) 21218, United States
   index: 8
-- name: University of Louvain, Place de l'Université 1, B-1348 Louvain-la-Neuve, Belgium
+- name: Cosmology, Universe and Relativity at Louvain (CURL), Institut de Recherche en Mathematique et Physique, University of Louvain, 2 Chemin du Cyclotron, 1348 Louvain-la-Neuve, Belgium
   index: 9
 - name: Department of Physics, Bogazici University, 34342 Bebek, 80820 Istanbul, Turkey
   index: 10
