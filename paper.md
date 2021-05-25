@@ -77,7 +77,7 @@ authors:
   affiliation: 5
 - name: Zainab Nazari
   orcid: 0000-0002-2955-7262
-  affiliation: 10, 11
+  affiliation: 10
 - name: Miren Radia
   orcid: 0000-0001-8861-2025
   affiliation: 5
@@ -124,10 +124,8 @@ affiliations:
   index: 8
 - name: Cosmology, Universe and Relativity at Louvain (CURL), Institut de Recherche en Mathematique et Physique, University of Louvain, 2 Chemin du Cyclotron, 1348 Louvain-la-Neuve, Belgium
   index: 9
-- name: Department of Physics, Bogazici University, 34342 Bebek, 80820 Istanbul, Turkey
+- name: Department of Physics, Bogazici University, 34342 Bebek, 80820 Istanbul, Turkey and HECAP Section, Abdus Salam International Centre for Theoretical Physics, 34151, Trieste, Italy
   index: 10
-- name: HECAP Section, Abdus Salam International Centre for Theoretical Physics, 34151, Trieste, Italy
-  index: 11
 date: 1 June 2021
 bibliography: paper.bib
 
@@ -212,7 +210,8 @@ The wide range of fundamental physics problems for which the code has been used 
 
 - The study of gravitational recoil in unequal mass binaries [@Radia:2021hjs].
 
-
+![Black hole trajectories \label{fig:recoil1}](figures/kick1.svg){ width=45% }
+![Black hole recoil velocities, spin and radiated energy \label{fig:recoil2}](figures/kick2.svg){ width=45% }
 
 # Acknowledgements
 
