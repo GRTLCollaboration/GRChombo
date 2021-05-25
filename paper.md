@@ -35,20 +35,20 @@ authors:
   affiliation: 5
 - name: Alejandro Duran
   #orcid: tbc
-  affiliation: 7
-- name: Pedro Ferreira
+  affiliation: 6
+- name: Pedro G. Ferreira
   orcid: 0000-0002-3021-2851
   affiliation: 4
 - name: Pau Figueras
-  orcid: 0000-0000-0000-0000
+  orcid: 0000-0001-6438-315X
   affiliation: 2
 - name: Hal Finkel
   orcid: 0000-0002-7551-7122
-  affiliation: 6
+  affiliation: 7
 - name: Tiago Fran\c{c}a
   orcid: 0000-0002-1718-151X
   affiliation: 2
-- name: Boxuan Ge
+- name: Bo-Xuan Ge
   orcid: 0000-0003-0738-3473
   affiliation: 3    
 - name: Chenxia Gu
@@ -97,7 +97,7 @@ authors:
   orcid: 0000-0002-1620-6797
   affiliation: 5
 - name: Zipeng Wang
-  orcid: 0000-0002-3574-2122
+  orcid: 0000-0002-4745-8209
   affiliation: 8
 - name: James Widdicombe
   orcid: 0000-0003-2269-4544
@@ -116,9 +116,9 @@ affiliations:
   index: 4
 - name: Department of Applied Mathematics and Theoretical Physics (DAMTP), University of Cambridge, Centre for Mathematical Sciences, Wilberforce Road, Cambridge CB3 0WA, United Kingdom
   index: 5
-- name: Argonne National Laboratory (ANL), 9700 S. Cass Avenue, Argonne, IL 60439-4815, United States
+- name: Intel Iberia, Torre Picasso Plaza Pablo Ruiz Picasso 1 Madrid, 28020 Spain
   index: 6
-- name: Intel Parallel Computing Center, University of Cambridge, Center for Mathematical Sciences, Wilberforce Road, Cambridge CB3 0WA, United Kingdom
+- name: Argonne National Laboratory (ANL), 9700 S. Cass Avenue, Argonne, IL 60439-4815, United States
   index: 7
 - name: Henry A. Rowland Department of Physics & Astronomy, Johns Hopkins University, 3701 San Martin Drive, Baltimore, Maryland (MD) 21218, United States
   index: 8
@@ -126,7 +126,7 @@ affiliations:
   index: 9
 - name: Department of Physics, Bogazici University, 34342 Bebek, 80820 Istanbul, Turkey
   index: 10
-- name: HECAP Section, Abdus Salam International Centre for Theoretical Physics, 34151, Trieste, Italy
+- name: HECAP Section, Abdus Salam International Centre for Theoretical Physics (ICTP), 34151, Trieste, Italy
   index: 11
 date: 1 June 2021
 bibliography: paper.bib
@@ -151,7 +151,7 @@ where the indices $\mu, \nu$ run over the spacetime indices -- in 4 dimensions, 
 
 One common approach to NR is to specify an initial spatial distribution for the metric and matter fields (subject to certain constraints), and then solve a time evolution for all metric and matter quantities, thus populating their values thoughout the four dimensional spacetime. The canonical example of this is the simulation of two black holes in orbit around each other, which permits extraction of the gravitational wave signal produced during the merger. Such numerical results have been instrumental in discovering signals in the noisy LIGO/VIRGO detector data, as well as confirming the predictions of GR to a high precision in the strong field regime.
 
-GRChombo is an open-source code for performing such NR time evolutions. Whilst GRChombo uses standard techniques in NR, it focusses on applications in theoretical physics where adaptability, both in terms of grid structure, and in terms of code modification, are key drivers. 
+GRChombo is an open-source code for performing such NR time evolutions, built on top of the publicly available Chombo software [@Adams:2015kgr] for the solution of PDEs. Whilst GRChombo uses standard techniques in NR, it focusses on applications in theoretical physics where adaptability, both in terms of grid structure, and in terms of code modification, are key drivers. 
 
 # Key features of GRChombo
 
@@ -171,7 +171,7 @@ The key features of GRChombo are as follows:
 
 - Parallelism: GRChombo uses hybrid OpenMP/MPI  parallelism with explicit vectorisation of the evolution equations via intrinsics, and is AVX-512 compliant. Our code strong scales efficiently to several thousand CPU-cores for a typical BH binary problem, and further for larger problem sizes. 
 
-- Adaptive Mesh Refinement: Chombo provides Berger-Oliger style [@Berger:1984zza] AMR with block-structured  Berger-Rigoutsos grid generation. The tagging of refinement regions is fully flexible and can be based on truncation error or other user-defined measures.
+- Adaptive Mesh Refinement: The underlying Chombo code provides Berger-Oliger style [@Berger:1984zza] AMR with block-structured  Berger-Rigoutsos grid generation [@BergerRigoutsos]. The tagging of refinement regions is fully flexible and can be based on truncation error or other user-defined measures.
 
 The code continues to be actively developed with a number of ongoing projects to add new features.
 
@@ -185,37 +185,17 @@ While GRChombo is not the only open source NR code, its unique features (detaile
 
 The wide range of fundamental physics problems for which the code has been used so far includes:
 
-- the simulation of pre-inflationary spacetimes in early universe cosmology [@Joana:2020rxm;@Aurrekoetxea:2019fhr;@Clough:2017efm;@Clough:2016ymm].
+- the simulation of inhomogeneous pre-inflationary spacetimes, bubble collisions and preheating in early universe cosmology [@Joana:2020rxm;@Aurrekoetxea:2019fhr;@Clough:2017efm;@Clough:2016ymm].
 
-![Cosmology \label{fig:cosmo}](figures/cosmo.png){ width=60% }
-
-- the study of modified gravity, and violation of cosmic censorship [@Figueras:2020dzx;@Andrade:2020dgc;@Bantilan:2019bvf;@Figueras:2017zwa;@Figueras:2015hkb].
-
-![Cosmic censorship \label{fig:blackstring}](figures/blackstring.png){ width=60% }
-
-- the formation, collapse and collisions of exotic compact objects (ECOs) and dark matter stars [@Nazari:2020fmk;@Muia:2019coe;@Widdicombe:2019woy;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl].
-
-![Exotic compact objects \label{fig:axionstar}](figures/oscillotons.png){ width=60% }
-
-- Gravitational wave emission from cosmic string collapse [@Aurrekoetxea:2020tuw;@Helfer:2018qgv] and cosmic string networks [@Drew:2019mzc].
-
-![Cosmic strings. \label{fig:cosmicstring}](figures/cosmicstring.png){ width=60% }
-
-- the study of light bosonic dark matter and neutrino-like particles in black holes environments [@Bamber:2020bpu;@Clough:2019jpm;@Alexandre:2018crg].
-
-![Black hole environments. \label{fig:dm}](figures/superradiance.png){ width=60% }
-
-- The study of gravitational recoil in unequal mass binaries [@Radia:2021hjs].
-
-![Black hole recoil. \label{fig:recoil}](figures/kick.svg){ width=60% }
 
 # Acknowledgements
 
 The GRChombo collaboration gratefully acknowledges support to its members by the ERC, UKRI/STFC, Intel, The Royal Society, PRACE and DiRAC. 
 
-In particular, PF and KC acknowledge support from the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 693024).
+In particular, JB, KC, PF and DT acknowledge support from the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 693024).
+AD has been supported by an EPSRC iCASE Studentship in partnership with Intel (EP/N509620/1, Voucher 16000206) and is currently supported by a Junior Research Fellowship at Homerton College, Cambridge. F.M. is funded by a UKRI/EPSRC Stephen Hawking fellowship, grant reference EP/T017279/1. This work has been partially supported by STFC consolidated grant ST/P000681/1.
 
-... **(add your acknowledgements here)**
+We thank the developers of the Chombo code for their assistance and guidance on using their code, and the Intel Parallel Computing Centre at the University of Cambridge for their support of our code development. We acknowledge the support of the Intel Visualization team, led by Jim Jeffers, notably the collaboration on in-situ visualization with Carson Brownlee.
 
 GRChombo users have benefited from the provision of HPC resources from:
 
@@ -241,17 +221,21 @@ GRChombo users have benefited from the provision of HPC resources from:
 
     - Marenostrum (BSC), Spain
     
-  * the Frontera cluster at TACC (Texas Advanced Computing Center) under project number PHY20043.
+  * the Texas Advanced Computing Center (TACC) at The University of Texas at Austin HPC and visualisation resources URL: http://www.tacc.utexas.edu under project number PHY20043.
 
   * Marconi (CINECA), Italy
 
   * the Glamdring cluster, Astrophysics, Oxford, UK
 
+  * The Fawcett cluster, Faculty of Mathematics, Cambridge, UK
+
   * the Argo cluster at ICTP, Trieste, Italy
 
-  * Consortium des Équipements de Calcul Intensif (CÉCI), funded by the Fonds de la Recherche Scientifique de Belgique (F.R.S.-FNRS), Belgium
+  * the Apocrita cluster at QMUL, UK
+  
+  * The Athena cluster at HPC Midlands Plus, UK
 
-... **(add your HPC resources here)**
+  * Consortium des Équipements de Calcul Intensif (CÉCI), funded by the Fonds de la Recherche Scientifique de Belgique (F.R.S.-FNRS), Belgium
 
 # References
 
