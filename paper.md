@@ -187,31 +187,33 @@ The wide range of fundamental physics problems for which the code has been used 
 
 - the simulation of inhomogeneous pre-inflationary spacetimes, bubble collisions and preheating in early universe cosmology [@Joana:2020rxm;@Aurrekoetxea:2019fhr;@Clough:2017efm;@Clough:2016ymm].
 
-![Inhomoegenous inflaton field in Early Universe Cosmology \label{fig:cosmo}](figures/cosmo1.png){ width=45% }
-![Evolutions of the equation of state and density \label{fig:cosmo}](figures/cosmo2.png){ width=45% }
+![Inhomoegenous inflaton field in Early Universe Cosmology \label{fig:cosmo1}](figures/cosmo1.png){ width=45% }
+![Evolutions of the equation of state and density \label{fig:cosmo2}](figures/cosmo2.png){ width=45% }
 
 - the study of modified gravity, and violation of cosmic censorship [@Figueras:2020dzx;@Andrade:2020dgc;@Bantilan:2019bvf;@Figueras:2017zwa;@Figueras:2015hkb].
 
-![Testing cosmic censorship in higher dimenional black rings \label{fig:blackstring}](figures/mgcc1.png){ width=45% }
-![Mapping regions of validity for modified gravity \label{fig:blackstring}](figures/mgcc2.png){ width=45% }
+![Testing cosmic censorship in higher dimenional black rings \label{fig:blackstring1}](figures/mgcc1.png){ width=45% }
+![Mapping regions of validity for modified gravity \label{fig:blackstring2}](figures/mgcc2.png){ width=45% }
 
 - the formation, collapse and collisions of exotic compact objects (ECOs) and dark matter stars [@Nazari:2020fmk;@Muia:2019coe;@Widdicombe:2019woy;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl].
 
-![Exotic compact objects \label{fig:axionstar}](figures/eco1.png){ width=45% }
-![Exotic compact objects \label{fig:axionstar}](figures/eco2.png){ width=45% }
+![Axion star collapse \label{fig:axionstar1}](figures/eco1.png){ width=45% }
+![GW signals from ECO collision \label{fig:axionstar2}](figures/eco2.png){ width=45% }
 
 - Gravitational wave emission from cosmic string collapse [@Aurrekoetxea:2020tuw;@Helfer:2018qgv] and scalar radiation from global cosmic(/axion) strings [@Drew:2019mzc].
 
-![Cosmic strings. \label{fig:cosmicstring}](figures/string1.png){ width=45% }
-![Cosmic strings. \label{fig:cosmicstring}](figures/string2.png){ width=45% }
+![Glocal axion strings \label{fig:cosmicstring1}](figures/string1.png){ width=45% }
+![GW signal from cosmic string loop collapse \label{fig:cosmicstring2}](figures/string2.png){ width=45% }
 
-- the study of light bosonic dark matter and neutrino-like particles in black holes environments [@Bamber:2020bpu;@Clough:2019jpm;@Alexandre:2018crg].
+- the study of light bosonic dark matter and neutrino-like particles in black holes environments [@Bamber:2020bpu;@Clough:2019jpm;@Alexandre:2018crg;@Traykova2021].
 
-![Black hole environments. \label{fig:dm}](figures/enviro1.png){ width=45% }
-![Black hole environments. \label{fig:dm}](figures/enviro2.png){ width=45% }
+![Scalar field around spinning black hole \label{fig:dm1}](figures/enviro1.png){ width=45% }
+![Relativistic scaling of dynamical friction in scalar dark matter \label{fig:dm2}](figures/enviro2.png){ width=45% }
 
 - The study of gravitational recoil in unequal mass binaries [@Radia:2021hjs].
 
+![Black hole trajectories \label{fig:recoil1}](figures/kick1.svg){ width=45% }
+![Black hole recoil velocities, spin and radiated energy \label{fig:recoil2}](figures/kick2.svg){ width=45% }
 
 # Acknowledgements
 
