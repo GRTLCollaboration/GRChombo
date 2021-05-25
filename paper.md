@@ -187,10 +187,8 @@ The wide range of fundamental physics problems for which the code has been used 
 
 - the simulation of inhomogeneous pre-inflationary spacetimes, bubble collisions and preheating in early universe cosmology [@Joana:2020rxm;@Aurrekoetxea:2019fhr;@Clough:2017efm;@Clough:2016ymm].
 
-```{r, figures-side, fig.show="hold", out.width="50%"}
 ![Inhomoegenous inflaton field in Early Universe Cosmology \label{fig:cosmo}](figures/cosmo1.png){ width=45% }
 ![Evolutions of the equation of state and density \label{fig:cosmo}](figures/cosmo2.png){ width=45% }
-```
 
 - the study of modified gravity, and violation of cosmic censorship [@Figueras:2020dzx;@Andrade:2020dgc;@Bantilan:2019bvf;@Figueras:2017zwa;@Figueras:2015hkb].
 
