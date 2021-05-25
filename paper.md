@@ -15,7 +15,7 @@ authors:
 - name: Llibert Areste Salo
   orcid: 0000-0002-3812-8523
   affiliation: 2
-- name: Josu Aurrekoetxea
+- name: Josu C. Aurrekoetxea
   orcid: 0000-0001-9584-5791
   affiliation: 3
 - name: Jamie Bamber
