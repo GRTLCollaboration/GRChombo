@@ -192,8 +192,8 @@ The wide range of fundamental physics problems for which the code has been used 
 
 - the study of modified gravity, and violation of cosmic censorship [@Figueras:2020dzx;@Andrade:2020dgc;@Bantilan:2019bvf;@Figueras:2017zwa;@Figueras:2015hkb].
 
-![Cosmic censorship \label{fig:blackstring}](figures/mgcc1.png){ width=45% }
-![Cosmic censorship \label{fig:blackstring}](figures/mgcc2.png){ width=45% }
+![Testing cosmic censorship in higher dimenional black rings \label{fig:blackstring}](figures/mgcc1.png){ width=45% }
+![Mapping regions of validity for modified gravity \label{fig:blackstring}](figures/mgcc2.png){ width=45% }
 
 - the formation, collapse and collisions of exotic compact objects (ECOs) and dark matter stars [@Nazari:2020fmk;@Muia:2019coe;@Widdicombe:2019woy;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl].
 
@@ -212,8 +212,6 @@ The wide range of fundamental physics problems for which the code has been used 
 
 - The study of gravitational recoil in unequal mass binaries [@Radia:2021hjs].
 
-![Black hole recoil. \label{fig:recoil}](figures/kick1.svg){ width=45% }
-![Black hole recoil. \label{fig:recoil}](figures/kick2.svg){ width=45% }
 
 # Acknowledgements
 
