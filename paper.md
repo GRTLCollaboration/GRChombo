@@ -99,7 +99,7 @@ authors:
 - name: Zipeng Wang
   orcid: 0000-0002-4745-8209
   affiliation: 8
-- name: James Widdicombe
+- name: James Y. Widdicombe
   orcid: 0000-0003-2269-4544
   affiliation: 3
 - name: Kaze Wong
@@ -193,7 +193,7 @@ The wide range of fundamental physics problems for which the code has been used 
 ![Testing cosmic censorship in higher dimenional black rings \label{fig:blackstring1}](figures/mgcc1.png){ width=45% }
 ![Mapping regions of validity for modified gravity \label{fig:blackstring2}](figures/mgcc2.png){ width=45% }
 
-- the formation, collapse and collisions of exotic compact objects (ECOs) and dark matter stars [@Nazari:2020fmk;@Muia:2019coe;@Widdicombe:2019woy;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl].
+- the formation, collapse and collisions of exotic compact objects (ECOs) and dark matter stars [@Nazari:2020fmk;@Muia:2019coe;@Widdicombe:2019woy;@Widdicombe:2018oeo;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl].
 
 ![Axion star collapse \label{fig:axionstar1}](figures/eco1.png){ width=45% }
 ![GW signals from ECO collision \label{fig:axionstar2}](figures/eco2.png){ width=45% }
