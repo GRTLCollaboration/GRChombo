@@ -218,7 +218,7 @@ The wide range of fundamental physics problems for which the code has been used 
 The GRChombo collaboration gratefully acknowledges support to its members by the ERC, UKRI/STFC, Intel, The Royal Society, PRACE and DiRAC. 
 
 In particular, JB, KC, PF and DT acknowledge support from the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme (grant agreement No 693024).
-AD has been supported by an EPSRC iCASE Studentship in partnership with Intel (EP/N509620/1, Voucher 16000206) and is currently supported by a Junior Research Fellowship at Homerton College, Cambridge. F.M. is funded by a UKRI/EPSRC Stephen Hawking fellowship, grant reference EP/T017279/1. This work has been partially supported by STFC consolidated grant ST/P000681/1. Z.N. is supported by ICTP-Sandwich Training Educational Programme (STEP)
+AD has been supported by an EPSRC iCASE Studentship in partnership with Intel (EP/N509620/1, Voucher 16000206) and is currently supported by a Junior Research Fellowship at Homerton College, Cambridge. F.M. is funded by a UKRI/EPSRC Stephen Hawking fellowship, grant reference EP/T017279/1. This work has been partially supported by STFC consolidated grant ST/P000681/1. Z.N. is supported by ICTP-Sandwich Training Educational Programme (STEP). HF was supported by the U.S. Department of Energy (DOE) Office of Science User Facility under Contract DE-AC02-06CH11357.
 
 We thank the developers of the Chombo code for their assistance and guidance on using their code, and the Intel Parallel Computing Centre at the University of Cambridge for their support of our code development. We acknowledge the support of the Intel Visualization team, led by Jim Jeffers, notably the collaboration on in-situ visualization with Carson Brownlee.
 
@@ -246,9 +246,13 @@ GRChombo users have benefited from the provision of HPC resources from:
 
     - Marenostrum (BSC), Spain
     
+  * the Argonne Leadership Computing Facility, including the Joint Laboratory for System Evaluation (JLSE), which is a U.S. Department of Energy (DOE) Office of Science User Facility supported under Contract DE-AC02-06CH11357.
+
   * the Texas Advanced Computing Center (TACC) at The University of Texas at Austin HPC and visualisation resources URL: http://www.tacc.utexas.edu under project number PHY20043.
 
-  * Marconi (CINECA), Italy
+  * Consortium des Équipements de Calcul Intensif (CÉCI), funded by the Fonds de la Recherche Scientifique de Belgique (F.R.S.-FNRS), Belgium
+
+  * the Marconi HPC resources and software support (awarded by CINECA), Italy
 
   * the Glamdring cluster, Astrophysics, Oxford, UK
 
@@ -259,8 +263,6 @@ GRChombo users have benefited from the provision of HPC resources from:
   * the Apocrita cluster at QMUL, UK
   
   * The Athena cluster at HPC Midlands Plus, UK
-
-  * Consortium des Équipements de Calcul Intensif (CÉCI), funded by the Fonds de la Recherche Scientifique de Belgique (F.R.S.-FNRS), Belgium
 
 # References
 
