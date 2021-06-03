@@ -62,26 +62,9 @@ void MatterWeyl4<matter_t>::add_matter_EB(EBFields_t<data_t> &ebfields,
     Tensor<2, data_t> Sij_TF = emtensor.Sij;
     TensorAlgebra::make_trace_free(Sij_TF, vars.h, h_UU);
 
-    // first add in formulation-independent terms
+    // as we made the vacuum expression of Bij explictly symmetric and Eij
+    // explictly trace-free, only Eij has matter terms
     FOR2(i, j) { ebfields.E[i][j] += -4.0 * M_PI * m_G_Newton * Sij_TF[i][j]; }
-
-    // Now add in BSSN specific terms. BSSN expressions rely on constraint
-    // satisfaction for tracelessness rather than explicit trace-removal as in
-    // the CCZ4 case.
-    if (m_formulation == CCZ4RHS<>::USE_BSSN)
-    {
-        FOR2(i, j)
-        {
-            ebfields.E[i][j] += -16.0 * M_PI * m_G_Newton * emtensor.rho *
-                                vars.h[i][j] / (3.0 * vars.chi);
-            FOR2(m, n)
-            {
-                ebfields.B[i][j] += -4.0 * M_PI * m_G_Newton *
-                                    epsilon3_LUU[i][m][n] * vars.h[j][m] *
-                                    emtensor.Si[n] / vars.chi;
-            }
-        }
-    }
 }
 
 #endif /* MATTERWEYL4_IMPL_HPP_ */

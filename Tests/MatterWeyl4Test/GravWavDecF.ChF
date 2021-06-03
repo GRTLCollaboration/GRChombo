@@ -114,7 +114,8 @@ c ----- dAdx - spacial derivative of decomposed extrinsic curvature
 c ----- levi - Projected levi civita on hypersurfarce (lowered,raised,raised)
 c ----- levi44d - 4d levi tensor
 c ----- levi34d - Projected levi civita on hypersurfarce (lowered,lowered,lowered)
-c ----- E - Electroic field
+c ----- E - Electric field
+c ----- trE - Electric field trace to make E tracefree
 c ----- B - Magnetic field
 c ----- er - normal vector in r direction (renormalised for metric)
 c ----- ephi - normal vector in phi direction (renormalised for metric)
@@ -162,6 +163,7 @@ c ----- IDX - maps indices from matrix to vector
       REAL_T levi44d(0:3,0:3,0:3,0:3)
       REAL_T levi34d(0:3,0:3,0:3)
       REAL_T E(0:2,0:2)
+      REAL_T trE
       REAL_T B(0:2,0:2)
       REAL_T er(0:2),ephi(0:2),etheta(0:2)
       REAL_T normr, normphi, normtheta
@@ -480,9 +482,6 @@ c --- Contracted Christoffel symbol, part of BSSN evolution variables
            enddo; enddo
          enddo
 
-c         do d0 = 0,2
-c         enddo
-
 c --- Derivative of contracted Christoffel symbol
          dGamma1ddx = 0
          do d0 = 0, 2
@@ -582,8 +581,8 @@ c      Rfull = R + Rchi
 c -----------------------------------------------------------------
 
          do d0 = 0,2; do d1 = 0,2
-                  Rfull(d0,d1) = R(d0,d1) + Rchi(d0,d1)
-               enddo; enddo
+           Rfull(d0,d1) = R(d0,d1) + Rchi(d0,d1)
+         enddo; enddo
 
 c -----------------------------------------------------------------
 c      Get K, and calcuate K_ij
@@ -688,14 +687,15 @@ c        time index here is 3 (not zero).
 
 c ----   Svec = S_i = n^a T_ai, where a loops over space and time, since nu is already upper
 c ----   we do not need gammas
+c ----   TF: only need Sten = Sij in new calculation
 
-         do d0 = 0,2
-           Svec(d0) = 0
-           do d1 = 0,3
-             Svec(d0) = Svec(d0)
-     &         - nu(d1)*T(d1,d0)
-           enddo
-         enddo
+c        do d0 = 0,2
+c          Svec(d0) = 0
+c          do d1 = 0,3
+c            Svec(d0) = Svec(d0)
+c    &         - nu(d1)*T(d1,d0)
+c          enddo
+c        enddo
 
          do d0 = 0,2; do d1 = 0,2
              Sten(d0,d1) = T(d0,d1)
@@ -703,10 +703,10 @@ c ----   we do not need gammas
 
 c ---- trSten
 
-         trSten = 0
-         do d0 = 0,2; do d1 = 0,2
-           trSten = trSten + gu(d0,d1)*chi2*T(d0,d1)
-         enddo; enddo
+c        trSten = 0
+c        do d0 = 0,2; do d1 = 0,2
+c          trSten = trSten + gu(d0,d1)*chi2*T(d0,d1)
+c        enddo; enddo
 
 c -----------------------------------------------------------------
 c       Calculate Bij and Eij
@@ -788,20 +788,37 @@ c ---- Calculation of electric and magnetic fields
 
 
         do d0=0,2; do d1 =0,2; do d2 =0,2; do d3 = 0,2
-          B(d0,d1) = B(d0,d1)+levi(d0,d2,d3)*(CovKtsr(d3,d1,d2)
-     &                - 4.*Pi*g(d1,d2)/chi2*Svec(d3))
+c ---- TF: Old way includes matter terms, now explicitly symmetrize to match
+c ----   the CCZ4 version, assuming momentum constraints are satisfied
+c          B(d0,d1) = B(d0,d1)+levi(d0,d2,d3)*(CovKtsr(d3,d1,d2)
+c    &                - 4.*Pi*g(d1,d2)/chi2*Svec(d3))
+           B(d0,d1) = B(d0,d1)+half*levi(d0,d2,d3)*CovKtsr(d3,d1,d2)
+     &                + half*levi(d1,d2,d3)*CovKtsr(d3,d0,d2)
         enddo;enddo;enddo;enddo
 
         do d0=0,2; do d1 =0,2
+c ---- TF: Old way is not trace-free, now make explicitly trace-free to match
+c ----   the CCZ4 version, assuming hamiltonian constraint is satisfied
+c         E(d0,d1) = E(d0,d1)+Rfull(d0,d1) + K(CHF_AUTOIX[i])
+c    &               *Ktsr(d0,d1) - 4.*Pi*(Sten(d0,d1)+1./3.*g(d0,d1)/chi2
+c    &                *(4.*rho(CHF_AUTOIX[i])-trSten))
           E(d0,d1) = E(d0,d1)+Rfull(d0,d1) + K(CHF_AUTOIX[i])
-     &               *Ktsr(d0,d1) - 4.*Pi*(Sten(d0,d1)+1./3.*g(d0,d1)/chi2
-     &                *(4.*rho(CHF_AUTOIX[i])-trSten))
+     &               *Ktsr(d0,d1) - 4.*Pi*Sten(d0,d1)
         enddo;enddo
 
         do d0=0,2; do d1=0,2; do d2=0,2 ; do d3=0,2
           E(d0,d1) = E(d0,d1) - Ktsr(d0,d2)*Ktsr(d3,d1)
      &               *gu(d2,d3)*chi2
         enddo; enddo; enddo; enddo
+
+        trE = 0
+        do d0=0,2; do d1=0,2;
+          trE = trE + E(d0,d1) * gu(d0,d1) * chi2
+        enddo; enddo;
+
+        do d0=0,2; do d1=0,2;
+          E(d0,d1) = E(d0,d1) - 1./3.*g(d0,d1)/chi2*trE
+        enddo; enddo;
 
 c -----------------------------------------------------------
 c ---- Calculating Weyl tensor

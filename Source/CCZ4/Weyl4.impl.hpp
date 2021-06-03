@@ -132,14 +132,23 @@ EBFields_t<data_t> Weyl4::compute_EB_fields(
         }
     }
     // covariant derivative of K
-    FOR3(i, j, k) { covariant_deriv_K_tensor[i][j][k] = d1_K_tensor[i][j][k]; }
-
-    FOR4(i, j, k, l)
+    FOR3(i, j, k)
     {
-        covariant_deriv_K_tensor[i][j][k] +=
-            -chris_phys[l][k][i] * K_tensor[l][j] -
-            chris_phys[l][k][j] * K_tensor[i][l];
+        covariant_deriv_K_tensor[i][j][k] = d1_K_tensor[i][j][k];
+
+        FOR1(l)
+        {
+            covariant_deriv_K_tensor[i][j][k] +=
+                -chris_phys[l][k][i] * K_tensor[l][j] -
+                chris_phys[l][k][j] * K_tensor[i][l];
+        }
     }
+
+    // Use 'K-Theta' in CCZ4. Just 'K' in BSSN. Not a mistake, this is not to
+    // confuse with the typical 'K-2*Theta' that appears in the CCZ4 equations
+    data_t K_minus_theta = vars.K;
+    if (m_formulation == CCZ4RHS<>::USE_CCZ4)
+        K_minus_theta -= vars.Theta;
 
     // Calculate electric and magnetic fields
     FOR2(i, j)
@@ -148,35 +157,34 @@ EBFields_t<data_t> Weyl4::compute_EB_fields(
         out.B[i][j] = 0.0;
     }
 
-    FOR4(i, j, k, l)
-    {
-        out.B[i][j] +=
-            epsilon3_LUU[i][k][l] * covariant_deriv_K_tensor[l][j][k];
-    }
-
     FOR2(i, j)
     {
-        out.E[i][j] += ricci_and_Z_terms.LL[i][j] + vars.K * K_tensor[i][j];
+        out.E[i][j] +=
+            ricci_and_Z_terms.LL[i][j] + K_minus_theta * K_tensor[i][j];
+
+        FOR2(k, l)
+        {
+            out.E[i][j] +=
+                -K_tensor[i][k] * K_tensor[l][j] * h_UU[k][l] * vars.chi;
+
+            out.B[i][j] +=
+                epsilon3_LUU[i][k][l] * covariant_deriv_K_tensor[l][j][k];
+        }
     }
 
-    FOR4(i, j, k, l)
-    {
-        out.E[i][j] += -K_tensor[i][k] * K_tensor[l][j] * h_UU[k][l] * vars.chi;
-    }
+    // For CCZ4, explicit symmetrization appears naturally;
+    // For BSSN, only extra matter terms appear in the original expression, but
+    // assuming the Momentum constraints are satisfied, we can make the
+    // expression explicitly symmetric, which we enforce below
+    // (see Alcubierre chapter 8.3, from eq. 8.3.15 onwards)
+    TensorAlgebra::make_symmetric(out.B);
 
-    if (m_formulation == CCZ4RHS<>::USE_CCZ4)
-    {
-        // In CCZ4 case do explicit symmetrization; BSSN case relies on momentum
-        // constraint satisfaction instead
-        TensorAlgebra::make_symmetric(out.B);
-
-        FOR2(i, j) { out.E[i][j] += -vars.Theta * K_tensor[i][j]; }
-
-        // The expression in CCZ4 is explicitly trace-free but in BSSN it's only
-        // trace-free if the Hamiltonian constraint is satisfied...
-        // Let's keep this CCZ4 only to avoid breaking the test
-        TensorAlgebra::make_trace_free(out.E, vars.h, h_UU);
-    }
+    // For CCZ4, Eij is explicitly trace-free;
+    // For BSSN, only extra matter terms appear in the original expression, but
+    // assuming the Hamiltonian constraint is satisfied, we can make the
+    // expression explicitly trace free, which we enforce below
+    // (see Alcubierre chapter 8.3, from eq. 8.3.15 onwards)
+    TensorAlgebra::make_trace_free(out.E, vars.h, h_UU);
 
     return out;
 }
