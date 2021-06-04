@@ -29,14 +29,14 @@ void TwoPuncturesInitialData::compute(Cell<double> current_cell) const
 
     // metric variables
     vars.chi = pow(compute_determinant_sym(h_phys), -1. / 3.);
-    FOR1(i)
+    FOR(i)
     {
         // Bowen-York data is conformally flat
         vars.h[i][i] = 1.0;
     }
 
     // extrinsic curvature
-    FOR2(i, j) { vars.A[i][j] = vars.chi * K_tensor[i][j]; }
+    FOR(i, j) { vars.A[i][j] = vars.chi * K_tensor[i][j]; }
     // conformal flatness means h_UU = h
     make_trace_free(vars.A, vars.h, vars.h);
 

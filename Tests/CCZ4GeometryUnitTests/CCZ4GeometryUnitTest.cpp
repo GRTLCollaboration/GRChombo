@@ -37,7 +37,7 @@ int main()
     std::cout << std::setprecision(16);
 
     // Compare
-    FOR2(i, j)
+    FOR(i, j)
     {
         double diff = h_UU[i][j] - h_UU_known[i][j];
         if (diff > 1e-14)
@@ -48,7 +48,7 @@ int main()
         }
     }
 
-    FOR3(i, j, k)
+    FOR(i, j, k)
     {
         double diff = chris.ULL[i][j][k] - chris_known[i][j][k];
         if (diff > 1e-14)
@@ -61,7 +61,7 @@ int main()
         }
     }
 
-    FOR1(i)
+    FOR(i)
     {
         double diff = chris.contracted[i] - chris_contracted_known[i];
         if (diff > 1e-14)
@@ -75,7 +75,7 @@ int main()
         }
     }
 
-    FOR2(i, j)
+    FOR(i, j)
     {
         double diff = ricciZ.LL[i][j] - ricciZ_known[i][j];
         if (diff > 1e-14)

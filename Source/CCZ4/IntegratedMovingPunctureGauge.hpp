@@ -63,7 +63,7 @@ class IntegratedMovingPunctureGauge
         const auto vars = current_cell.template load_vars<Vars>();
 
         Tensor<1, data_t> B;
-        FOR1(i)
+        FOR(i)
         {
             B[i] = m_params.shift_Gamma_coeff * vars.Gamma[i] -
                    m_params.eta * vars.shift[i];
@@ -83,7 +83,7 @@ class IntegratedMovingPunctureGauge
                     m_params.lapse_coeff *
                         pow(vars.lapse, m_params.lapse_power) *
                         (vars.K - 2 * vars.Theta);
-        FOR1(i)
+        FOR(i)
         {
             rhs.shift[i] = m_params.shift_advec_coeff * advec.shift[i] +
                            m_params.shift_Gamma_coeff * vars.Gamma[i] -

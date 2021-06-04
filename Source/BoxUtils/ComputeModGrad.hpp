@@ -28,12 +28,12 @@ class ComputeModGrad
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {
         Tensor<1, data_t> d1_arr[NUM_VARS];
-        FOR1(idir) m_deriv.diff1(d1_arr, current_cell, idir);
+        FOR(idir) m_deriv.diff1(d1_arr, current_cell, idir);
 
         std::array<data_t, NUM_VARS> mod_d1_arr = {0.};
         for (int ivar = 0; ivar < NUM_VARS; ++ivar)
         {
-            FOR1(idir)
+            FOR(idir)
             {
                 mod_d1_arr[ivar] += d1_arr[ivar][idir] * d1_arr[ivar][idir];
             }

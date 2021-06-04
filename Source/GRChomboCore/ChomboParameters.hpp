@@ -224,7 +224,7 @@ class ChomboParameters
 
         // read all options (N, N_full, Ni_full and Ni) and then choose
         // accordingly
-        FOR1(dir)
+        FOR(dir)
         {
             std::string name = ("N" + std::to_string(dir + 1));
             std::string name_full = ("N" + std::to_string(dir + 1) + "_full");
@@ -313,7 +313,7 @@ class ChomboParameters
         origin.fill(coarsest_dx / 2.0);
 
         // These aren't parameters but used in parameter checks
-        FOR1(idir)
+        FOR(idir)
         {
             reflective_domain_lo[idir] = ((boundary_params.lo_boundary[idir] ==
                                            BoundaryConditions::REFLECTIVE_BC)
@@ -337,7 +337,7 @@ class ChomboParameters
         default_center = {0.5 * Ni[0] * coarsest_dx, 0.5 * Ni[1] * coarsest_dx};
 #endif
         // Now take into account reflective BCs
-        FOR1(idir)
+        FOR(idir)
         {
             if ((boundary_params.lo_boundary[idir] ==
                  BoundaryConditions::REFLECTIVE_BC) &&
@@ -405,7 +405,7 @@ class ChomboParameters
                         max_grid_size % block_factor == 0,
                         "must divide max_grid_size/max_box_size = " +
                             std::to_string(max_grid_size));
-        FOR1(idir)
+        FOR(idir)
         {
             std::string Ni_string = "N" + std::to_string(idir + 1);
             std::string invalid_message = "must divide " + Ni_string;

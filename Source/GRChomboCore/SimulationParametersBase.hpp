@@ -247,7 +247,7 @@ class SimulationParametersBase : public ChomboParameters
                 extraction_params.num_extraction_radii > 0,
                 "must be bigger than 0 when activate_extraction = 1");
 
-            FOR1(idir)
+            FOR(idir)
             {
                 std::string center_name =
                     "extraction_center[" + std::to_string(idir) + "]";

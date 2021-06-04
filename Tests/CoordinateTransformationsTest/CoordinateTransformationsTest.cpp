@@ -33,7 +33,7 @@ bool check_tensor(const Tensor<2, double> &tensor,
                   const std::string &test_name)
 {
     bool failed = false;
-    FOR2(i, j)
+    FOR(i, j)
     {
         if (!almost_equal(tensor[i][j], correct_tensor[i][j], ulp))
         {
@@ -52,7 +52,7 @@ bool check_vector(const Tensor<1, double> &vector,
                   const std::string &test_name)
 {
     bool failed = false;
-    FOR1(i)
+    FOR(i)
     {
         if (!almost_equal(vector[i], correct_vector[i], ulp))
         {
@@ -101,13 +101,13 @@ int main()
 
     // Test tensor transformations
     Tensor<2, double> Mij_cart;
-    FOR2(i, j) { Mij_cart[i][j] = 0.; }
+    FOR(i, j) { Mij_cart[i][j] = 0.; }
     Mij_cart[0][0] = 1.;
     Mij_cart[1][1] = 1.;
     Mij_cart[2][2] = 1.;
 
     Tensor<2, double> Mij_spher;
-    FOR2(i, j) { Mij_spher[i][j] = 0.; }
+    FOR(i, j) { Mij_spher[i][j] = 0.; }
     Mij_spher[0][0] = 1.;
     Mij_spher[1][1] = r * r;
     Mij_spher[2][2] = r2sin2theta;
