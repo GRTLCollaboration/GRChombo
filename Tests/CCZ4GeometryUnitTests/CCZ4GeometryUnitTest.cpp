@@ -6,6 +6,7 @@
 #include "CCZ4Geometry.hpp"
 #include "DimensionDefinitions.hpp"
 #include "Tensor.hpp"
+#include <iomanip>
 #include <iostream>
 
 template <class data_t> struct vars_t
@@ -32,6 +33,8 @@ int main()
 
     auto ricciZ =
         CCZ4Geometry::compute_ricci_Z(vars, d1, d2, h_UU, chris, Z_over_chi);
+
+    std::cout << std::setprecision(16);
 
     // Compare
     FOR2(i, j)

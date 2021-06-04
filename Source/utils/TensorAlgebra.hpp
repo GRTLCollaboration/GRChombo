@@ -173,6 +173,20 @@ ALWAYS_INLINE void make_trace_free(Tensor<2, data_t> &tensor_LL,
     }
 }
 
+/// Makes a 2-Tensor symmetric
+template <class data_t, int size>
+ALWAYS_INLINE void make_symmetric(Tensor<2, data_t, size> &tensor_LL)
+{
+    for (int i = 0; i < size; ++i)
+    {
+        for (int j = 0; j < i; ++j)
+        {
+            tensor_LL[i][j] = 0.5 * (tensor_LL[i][j] + tensor_LL[j][i]);
+            tensor_LL[j][i] = tensor_LL[i][j];
+        }
+    }
+}
+
 /// Raises the index of a covector
 template <class data_t>
 ALWAYS_INLINE Tensor<1, data_t>
@@ -235,52 +249,36 @@ inline Tensor<3, double> epsilon()
 }
 
 /// Computes the levi-civita symbol (4D, NB, symbol, not the Tensor)
-
-inline std::array<std::array<std::array<std::array<int, 4>, 4>, 4>, 4>
-epsilon4D()
+inline Tensor<4, double, 4> epsilon4D()
 {
-    std::array<std::array<std::array<std::array<int, 4>, 4>, 4>, 4> epsilon4D;
-    // Definition of levi civita 4 - antisymmetric Tensor
-    for (int i = 0; i < 4; ++i)
-    {
-        for (int j = 0; j < 4; ++j)
-        {
-            for (int k = 0; k < 4; ++k)
-            {
-                for (int l = 0; l < 4; ++l)
-                {
-                    epsilon4D[i][j][k][l] = 0;
-                }
-            }
-        }
-    }
-    epsilon4D[0][1][2][3] = 1;
-    epsilon4D[0][1][3][2] = -1;
-    epsilon4D[0][3][1][2] = 1;
-    epsilon4D[0][3][2][1] = -1;
-    epsilon4D[0][2][1][3] = -1;
-    epsilon4D[0][2][3][1] = 1;
+    Tensor<4, double, 4> epsilon4D = {0.0};
+    epsilon4D[0][1][2][3] = 1.0;
+    epsilon4D[0][1][3][2] = -1.0;
+    epsilon4D[0][3][1][2] = 1.0;
+    epsilon4D[0][3][2][1] = -1.0;
+    epsilon4D[0][2][1][3] = -1.0;
+    epsilon4D[0][2][3][1] = 1.0;
 
-    epsilon4D[1][0][2][3] = -1;
-    epsilon4D[1][2][0][3] = 1;
-    epsilon4D[1][2][3][0] = -1;
-    epsilon4D[1][3][2][0] = 1;
-    epsilon4D[1][3][0][2] = -1;
-    epsilon4D[1][0][3][2] = 1;
+    epsilon4D[1][0][2][3] = -1.0;
+    epsilon4D[1][2][0][3] = 1.0;
+    epsilon4D[1][2][3][0] = -1.0;
+    epsilon4D[1][3][2][0] = 1.0;
+    epsilon4D[1][3][0][2] = -1.0;
+    epsilon4D[1][0][3][2] = 1.0;
 
-    epsilon4D[2][0][1][3] = 1;
-    epsilon4D[2][0][3][1] = -1;
-    epsilon4D[2][3][0][1] = 1;
-    epsilon4D[2][3][1][0] = -1;
-    epsilon4D[2][1][3][0] = 1;
-    epsilon4D[2][1][0][3] = -1;
+    epsilon4D[2][0][1][3] = 1.0;
+    epsilon4D[2][0][3][1] = -1.0;
+    epsilon4D[2][3][0][1] = 1.0;
+    epsilon4D[2][3][1][0] = -1.0;
+    epsilon4D[2][1][3][0] = 1.0;
+    epsilon4D[2][1][0][3] = -1.0;
 
-    epsilon4D[3][0][1][2] = -1;
-    epsilon4D[3][1][0][2] = 1;
-    epsilon4D[3][1][2][0] = -1;
-    epsilon4D[3][2][1][0] = 1;
-    epsilon4D[3][2][0][1] = -1;
-    epsilon4D[3][0][2][1] = 1;
+    epsilon4D[3][0][1][2] = -1.0;
+    epsilon4D[3][1][0][2] = 1.0;
+    epsilon4D[3][1][2][0] = -1.0;
+    epsilon4D[3][2][1][0] = 1.0;
+    epsilon4D[3][2][0][1] = -1.0;
+    epsilon4D[3][0][2][1] = 1.0;
 
     return epsilon4D;
 }

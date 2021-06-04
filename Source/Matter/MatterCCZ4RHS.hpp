@@ -88,7 +88,7 @@ class MatterCCZ4RHS : public CCZ4RHS<gauge_t, deriv_t>
        one by default.
     */
     MatterCCZ4RHS(matter_t a_matter, params_t a_params, double a_dx,
-                  double a_sigma, int a_formulation = CCZ4::USE_CCZ4,
+                  double a_sigma, int a_formulation = CCZ4RHS<>::USE_CCZ4,
                   double a_G_Newton = 1.0);
 
     //!  The compute member which calculates the RHS at each point in the box
