@@ -68,8 +68,8 @@ template <class matter_t, class background_t> class FixedBGDensityAndAngularMom
         // first rho - note that this is the conserved rho
         // defined using the timelike Killing vector
         // not that of the Eulerian observers
-        data_t rho = emtensor.rho * metric_vars.lapse;
-        FOR1(i) { rho += -emtensor.Si[i] * metric_vars.shift[i]; }
+        data_t rho = - emtensor.rho * metric_vars.lapse;
+        FOR1(i) { rho += emtensor.Si[i] * metric_vars.shift[i]; }
         rho *= sqrt(det_gamma);
 
         // now rho J, also the conserved one
@@ -79,7 +79,7 @@ template <class matter_t, class background_t> class FixedBGDensityAndAngularMom
         dxdphi[2] = 0;
 
         data_t rhoJ = 0;
-        FOR1(i) { rhoJ += -emtensor.Si[i] * dxdphi[i]; }
+        FOR1(i) { rhoJ += emtensor.Si[i] * dxdphi[i]; }
         rhoJ *= sqrt(det_gamma);
 
         // assign values of conserved density in output box,

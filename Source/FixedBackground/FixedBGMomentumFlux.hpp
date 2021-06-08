@@ -104,8 +104,8 @@ template <class matter_t, class background_t> class FixedBGMomentumFlux
         // so just need the dA relating to the metric
         Mdot *= sqrt_det_Sigma / r2sintheta;
 
-        // Now (minus) the x Momentum density with volume factor
-        data_t xMom = -emtensor.Si[0] * sqrt(det_gamma);
+        // Now the x Momentum density with volume factor
+        data_t xMom = emtensor.Si[0] * sqrt(det_gamma);
 
         // How big is the source of i mom?
         Tensor<1, data_t> source;

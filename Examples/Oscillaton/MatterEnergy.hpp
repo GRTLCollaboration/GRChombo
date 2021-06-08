@@ -127,8 +127,8 @@ template <class matter_t> class MatterEnergy
         source1 *= det_gamma;
 
         // calculate according to Killing vector method
-        data_t rho2 = -emtensor.rho * vars.lapse;
-        FOR1(i) { rho2 += -emtensor.Si[i] * vars.shift[i]; }
+        data_t rho2 = - emtensor.rho * vars.lapse;
+        FOR1(i) { rho2 += emtensor.Si[i] * vars.shift[i]; }
         rho2 *= sqrt(det_gamma);
 
         data_t flux2 = 0.0;
