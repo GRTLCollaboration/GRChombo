@@ -253,8 +253,8 @@ It should print something like:
 
 ```bash
 Waiting for client...
-Connection URL: cs://fawcett:11111
-Accepting connection(s): fawcett:11111
+Connection URL: cs://mn01:11111
+Accepting connection(s): mn01:11111
 ```
 
 Note that the number 11111 can be different if someone else
