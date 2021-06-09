@@ -50,8 +50,6 @@ such as
 ```bash
 git clone -b training/fawcett https://github.com/GRChombo/GRChombo.git ~/GRChombo
 ```
-[Note that if you already have a copy of GRChombo on your local machine, you do not
-need to clone again and can just checkout the training/fawcett branch.]
 
 Now we can start building the Chombo libraries
 
