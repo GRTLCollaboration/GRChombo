@@ -221,8 +221,8 @@ laptop/desktop you are using to access fawcett. This can be done
 do this in advance.
 
 Before we tunnel to fawcett, we need to add a server on the Paraview
-client. To do this, open Paraview, and click `connect' in the top left corner,
-then `add server'. Change the name to whatever you like e.g. `localhost'. All
+client. To do this, open Paraview, and click 'connect' in the top left corner,
+then `add server'. Change the name to whatever you like e.g. 'localhost'. All
 other settings should be the default
 
 Server type: Client/Server
@@ -258,7 +258,7 @@ Accepting connection(s): fawcett:11111
 ```
 
 Note that the number 11111 can be different if someone else
-is already running pvserver. From here on, we will call it `cosmos2_port'.
+is already running pvserver. From here on, we will call it `cosmos2_port`.
 
 (For large datasets, it is a good idea to submit a job to the queue and run
 pvserver with a modified environment
@@ -276,11 +276,11 @@ We next need to set up the tunnel to fawcett. On your local machine, run
 ssh -NL 11111:localhost:cosmos_port username@fawcett.maths.cam.ac.uk
 ```
 
-It should ask for authentication, then look as though it has `hung up'.
+It should ask for authentication, then look as though it has 'hung up'.
 
-On your local Paraview client, again click `connect' and choose the connection
+On your local Paraview client, again click 'connect' and choose the connection
 configured in the earlier step. This should now have opened a connection to
-fawcett that you can use to access your data using `File->Open'. We will go
+fawcett that you can use to access your data using `File->Open`. We will go
 over any smaller points in the tutorial if necessary. You should now be able
 to see your two black holes!
 
