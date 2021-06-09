@@ -273,7 +273,7 @@ of this tutorial we should be fine without.)
 We next need to set up the tunnel to fawcett. On your local machine, run
 
 ```bash
-ssh -NL 11111:localhost:cosmos_port username@fawcett.maths.cam.ac.uk
+ssh -NL 11111:localhost:<fawcett_port> crsid@fawcett.maths.cam.ac.uk
 ```
 
 It should ask for authentication, then look as though it has 'hung up'.
