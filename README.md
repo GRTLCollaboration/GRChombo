@@ -27,33 +27,44 @@ GRChombo is licensed under the BSD 3-Clause License. Please see LICENSE for deta
 
 ## Fawcett Tutorial
 
-First we need to get a copy of both the Chombo and GRChombo repositories.
+The following tutorial has been created to be aimed at Masters/early PhD
+students with some HPC experience. We also assume that you have an account set
+up on fawcett, and that you are happy with using GitHub. Inevitably it will not be 
+possible to cover everything, but if anything is unclear please do get in contact.
+
+To run simulations with GRChombo, first we need to get a copy of both the
+Chombo and GRChombo repositories.
 
 ### Getting Chombo and GRChombo
 
-Our copy of the Chombo repository can be found
-[here](https://github.com/GRChombo/Chombo). To get a copy, clone it using a
-command such as
+The GRChombo copy of the Chombo repository can be found
+[here](https://github.com/GRChombo/Chombo). To get a copy on your local
+machine, clone it using a command such as
 ```bash
 git clone https://github.com/GRChombo/Chombo.git ~/Chombo
 ```
+e.g. to clone into your home directory.
 
-Next clone the GRChombo repository (and checkout this branch) using a command
+Next, clone the GRChombo repository (and checkout this branch) using a command
 such as
 ```bash
 git clone -b training/fawcett https://github.com/GRChombo/GRChombo.git ~/GRChombo
 ```
+[Note that if you already have a copy of GRChombo on your local machine, you do not
+need to clone again and can just checkout the training/fawcett branch.]
 
 Now we can start building the Chombo libraries
 
 ### Building Chombo
 Before we can build the Chombo libraries, we need to first set the configuration
 variables that the build system uses. These are set in the file
-`Chombo/lib/mk/Make.defs.local`. This will differ for each system you build on
+`Chombo/lib/mk/Make.defs.local`. This will differ for each system you build on,
 but we try to add this file for clusters we have used \[GR\]Chombo on before in
 [`GRChombo/InstallNotes/MakeDefsLocalExamples`](./InstallNotes/MakeDefsLocalExamples)
 There is a ready-to-use Make.defs.local for use on the `cosmosx` and `skylake`
-partitions on fawcett so copy it to the right place in your copy of the Chombo
+partitions on fawcett (where `cosmosx` is a shared memory node with skylake
+cores, see
+[here](https://www.maths.cam.ac.uk/computing/faculty-hpc-system-fawcett)). Copy this to the right place in your copy of the Chombo
 repository using the command:
 ```bash
 cp ~/GRChombo/InstallNotes/MakeDefsLocalExamples/fawcett-Skylake.Make.defs.local \
@@ -63,7 +74,7 @@ For more details on what the variables are in the Make.defs.local file, have a
 look at
 [this wiki page](https://github.com/GRChombo/GRChombo/wiki/Compiling-Chombo).
 
-Next we need to load the necessary modules We will use the Intel compiler with
+Next, we need to load the necessary modules. We will use the Intel compiler with
 Intel MPI and a compatible HDF5 module. This can either be done using the
 script in
 [`GRChombo/InstallNotes/MakeDefsLocalExamples`](./InstallNotes/MakeDefsLocalExamples)
@@ -77,6 +88,9 @@ module load intel/compilers/2018.3
 module load intel/impi/2018.3/intel
 module load hdf5-intel/1.10.4
 ```
+Note that you should also check using ```bash module list``` that no competing
+modules are loaded, as this can cause problems with compilation. If they are,
+you can remove using ```module unload module_name```.
 
 Finally we can build the Chombo libraries with
 ```bash
@@ -92,7 +106,7 @@ For more details on building Chombo (including what the variables are in the
 `Make.defs.local` file) have a look at
 [this wiki page](https://github.com/GRChombo/GRChombo/wiki/Compiling-Chombo).
 
-Now we are ready to build a GRChombo example
+Now we are ready to build a GRChombo example.
 
 ### Building the GRChombo BinaryBH example
 First we need to let GRChombo know where to look for the Chombo libraries.
@@ -101,7 +115,7 @@ the command
 ```bash
 export CHOMBO_HOME=${HOME}/Chombo/lib
 ```
-You might want to add this line to your `.bashrc` file so that every time you
+You might want to add this line to your `~/.bashrc` file so that every time you
 start a new shell, the environment variable is automatically set.
 
 Now we are ready to build with the commands
