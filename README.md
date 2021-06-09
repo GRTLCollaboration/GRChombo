@@ -210,10 +210,10 @@ have a look at the
 [tutorial](https://www.paraview.org/Wiki/images/b/bc/ParaViewTutorial56.pdf)
 (or ask Amelia!). Adapted from instructions provided by Kacper Kornet.
 
-First, we need to set up ssh access to fawcett. Information on how to do this
-is given [here](https://www.maths.cam.ac.uk/computing/fawcett-ssh-access). We
-have sent this to you in advance, so you should have all of the steps set up
-prior to the tutorial.
+First, we need to set up _direct_ ssh access to fawcett (i.e. not by manually `ssh`ing into a 
+maths/DAMTP computer first). Instructions on how to do this
+can be found [here](https://www.maths.cam.ac.uk/computing/fawcett-ssh-access). Please set this up
+in advance of the tutorial.
 
 Second, we need you to download Paraview v5.6.0 (note that is important that
 you download this specific version and not a different one) onto your local machine i.e. the
