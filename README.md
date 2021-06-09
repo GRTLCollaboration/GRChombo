@@ -276,7 +276,7 @@ We next need to set up the tunnel to fawcett. On your local machine, run
 ssh -NL 11111:localhost:<fawcett_port> crsid@fawcett.maths.cam.ac.uk
 ```
 
-It should ask for authentication, then look as though it has 'hung up'.
+It may ask for authentication and then look as though it has 'hung' (i.e. no prompt).
 
 On your local Paraview client, again click  the connect icon and choose the connection
 configured in the earlier step. This should now have opened a connection to
