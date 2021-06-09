@@ -73,7 +73,7 @@ class SixthOrderDerivatives
         const auto strides = current_cell.get_box_pointers().m_in_stride;
         vars_t<Tensor<1, data_t>> d1;
         d1.enum_mapping([&](const int &ivar, Tensor<1, data_t> &var) {
-            FOR1(idir)
+            FOR(idir)
             {
                 var[idir] = diff1<data_t>(
                     current_cell.get_box_pointers().m_in_ptr[ivar], in_index,
@@ -267,7 +267,7 @@ class SixthOrderDerivatives
         const auto in_index = current_cell.get_in_index();
         const auto strides = current_cell.get_box_pointers().m_in_stride;
         d2.enum_mapping([&](const int &ivar, Tensor<2, data_t> &var) {
-            FOR1(dir1) // First calculate the repeated derivatives
+            FOR(dir1) // First calculate the repeated derivatives
             {
                 var[dir1][dir1] = diff2<data_t>(
                     current_cell.get_box_pointers().m_in_ptr[ivar], in_index,
@@ -369,7 +369,7 @@ class SixthOrderDerivatives
         vars_t<data_t> advec;
         advec.enum_mapping([&](const int &ivar, data_t &var) {
             var = 0.;
-            FOR1(dir)
+            FOR(dir)
             {
                 const auto shift_positive = simd_compare_gt(vector[dir], 0.0);
                 var += advection_term(
@@ -448,7 +448,7 @@ class SixthOrderDerivatives
     {
         const auto in_index = current_cell.get_in_index();
         vars.enum_mapping([&](const int &ivar, data_t &var) {
-            FOR1(dir)
+            FOR(dir)
             {
                 const auto stride =
                     current_cell.get_box_pointers().m_in_stride[dir];

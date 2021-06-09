@@ -64,7 +64,7 @@ void MatterWeyl4<matter_t>::add_matter_EB(EBFields_t<data_t> &ebfields,
 
     // as we made the vacuum expression of Bij explictly symmetric and Eij
     // explictly trace-free, only Eij has matter terms
-    FOR2(i, j) { ebfields.E[i][j] += -4.0 * M_PI * m_G_Newton * Sij_TF[i][j]; }
+    FOR(i, j) { ebfields.E[i][j] += -4.0 * M_PI * m_G_Newton * Sij_TF[i][j]; }
 }
 
 #endif /* MATTERWEYL4_IMPL_HPP_ */

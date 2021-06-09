@@ -27,14 +27,14 @@ class PhiAndKTaggingCriterion
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {
         Tensor<1, data_t> d1_phi;
-        FOR1(idir) m_deriv.diff1(d1_phi, current_cell, idir, c_phi);
+        FOR(idir) m_deriv.diff1(d1_phi, current_cell, idir, c_phi);
 
         Tensor<1, data_t> d1_K;
-        FOR1(idir) m_deriv.diff1(d1_K, current_cell, idir, c_K);
+        FOR(idir) m_deriv.diff1(d1_K, current_cell, idir, c_K);
 
         data_t mod_d1_phi = 0;
         data_t mod_d1_K = 0;
-        FOR1(idir)
+        FOR(idir)
         {
             mod_d1_phi += d1_phi[idir] * d1_phi[idir];
             mod_d1_K += d1_K[idir] * d1_K[idir];

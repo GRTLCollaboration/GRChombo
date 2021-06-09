@@ -55,7 +55,7 @@ class MovingPunctureGauge
                     m_params.lapse_coeff *
                         pow(vars.lapse, m_params.lapse_power) *
                         (vars.K - 2 * vars.Theta);
-        FOR1(i)
+        FOR(i)
         {
             rhs.shift[i] = m_params.shift_advec_coeff * advec.shift[i] +
                            m_params.shift_Gamma_coeff * vars.B[i];

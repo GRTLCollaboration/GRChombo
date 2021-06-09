@@ -58,7 +58,7 @@ void PunctureTracker::set_initial_punctures()
     for (int ipuncture = 0; ipuncture < m_num_punctures; ipuncture++)
     {
         // assume initial shift is always zero
-        FOR1(i) { m_puncture_shift[ipuncture][i] = 0.0; }
+        FOR(i) { m_puncture_shift[ipuncture][i] = 0.0; }
     }
 
     // now the write out to a new file
@@ -153,7 +153,7 @@ void PunctureTracker::execute_tracking(double a_time, double a_restart_time,
     // update puncture locations using second order update
     for (int ipuncture = 0; ipuncture < m_num_punctures; ipuncture++)
     {
-        FOR1(i)
+        FOR(i)
         {
             m_puncture_coords[ipuncture][i] +=
                 -0.5 * a_dt *

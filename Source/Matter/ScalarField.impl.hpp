@@ -31,7 +31,7 @@ emtensor_t<data_t> ScalarField<potential_t>::compute_emtensor(
 
     out.rho += V_of_phi;
     out.S += -3.0 * V_of_phi;
-    FOR2(i, j) { out.Sij[i][j] += -vars.h[i][j] * V_of_phi / vars.chi; }
+    FOR(i, j) { out.Sij[i][j] += -vars.h[i][j] * V_of_phi / vars.chi; }
 
     return out;
 }
@@ -46,11 +46,11 @@ void ScalarField<potential_t>::emtensor_excl_potential(
 {
     // Useful quantity Vt
     data_t Vt = -vars.Pi * vars.Pi;
-    FOR2(i, j) { Vt += vars.chi * h_UU[i][j] * d1.phi[i] * d1.phi[j]; }
+    FOR(i, j) { Vt += vars.chi * h_UU[i][j] * d1.phi[i] * d1.phi[j]; }
 
     // Calculate components of EM Tensor
     // S_ij = T_ij
-    FOR2(i, j)
+    FOR(i, j)
     {
         out.Sij[i][j] =
             -0.5 * vars.h[i][j] * Vt / vars.chi + d1.phi[i] * d1.phi[j];
@@ -60,7 +60,7 @@ void ScalarField<potential_t>::emtensor_excl_potential(
     out.S = vars.chi * TensorAlgebra::compute_trace(out.Sij, h_UU);
 
     // S_i (note lower index) = - n^a T_ai
-    FOR1(i) { out.Si[i] = -d1.phi[i] * vars.Pi; }
+    FOR(i) { out.Si[i] = -d1.phi[i] * vars.Pi; }
 
     // rho = n^a n^b T_ab
     out.rho = vars.Pi * vars.Pi + 0.5 * Vt;
@@ -112,13 +112,13 @@ void ScalarField<potential_t>::matter_rhs_excl_potential(
     rhs.phi = vars.lapse * vars.Pi + advec.phi;
     rhs.Pi = vars.lapse * vars.K * vars.Pi + advec.Pi;
 
-    FOR2(i, j)
+    FOR(i, j)
     {
         // includes non conformal parts of chris not included in chris_ULL
         rhs.Pi += h_UU[i][j] * (-0.5 * d1.chi[j] * vars.lapse * d1.phi[i] +
                                 vars.chi * vars.lapse * d2.phi[i][j] +
                                 vars.chi * d1.lapse[i] * d1.phi[j]);
-        FOR1(k)
+        FOR(k)
         {
             rhs.Pi += -vars.chi * vars.lapse * h_UU[i][j] * chris.ULL[k][i][j] *
                       d1.phi[k];

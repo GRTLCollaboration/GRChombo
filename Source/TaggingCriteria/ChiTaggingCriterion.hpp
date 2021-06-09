@@ -24,10 +24,10 @@ class ChiTaggingCriterion
     {
         auto chi = current_cell.load_vars(c_chi);
         Tensor<1, data_t> d1_chi;
-        FOR1(idir) m_deriv.diff1(d1_chi, current_cell, idir, c_chi);
+        FOR(idir) m_deriv.diff1(d1_chi, current_cell, idir, c_chi);
 
         data_t mod_d1_chi = 0;
-        FOR1(idir) mod_d1_chi += d1_chi[idir] * d1_chi[idir];
+        FOR(idir) mod_d1_chi += d1_chi[idir] * d1_chi[idir];
         data_t criterion = m_dx * sqrt(mod_d1_chi) / pow(chi, 2);
 
         // Write back into the flattened Chombo box
