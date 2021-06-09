@@ -43,7 +43,7 @@ machine, clone it using a command such as
 ```bash
 git clone https://github.com/GRChombo/Chombo.git ~/Chombo
 ```
-e.g. to clone into your home directory.
+e.g. to clone into your home directory (which we will assume below).
 
 Next, clone the GRChombo repository (and checkout this branch) using a command
 such as
