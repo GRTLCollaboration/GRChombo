@@ -258,7 +258,7 @@ Accepting connection(s): fawcett:11111
 ```
 
 Note that the number 11111 can be different if someone else
-is already running pvserver. From here on, we will call it `cosmos2_port`.
+is already running pvserver. In what follows, we will refer to it as `<fawcett_port>`.
 
 (For large datasets, it is a good idea to submit a job to the queue and run
 pvserver with a modified environment
