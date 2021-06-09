@@ -38,8 +38,8 @@ Chombo and GRChombo repositories.
 ### Getting Chombo and GRChombo
 
 The GRChombo copy of the Chombo repository can be found
-[here](https://github.com/GRChombo/Chombo). To get a copy on your local
-machine, clone it using a command such as
+[here](https://github.com/GRChombo/Chombo). To get a copy, clone it using a
+command such as
 ```bash
 git clone https://github.com/GRChombo/Chombo.git ~/Chombo
 ```
