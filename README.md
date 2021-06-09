@@ -38,20 +38,18 @@ Chombo and GRChombo repositories.
 ### Getting Chombo and GRChombo
 
 The GRChombo copy of the Chombo repository can be found
-[here](https://github.com/GRChombo/Chombo). To get a copy on your local
-machine, clone it using a command such as
+[here](https://github.com/GRChombo/Chombo). To get a copy, clone it using a
+command such as
 ```bash
 git clone https://github.com/GRChombo/Chombo.git ~/Chombo
 ```
-e.g. to clone into your home directory.
+e.g. to clone into your home directory (which we will assume below).
 
 Next, clone the GRChombo repository (and checkout this branch) using a command
 such as
 ```bash
 git clone -b training/fawcett https://github.com/GRChombo/GRChombo.git ~/GRChombo
 ```
-[Note that if you already have a copy of GRChombo on your local machine, you do not
-need to clone again and can just checkout the training/fawcett branch.]
 
 Now we can start building the Chombo libraries
 
@@ -88,9 +86,16 @@ module load intel/compilers/2018.3
 module load intel/impi/2018.3/intel
 module load hdf5-intel/1.10.4
 ```
-Note that you should also check using ```bash module list``` that no competing
+Note that you should also check using 
+```bash 
+module list
+```
+that no conflicting
 modules are loaded, as this can cause problems with compilation. If they are,
-you can remove using ```module unload module_name```.
+you can remove them using 
+```bash
+module unload <module_name>
+```
 
 Finally we can build the Chombo libraries with
 ```bash
