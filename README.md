@@ -94,7 +94,10 @@ module list
 ```
 that no conflicting
 modules are loaded, as this can cause problems with compilation. If they are,
-you can remove using ```module unload module_name```.
+you can remove them using 
+```bash
+module unload <module_name>
+```
 
 Finally we can build the Chombo libraries with
 ```bash
