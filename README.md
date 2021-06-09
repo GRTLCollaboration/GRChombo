@@ -88,7 +88,11 @@ module load intel/compilers/2018.3
 module load intel/impi/2018.3/intel
 module load hdf5-intel/1.10.4
 ```
-Note that you should also check using ```bash module list``` that no competing
+Note that you should also check using 
+```bash 
+module list
+```
+that no conflicting
 modules are loaded, as this can cause problems with compilation. If they are,
 you can remove using ```module unload module_name```.
 
