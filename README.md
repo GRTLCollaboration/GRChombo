@@ -278,7 +278,7 @@ ssh -NL 11111:localhost:<fawcett_port> crsid@fawcett.maths.cam.ac.uk
 
 It should ask for authentication, then look as though it has 'hung up'.
 
-On your local Paraview client, again click 'connect' and choose the connection
+On your local Paraview client, again click  the connect icon and choose the connection
 configured in the earlier step. This should now have opened a connection to
 fawcett that you can use to access your data using `File->Open`. We will go
 over any smaller points in the tutorial if necessary. You should now be able
