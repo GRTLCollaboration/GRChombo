@@ -280,9 +280,9 @@ It should ask for authentication, then look as though it has 'hung up'.
 
 On your local Paraview client, again click  the connect icon and choose the connection
 configured in the earlier step. This should now have opened a connection to
-fawcett that you can use to access your data using `File->Open`. We will go
-over any smaller points in the tutorial if necessary. You should now be able
-to see your two black holes!
+fawcett that you can use to access your data using `File->Open`. 
+You are now ready to start visualising your binary black holes! 
+We will go over some basics of using Paraview in the hands-on tutorial.
 
 For more detailed information, consult the
 [wiki](https://github.com/GRChombo/GRChombo/wiki/).
