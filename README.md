@@ -218,8 +218,7 @@ prior to the tutorial.
 Second, we need you to download Paraview v5.6.0 (note that is important that
 you download this specific version and not a different one) onto your local machine i.e. the
 laptop/desktop you are using to access fawcett. This can be done
-[here](https://www.paraview.org/download/). Again, we will have asked you to
-do this in advance.
+[here](https://www.paraview.org/download/). Please do this in advance of the tutorial.
 
 Before we tunnel to fawcett, we need to add a server on the Paraview
 client. To do this, open Paraview, and click 'connect' in the top left corner,
@@ -287,4 +286,3 @@ to see your two black holes!
 
 For more detailed information, consult the
 [wiki](https://github.com/GRChombo/GRChombo/wiki/).
-
