@@ -201,5 +201,88 @@ to check that it hasn't crashed.
 
 Congratulations, you have just run your first GRChombo simulation!
 
+### Visualisation
+
+In this section, we will outline how to get set up with visualisation using
+Paraview on Fawcett. It is a bit fiddly, so we will go over the bare minimum
+to get up and running. For more detailed information on what Paraview can do,
+have a look at the
+[tutorial](https://www.paraview.org/Wiki/images/b/bc/ParaViewTutorial56.pdf)
+(or ask Amelia!). Adapted from instructions provided by Kacper Kornet.
+
+First, we need to set up _direct_ ssh access to fawcett (i.e. not by manually `ssh`ing into a 
+maths/DAMTP computer first). Instructions on how to do this
+can be found [here](https://www.maths.cam.ac.uk/computing/fawcett-ssh-access). Please set this up
+in advance of the tutorial.
+
+Second, we need you to download Paraview v5.6.0 (note that is important that
+you download this specific version and not a different one) onto your local machine i.e. the
+laptop/desktop you are using to access fawcett. This can be done
+[here](https://www.paraview.org/download/). Please do this in advance of the tutorial.
+
+Before we tunnel to fawcett, we need to add a server on the Paraview
+client. To do this, open Paraview, and click the connect icon near the top left corner,
+then 'Add Server'. Change the name to whatever you like e.g. 'localhost'. All
+other settings should be the default:  
+
+Server type: Client/Server  
+Host: localhost  
+Port: 11111  
+
+Click Configure. On the next screen, set 
+
+Startup Type: Manual
+
+Accept by clicking Save and Close. Once you have set this up, you won't need
+to do it again.
+
+Now we need to start the Paraview server on fawcett. Ssh into fawcett - as
+outlined above, this should already be configured with ssh forwarding, and so
+shouldn't require explicit login via another machine. Load Paraview using
+
+```bash
+module load paraview/5.6.0/upstream
+```
+
+Now run the command
+```bash
+pvserver
+```
+
+It should print something like:
+
+```bash
+Waiting for client...
+Connection URL: cs://mn01:11111
+Accepting connection(s): mn01:11111
+```
+
+Note that the number 11111 can be different if someone else
+is already running pvserver. In what follows, we will refer to it as `<fawcett_port>`.
+
+(For large datasets, it is a good idea to submit a job to the queue and run
+pvserver with a modified environment
+
+```bash
+OSPRAY_THREADS=8 KNOB_MAX_WORKER_THREADS=8 pvserver
+```
+
+where 8 is the number of cores reserved for the job. However for the purposes
+of this tutorial we should be fine without.)
+
+We next need to set up the tunnel to fawcett. On your local machine, run
+
+```bash
+ssh -NL 11111:localhost:<fawcett_port> crsid@fawcett.maths.cam.ac.uk
+```
+
+It may ask for authentication and then look as though it has 'hung' (i.e. no prompt).
+
+On your local Paraview client, again click  the connect icon and choose the connection
+configured in the earlier step. This should now have opened a connection to
+fawcett that you can use to access your data using `File->Open`. 
+You are now ready to start visualising your binary black holes! 
+We will go over some basics of using Paraview in the hands-on tutorial.
+
 For more detailed information, consult the
 [wiki](https://github.com/GRChombo/GRChombo/wiki/).
