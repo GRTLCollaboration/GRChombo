@@ -223,11 +223,11 @@ laptop/desktop you are using to access fawcett. This can be done
 Before we tunnel to fawcett, we need to add a server on the Paraview
 client. To do this, open Paraview, and click the connect icon near the top left corner,
 then 'Add Server'. Change the name to whatever you like e.g. 'localhost'. All
-other settings should be the default
+other settings should be the default:  
 
-Server type: Client/Server
-Host: localhost
-Port: 11111
+Server type: Client/Server  
+Host: localhost  
+Port: 11111  
 
 Click Configure. On the next screen, set 
 
