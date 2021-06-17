@@ -44,6 +44,7 @@ class ExcisionDiagnostics
             current_cell.store_vars(0.0, c_rho2);
             current_cell.store_vars(0.0, c_source1);
             current_cell.store_vars(0.0, c_source2);
+            current_cell.store_vars(0.0, c_Ham);
         } // else do nothing
     }
 };
