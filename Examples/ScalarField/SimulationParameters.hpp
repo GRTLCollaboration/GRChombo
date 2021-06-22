@@ -11,7 +11,6 @@
 #include "SimulationParametersBase.hpp"
 
 // Problem specific includes:
-#include "CCZ4.hpp"
 #include "InitialScalarData.hpp"
 #include "KerrBH.hpp"
 #include "Potential.hpp"
@@ -59,7 +58,7 @@ class SimulationParameters : public SimulationParametersBase
                         std::abs(kerr_params.spin) <= kerr_params.mass,
                         "must satisfy |a| <= M = " +
                             std::to_string(kerr_params.mass));
-        FOR1(idir)
+        FOR(idir)
         {
             std::string name = "kerr_center[" + std::to_string(idir) + "]";
             warn_parameter(

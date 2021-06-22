@@ -19,7 +19,7 @@ inline ScalarBubble::ScalarBubble(params_t a_params, double a_dx)
 template <class data_t>
 void ScalarBubble::compute(Cell<data_t> current_cell) const
 {
-    MatterCCZ4<ScalarField<>>::Vars<data_t> vars;
+    MatterCCZ4RHS<ScalarField<>>::Vars<data_t> vars;
     VarsTools::assign(vars, 0.); // Set only the non-zero components below
     Coordinates<data_t> coords(current_cell, m_dx, m_params.centerSF);
 
@@ -32,7 +32,7 @@ void ScalarBubble::compute(Cell<data_t> current_cell) const
     vars.chi = 1;
 
     // conformal metric is flat
-    FOR1(i) vars.h[i][i] = 1.;
+    FOR(i) vars.h[i][i] = 1.;
 
     // Store the initial values of the variables
     current_cell.store_vars(vars);

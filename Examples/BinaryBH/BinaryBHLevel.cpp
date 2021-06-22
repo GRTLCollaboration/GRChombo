@@ -7,17 +7,19 @@
 #include "AMRReductions.hpp"
 #include "BinaryBH.hpp"
 #include "BoxLoops.hpp"
-#include "CCZ4.hpp"
+#include "CCZ4RHS.hpp"
 #include "ChiExtractionTaggingCriterion.hpp"
 #include "ChiPunctureExtractionTaggingCriterion.hpp"
 #include "ComputePack.hpp"
-#include "Constraints.hpp"
 #include "NanCheck.hpp"
+#include "NewConstraints.hpp"
 #include "PositiveChiAndAlpha.hpp"
 #include "PunctureTracker.hpp"
 #include "SetValue.hpp"
+#include "SixthOrderDerivatives.hpp"
 #include "SmallDataIO.hpp"
 #include "TraceARemoval.hpp"
+#include "TwoPuncturesInitialData.hpp"
 #include "Weyl4.hpp"
 #include "WeylExtraction.hpp"
 
@@ -41,7 +43,13 @@ void BinaryBHLevel::initialData()
     CH_TIME("BinaryBHLevel::initialData");
     if (m_verbosity)
         pout() << "BinaryBHLevel::initialData " << m_level << endl;
-
+#ifdef USE_TWOPUNCTURES
+    TwoPuncturesInitialData two_punctures_initial_data(
+        m_dx, m_p.center, m_tp_amr.m_two_punctures);
+    // Can't use simd with this initial data
+    BoxLoops::loop(two_punctures_initial_data, m_state_new, m_state_new,
+                   INCLUDE_GHOST_CELLS, disable_simd());
+#else
     // Set up the compute class for the BinaryBH initial data
     BinaryBH binary(m_p.bh1_params, m_p.bh2_params, m_dx);
 
@@ -49,6 +57,7 @@ void BinaryBHLevel::initialData()
     // then calculate initial data
     BoxLoops::loop(make_compute_pack(SetValue(0.), binary), m_state_new,
                    m_state_new, INCLUDE_GHOST_CELLS);
+#endif
 }
 
 // Calculate RHS during RK4 substeps
@@ -60,8 +69,18 @@ void BinaryBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
                    a_soln, a_soln, INCLUDE_GHOST_CELLS);
 
     // Calculate CCZ4 right hand side
-    BoxLoops::loop(CCZ4(m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
-                   a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    if (m_p.max_spatial_derivative_order == 4)
+    {
+        BoxLoops::loop(CCZ4RHS<MovingPunctureGauge, FourthOrderDerivatives>(
+                           m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
+                       a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    }
+    else if (m_p.max_spatial_derivative_order == 6)
+    {
+        BoxLoops::loop(CCZ4RHS<MovingPunctureGauge, SixthOrderDerivatives>(
+                           m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
+                       a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+    }
 }
 
 // enforce trace removal during RK4 substeps
@@ -84,8 +103,14 @@ void BinaryBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
 {
     if (m_p.track_punctures)
     {
-        const vector<double> puncture_masses = {m_p.bh1_params.mass,
-                                                m_p.bh2_params.mass};
+        std::vector<double> puncture_masses;
+#ifdef USE_TWOPUNCTURES
+        // use calculated bare masses from TwoPunctures
+        puncture_masses = {m_tp_amr.m_two_punctures.mm,
+                           m_tp_amr.m_two_punctures.mp};
+#else
+        puncture_masses = {m_p.bh1_params.mass, m_p.bh2_params.mass};
+#endif /* USE_TWOPUNCTURES */
         auto puncture_coords =
             m_bh_amr.m_puncture_tracker.get_puncture_coords();
         BoxLoops::loop(ChiPunctureExtractionTaggingCriterion(
@@ -120,9 +145,9 @@ void BinaryBHLevel::specificPostTimeStep()
         {
             // Populate the Weyl Scalar values on the grid
             fillAllGhosts();
-            BoxLoops::loop(Weyl4(m_p.extraction_params.center, m_dx),
-                           m_state_new, m_state_diagnostics,
-                           EXCLUDE_GHOST_CELLS);
+            BoxLoops::loop(
+                Weyl4(m_p.extraction_params.center, m_dx, m_p.formulation),
+                m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 
             // Do the extraction on the min extraction level
             if (m_level == min_level)
@@ -146,16 +171,16 @@ void BinaryBHLevel::specificPostTimeStep()
     if (m_p.calculate_constraint_norms)
     {
         fillAllGhosts();
-        BoxLoops::loop(Constraints(m_dx), m_state_new, m_state_diagnostics,
-                       EXCLUDE_GHOST_CELLS);
+        BoxLoops::loop(Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3)),
+                       m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
         if (m_level == 0)
         {
             AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
             double L2_Ham = amr_reductions.norm(c_Ham);
             double L2_Mom = amr_reductions.norm(Interval(c_Mom1, c_Mom3));
-            SmallDataIO constraints_file("constraint_norms", m_dt, m_time,
-                                         m_restart_time, SmallDataIO::APPEND,
-                                         first_step);
+            SmallDataIO constraints_file(m_p.data_path + "constraint_norms",
+                                         m_dt, m_time, m_restart_time,
+                                         SmallDataIO::APPEND, first_step);
             constraints_file.remove_duplicate_time_data();
             if (first_step)
             {
@@ -177,6 +202,7 @@ void BinaryBHLevel::specificPostTimeStep()
     }
 }
 
+#ifdef CH_USE_HDF5
 // Things to do before a plot level - need to calculate the Weyl scalars
 void BinaryBHLevel::prePlotLevel()
 {
@@ -184,8 +210,10 @@ void BinaryBHLevel::prePlotLevel()
     if (m_p.activate_extraction == 1)
     {
         BoxLoops::loop(
-            make_compute_pack(Weyl4(m_p.extraction_params.center, m_dx),
-                              Constraints(m_dx)),
+            make_compute_pack(
+                Weyl4(m_p.extraction_params.center, m_dx, m_p.formulation),
+                Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3))),
             m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
     }
 }
+#endif /* CH_USE_HDF5 */

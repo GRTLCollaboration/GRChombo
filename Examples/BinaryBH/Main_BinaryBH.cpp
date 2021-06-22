@@ -12,12 +12,13 @@
 #include <iostream>
 
 // Our includes
-#include "BHAMR.hpp"
 #include "DefaultLevelFactory.hpp"
 #include "GRParmParse.hpp"
 #include "MultiLevelTask.hpp"
 #include "SetupFunctions.hpp"
 #include "SimulationParameters.hpp"
+// TPAMR.hpp includes BHAMR.hpp
+#include "TPAMR.hpp" // TPAMR code conditional compiled on USE_TWOPUNCTURES
 
 // Problem specific includes:
 #include "BinaryBHLevel.hpp"
@@ -36,7 +37,15 @@ int runGRChombo(int argc, char *argv[])
     if (sim_params.just_check_params)
         return 0;
 
+#ifdef USE_TWOPUNCTURES
+    TPAMR bh_amr;
+    bh_amr.set_two_punctures_parameters(sim_params.tp_params);
+    // Run TwoPunctures solver
+    bh_amr.m_two_punctures.Run();
+#else
     BHAMR bh_amr;
+#endif
+
     // must be before 'setupAMRObject' to define punctures for tagging criteria
     if (sim_params.track_punctures)
     {
@@ -46,7 +55,7 @@ int runGRChombo(int argc, char *argv[])
         int puncture_tracker_min_level = sim_params.max_level - 1;
         bh_amr.m_puncture_tracker.initial_setup(
             {sim_params.bh1_params.center, sim_params.bh2_params.center},
-            sim_params.checkpoint_prefix, puncture_tracker_min_level);
+            "punctures", sim_params.data_path, puncture_tracker_min_level);
     }
 
     // The line below selects the problem that is simulated

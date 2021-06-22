@@ -14,8 +14,8 @@
 #endif
 
 #include "BoxLoops.hpp"
-#include "MatterCCZ4.hpp"
-#include "MatterConstraints.hpp"
+#include "MatterCCZ4RHS.hpp"
+#include "NewMatterConstraints.hpp"
 #include "Potential.hpp"
 #include "ScalarField.hpp"
 #include "SetValue.hpp"
@@ -45,7 +45,7 @@ int main()
     std::cout << "#threads = " << omp_get_max_threads() << std::endl;
 #endif
 
-    const int N_GRID = 64;
+    const int N_GRID = 32;
     Box box(IntVect(0, 0, 0), IntVect(N_GRID - 1, N_GRID - 1, N_GRID - 1));
     Box ghosted_box(IntVect(-3, -3, -3),
                     IntVect(N_GRID + 2, N_GRID + 2, N_GRID + 2));
@@ -57,7 +57,7 @@ int main()
     out_fab_chf.setVal(0.);
     out_fab_ccz4constraints.setVal(0.);
 
-    const double dx = 1.0 / N_GRID;
+    const double dx = 0.5 / N_GRID;
 
     for (int zz = -3; zz < N_GRID + 3; ++zz)
     {
@@ -147,7 +147,7 @@ int main()
                     K[2][1] = K[1][2];
 
                     double trK = 0;
-                    FOR2(a, b) { trK += g_UU[a][b] * K[a][b]; }
+                    FOR(a, b) { trK += g_UU[a][b] * K[a][b]; }
 
                     in_fab(iv, c_K) = trK;
                     in_fab(iv, c_A11) =
@@ -216,7 +216,7 @@ int main()
         }
     }
 
-    CCZ4::params_t params;
+    CCZ4_params_t<MovingPunctureGauge::params_t> params;
     params.kappa1 = 0.0;
     params.kappa2 = 0.0;
     params.kappa3 = 0.0;
@@ -241,14 +241,17 @@ int main()
     typedef ScalarField<Potential> ScalarFieldWithPotential;
     Potential my_potential(potential_params);
     ScalarFieldWithPotential my_scalar_field(my_potential);
-    BoxLoops::loop(MatterCCZ4<ScalarFieldWithPotential>(my_scalar_field, params,
-                                                        dx, sigma, formulation,
-                                                        G_Newton),
+    BoxLoops::loop(MatterCCZ4RHS<ScalarFieldWithPotential, MovingPunctureGauge,
+                                 FourthOrderDerivatives>(my_scalar_field,
+                                                         params, dx, sigma,
+                                                         formulation, G_Newton),
                    in_fab, out_fab);
-    BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(my_scalar_field,
-                                                               dx, G_Newton),
-                   in_fab, out_fab);
-    BoxLoops::loop(Constraints(dx), in_fab, out_fab_ccz4constraints);
+    BoxLoops::loop(
+        MatterConstraints<ScalarFieldWithPotential>(
+            my_scalar_field, dx, G_Newton, c_Ham, Interval(c_Mom1, c_Mom3)),
+        in_fab, out_fab);
+    BoxLoops::loop(Constraints(dx, c_Ham, Interval(c_Mom1, c_Mom3)), in_fab,
+                   out_fab_ccz4constraints);
     out_fab -= out_fab_ccz4constraints; // so as to test only matter additions
 
     gettimeofday(&end, NULL);
@@ -325,9 +328,9 @@ int main()
     }
 
     if (failed == 0)
-        std::cout << "KCL BSSN test passed..." << std::endl;
+        std::cout << "BSSN Matter test passed..." << std::endl;
     else
-        std::cout << "KCL BSSN test failed..." << std::endl;
+        std::cout << "BSSN Matter test failed..." << std::endl;
 
     return failed;
 }

@@ -13,10 +13,11 @@
 // General includes
 #include "ArrayTools.hpp"
 #include "BoundaryConditions.hpp"
+#include "FilesystemTools.hpp"
 #include "GRParmParse.hpp"
 #include "UserVariables.hpp"
 #include "VariableType.hpp"
-#include "unistd.h"
+#include "unistd.h" // gives 'access'
 #include <algorithm>
 #include <string>
 
@@ -34,9 +35,15 @@ class ChomboParameters
 
     void read_params(GRParmParse &pp)
     {
+        // must be before any pout() in the code to setPoutBaseName
+        read_filesystem_params(pp);
+
         pp.load("verbosity", verbosity, 0);
         // Grid setup
-        pp.load("num_ghosts", num_ghosts, 3);
+        pp.load("max_spatial_derivative_order", max_spatial_derivative_order,
+                4);
+        pp.load("num_ghosts", num_ghosts,
+                (max_spatial_derivative_order == 6) ? 4 : 3);
         pp.load("tag_buffer_size", tag_buffer_size, 3);
         pp.load("grid_buffer_size", grid_buffer_size, 8);
         pp.load("dt_multiplier", dt_multiplier, 0.25);
@@ -48,14 +55,10 @@ class ChomboParameters
         // L's, N's and center
         read_grid_params(pp);
 
-        // Misc
-        restart_from_checkpoint = pp.contains("restart_file");
-        if (restart_from_checkpoint)
-        {
-            pp.load("restart_file", restart_file);
-        }
+#ifdef CH_USE_HDF5
         pp.load("ignore_checkpoint_name_mismatch",
                 ignore_checkpoint_name_mismatch, false);
+#endif
 
         pp.load("max_level", max_level, 0);
         // the reference ratio is hard coded to 2
@@ -89,17 +92,16 @@ class ChomboParameters
 
         // time stepping outputs and regrid data
         pp.load("checkpoint_interval", checkpoint_interval, 1);
-        pp.load("chk_prefix", checkpoint_prefix);
         pp.load("plot_interval", plot_interval, 0);
-        pp.load("plot_prefix", plot_prefix);
         pp.load("stop_time", stop_time, 1.0);
         pp.load("max_steps", max_steps, 1000000);
+#ifdef CH_USE_HDF5
         pp.load("write_plot_ghosts", write_plot_ghosts, false);
 
         // load vars to write to plot files
         UserVariables::load_vars_to_vector(pp, "plot_vars", "num_plot_vars",
                                            plot_vars, num_plot_vars);
-
+#endif
         // alias the weird chombo names to something more descriptive
         // for these box params, and default to some reasonable values
         if (pp.contains("max_grid_size"))
@@ -121,6 +123,85 @@ class ChomboParameters
 
         if (pp.contains("check_params"))
             just_check_params = true;
+
+        pp.load("print_progress_only_to_rank_0", print_progress_only_to_rank_0,
+                false);
+    }
+
+    void read_filesystem_params(GRParmParse &pp)
+    {
+        // In this function, cannot use default value - it may print a 'default
+        // message' to pout and a 'setPoutBaseName' must happen before
+        restart_from_checkpoint = pp.contains("restart_file");
+#ifdef CH_USE_HDF5
+        if (restart_from_checkpoint)
+        {
+            pp.load("restart_file", restart_file);
+        }
+        pp.load("chk_prefix", checkpoint_prefix);
+        pp.load("plot_prefix", plot_prefix);
+#endif
+
+#ifdef CH_MPI
+        // Again, cannot use default value
+        if (pp.contains("pout_prefix"))
+            pp.load("pout_prefix", pout_prefix);
+        else
+            pout_prefix = "pout";
+#endif
+
+        std::string default_path = "";
+        if (pp.contains("output_path"))
+            pp.load("output_path", output_path);
+        else
+            output_path = default_path;
+
+#ifdef CH_MPI
+        // user sets the 'subpath', we prepend 'output_path'
+        if (pp.contains("pout_subpath"))
+            pp.load("pout_subpath", pout_path);
+        else
+            pout_path = default_path;
+#endif
+
+#ifdef CH_USE_HDF5
+        // user sets the 'subpath', we prepend 'output_path'
+        if (pp.contains("hdf5_subpath"))
+            pp.load("hdf5_subpath", hdf5_path);
+        else
+            hdf5_path = default_path;
+#endif
+
+        // add backslash to paths
+        if (!output_path.empty() && output_path.back() != '/')
+            output_path += "/";
+#ifdef CH_MPI
+        if (!pout_path.empty() && pout_path.back() != '/')
+            pout_path += "/";
+#endif
+#ifdef CH_USE_HDF5
+        if (!hdf5_path.empty() && hdf5_path.back() != '/')
+            hdf5_path += "/";
+#endif
+
+        if (output_path != "./" && !output_path.empty())
+        {
+#ifdef CH_MPI
+            pout_path = output_path + pout_path;
+#endif
+#ifdef CH_USE_HDF5
+            hdf5_path = output_path + hdf5_path;
+#endif
+        }
+
+#ifdef CH_MPI
+        // change pout base name!
+        if (!FilesystemTools::directory_exists(pout_path))
+            FilesystemTools::mkdir_recursive(pout_path);
+        setPoutBaseName(pout_path + pout_prefix);
+#endif
+
+        // only create hdf5 directory in setupAMRObject (when it becomes needed)
     }
 
     void read_grid_params(GRParmParse &pp)
@@ -143,7 +224,7 @@ class ChomboParameters
 
         // read all options (N, N_full, Ni_full and Ni) and then choose
         // accordingly
-        FOR1(dir)
+        FOR(dir)
         {
             std::string name = ("N" + std::to_string(dir + 1));
             std::string name_full = ("N" + std::to_string(dir + 1) + "_full");
@@ -225,13 +306,14 @@ class ChomboParameters
             L = (L_full * max_N) / max_N_full;
 
         coarsest_dx = L / max_N;
+        coarsest_dt = coarsest_dx * dt_multiplier;
 
         // grid spacing params
         dx.fill(coarsest_dx);
         origin.fill(coarsest_dx / 2.0);
 
         // These aren't parameters but used in parameter checks
-        FOR1(idir)
+        FOR(idir)
         {
             reflective_domain_lo[idir] = ((boundary_params.lo_boundary[idir] ==
                                            BoundaryConditions::REFLECTIVE_BC)
@@ -245,45 +327,50 @@ class ChomboParameters
                                          (ivN[idir] + 1) * coarsest_dx;
         }
 
-        // Grid center
-        // now that L is surely set, get center
+        // First work out the default center ignoring reflective BCs
+        // but taking into account different grid lengths in each direction
+        std::array<double, CH_SPACEDIM> default_center;
 #if CH_SPACEDIM == 3
-        pp.load("center", center,
-                {0.5 * Ni[0] * coarsest_dx, 0.5 * Ni[1] * coarsest_dx,
-                 0.5 * Ni[2] * coarsest_dx}); // default to center
+        default_center = {0.5 * Ni[0] * coarsest_dx, 0.5 * Ni[1] * coarsest_dx,
+                          0.5 * Ni[2] * coarsest_dx};
 #elif CH_SPACEDIM == 2
-        pp.load("center", center,
-                {0.5 * Ni[0] * coarsest_dx,
-                 0.5 * Ni[1] * coarsest_dx}); // default to center
+        default_center = {0.5 * Ni[0] * coarsest_dx, 0.5 * Ni[1] * coarsest_dx};
 #endif
-
-        FOR1(idir)
+        // Now take into account reflective BCs
+        FOR(idir)
         {
             if ((boundary_params.lo_boundary[idir] ==
                  BoundaryConditions::REFLECTIVE_BC) &&
                 (boundary_params.hi_boundary[idir] !=
                  BoundaryConditions::REFLECTIVE_BC))
-                center[idir] = 0.;
+                default_center[idir] = 0.;
             else if ((boundary_params.hi_boundary[idir] ==
                       BoundaryConditions::REFLECTIVE_BC) &&
                      (boundary_params.lo_boundary[idir] !=
                       BoundaryConditions::REFLECTIVE_BC))
-                center[idir] = coarsest_dx * Ni[idir];
+                default_center[idir] = coarsest_dx * Ni[idir];
         }
-        pout() << "Center has been set to: ";
-        FOR1(idir) { pout() << center[idir] << " "; }
-        pout() << endl;
+
+        pp.load("center", center, default_center); // default to center
     }
 
     void check_params()
     {
         check_parameter("L", L, L > 0.0, "must be > 0.0");
         check_parameter("max_level", max_level, max_level >= 0, "must be >= 0");
-        // the following check assumes you will be taking some fourth (or
-        // higher) order one-sided derivatives
-        check_parameter("num_ghosts", num_ghosts,
-                        (num_ghosts >= 3) && (num_ghosts <= block_factor),
-                        "must be >= 3 and <= block_factor/min_box_size");
+        check_parameter("max_spatial_derivative_order",
+                        max_spatial_derivative_order,
+                        max_spatial_derivative_order == 4 ||
+                            max_spatial_derivative_order == 6,
+                        "only 4 and 6 are supported");
+        // the following check assumes you will be taking one-sided derivatives
+        // of the order given by max_spatial_derivative_order
+        check_parameter(
+            "num_ghosts", num_ghosts,
+            (num_ghosts >= ((max_spatial_derivative_order == 6) ? 4 : 3)) &&
+                (num_ghosts <= block_factor),
+            "must be >= 3 (4th order derivatives) or 4 (6th order derivatives) "
+            "and <= min_box_size (aka block_factor)");
         check_parameter("tag_buffer_size", tag_buffer_size,
                         tag_buffer_size >= 0, "must be >= 0");
         // assume ref_ratio is always 2
@@ -294,13 +381,15 @@ class ChomboParameters
 
         // check the restart_file exists and can be read if restarting from a
         // checkpoint
+#ifdef CH_USE_HDF5
         if (restart_from_checkpoint)
         {
             bool restart_file_exists =
-                (access(restart_file.c_str(), R_OK) == 0);
+                (access((hdf5_path + restart_file).c_str(), R_OK) == 0);
             check_parameter("restart_file", restart_file, restart_file_exists,
                             "file cannot be opened for reading");
         }
+#endif
 
         check_parameter("dt_multiplier", dt_multiplier, dt_multiplier > 0.0,
                         "must be > 0.0");
@@ -316,7 +405,7 @@ class ChomboParameters
                         max_grid_size % block_factor == 0,
                         "must divide max_grid_size/max_box_size = " +
                             std::to_string(max_grid_size));
-        FOR1(idir)
+        FOR(idir)
         {
             std::string Ni_string = "N" + std::to_string(idir + 1);
             std::string invalid_message = "must divide " + Ni_string;
@@ -335,9 +424,17 @@ class ChomboParameters
         // (MR); while this would technically work (any plot files would just
         // overwrite a checkpoint file), I think a user would only ever do
         // this unintentinally
+#ifdef CH_USE_HDF5
         check_parameter("plot_prefix", plot_prefix,
                         plot_interval <= 0 || plot_prefix != checkpoint_prefix,
                         "should be different to checkpoint_prefix");
+#endif
+
+        check_parameter("output_path", output_path,
+                        FilesystemTools::directory_exists(output_path),
+                        "should be a valid directory");
+        // pout directory exists - we create it in read_filesystem_params()
+        // can't check hdf5 directory yet - only created after
 
         if (boundary_params.reflective_boundaries_exist)
         {
@@ -369,10 +466,14 @@ class ChomboParameters
     int verbosity;
     double L;                               // Physical sidelength of the grid
     std::array<double, CH_SPACEDIM> center; // grid center
-    IntVect ivN;            // The number of grid cells in each dimension
-    double coarsest_dx;     // The coarsest resolution
-    int max_level;          // the max number of regriddings to do
-    int num_ghosts;         // must be at least 3 for KO dissipation
+    IntVect ivN; // The number of grid cells in each dimension
+    double coarsest_dx,
+        coarsest_dt; // The coarsest resolution in space and time
+    int max_level;   // the max number of regriddings to do
+    int max_spatial_derivative_order; // The maximum order of the spatial
+                                      // derivatives - does nothing
+                                      // in Chombo but can be used in examples
+    int num_ghosts;         // min dependent on max_spatial_derivative_order
     int tag_buffer_size;    // Amount the tagged region is grown by
     int grid_buffer_size;   // Number of cells between level
     Vector<int> ref_ratios; // ref ratios between levels
@@ -380,18 +481,30 @@ class ChomboParameters
     Vector<int> regrid_interval; // steps between regrid at each level
     int max_steps;
     bool restart_from_checkpoint; // whether or not to restart or start afresh
-    std::string restart_file;     // The path to the restart_file
-    bool ignore_checkpoint_name_mismatch;   // ignore mismatch of variable names
-                                            // between restart file and program
+#ifdef CH_USE_HDF5
+    std::string restart_file;             // The path to the restart_file
+    bool ignore_checkpoint_name_mismatch; // ignore mismatch of variable names
+                                          // between restart file and program
+#endif
     double dt_multiplier, stop_time;        // The Courant factor and stop time
     int checkpoint_interval, plot_interval; // Steps between outputs
     int max_grid_size, block_factor;        // max and min box sizes
     double fill_ratio; // determines how fussy the regridding is about tags
+#ifdef CH_USE_HDF5
     std::string checkpoint_prefix, plot_prefix; // naming of files
+#endif
+    std::string output_path; // base path to use for all files
+#ifdef CH_MPI
+    std::string pout_prefix; // pout file prefix
+    std::string pout_path;   // base path for pout files
+#endif
+#ifdef CH_USE_HDF5
+    std::string hdf5_path; // base path for pout files
     bool write_plot_ghosts;
     int num_plot_vars;
     std::vector<std::pair<int, VariableType>>
         plot_vars; // vars to write to plot file
+#endif
 
     std::array<double, CH_SPACEDIM> origin,
         dx; // location of coarsest origin and dx
@@ -405,6 +518,7 @@ class ChomboParameters
     // For checking parameters and then exiting rather before instantiating
     // GRAMR (or child) object
     bool just_check_params = false;
+    bool print_progress_only_to_rank_0;
 
   protected:
     // the low and high corners of the domain taking into account reflective BCs

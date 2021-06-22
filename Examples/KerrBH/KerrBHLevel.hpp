@@ -22,8 +22,10 @@ class KerrBHLevel : public GRAMRLevel
     /// Initial data calculation
     virtual void initialData() override;
 
+#ifdef CH_USE_HDF5
     /// Things to do before writing a plot file
     virtual void prePlotLevel() override;
+#endif /* CH_USE_HDF5 */
 
     /// Calculation of the right hand side for the time stepping
     virtual void specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,

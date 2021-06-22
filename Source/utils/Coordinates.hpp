@@ -69,7 +69,7 @@ template <class data_t> class Coordinates
     data_t get_radius() const
     {
         // Note that this is not currently dimension independent
-        data_t r = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
+        data_t r = sqrt(x * x + y * y + z * z);
 
         const double minimum_r = 1e-6;
         return simd_max(r, minimum_r);
@@ -89,7 +89,7 @@ template <class data_t> class Coordinates
         compute_coord(yy, integer_coords[1], dx, center[1]);
         compute_coord(zz, integer_coords[2], dx, center[2]);
 
-        data_t r = sqrt(pow(xx, 2) + pow(yy, 2) + pow(zz, 2));
+        data_t r = sqrt(xx * xx + yy * yy + zz * zz);
 
         const double minimum_r = 1e-6;
         return simd_max(r, minimum_r);

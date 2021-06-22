@@ -146,7 +146,7 @@ c	     NB: gamma_ij= chi^2 gamma_spatial_ij
 c         ------------------------------------------------------
 
          lapse = alpha(CHF_AUTOIX[i])
-         chi1 = chi(CHF_AUTOIX[i])         
+         chi1 = chi(CHF_AUTOIX[i])
          chi2 = chi1**2
 
 c        read in metric and invert, calculate derivatives
@@ -633,7 +633,7 @@ c        (and in CCZ4, Eqn 13, Alic et al 1106.2254
            do d1 = 0,2; do d2 = 0,2
              Gamma1d(d0) = Gamma1d(d0) + chris(d0,d1,d2)*gu(d1,d2)
            enddo; enddo
-	
+
          enddo
 
 c        Calculate elements of stress energy tensor and SF
@@ -791,7 +791,7 @@ c        -----------------------------------------------------------------------
 
          do d0 = 0,2; do d1 = 0,2
            dgammadt(CHF_AUTOIX[i],IDX(d0,d1)) =
-     &       - 2*lapse*A(CHF_AUTOIX[i],IDX(d0,d1)) 
+     &       - 2*lapse*A(CHF_AUTOIX[i],IDX(d0,d1))
      &       - 2./3.*g(d0,d1)*trdbetadx
            do d2 = 0,2
              dgammadt(CHF_AUTOIX[i],IDX(d0,d1)) =
@@ -817,7 +817,7 @@ c        -----------------------------------------------------------------------
      &            )
            else
             dgammadt(CHF_AUTOIX[i],IDX(d0,d1)) =
-     &             dgammadt(CHF_AUTOIX[i],IDX(d0,d1)) 
+     &             dgammadt(CHF_AUTOIX[i],IDX(d0,d1))
      &          + dxinv/12*beta(CHF_AUTOIX[i],d2)*(
      &                 gamma(CHF_OFFSETIX[i;+3*ii],IDX(d0,d1))
      &            -  6*gamma(CHF_OFFSETIX[i;+2*ii],IDX(d0,d1))
@@ -914,11 +914,13 @@ c        R here is tilde{R_ij}, ie, the conformal R_ij
            enddo
            do d2 = 0,2
              R(d0,d1) = R(d0,d1)
-c            old code used calculated Gamma1, not evolved Gamma1
+c            old code used calculated Gamma, not evolved Gamma
 c     &       + half*Gamma1d(d2)*chris1st(d0,d1,d2)
 c     &       + half*Gamma1d(d2)*chris1st(d1,d0,d2)
-     &       + half*Gamma1(CHF_AUTOIX[i],d2)*chris1st(d0,d1,d2)
-     &       + half*Gamma1(CHF_AUTOIX[i],d2)*chris1st(d1,d0,d2)
+c     &       + half*Gamma1(CHF_AUTOIX[i],d2)*chris1st(d0,d1,d2)
+c     &       + half*Gamma1(CHF_AUTOIX[i],d2)*chris1st(d1,d0,d2)
+c            switch to dgammadx instead of symmetrizing chris1st
+     &       + half*Gamma1(CHF_AUTOIX[i],d2)*dgammadx(d0,d1,d2)
              do d3 = 0,2; do d4 = 0,2
                R(d0,d1) = R(d0,d1)
      &         + gu(d3,d4)*chris(d2,d3,d0)*chris1st(d1,d2,d4)
@@ -954,14 +956,14 @@ c          Next is the Laplace-Beltrami operator
            Rchi(d0,d1) = Rchi(d0,d1) + d2chidxdy(d0,d1)
            do d2 = 0,2;
              Rchi(d0,d1) = Rchi(d0,d1) - chris(d2,d0,d1)*dchidx(d2)
-           enddo 
+           enddo
            Rchi(d0,d1) = Rchi(d0,d1)/chi1
          enddo; enddo
 
 c        Rscalar is the full spatial scalar R, not conformal
 
          Rscalar = 0
-         do d0 = 0,2; do d1 = 0,2; 
+         do d0 = 0,2; do d1 = 0,2;
            Rscalar = Rscalar
      &       + (R(d0,d1)+Rchi(d0,d1))*gu(d0,d1)*chi2
 
@@ -1012,13 +1014,13 @@ c          -chi^2*(D_i D_j) alpha is also trace-free
      &         dAdt(CHF_AUTOIX[i],IDX(d0,d1))
      &       - chi2*(d2alphadxdy(d0,d1))
 
-           do d2 = 0,2; do d3 = 0,2 
+           do d2 = 0,2; do d3 = 0,2
              dAdt(CHF_AUTOIX[i],IDX(d0,d1)) =
      &          dAdt(CHF_AUTOIX[i],IDX(d0,d1))
-     &        + chi2*third*g(d0,d1)*gu(d2,d3)*d2alphadxdy(d2,d3) 
+     &        + chi2*third*g(d0,d1)*gu(d2,d3)*d2alphadxdy(d2,d3)
              do d4 = 0,2
                dAdt(CHF_AUTOIX[i],IDX(d0,d1)) =
-     &            dAdt(CHF_AUTOIX[i],IDX(d0,d1)) 
+     &            dAdt(CHF_AUTOIX[i],IDX(d0,d1))
      &          - chi2*third*g(d0,d1)*gu(d2,d3)*chriss(d4,d2,d3)*dalphadx(d4)
              enddo
            enddo; enddo
@@ -1077,7 +1079,7 @@ c       -----------------------------------------------------------------------
               dGamma1dt(CHF_AUTOIX[i],d0) = dGamma1dt(CHF_AUTOIX[i],d0)
      &          - 3*gu(d0,d2)*gu(d1,d3)*A(CHF_AUTOIX[i],IDX(d2,d3))
      &              *dchidx(d1)/chi1
-            enddo; enddo 
+            enddo; enddo
           enddo
 
           do d1 = 0,2; do d2 = 0,2; do d3 = 0,2; do d4 = 0,2
@@ -1098,7 +1100,7 @@ c       -----------------------------------------------------------------------
      &          - 2*gu(d0,d2)*gu(d1,d3)*A(CHF_AUTOIX[i],IDX(d2,d3))*dalphadx(d1)
             enddo; enddo
           enddo
-          
+
           do d1 = 0,CH_SPACEDIM-1; do d2 = 0,CH_SPACEDIM-1
             dGamma1dt(CHF_AUTOIX[i],d0) = dGamma1dt(CHF_AUTOIX[i],d0)
      &        + third*gu(d0,d1)*d2betadxdy(d2,d1,d2)
@@ -1200,7 +1202,7 @@ c       B evolution. Eqn 4.89 BS
 c       Scalar field evolution
 c       -------------------------------------------------------------------------------
 
-c       NB phiM = -Pi in Eqn 2.250 and Eqn 2.253 BS       
+c       NB phiM = -Pi in Eqn 2.250 and Eqn 2.253 BS
 
         dphidt(CHF_AUTOIX[i]) = lapse*phiM(CHF_AUTOIX[i])
 
@@ -1241,11 +1243,11 @@ c       advection term
 
         do d0 = 0,CH_SPACEDIM-1; do d1 = 0,CH_SPACEDIM-1
           do d2 = 0,2
-            dphiMdt(CHF_AUTOIX[i]) = dphiMdt(CHF_AUTOIX[i]) 
+            dphiMdt(CHF_AUTOIX[i]) = dphiMdt(CHF_AUTOIX[i])
      &      - chi2*gu(d0,d1)*chriss(d2,d0,d1)*dphidx(d2)*lapse
-          enddo 
+          enddo
 
-          dphiMdt(CHF_AUTOIX[i]) = dphiMdt(CHF_AUTOIX[i]) 
+          dphiMdt(CHF_AUTOIX[i]) = dphiMdt(CHF_AUTOIX[i])
      &      + chi2*gu(d0,d1)*d2phidxdy(d0,d1)*lapse
      &      + chi2*gu(d0,d1)*dalphadx(d0)*dphidx(d1)
 
@@ -1472,7 +1474,7 @@ c        enddo
 
         do d0 = 0,CH_SPACEDIM-1
           CHF_DTERM[
-            ii0 = CHF_ID(d0,0); 
+            ii0 = CHF_ID(d0,0);
             ii1 = CHF_ID(d0,1);
             ii2 = CHF_ID(d0,2)]
 
@@ -1533,7 +1535,7 @@ c     ---------------------------------------------------
      &     CHF_CONST_FRA1[chi],
      &     CHF_CONST_FRA[gamma],
      &     CHF_CONST_FRA1[K],
-     &     CHF_CONST_FRA[A], 
+     &     CHF_CONST_FRA[A],
      &     CHF_CONST_FRA[Gamma1],
      &     CHF_CONST_FRA1[alpha],
      &     CHF_CONST_FRA[beta],
@@ -1579,7 +1581,7 @@ c	     NB: gamma_ij= chi^2 gamma_spatial_ij
 c         ------------------------------------------------------
 
          lapse = alpha(CHF_AUTOIX[i])
-         chi1 = chi(CHF_AUTOIX[i])         
+         chi1 = chi(CHF_AUTOIX[i])
          chi2 = chi1**2
 
 c        read in metric and invert, calculate derivatives
