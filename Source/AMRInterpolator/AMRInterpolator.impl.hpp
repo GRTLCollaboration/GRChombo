@@ -806,7 +806,7 @@ void AMRInterpolator<InterpAlgo>::set_reflective_BC()
                                  .domainBox()
                                  .bigEnd();
 
-    FOR1(i)
+    FOR(i)
     {
         m_upper_corner[i] = (big_end[i] + 1) * m_coarsest_dx[i];
 
@@ -834,7 +834,7 @@ int AMRInterpolator<InterpAlgo>::get_var_parity(int comp,
                       "extracting diagnostic variables with reflective BC");
 
     int parity = 1;
-    FOR1(dir)
+    FOR(dir)
     {
         double coord = query.m_coords[dir][point_idx];
         if ((m_lo_boundary_reflective[dir] && coord < 0.) ||

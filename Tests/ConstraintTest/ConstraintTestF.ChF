@@ -40,7 +40,7 @@ c     Calculate the Hamiltonian and momentum constraints
 
       ! First derivatives
       REAL_T              d1_ch(0:2), d1_hh(0:2,0:2,0:2), d1_trk(0:2), d1_aa(0:2,0:2,0:2),
-     &                    d1_gamma(0:2,0:2)
+     &                    d1_gamma(0:2,0:2), d1_cfc(0:2,0:2)
 
       ! Second derivatives
       REAL_T              d2_ch(0:2,0:2), d2_hh(0:2,0:2,0:2,0:2)
@@ -52,13 +52,13 @@ c     Calculate the Hamiltonian and momentum constraints
       REAL_T              hamC, momC(0:2)
 
       ! Ricci Tensor
-      REAL_T              cf1(0:2,0:2,0:2), cf2(0:2,0:2,0:2), c_ri(0:2,0:2)
+      REAL_T              cf1(0:2,0:2,0:2), cf2(0:2,0:2,0:2), cfc(0:2), c_ri(0:2,0:2)
       REAL_T              c_ri_ph(0:2,0:2), c_ri_hh(0:2,0:2), ri_1(0:2,0:2), ri_2(0:2,0:2),
      &                    ri_3(0:2,0:2), sq_aa, a2(0:2,0:2), trr, gamcon(0:2)
       REAL_T              tr_cd2_ch, tr_dch_dch
 
       ! Misc variables
-      REAL_T              odx12, odxsq12, odxsq144
+      REAL_T              odx12, odxsq12, odxsq144, d1hcfc
       REAL_T              odx60, ody60, odz60, odxsq180, odysq180, odzsq180,
      &                    odxdy3600, odxdz3600, odydz3600
       REAL_T              dx12, dy12, dz12, dxsq12, dysq12, dzsq12,
@@ -304,6 +304,36 @@ c     note that this has not been extended to work for DIM > 3
       cf2(:,1,0) = cf2(:,0,1)
       cf2(:,2,0) = cf2(:,0,2)
       cf2(:,2,1) = cf2(:,1,2)
+
+      cfc = 0
+      do d0 = 0, 2
+        do d1 = 0, 2
+          do d2 = 0, 2
+            cfc(d0) = cfc(d0) + hu(d1,d2) * cf2(d0,d1,d2)
+          enddo
+        enddo
+      enddo
+
+      d1_cfc = 0
+      do d0 = 0, 2
+        do d1 = 0, 2
+          do d2 = 0, 2
+            do d3 = 0, 2
+              do d4 = 0, 2
+                d1hcfc = 0
+                do d5 = 0, 2
+                  do d6 = 0, 2
+                    d1hcfc = d1hcfc - hu(d5,d6) * (d1_hh(d3,d5,d1) * d1_hh(d2,d4,d6) + d1_hh(d2,d3,d1) * d1_hh(d4,d5,d6))
+                  enddo
+                enddo
+                d1_cfc(d0,d1) = d1_cfc(d0,d1) + hu(d0,d2) * hu(d3,d4) * (d2_hh(d2,d3,d1,d4) + d1hcfc)
+              enddo
+            enddo
+          enddo
+        enddo
+      enddo
+
+
       !-------------------------------------------2}}}
 
       !------------ Covariant derivatives --------{{{2
@@ -361,9 +391,9 @@ c     note that this has not been extended to work for DIM > 3
       do d0 = 0, 2
         do d1 = d0, 2
           do d2 = 0, 2
-            ri_1(d0,d1) = ri_1(d0,d1) + hh(d2,d0) * d1_gamma(d2,d1) / 2
-     &                                + hh(d2,d1) * d1_gamma(d2,d0) / 2
-     &                                + gamma(d2) * (cf1(d0,d1,d2) + cf1(d1,d0,d2)) / 2
+            ri_1(d0,d1) = ri_1(d0,d1) + hh(d2,d0) * d1_cfc(d2,d1) / 2
+     &                                + hh(d2,d1) * d1_cfc(d2,d0) / 2
+     &                                + cfc(d2) * d1_hh(d0,d1,d2) / 2
             do d3 = 0, 2
               ri_2(d0,d1) = ri_2(d0,d1) - hu(d2,d3) * d2_hh(d0,d1,d2,d3) / 2
               do d4 = 0, 2

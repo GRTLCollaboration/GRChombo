@@ -34,9 +34,7 @@ class SimulationParameters : public SimulationParametersBase
     /// Read shared parameters
     void read_shared_params(GRParmParse &pp)
     {
-        // Do we want Weyl extraction, puncture tracking and constraint norm
-        // calculation?
-        pp.load("activate_extraction", activate_extraction, false);
+        // Do we want puncture tracking and constraint norm calculation?
         pp.load("track_punctures", track_punctures, false);
         pp.load("puncture_tracking_level", puncture_tracking_level, max_level);
         pp.load("calculate_constraint_norms", calculate_constraint_norms,
@@ -84,7 +82,7 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("TP_momentum_plus", bh2_params.momentum);
         pp.load("TP_spin_plus", spin_plus);
         pp.load("TP_spin_minus", spin_minus);
-        FOR1(i)
+        FOR(i)
         {
             tp_params.par_P_minus[i] = bh1_params.momentum[i];
             tp_params.par_P_plus[i] = bh2_params.momentum[i];
@@ -94,15 +92,15 @@ class SimulationParameters : public SimulationParametersBase
 
         pout() << "The corresponding momenta are:";
         pout() << "\nP_plus = ";
-        FOR1(i) { pout() << tp_params.par_P_plus[i] << " "; }
+        FOR(i) { pout() << tp_params.par_P_plus[i] << " "; }
         pout() << "\nP_minus = ";
-        FOR1(i) { pout() << tp_params.par_P_minus[i] << " "; }
+        FOR(i) { pout() << tp_params.par_P_minus[i] << " "; }
 
         pout() << "\nThe corresponding spins are:";
         pout() << "\nS_plus = ";
-        FOR1(i) { pout() << tp_params.par_S_plus[i] << " "; }
+        FOR(i) { pout() << tp_params.par_S_plus[i] << " "; }
         pout() << "\nS_minus = ";
-        FOR1(i) { pout() << tp_params.par_S_minus[i] << " "; }
+        FOR(i) { pout() << tp_params.par_S_minus[i] << " "; }
         pout() << "\n";
 
         // interpolation type
@@ -201,7 +199,7 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("centerB", centerB, center);
         pp.load("offsetA", offsetA, {0.0, 0.0, 0.0});
         pp.load("offsetB", offsetB, {0.0, 0.0, 0.0});
-        FOR1(idir)
+        FOR(idir)
         {
             bh1_params.center[idir] = centerA[idir] + offsetA[idir];
             bh2_params.center[idir] = centerB[idir] + offsetB[idir];
@@ -275,7 +273,7 @@ class SimulationParameters : public SimulationParametersBase
             std::sqrt(ArrayTools::norm2(bh2_params.momentum)) <
                 0.3 * bh1_params.mass,
             "approximation used for boosted BH only valid for small boosts");
-        FOR1(idir)
+        FOR(idir)
         {
             std::string nameA = "centerA[" + std::to_string(idir) + "]";
             std::string nameB = "centerB[" + std::to_string(idir) + "]";
@@ -297,9 +295,9 @@ class SimulationParameters : public SimulationParametersBase
                         "must be between 0 and max_level (inclusive)");
     }
 
-    // Initial data
-    bool activate_extraction, track_punctures, calculate_constraint_norms;
+    bool track_punctures, calculate_constraint_norms;
     int puncture_tracking_level;
+
     // Collection of parameters necessary for initial conditions
     // Set these even in the case of TwoPunctures as they are used elsewhere
     // e.g. for puncture tracking/tagging

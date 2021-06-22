@@ -135,7 +135,7 @@ int main()
                     K[2][1] = K[1][2];
 
                     double trK = 0;
-                    FOR2(a, b) { trK += g_UU[a][b] * K[a][b]; }
+                    FOR(a, b) { trK += g_UU[a][b] * K[a][b]; }
 
                     in_fab(iv, c_K) = trK;
                     in_fab(iv, c_A11) =

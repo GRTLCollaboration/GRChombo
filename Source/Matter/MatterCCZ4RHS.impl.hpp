@@ -85,16 +85,16 @@ void MatterCCZ4RHS<matter_t, gauge_t, deriv_t>::add_emtensor_rhs(
     Tensor<2, data_t> Sij_TF = emtensor.Sij;
     make_trace_free(Sij_TF, matter_vars.h, h_UU);
 
-    FOR2(i, j)
+    FOR(i, j)
     {
         matter_rhs.A[i][j] += -8.0 * M_PI * m_G_Newton * matter_vars.chi *
                               matter_vars.lapse * Sij_TF[i][j];
     }
 
-    FOR1(i)
+    FOR(i)
     {
         data_t matter_term_Gamma = 0.0;
-        FOR1(j)
+        FOR(j)
         {
             matter_term_Gamma += -16.0 * M_PI * m_G_Newton * matter_vars.lapse *
                                  h_UU[i][j] * emtensor.Si[j];

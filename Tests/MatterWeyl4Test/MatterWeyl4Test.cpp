@@ -15,10 +15,12 @@
 
 #include "BoxLoops.hpp"
 #include "CCZ4RHS.hpp"
+#include "EMTensor.hpp"
 #include "GravWavDecF_F.H"
+#include "MatterWeyl4.hpp"
+#include "ScalarField.hpp"
 #include "SetValue.hpp"
 #include "UserVariables.hpp"
-#include "Weyl4.hpp"
 
 // Chombo namespace
 #include "UsingNamespace.H"
@@ -135,7 +137,7 @@ int main()
                     K[2][1] = K[1][2];
 
                     double trK = 0;
-                    FOR2(a, b) { trK += g_UU[a][b] * K[a][b]; }
+                    FOR(a, b) { trK += g_UU[a][b] * K[a][b]; }
 
                     in_fab(iv, c_K) = trK;
                     in_fab(iv, c_A11) =
@@ -193,14 +195,24 @@ int main()
                                    5.49255 * x * y * y * y - 2.21932 * y * z +
                                    0.49523 * z * z + 1.29460 * z * z * z * z;
 
-                in_fab(iv, c_phi) =
-                    0; // 0.21232*sin(x*2.1232*3.14)*cos(y*2.5123*3.15)*cos(z*2.1232*3.14);
-                in_fab(iv, c_Pi) =
-                    0; // 0.4112*sin(x*4.123*3.14)*cos(y*2.2312*3.15)*cos(z*2.5123*3.14);
-                in_fab(iv, c_Rho) = 0;
+                in_fab(iv, c_phi) = 0.21232 * sin(x * 2.1232 * 3.14) *
+                                    cos(y * 2.5123 * 3.15) *
+                                    cos(z * 2.1232 * 3.14);
+                in_fab(iv, c_Pi) = 0.4112 * sin(x * 4.123 * 3.14) *
+                                   cos(y * 2.2312 * 3.15) *
+                                   cos(z * 2.5123 * 3.14);
+                // compute the rho from other variables as this is what
+                // MatterWeyl4 will do
+                // in_fab(iv, c_Rho) = 0;
             }
         }
     }
+    using DefaultScalarField = ScalarField<DefaultPotential>;
+
+    // compute rho and store in FAB
+    BoxLoops::loop(EMTensor<DefaultScalarField>(
+                       DefaultScalarField(DefaultPotential()), dx, c_Rho),
+                   in_fab, in_fab, /* can't compute in ghost cells */ box);
 
     Real null = 0;
 
@@ -209,7 +221,10 @@ int main()
     struct timeval begin, end;
     gettimeofday(&begin, NULL);
 
-    BoxLoops::loop(Weyl4(centerGW, dx), in_fab, out_fab);
+    BoxLoops::loop(
+        MatterWeyl4<DefaultScalarField>(DefaultScalarField(DefaultPotential()),
+                                        centerGW, dx, CCZ4RHS<>::USE_BSSN),
+        in_fab, out_fab);
 
     gettimeofday(&end, NULL);
 
@@ -230,6 +245,8 @@ int main()
     // to use the calculated Gamma^i, not the evolved one. In theory they would
     // be the same, but in this test The Gamma^i data is random, so it won't
     // work, so I changed it to match the new form
+    // (MR): I changed it back to reflect the changes I have made to the
+    // calculation of the Ricci tensor
 
     FORT_GRAVWAVDEC(
         CHF_FRA1(out_fab_chf, c_Weyl4_Re), CHF_FRA1(out_fab_chf, c_Weyl4_Im),
@@ -279,9 +296,9 @@ int main()
     }
 
     if (failed == 0)
-        std::cout << "Weyl4 test passed..." << std::endl;
+        std::cout << "MatterWeyl4 test passed..." << std::endl;
     else
-        std::cout << "Weyl4 test failed..." << std::endl;
+        std::cout << "MatterWeyl4 test failed..." << std::endl;
 
     return failed;
 

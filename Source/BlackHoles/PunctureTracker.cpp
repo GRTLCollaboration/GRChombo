@@ -13,9 +13,13 @@
 //! Set punctures post restart
 void PunctureTracker::initial_setup(
     const std::vector<std::array<double, CH_SPACEDIM>> &initial_puncture_coords,
-    const std::string &a_checkpoint_prefix, const int a_min_level)
+    const std::string &a_filename, const std::string &a_output_path,
+    const int a_min_level)
 {
-    m_punctures_filename = a_checkpoint_prefix + "Punctures";
+    if (!FilesystemTools::directory_exists(a_output_path))
+        FilesystemTools::mkdir_recursive(a_output_path);
+
+    m_punctures_filename = a_output_path + a_filename;
 
     // first set the puncture data
     // m_num_punctures is only set later
@@ -54,7 +58,7 @@ void PunctureTracker::set_initial_punctures()
     for (int ipuncture = 0; ipuncture < m_num_punctures; ipuncture++)
     {
         // assume initial shift is always zero
-        FOR1(i) { m_puncture_shift[ipuncture][i] = 0.0; }
+        FOR(i) { m_puncture_shift[ipuncture][i] = 0.0; }
     }
 
     // now the write out to a new file
@@ -149,7 +153,7 @@ void PunctureTracker::execute_tracking(double a_time, double a_restart_time,
     // update puncture locations using second order update
     for (int ipuncture = 0; ipuncture < m_num_punctures; ipuncture++)
     {
-        FOR1(i)
+        FOR(i)
         {
             m_puncture_coords[ipuncture][i] +=
                 -0.5 * a_dt *

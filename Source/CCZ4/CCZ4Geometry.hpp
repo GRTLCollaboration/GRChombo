@@ -28,6 +28,22 @@ template <class data_t> struct ricci_t
 
 class CCZ4Geometry
 {
+  protected:
+    template <class data_t>
+    ALWAYS_INLINE static data_t
+    compute_z_terms(const int i, const int j,
+                    const Tensor<1, data_t> &Z_over_chi,
+                    const Tensor<2, data_t> &h, const Tensor<1, data_t> &d1_chi)
+    {
+        data_t out = 0.;
+        FOR(k)
+        {
+            out += Z_over_chi[k] * (h[i][k] * d1_chi[j] + h[j][k] * d1_chi[i] -
+                                    h[i][j] * d1_chi[k]);
+        }
+        return out;
+    }
+
   public:
     template <class data_t, template <typename> class vars_t,
               template <typename> class diff2_vars_t>
@@ -40,45 +56,40 @@ class CCZ4Geometry
     {
         ricci_t<data_t> out;
 
-        data_t boxtildechi = 0;
-
         Tensor<2, data_t> covdtilde2chi;
-        FOR2(k, l)
+        FOR(k, l)
         {
             covdtilde2chi[k][l] = d2.chi[k][l];
-            FOR1(m) { covdtilde2chi[k][l] -= chris.ULL[m][k][l] * d1.chi[m]; }
+            FOR(m) { covdtilde2chi[k][l] -= chris.ULL[m][k][l] * d1.chi[m]; }
         }
 
-        FOR2(k, l) { boxtildechi += h_UU[k][l] * covdtilde2chi[k][l]; }
-
-        data_t dchi_dot_dchi = 0;
+        Tensor<3, data_t> chris_LLU = {0.};
+        data_t boxtildechi = 0.;
+        data_t dchi_dot_dchi = 0.;
+        FOR(i, j)
         {
-            FOR2(m, n) { dchi_dot_dchi += h_UU[m][n] * d1.chi[m] * d1.chi[n]; }
+            boxtildechi += covdtilde2chi[i][j] * h_UU[i][j];
+            dchi_dot_dchi += d1.chi[i] * d1.chi[j] * h_UU[i][j];
+            FOR(k, l) { chris_LLU[i][j][k] += h_UU[k][l] * chris.LLL[i][j][l]; }
         }
 
-        FOR2(i, j)
+        FOR(i, j)
         {
-            data_t ricci_tilde = 0;
-            FOR1(k)
+            data_t ricci_hat = 0;
+            FOR(k)
             {
-                // Trick: For CCZ4, we can add Z terms to ricci by changing
-                // Gamma to chrisvec This way of writing it allows the user to
-                // pass Z/chi = {0};
-                ricci_tilde += 0.5 * (vars.h[k][i] * d1.Gamma[k][j] +
-                                      vars.h[k][j] * d1.Gamma[k][i]);
-                ricci_tilde += 0.5 * (vars.Gamma[k] - 2 * Z_over_chi[k]) *
-                               (chris.LLL[i][j][k] + chris.LLL[j][i][k]);
-                FOR1(l)
+                // We call this ricci_hat rather than ricci_tilde as we have
+                // replaced what should be \tilde{Gamma} with \hat{Gamma} in
+                // order to avoid adding terms that cancel later on
+                ricci_hat += 0.5 * (vars.h[k][i] * d1.Gamma[k][j] +
+                                    vars.h[k][j] * d1.Gamma[k][i]);
+                ricci_hat += 0.5 * vars.Gamma[k] * d1.h[i][j][k];
+                FOR(l)
                 {
-                    ricci_tilde -= 0.5 * h_UU[k][l] * d2.h[i][j][k][l];
-                    FOR1(m)
-                    {
-                        ricci_tilde +=
-                            h_UU[l][m] *
-                            (chris.ULL[k][l][i] * chris.LLL[j][k][m] +
-                             chris.ULL[k][l][j] * chris.LLL[i][k][m] +
-                             chris.ULL[k][i][m] * chris.LLL[k][l][j]);
-                    }
+                    ricci_hat += -0.5 * h_UU[k][l] * d2.h[i][j][k][l] +
+                                 (chris.ULL[k][l][i] * chris_LLU[j][k][l] +
+                                  chris.ULL[k][l][j] * chris_LLU[i][k][l] +
+                                  chris.ULL[k][i][l] * chris_LLU[k][j][l]);
                 }
             }
 
@@ -89,17 +100,10 @@ class CCZ4Geometry
                         GR_SPACEDIM * vars.h[i][j] * dchi_dot_dchi) /
                            (2 * vars.chi));
 
-            data_t z_terms = 0;
-            FOR1(k)
-            {
-                z_terms +=
-                    Z_over_chi[k] *
-                    (vars.h[i][k] * d1.chi[j] + vars.h[j][k] * d1.chi[i] -
-                     vars.h[i][j] * d1.chi[k] + d1.h[i][j][k] * vars.chi);
-            }
+            data_t z_terms = compute_z_terms(i, j, Z_over_chi, vars.h, d1.chi);
 
             out.LL[i][j] =
-                (ricci_chi + vars.chi * ricci_tilde + z_terms) / vars.chi;
+                (ricci_chi + vars.chi * ricci_hat + z_terms) / vars.chi;
         }
 
         out.scalar = vars.chi * TensorAlgebra::compute_trace(out.LL, h_UU);
@@ -107,6 +111,73 @@ class CCZ4Geometry
         return out;
     }
 
+    template <class data_t>
+    static Tensor<2, data_t>
+    compute_d1_chris_contracted(const Tensor<2, data_t> &h_UU,
+                                const Tensor<2, Tensor<1, data_t>> &d1_h,
+                                const Tensor<2, Tensor<2, data_t>> &d2_h)
+    {
+        Tensor<2, data_t> d1_chris_contracted = 0.0;
+        FOR(i, j)
+        {
+            FOR(m, n, p)
+            {
+                data_t d1_terms = 0.0;
+                FOR(q, r)
+                {
+                    d1_terms += -h_UU[q][r] * (d1_h[n][q][j] * d1_h[m][p][r] +
+                                               d1_h[m][n][j] * d1_h[p][q][r]);
+                }
+                d1_chris_contracted[i][j] +=
+                    h_UU[i][m] * h_UU[n][p] * (d2_h[m][n][j][p] + d1_terms);
+            }
+        }
+        return d1_chris_contracted;
+    }
+
+    // This function allows adding arbitrary multiples of D_{(i}Z_{j)}
+    // to the Ricci scalar rather than the default of 2 in compute_ricci_Z
+    template <class data_t, template <typename> class vars_t,
+              template <typename> class diff2_vars_t>
+    static ricci_t<data_t>
+    compute_ricci_Z_general(const vars_t<data_t> &vars,
+                            const vars_t<Tensor<1, data_t>> &d1,
+                            const diff2_vars_t<Tensor<2, data_t>> &d2,
+                            const Tensor<2, data_t> &h_UU,
+                            const chris_t<data_t> &chris, const double dZ_coeff)
+    {
+        // get contributions from conformal metric and factor with zero Z vector
+        Tensor<1, data_t> Z0 = 0.;
+        auto ricci = compute_ricci_Z(vars, d1, d2, h_UU, chris, Z0);
+
+        // need to add term to correct for d1.Gamma (includes Z contribution)
+        // and Gamma in ricci_hat
+        auto d1_chris_contracted =
+            compute_d1_chris_contracted(h_UU, d1.h, d2.h);
+        Tensor<1, data_t> Z_over_chi;
+        FOR(i) { Z_over_chi[i] = 0.5 * (vars.Gamma[i] - chris.contracted[i]); }
+        FOR(i, j)
+        {
+            FOR(m)
+            {
+                // This corrects for the \hat{Gamma}s in ricci_hat
+                ricci.LL[i][j] +=
+                    (1. - 0.5 * dZ_coeff) * 0.5 *
+                    (vars.h[m][i] *
+                         (d1_chris_contracted[m][j] - d1.Gamma[m][j]) +
+                     vars.h[m][j] *
+                         (d1_chris_contracted[m][i] - d1.Gamma[m][i]) +
+                     (chris.contracted[m] - vars.Gamma[m]) * d1.h[i][j][m]);
+            }
+            data_t z_terms = compute_z_terms(i, j, Z_over_chi, vars.h, d1.chi);
+            ricci.LL[i][j] += 0.5 * dZ_coeff * z_terms / vars.chi;
+        }
+        ricci.scalar = vars.chi * TensorAlgebra::compute_trace(ricci.LL, h_UU);
+        return ricci;
+    }
+
+    // This function returns the pure Ricci scalar with no contribution from the
+    // Z vector - used e.g. in the constraint calculations.
     template <class data_t, template <typename> class vars_t,
               template <typename> class diff2_vars_t>
     static ricci_t<data_t>
@@ -115,8 +186,7 @@ class CCZ4Geometry
                   const diff2_vars_t<Tensor<2, data_t>> &d2,
                   const Tensor<2, data_t> &h_UU, const chris_t<data_t> &chris)
     {
-        Tensor<1, data_t> Z0 = 0.;
-        return compute_ricci_Z(vars, d1, d2, h_UU, chris, Z0);
+        return compute_ricci_Z_general(vars, d1, d2, h_UU, chris, 0.0);
     }
 };
 
