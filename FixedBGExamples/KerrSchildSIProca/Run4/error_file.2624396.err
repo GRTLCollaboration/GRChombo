@@ -1,0 +1,95 @@
+/cosma/home/dp016/dc-cui1/.bashrc: line 15: bind: warning: line editing not enabled
+[?1034h/cosma/home/dp016/dc-cui1/.bashrc: line 16: bind: warning: line editing not enabled
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 32 seconds for job step to finish.
+slurmstepd: error: *** STEP 2624396.14 ON m6435 CANCELLED AT 2020-09-21T12:36:30 ***
+srun: got SIGCONT
+srun: got SIGCONT
+srun: got SIGCONT
+srun: got SIGCONT
+srun: got SIGCONT
+srun: got SIGCONT
+srun: got SIGCONT
+srun: got SIGCONT
+srun: got SIGCONT
+srun: got SIGCONT
+srun: got SIGCONT
+srun: got SIGCONT
+srun: got SIGCONT
+srun: got SIGCONT
+srun: got SIGCONT
+slurmstepd: error: *** STEP 2624396.12 ON m6429 CANCELLED AT 2020-09-21T12:36:30 ***
+slurmstepd: error: *** STEP 2624396.5 ON m6432 CANCELLED AT 2020-09-21T12:36:30 ***
+slurmstepd: error: *** STEP 2624396.1 ON m6424 CANCELLED AT 2020-09-21T12:36:30 ***
+slurmstepd: error: *** STEP 2624396.6 ON m6434 CANCELLED AT 2020-09-21T12:36:30 ***
+slurmstepd: error: *** STEP 2624396.3 ON m6430 CANCELLED AT 2020-09-21T12:36:30 ***
+slurmstepd: error: *** STEP 2624396.11 ON m6433 CANCELLED AT 2020-09-21T12:36:30 ***
+slurmstepd: error: *** STEP 2624396.4 ON m6428 CANCELLED AT 2020-09-21T12:36:30 ***
+slurmstepd: error: *** STEP 2624396.8 ON m6427 CANCELLED AT 2020-09-21T12:36:30 ***
+slurmstepd: error: *** STEP 2624396.9 ON m6431 CANCELLED AT 2020-09-21T12:36:30 ***
+slurmstepd: error: *** STEP 2624396.0 ON m6426 CANCELLED AT 2020-09-21T12:36:30 ***
+slurmstepd: error: *** STEP 2624396.2 ON m6342 CANCELLED AT 2020-09-21T12:36:30 ***
+slurmstepd: error: *** STEP 2624396.10 ON m6425 CANCELLED AT 2020-09-21T12:36:30 ***
+slurmstepd: error: *** JOB 2624396 ON m6341 CANCELLED AT 2020-09-21T12:36:30 ***
+slurmstepd: error: *** STEP 2624396.7 ON m6436 CANCELLED AT 2020-09-21T12:36:30 ***
+slurmstepd: error: *** STEP 2624396.13 ON m6437 CANCELLED AT 2020-09-21T12:36:30 ***
+srun: forcing job termination
+srun: forcing job termination
+srun: forcing job termination
+srun: forcing job termination
+srun: forcing job termination
+srun: forcing job termination
+srun: forcing job termination
+srun: forcing job termination
+srun: forcing job termination
+srun: forcing job termination
+srun: forcing job termination
+srun: forcing job termination
+srun: forcing job termination
+srun: forcing job termination
+srun: forcing job termination
+srun: error: m6435: task 0: Terminated
+srun: error: m6429: task 0: Terminated
+srun: error: m6433: task 0: Terminated
+srun: error: m6432: task 0: Terminated
+srun: error: m6424: task 0: Terminated
+srun: error: m6434: task 0: Terminated
+srun: error: m6427: task 0: Terminated
+srun: error: m6426: task 0: Terminated
+srun: error: m6428: task 0: Terminated
+srun: error: m6436: task 0: Terminated
+srun: error: m6425: task 0: Terminated
+srun: error: m6437: task 0: Terminated
+srun: error: m6430: task 0: Terminated
+srun: error: m6342: task 0: Terminated
+srun: error: m6431: task 0: Terminated
+[mpiexec@m6341.pri.cosma7.alces.network] wait_proxies_to_terminate (../../../../../src/pm/i_hydra/mpiexec/intel/i_mpiexec.c:393): downstream from host m6341 was killed by signal 15 (Terminated)
+[mpiexec@m6341.pri.cosma7.alces.network] wait_proxies_to_terminate (../../../../../src/pm/i_hydra/mpiexec/intel/i_mpiexec.c:389): downstream from host m6342 exited with status 143
+[mpiexec@m6341.pri.cosma7.alces.network] wait_proxies_to_terminate (../../../../../src/pm/i_hydra/mpiexec/intel/i_mpiexec.c:389): downstream from host m6424 exited with status 143
+[mpiexec@m6341.pri.cosma7.alces.network] wait_proxies_to_terminate (../../../../../src/pm/i_hydra/mpiexec/intel/i_mpiexec.c:389): downstream from host m6425 exited with status 143
+[mpiexec@m6341.pri.cosma7.alces.network] wait_proxies_to_terminate (../../../../../src/pm/i_hydra/mpiexec/intel/i_mpiexec.c:389): downstream from host m6426 exited with status 143
+[mpiexec@m6341.pri.cosma7.alces.network] wait_proxies_to_terminate (../../../../../src/pm/i_hydra/mpiexec/intel/i_mpiexec.c:389): downstream from host m6427 exited with status 143
+[mpiexec@m6341.pri.cosma7.alces.network] wait_proxies_to_terminate (../../../../../src/pm/i_hydra/mpiexec/intel/i_mpiexec.c:389): downstream from host m6428 exited with status 143
+[mpiexec@m6341.pri.cosma7.alces.network] wait_proxies_to_terminate (../../../../../src/pm/i_hydra/mpiexec/intel/i_mpiexec.c:389): downstream from host m6429 exited with status 143
+[mpiexec@m6341.pri.cosma7.alces.network] wait_proxies_to_terminate (../../../../../src/pm/i_hydra/mpiexec/intel/i_mpiexec.c:389): downstream from host m6430 exited with status 143
+[mpiexec@m6341.pri.cosma7.alces.network] wait_proxies_to_terminate (../../../../../src/pm/i_hydra/mpiexec/intel/i_mpiexec.c:389): downstream from host m6431 exited with status 143
+[mpiexec@m6341.pri.cosma7.alces.network] wait_proxies_to_terminate (../../../../../src/pm/i_hydra/mpiexec/intel/i_mpiexec.c:389): downstream from host m6432 exited with status 143
+[mpiexec@m6341.pri.cosma7.alces.network] wait_proxies_to_terminate (../../../../../src/pm/i_hydra/mpiexec/intel/i_mpiexec.c:389): downstream from host m6433 exited with status 143
+[mpiexec@m6341.pri.cosma7.alces.network] wait_proxies_to_terminate (../../../../../src/pm/i_hydra/mpiexec/intel/i_mpiexec.c:389): downstream from host m6434 exited with status 143
+[mpiexec@m6341.pri.cosma7.alces.network] wait_proxies_to_terminate (../../../../../src/pm/i_hydra/mpiexec/intel/i_mpiexec.c:389): downstream from host m6435 exited with status 143
+[mpiexec@m6341.pri.cosma7.alces.network] wait_proxies_to_terminate (../../../../../src/pm/i_hydra/mpiexec/intel/i_mpiexec.c:389): downstream from host m6436 exited with status 143
+[mpiexec@m6341.pri.cosma7.alces.network] wait_proxies_to_terminate (../../../../../src/pm/i_hydra/mpiexec/intel/i_mpiexec.c:389): downstream from host m6437 exited with status 143
+[mpiexec@m6341.pri.cosma7.alces.network] main (../../../../../src/pm/i_hydra/mpiexec/mpiexec.c:1957): assert (exitcodes != NULL) failed

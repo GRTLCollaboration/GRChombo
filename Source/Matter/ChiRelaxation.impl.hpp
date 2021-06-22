@@ -11,14 +11,6 @@
 #define CHIRELAXATION_IMPL_HPP_
 
 template <class matter_t>
-ChiRelaxation<matter_t>::ChiRelaxation(matter_t a_matter, double dx,
-                                       double relax_speed, double G_Newton)
-    : my_matter(a_matter), m_relax_speed(relax_speed), m_G_Newton(G_Newton),
-      m_deriv(dx)
-{
-}
-
-template <class matter_t>
 template <class data_t>
 void ChiRelaxation<matter_t>::compute(Cell<data_t> current_cell) const
 {
@@ -31,10 +23,9 @@ void ChiRelaxation<matter_t>::compute(Cell<data_t> current_cell) const
         m_deriv.template advection<Vars>(current_cell, vars.shift);
 
     // work out RHS including advection
+    // All components that are not explicitly set in rhs_equation are 0
     Vars<data_t> rhs;
-    VarsTools::assign(
-        rhs,
-        0.); // All components that are not explicitly set in rhs_equation are 0
+    VarsTools::assign(rhs, 0.);
     rhs_equation(rhs, vars, d1, d2, advec);
 
     // Write the rhs into the output FArrayBox
@@ -69,6 +60,13 @@ void ChiRelaxation<matter_t>::rhs_equation(
         (ricci.scalar + (GR_SPACEDIM - 1.) * vars.K * vars.K / GR_SPACEDIM -
          tr_AA - 16.0 * M_PI * m_G_Newton * emtensor.rho) /
         vars.chi;
+
+    // if chi changes \tilde Aij should change to maintain \bar A_ij in the Mom
+    // constraint
+    FOR2(i, j) { rhs.A[i][j] = 1.5 * rhs.chi * vars.A[i][j] / vars.chi; }
+
+    // note that we don't use dissipation here as it tends to destabilise the
+    // convergence
 }
 
 #endif /* CHIRELAXATION_IMPL_HPP_ */

@@ -21,8 +21,12 @@
 #include "HamTaggingCriterion.hpp"
 
 // Problem specific includes
+#include "AMRReductions.hpp"
 #include "ComputePack.hpp"
+#include "ExcisionDiagnostics.hpp"
+#include "FluxExtraction.hpp"
 #include "GammaCalculator.hpp"
+#include "MatterEnergy.hpp"
 #include "OscillatonInitial.hpp"
 #include "Potential.hpp"
 #include "ScalarField.hpp"
@@ -102,6 +106,14 @@ void ScalarFieldLevel::prePlotLevel()
                        Interval(c_Mom, c_Mom), c_Ham_abs_sum,
                        Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
                    m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+    BoxLoops::loop(
+        MatterEnergy<ScalarFieldWithPotential>(scalar_field, m_dx, m_p.center),
+        m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+    // excise within horizon
+    BoxLoops::loop(
+        ExcisionDiagnostics(m_dx, m_p.center, m_p.inner_r, m_p.outer_r),
+        m_state_diagnostics, m_state_diagnostics, SKIP_GHOST_CELLS,
+        disable_simd());
 }
 
 // Things to do in RHS update, at each RK4 step
@@ -117,7 +129,7 @@ void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     // Calculate MatterCCZ4 right hand side with matter_t = ScalarField
     Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
-    MatterCCZ4RHS<ScalarFieldWithPotential> my_ccz4_matter(
+    MatterCCZ4<ScalarFieldWithPotential> my_ccz4_matter(
         scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
         m_p.G_Newton);
     BoxLoops::loop(my_ccz4_matter, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
@@ -131,12 +143,15 @@ void ScalarFieldLevel::specificUpdateODE(GRLevelData &a_soln,
     BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
 }
 
-void ScalarFieldLevel::preTagCells()
+void ScalarFieldLevel::specificPostTimeStep()
 {
-    if (m_gr_amr.s_step == 0)
+    // At any level, but after the coarsest timestep
+    double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
+    const double remainder = fmod(m_time, coarsest_dt);
+    if (min(abs(remainder), abs(remainder - coarsest_dt)) < 1.0e-8)
     {
-        // Pre tagging - fill ghost cells and calculate Ham terms
-        fillAllEvolutionGhosts();
+        // calculate the density of the PF, but excise the BH region completely
+        fillAllGhosts();
         Potential potential(m_p.potential_params);
         ScalarFieldWithPotential scalar_field(potential);
         BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
@@ -144,12 +159,75 @@ void ScalarFieldLevel::preTagCells()
                            Interval(c_Mom, c_Mom), c_Ham_abs_sum,
                            Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
                        m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-        // fillAllGhosts();
+        BoxLoops::loop(MatterEnergy<ScalarFieldWithPotential>(scalar_field,
+                                                              m_dx, m_p.center),
+                       m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+        // excise within horizon
+        BoxLoops::loop(
+            ExcisionDiagnostics(m_dx, m_p.center, m_p.inner_r, m_p.outer_r),
+            m_state_diagnostics, m_state_diagnostics, SKIP_GHOST_CELLS,
+            disable_simd());
+    }
+
+    // write out the integral after each coarse timestep
+    if (m_level == 0)
+    {
+        bool first_step = (m_time == m_dt);
+
+        // integrate the densities and write to a file
+        AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
+        double rho1_sum = amr_reductions.sum(c_rho1);
+        double rho2_sum = amr_reductions.sum(c_rho2);
+        double source1_sum = amr_reductions.sum(c_source1);
+        double source2_sum = amr_reductions.sum(c_source2);
+	double Ham_sum = amr_reductions.norm(c_Ham);
+
+        SmallDataIO integral_file("VolumeIntegrals", m_dt, m_time,
+                                  m_restart_time, SmallDataIO::APPEND,
+                                  first_step);
+        // remove any duplicate data if this is post restart
+        integral_file.remove_duplicate_time_data();
+        std::vector<double> data_for_writing = {rho1_sum, rho2_sum, source1_sum, source2_sum, Ham_sum};
+        // write data
+        if (first_step)
+        {
+	  integral_file.write_header_line({"rho1", "rho2", "source1", "source2", "Ham"});
+        }
+        integral_file.write_time_data_line(data_for_writing);
+
+        // Now refresh the interpolator and do the interpolation
+        bool fill_ghosts = false;
+        m_gr_amr.m_interpolator->refresh(fill_ghosts);
+        m_gr_amr.fill_multilevel_ghosts(VariableType::diagnostic,
+                                        Interval(c_flux1, c_flux2));
+        FluxExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
+                                     m_restart_time);
+        my_extraction.execute_query(m_gr_amr.m_interpolator);
+    }
+}
+
+void ScalarFieldLevel::preTagCells()
+{
+
+    if (m_gr_amr.s_step == 0)
+    {
+        // Pre tagging - fill ghost cells and calculate Ham terms
+        fillAllEvolutionGhosts();
     }
     else
     {
         preTagCellsTruncationTagging();
     }
+
+    Potential potential(m_p.potential_params);
+    ScalarFieldWithPotential scalar_field(potential);
+    BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
+                       scalar_field, m_dx, m_p.G_Newton, c_Ham,
+                       Interval(c_Mom, c_Mom), c_Ham_abs_sum,
+                       Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
+                   m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+
+
 }
 
 void ScalarFieldLevel::computeDiagnosticsTaggingCriterion(

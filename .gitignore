@@ -1,8 +1,10 @@
 jobscript*
 pout.*
 .bashrc
+*.btr
 *.pbs
 *.s
+machine.file*
 d
 o
 p

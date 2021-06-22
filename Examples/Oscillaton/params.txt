@@ -34,6 +34,7 @@ truncation_error_regrid_threshold = 5.0e-3 #can add 's'
 # Level data
 # Maximum number of times you can regrid above coarsest level
 max_level = 7 # There are (max_level+1) grids, so min is zero
+
 # Max and min box size - for load balancing
 max_box_size = 16
 min_box_size = 16
@@ -59,7 +60,7 @@ vars_parity            = 0 0 4 6 0 5 0    #chi and hij
                          0 1 2 3          #Theta and Gamma
                          0 1 2 3 1 2 3    #lapse shift and B
                          0 0              #phi and Pi
-vars_parity_diagnostic = 0 1 2 3          #Ham and Mom
+vars_parity_diagnostic = 0 1 2 3 0 0 0 0 0 0 #Ham and Mom, matter diagnostics
 
 # if sommerfeld boundaries selected, must select
 # non zero asymptotic values
@@ -85,7 +86,7 @@ stop_time = 250
 #Lapse evolution
 lapse_power = 1.0
 lapse_coeff = 2.0
-lapse_advec_coeff = 1 # 1 makes the lapse gauge 1+log slicing
+lapse_advec_coeff = 0 # 1 makes the lapse gauge 1+log slicing
 
 # Shift evolution coefficients
 shift_advec_coeff = 0 # Usually no advection for beta
@@ -112,3 +113,14 @@ G_Newton = 1.0
 scalar_mass = 1.0
 f_axion = 0.05 # 1.0 stable, 0.06 oscillatory, 0.05 collapse
 initial_data_prefix = Oscillaton_data/
+
+# Extraction data
+activate_extraction = 1
+write_extraction = 0
+num_extraction_radii = 1
+extraction_radii = 60.0
+inner_r = 0.0
+outer_r = 60.0
+extraction_levels = 0
+num_points_phi = 24
+num_points_theta = 24
