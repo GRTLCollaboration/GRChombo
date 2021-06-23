@@ -1,0 +1,28 @@
+/cosma/home/dp016/dc-cui1/.bashrc: line 15: bind: warning: line editing not enabled
+[?1034h/cosma/home/dp016/dc-cui1/.bashrc: line 16: bind: warning: line editing not enabled
+/cosma/home/dp016/dc-cui1/.bashrc: line 18: bind: warning: line editing not enabled
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+srun: Job step aborted: Waiting up to 122 seconds for job step to finish.
+slurmstepd: error: *** STEP 3542298.11 ON m6215 CANCELLED AT 2021-06-23T13:11:19 ***
+slurmstepd: error: *** STEP 3542298.4 ON m6209 CANCELLED AT 2021-06-23T13:11:19 ***
+slurmstepd: error: *** STEP 3542298.9 ON m6338 CANCELLED AT 2021-06-23T13:11:19 ***
+slurmstepd: error: *** STEP 3542298.8 ON m6337 CANCELLED AT 2021-06-23T13:11:19 ***
+slurmstepd: error: *** STEP 3542298.10 ON m6339 CANCELLED AT 2021-06-23T13:11:19 ***
+slurmstepd: error: *** STEP 3542298.6 ON m6213 CANCELLED AT 2021-06-23T13:11:19 ***
+slurmstepd: error: *** STEP 3542298.5 ON m6210 CANCELLED AT 2021-06-23T13:11:19 ***
+slurmstepd: error: *** STEP 3542298.1 ON m6211 CANCELLED AT 2021-06-23T13:11:19 ***
+slurmstepd: error: *** STEP 3542298.7 ON m6340 CANCELLED AT 2021-06-23T13:11:19 ***
+slurmstepd: error: *** STEP 3542298.3 ON m6214 CANCELLED AT 2021-06-23T13:11:19 ***
+slurmstepd: error: *** STEP 3542298.2 ON m6008 CANCELLED AT 2021-06-23T13:11:19 ***
+slurmstepd: error: *** STEP 3542298.0 ON m6007 CANCELLED AT 2021-06-23T13:11:19 ***
+slurmstepd: error: *** JOB 3542298 ON m6006 CANCELLED AT 2021-06-23T13:11:19 ***

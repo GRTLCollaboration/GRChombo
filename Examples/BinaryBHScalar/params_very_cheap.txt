@@ -1,0 +1,179 @@
+# See the wiki page for an explanation of the params!
+# https://github.com/GRChombo/GRChombo/wiki/Guide-to-parameters
+
+#################################################
+# Filesystem parameters
+
+verbosity = 0
+
+# location / naming of output files
+# output_path = "" # Main path for all files. Must exist!
+chk_prefix = BinaryBH_
+plot_prefix = BinaryBHPlot_
+# restart_file = BinaryBH_000360.3d.hdf5
+
+# HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
+checkpoint_interval = 1
+# set to 0 to turn off plot files (except at t=0 and t=stop_time)
+# set to -1 to never ever print plotfiles
+plot_interval = 1
+num_plot_vars = 4
+plot_vars = chi Ham Weyl4_Re Weyl4_Im
+
+# subpaths - specific directories for hdf5, pout, extraction data
+# (these are created at runtime)
+hdf5_subpath = "hdf5"
+pout_subpath = "pout"
+data_subpath = "data"
+
+# change the name of output files
+# pout_prefix = "pout"
+print_progress_only_to_rank_0 = 1
+
+# ignore_checkpoint_name_mismatch = 0
+# write_plot_ghosts = 0
+
+#################################################
+# Initial Data parameters
+
+# provide 'offset' or 'center'
+
+massA = 0.5
+massB = 0.5
+
+offsetA = -2 0 0
+offsetB =  2 0 0
+# centerA =  6 8 8
+# centerB = 10 8 8
+
+momentumA = 0.0 -0.1 0.0
+momentumB = 0.0  0.1 0.0
+
+#################################################
+# Grid parameters
+
+# 'N' is the number of subdivisions in each direction of a cubic box
+# 'L' is the length of the longest side of the box, dx_coarsest = L/N
+# NB - If you use reflective BC and want to specify the subdivisions and side
+# of the box were there are no symmetries, specify 'N_full' and 'L_full' instead
+# NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full',
+# 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
+# NB - the N values need to be multiples of the block_factor
+N_full = 32
+L_full = 16
+
+# Maximum number of times you can regrid above coarsest level
+max_level = 2 # There are (max_level+1) grids, so min is zero
+
+# need max_level entries for regrid interval
+# Level Regridding: 0   1   2   3   4   5
+regrid_interval =   1   1   1   1   0   0
+regrid_threshold = 0.3
+
+# Max and min box sizes
+max_box_size = 32
+min_box_size = 8
+
+# tag_buffer_size = 3
+# grid_buffer_size = 8
+# fill_ratio = 0.7
+# num_ghosts = 3
+# center = 8 8 8 # defaults to center of the grid
+
+#################################################
+# Boundary Conditions parameters
+
+# Periodic directions - 0 = false, 1 = true
+isPeriodic = 0 0 0
+# if not periodic, then specify the boundary type
+# 0 = static, 1 = sommerfeld, 2 = reflective
+# (see BoundaryConditions.hpp for details)
+hi_boundary = 1 1 1
+lo_boundary = 1 1 2
+
+# if reflective boundaries selected, must set
+# parity of all vars (in order given by UserVariables.hpp)
+# 0 = even
+# 1,2,3 = odd x, y, z
+# 7     = odd xyz
+vars_parity            = 0 0 4 6 0 5 0    #chi and hij
+                         0 0 4 6 0 5 0    #K and Aij
+                         0 1 2 3          #Theta and Gamma
+                         0 1 2 3 1 2 3    #lapse shift and B
+vars_parity_diagnostic = 0 1 2 3          #Ham and Mom
+                         0 7              #Weyl
+
+# if sommerfeld boundaries selected, must select
+# non zero asymptotic values
+num_nonzero_asymptotic_vars = 5
+nonzero_asymptotic_vars = chi h11 h22 h33 lapse
+nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
+
+# if you are using extrapolating BC:
+# extrapolation_order = 1
+# num_extrapolating_vars = -1
+# extrapolating_vars =
+
+#################################################
+# Evolution parameters
+
+# dt will be dx*dt_multiplier on each grid level
+dt_multiplier = 0.25
+stop_time = 10.0
+# max_steps = 100
+
+# Spatial derivative order (only affects CCZ4 RHS)
+max_spatial_derivative_order = 4 # can be 4 or 6
+
+nan_check = 1
+
+# Lapse evolution
+lapse_advec_coeff = 1.0
+lapse_coeff = 2.0
+lapse_power = 1.0
+
+# Shift evolution
+shift_advec_coeff = 0.0 # Usually no advection for beta
+shift_Gamma_coeff = 0.75
+eta = 1.0 # eta of gamma driver, should be of order ~1/M_ADM of spacetime
+
+# CCZ4 parameters
+formulation = 0 # 1 for BSSN, 0 for CCZ4
+kappa1 = 0.1
+kappa2 = 0.
+kappa3 = 1.
+covariantZ4 = 1 # 0: keep kappa1; 1 [default]: replace kappa1 -> kappa1/lapse
+
+# coefficient for KO numerical dissipation
+sigma = 0.3
+
+track_punctures = 1
+puncture_tracking_level = 1
+
+# calculate_constraint_norms = 0
+
+# min_chi = 1.e-4
+# min_lapse = 1.e-4
+
+#################################################
+# Extraction parameters
+
+# extraction_center = 8 8 8 # defaults to center
+activate_extraction = 1
+num_extraction_radii = 1
+extraction_radii = 6.0
+extraction_levels = 0
+num_points_phi = 24
+num_points_theta = 37
+num_modes = 3
+modes = 2 0 # l m for spherical harmonics
+        2 1
+        2 2
+# integral_file_prefix = "Weyl4_mode_"
+
+# write_extraction = 0
+# extraction_subpath = "data/extraction" # directory for 'write_extraction = 1'
+# extraction_file_prefix = "Weyl4_extraction_"
+
+#################################################
+

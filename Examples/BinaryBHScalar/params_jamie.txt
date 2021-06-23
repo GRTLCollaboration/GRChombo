@@ -1,0 +1,153 @@
+# See the wiki page for an explanation of the params!
+# https://github.com/GRChombo/GRChombo/wiki/Guide-to-parameters
+# and a guide to this specific example at
+# https://github.com/GRChombo/GRChombo/wiki/Running-the-BBH-example
+
+# location / naming of output files (must give full path)
+verbosity = 0
+nan_check = 1
+chk_prefix = /cosma6/data/dp174/dc-cui1/BinaryC_
+plot_prefix = /cosma6/data/dp174/dc-cui1/BinaryP_
+restart_file = /cosma6/data/dp174/dc-cui1/InitialData/Experimental_tools/InitialConditionSolver_with_ghosts/StartFile.3d.hdf5
+
+num_plot_vars = 3 # 11
+plot_vars = chi phi criterion # Pi rho rho_azimuth J_R J_azimuth_R Weyl4_Re Weyl4_Im Ham Mom1
+
+# Set up coarsest level number of grid points in each dir
+# NB - the values need to be multiples of block_factor
+N1 = 64
+N2 = 64
+N3 = 64
+
+# scalar field parameters
+G_Newton = 0.0000000001
+scalar_mass = 0.5
+field_amplitude = 1.0
+scalar_l = 0
+scalar_m = 0
+alignment = 0
+delay = 0
+phase = 0
+
+calculate_constraints = 1
+calculate_constraint_norms = 1
+
+# Length of the longest N side
+# (This sets dx in all directions)
+L = 512
+scalar_center = 256 256 256
+center = 256 256 256
+extraction_center = 256 256 256
+track_punctures = 1
+puncture_tracking_level = 5
+
+# raw BH params
+massA = 0.48847892320123
+offsetA = 0.0 6.10679 0.0
+momentumA = -0.0841746 -0.000510846 0.0
+
+massB = 0.48847892320123
+offsetB = 0.0 -6.10679 0.0
+momentumB =  0.0841746 0.000510846 0.0
+
+# final black hole dimensionful spin
+final_a = 0.0
+
+# regridding control, specify frequency on each level
+# so need max_level + 1 entries for interval
+regrid_threshold = 0.05 # set to 0.1 to match the ICS, old value was 0.05
+max_level = 9
+regrid_interval = 0 0 0 128 64 64 64 1 1 0
+
+# boundaries and periodicity of grid
+# Periodic directions - 0 = false, 1 = true
+isPeriodic = 0 0 0
+# if not periodic, then specify the boundary type
+# 0 = static, 1 = sommerfeld, 2 = reflective
+# 3 = extrapolating 4 = mixed
+# (see BoundaryConditions.hpp for details)
+hi_boundary = 4 4 4
+lo_boundary = 4 4 4
+
+# if reflective boundaries selected, must set
+# parity of all vars (in order given by UserVariables.hpp)
+# 0 = even
+# 1,2,3 = odd x, y, z
+# 4,5,6 = odd xy, yz, xz
+vars_parity            = 0 0 4 6 0 5 0    #chi and hij
+                         0 0 4 6 0 5 0    #K and Aij
+                         0 1 2 3          #Theta and Gamma
+                         0 1 2 3 1 2 3    #lapse shift and B
+                         0 0	          # phi and Pi
+			 0 0 0 0 	  # rho, rho_azimuth, J_R, J_azimuth_R
+                         0 1 2 3          #Ham and Mom
+                         0 0              #Weyl
+
+# if sommerfeld boundaries selected, must specify any nonzero
+# asymptotic values
+num_nonzero_asymptotic_vars = 5
+nonzero_asymptotic_vars = chi h11 h22 h33 lapse
+nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
+
+# if mixed boundaries selected, must specify which are extrapolating
+# (the rest are assumed to be all sommerfeld)
+num_extrapolating_vars = 2
+extrapolating_vars = phi Pi
+extrapolation_order = 0
+
+# Max and min box sizes
+max_grid_size = 32
+block_factor = 32
+
+# Set up time steps
+# dt will be dx*dt_multiplier on each grid level
+# HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
+
+checkpoint_interval = 100
+# set to zero to turn off plot files, comps defined in BinaryBHLevel.cpp
+plot_interval = 1
+dt_multiplier = 0.25 # 0.0625 = 1/16, 0.03125 = 1/32, 0.015625 = 1 / 64
+stop_time = 10000.0
+## dt_actual = 8*dt_multiplier = 3.2
+## 2*pi / mu =~ 6 / 0.4 = 15
+## 1 / mu = 2.5
+
+# Lapse evolution
+lapse_advec_coeff = 1.0
+lapse_coeff = 2.0
+lapse_power = 1.0
+
+# Shift evolution
+shift_advec_coeff = 0.0
+shift_Gamma_coeff = 0.75
+eta = 1.0
+
+# CCZ4 parameters
+formulation = 0
+kappa1 = 0.1
+kappa2 = 0
+kappa3 = 1.0
+covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
+
+# coefficient for KO numerical dissipation
+sigma = 1.0
+
+# extraction params
+# default of extraction_center is center, uncomment to change
+activate_extraction = 1
+write_extraction = 0
+num_extraction_radii = 3
+extraction_radii = 50.0 100.0 200.0
+extraction_levels = 2 1 1
+num_points_phi = 24
+num_points_theta = 36
+num_modes = 3
+modes = 2 0 # l m for spherical harmonics
+        2 1
+        2 2
+        #4 0
+        #4 1
+        #4 2
+        #4 3
+        #4 4
+

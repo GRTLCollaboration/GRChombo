@@ -1,0 +1,224 @@
+# See the wiki page for an explanation of the params!
+# https://github.com/GRChombo/GRChombo/wiki/Guide-to-parameters
+
+#################################################
+# Filesystem parameters
+
+verbosity = 0
+
+# location / naming of output files
+# output_path = "" # Main path for all files. Must exist!
+chk_prefix = BinaryBHChk_
+plot_prefix = BinaryBHPlot_
+# restart_file = BinaryBHChk_000000.3d.hdf5
+
+# HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
+checkpoint_interval = 100
+# set to 0 to turn off plot files (except at t=0 and t=stop_time)
+# set to -1 to never ever print plotfiles
+plot_interval = 10
+num_plot_vars = 3
+plot_vars = chi Weyl4_Re Weyl4_Im
+
+# subpaths - specific directories for hdf5, pout, extraction data
+# (these are created at runtime)
+hdf5_subpath = "hdf5"
+pout_subpath = "pout"
+data_subpath = "data"
+
+# change the name of output files
+# pout_prefix = "pout"
+print_progress_only_to_rank_0 = 1
+
+# ignore_checkpoint_name_mismatch = 0
+# write_plot_ghosts = 0
+
+#################################################
+# Initial Data parameters
+
+# provide 'offset' or 'center'
+
+massA = 0.48847892320123
+massB = 0.48847892320123
+
+offsetA = 0.0 6.10679 0.0
+offsetB = 0.0 -6.10679 0.0
+# centerA = 256 232 256
+# centerB = 256 250 256
+
+momentumA = -0.0841746 -0.000510846 0.0
+momentumB =  0.0841746  0.000510846 0.0
+
+#################################################
+# Grid parameters
+
+# 'N' is the number of subdivisions in each direction of a cubic box
+# 'L' is the length of the longest side of the box, dx_coarsest = L/N
+# NB - If you use reflective BC and want to specify the subdivisions and side
+# of the box were there are no symmetries, specify 'N_full' and 'L_full' instead
+# NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full',
+# 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
+# NB - the N values need to be multiples of the block_factor
+N_full = 64
+L_full = 512
+
+# Maximum number of times you can regrid above coarsest level
+max_level = 9 # There are (max_level+1) grids, so min is zero
+
+# need max_level entries for regrid interval
+# Level Regridding: 0   1   2   3   4   5   6   7   8
+regrid_interval =   0   0   0   64  64  64  64  64  64
+regrid_threshold = 0.05
+
+# Max and min box sizes
+max_box_size = 16
+min_box_size = 16
+
+# tag_buffer_size = 3
+# grid_buffer_size = 8
+# fill_ratio = 0.7
+# num_ghosts = 3
+# center = 256.0 256.0 256.0 # defaults to center of the grid
+
+#################################################
+# Boundary Conditions parameters
+
+# Periodic directions - 0 = false, 1 = true
+isPeriodic = 0 0 0
+# if not periodic, then specify the boundary type
+# 0 = static, 1 = sommerfeld, 2 = reflective
+# (see BoundaryConditions.hpp for details)
+hi_boundary = 1 1 1
+lo_boundary = 1 1 2
+
+# if reflective boundaries selected, must set
+# parity of all vars (in order given by UserVariables.hpp)
+# 0 = even
+# 1,2,3 = odd x, y, z
+# 4,5,6 = odd xy, yz, xz
+# 7     = odd xyz
+vars_parity            = 0 0 4 6 0 5 0    #chi and hij
+                         0 0 4 6 0 5 0    #K and Aij
+                         0 1 2 3          #Theta and Gamma
+                         0 1 2 3 1 2 3    #lapse shift and B
+vars_parity_diagnostic = 0 1 2 3          #Ham and Mom
+                         0 7              #Weyl
+
+# if sommerfeld boundaries selected, must select
+# asymptotic values
+num_nonzero_asymptotic_vars = 5
+nonzero_asymptotic_vars = chi h11 h22 h33 lapse
+nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
+
+# if you are using extrapolating BC:
+# extrapolation_order = 1
+# num_extrapolating_vars = -1
+# extrapolating_vars =
+
+#################################################
+# Evolution parameters
+
+# dt will be dx*dt_multiplier on each grid level
+dt_multiplier = 0.25
+stop_time = 2200.0
+# max_steps = 100
+
+# Spatial derivative order (only affects CCZ4 RHS)
+max_spatial_derivative_order = 4 # can be 4 or 6
+
+nan_check = 1
+
+# Lapse evolution
+lapse_advec_coeff = 1.0
+lapse_coeff = 2.0
+lapse_power = 1.0
+
+# Shift evolution
+shift_advec_coeff = 0.0 # Usually no advection for beta
+shift_Gamma_coeff = 0.75
+eta = 1.0 # eta of gamma driver, should be of order ~1/M_ADM of spacetime
+
+# CCZ4 parameters
+formulation = 0 # 1 for BSSN, 0 for CCZ4
+kappa1 = 0.1
+kappa2 = 0.
+kappa3 = 1.
+covariantZ4 = 1 # 0: keep kappa1; 1 [default]: replace kappa1 -> kappa1/lapse
+
+# coefficient for KO numerical dissipation
+sigma = 1.0
+
+track_punctures = 1
+puncture_tracking_level = 5
+
+# calculate_constraint_norms = 0
+
+# min_chi = 1.e-4
+# min_lapse = 1.e-4
+
+#################################################
+# Extraction parameters
+
+# extraction_center = 256 256 256 # defaults to center
+activate_extraction = 1
+num_extraction_radii = 2
+extraction_radii = 50.0 100.0
+extraction_levels = 2 1
+num_points_phi = 24
+num_points_theta = 37
+num_modes = 8
+modes = 2 0 # l m for spherical harmonics
+        2 1
+        2 2
+        4 0
+        4 1
+        4 2
+        4 3
+        4 4
+
+# integral_file_prefix = "Weyl4_mode_"
+
+# write_extraction = 0
+# extraction_subpath = "data/extraction" # directory for 'write_extraction = 1'
+# extraction_file_prefix = "Weyl4_extraction_"
+
+#################################################
+# Two Punctures parameters
+
+# Main BH params
+# Either calculate target masses or set bare masses explicitly below
+TP_calculate_target_masses = true
+TP_target_mass_plus = 0.5
+TP_target_mass_minus = 0.5
+# TP_adm_tol = 1e-10
+# TP_mass_plus = 0.48847892320123
+# TP_mass_minus = 0.48847892320123
+# offset in x direction (or z if TP_swap_xz set true)
+TP_offset_plus = 6.10679
+TP_offset_minus = -6.10679
+#TP_swap_xz = false
+TP_momentum_plus = -0.000510846 0.0841746 0.0
+TP_momentum_minus = 0.000510846 -0.0841746 0.0
+TP_spin_plus = 0.0 0.0 0.0
+TP_spin_minus = 0.0 0.0 0.0
+
+# Solver params
+# TP_npoints_A = 30
+# TP_npoints_B = 30
+# TP_npoints_phi = 16;
+# TP_Newton_tol = 1e-10
+# TP_Newton_maxit = 5
+TP_epsilon = 1e-6
+# TP_Tiny = 0.0
+# TP_Extend_Radius = 0.0
+
+# Initial data params
+TP_use_spectral_interpolation = true
+TP_initial_lapse = psi^n
+TP_initial_lapse_psi_exponent = -2.0
+
+# Debug output
+# TP_do_residuum_debug_output = false
+# TP_do_initial_debug_output = false
+
+#################################################
