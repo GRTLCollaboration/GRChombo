@@ -172,7 +172,7 @@ void ScalarFieldLevel::specificPostTimeStep()
     // write out the integral after each coarse timestep
     if (m_level == 0)
     {
-        bool first_step = (m_time == m_dt);
+        bool first_step = (m_time == 0.0);
 
         // integrate the densities and write to a file
         AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
