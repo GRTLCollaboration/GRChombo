@@ -6,7 +6,7 @@
 #ifndef _AHINTERPOLATION_HPP_
 #define _AHINTERPOLATION_HPP_
 
-#include "AHData.hpp"
+#include "AHVarsData.hpp"
 #include "AHGeometryData.hpp"
 #include "AMRInterpolator.hpp"
 #include "Lagrange.hpp"
@@ -38,8 +38,8 @@ template <class SurfaceGeometry, class AHFunction> class AHInterpolation_t
     std::vector<double> m_z;
 #endif
 
-    AHData<int, std::vector<double>> m_data;
-    AHData<std::string, std::vector<double>> m_extra;
+    AHVarsData<int, std::vector<double>> m_data;
+    AHVarsData<std::string, std::vector<double>> m_extra;
 
     std::array<double, CH_SPACEDIM> m_coord_min,
         m_coord_max; //!< maximum and minimum of level 0 box, used in
@@ -81,7 +81,7 @@ template <class SurfaceGeometry, class AHFunction> class AHInterpolation_t
     const AHGeometryData get_geometry_data(int idx) const;
     const Tensor<1, double> get_cartesian_coords(int idx) const;
     const Tensor<1, double> get_coords(int idx) const;
-    const AHData<int, double> get_data(int idx) const;
+    const AHVarsData<int, double> get_data(int idx) const;
 
     //! verify origin +- initial guess is inside the grid
     bool is_in_grid(const std::array<double, CH_SPACEDIM> &a_origin,
@@ -115,7 +115,7 @@ template <class SurfaceGeometry, class AHFunction> class AHInterpolation_t
     void interpolate_extra_vars(
         const std::map<std::string, std::tuple<int, VariableType, int>>
             &extra_vars);
-    const AHData<std::string, double> get_extra_data(int idx) const;
+    const AHVarsData<std::string, double> get_extra_data(int idx) const;
 };
 
 #include "AHInterpolation.impl.hpp"

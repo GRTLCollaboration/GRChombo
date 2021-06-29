@@ -113,7 +113,7 @@ struct ExpansionFunction : AHFunctionDefault
 #endif
     }
 
-    ExpansionFunction(const AHData<int, double> &a_data,
+    ExpansionFunction(const AHVarsData<int, double> &a_data,
                       const Tensor<1, double> &a_coords,
                       const Tensor<1, double> &a_coords_cartesian)
     {
@@ -227,7 +227,7 @@ struct ExpansionFunction : AHFunctionDefault
         }
     };
 
-    double get(const AHGeometryData &geo_data, const AHDeriv &deriv,
+    double get(const AHGeometryData &geo_data, const AHDerivData &deriv,
                const params &a_params) const
     {
         Tensor<1, double> s_L = get_level_function_derivative(geo_data, deriv);
@@ -270,7 +270,7 @@ struct ExpansionFunction : AHFunctionDefault
     // extra stuff:
     Tensor<1, double>
     get_level_function_derivative(const AHGeometryData &geo_data,
-                                  const AHDeriv &deriv) const
+                                  const AHDerivData &deriv) const
     {
         // calculate D_a L of 6.7.12 of Alcubierre for some level function
         // L picking L = f - F(u,v)
@@ -313,7 +313,7 @@ struct ExpansionFunction : AHFunctionDefault
     }
 
     Tensor<2, double> get_level_function_2nd_covariant_derivative(
-        const AHGeometryData &geo_data, const AHDeriv &deriv,
+        const AHGeometryData &geo_data, const AHDerivData &deriv,
         const Tensor<1, double> &s_L) const
     {
         // calculates D_a D_b L, required for 6.7.13 of Alcubierre
@@ -361,7 +361,7 @@ struct ChiContourFunction : AHFunctionDefault
     static int vars_min() { return c_chi; }
     static int vars_max() { return c_chi; }
 
-    ChiContourFunction(const AHData<int, double> &a_data,
+    ChiContourFunction(const AHVarsData<int, double> &a_data,
                        const Tensor<1, double> &a_coords,
                        const Tensor<1, double> &a_coords_cartesian)
     {
@@ -379,7 +379,7 @@ struct ChiContourFunction : AHFunctionDefault
         }
     };
 
-    double get(const AHGeometryData &geo_data, const AHDeriv &deriv,
+    double get(const AHGeometryData &geo_data, const AHDerivData &deriv,
                const params &a_params) const
     {
         return chi - a_params.look_for_chi_contour;

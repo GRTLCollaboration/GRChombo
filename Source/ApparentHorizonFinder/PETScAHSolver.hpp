@@ -9,7 +9,7 @@
 #include <petsc.h>
 // #include <petscviewerhdf5.h>
 
-#include "AHDeriv.hpp"
+#include "AHDerivData.hpp"
 #include "AHInterpolation.hpp"
 #include "AHParams.hpp"
 
@@ -35,7 +35,7 @@ template <class SurfaceGeometry, class AHFunction> class PETScAHSolver
     //! function to calculate 1st and 2nd derivatives of 'in'
     //! (tipically corresponds to our 'f' function)
     //! in the 'u' and 'v' directions
-    AHDeriv diff(const dmda_arr_t in, int u
+    AHDerivData diff(const dmda_arr_t in, int u
 #if CH_SPACEDIM == 3
                  ,
                  int v
@@ -129,8 +129,8 @@ template <class SurfaceGeometry, class AHFunction> class PETScAHSolver
     Mat m_snes_jac;
 
   private:
-    //! set the default stencils of AHDeriv at position {u,v}
-    void set_stencils(AHDeriv &out, int u
+    //! set the default stencils of AHDerivData at position {u,v}
+    void set_stencils(AHDerivData &out, int u
 #if CH_SPACEDIM == 3
                       ,
                       int v

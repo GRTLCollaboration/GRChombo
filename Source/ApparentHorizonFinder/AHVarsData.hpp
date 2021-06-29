@@ -13,9 +13,7 @@
 
 #include <cstring> // memset
 
-// The d prefix refers to partial derivatives wrt Cartesian coordinates
-
-template <class key, class data_t> struct AHData
+template <class key, class data_t> struct AHVarsData
 {
     // vars user might want to export
     std::map<key, data_t> vars;
@@ -60,10 +58,10 @@ template <class key, class data_t> struct AHData
 };
 
 template <class key>
-AHData<key, double>
-get_AHData_idx(int idx, const AHData<key, std::vector<double>> &a_data)
+AHVarsData<key, double>
+get_AHVarsData_idx(int idx, const AHVarsData<key, std::vector<double>> &a_data)
 {
-    AHData<key, double> data;
+    AHVarsData<key, double> data;
 
     for (auto &vec : a_data.vars)
         data.vars[vec.first] = (vec.second[idx]);

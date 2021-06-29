@@ -523,7 +523,7 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::restore_dmda_arr_t(
 }
 
 template <class SurfaceGeometry, class AHFunction>
-void PETScAHSolver<SurfaceGeometry, AHFunction>::set_stencils(AHDeriv &out,
+void PETScAHSolver<SurfaceGeometry, AHFunction>::set_stencils(AHDerivData &out,
                                                               int u
 #if CH_SPACEDIM == 3
                                                               ,
@@ -692,7 +692,7 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::set_stencils(AHDeriv &out,
 }
 
 template <class SurfaceGeometry, class AHFunction>
-AHDeriv PETScAHSolver<SurfaceGeometry, AHFunction>::diff(const dmda_arr_t in,
+AHDerivData PETScAHSolver<SurfaceGeometry, AHFunction>::diff(const dmda_arr_t in,
                                                          int u
 #if CH_SPACEDIM == 3
                                                          ,
@@ -702,7 +702,7 @@ AHDeriv PETScAHSolver<SurfaceGeometry, AHFunction>::diff(const dmda_arr_t in,
 {
     CH_TIME("PETScAHSolver::diff");
 
-    AHDeriv out;
+    AHDerivData out;
     set_stencils(out, u
 #if CH_SPACEDIM == 3
                  ,
@@ -828,7 +828,7 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::form_function(Vec F, Vec Rhs)
             double &_out = out[u];
 #endif
 
-            AHDeriv deriv = diff(in, u
+            AHDerivData deriv = diff(in, u
 #if CH_SPACEDIM == 3
                                  ,
                                  v
@@ -922,7 +922,7 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::form_jacobian(Vec F, Mat J)
                 MatStencil col[DWIDTH] = {0};
                 double val[DWIDTH] = {0};
 
-                const AHDeriv deriv = diff(in, u
+                const AHDerivData deriv = diff(in, u
 #if CH_SPACEDIM == 3
                                            ,
                                            v
@@ -947,7 +947,7 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::form_jacobian(Vec F, Mat J)
                 MatStencil col[DWIDTH] = {0};
                 double val[DWIDTH] = {0};
 
-                const AHDeriv deriv = diff(in, u, v);
+                const AHDerivData deriv = diff(in, u, v);
 
                 for (int b = 0; b < DWIDTH; ++b)
                 {
@@ -970,7 +970,7 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::form_jacobian(Vec F, Mat J)
                 MatStencil col[NVAL] = {0};
                 double val[NVAL] = {0};
 
-                const AHDeriv deriv_default = diff(in, u
+                const AHDerivData deriv_default = diff(in, u
 #if CH_SPACEDIM == 3
                                                    ,
                                                    v
@@ -1064,7 +1064,7 @@ double PETScAHSolver<SurfaceGeometry, AHFunction>::point_jacobian(
         double in_old = _in;
         _in += eps; // perturb just the point {u,v}
 
-        const AHDeriv deriv = diff(in, u
+        const AHDerivData deriv = diff(in, u
 #if CH_SPACEDIM == 3
                                    ,
                                    v
@@ -1087,7 +1087,7 @@ double PETScAHSolver<SurfaceGeometry, AHFunction>::point_jacobian(
         double in_old = _in;
         _in -= eps; // perturb just the point {u,v}
 
-        const AHDeriv deriv = diff(in, u
+        const AHDerivData deriv = diff(in, u
 #if CH_SPACEDIM == 3
                                    ,
                                    v

@@ -1296,7 +1296,7 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_spin_dimensionless(
             {
                 if (u_equator == u)
                 {
-                    AHDeriv deriv = solver.diff(in, u, v);
+                    AHDerivData deriv = solver.diff(in, u, v);
                     const auto geometry_data =
                         solver.m_interp.get_geometry_data(idx);
                     const auto data = solver.m_interp.get_data(idx);
@@ -1394,7 +1394,7 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
             Tensor<1, double> inner_integral = {0.};
             for (int u = solver.m_umin; u < solver.m_umax; ++u)
             {
-                AHDeriv deriv = solver.diff(in, u, v);
+                AHDerivData deriv = solver.diff(in, u, v);
                 const auto geometric_data =
                     solver.m_interp.get_geometry_data(idx);
                 const auto data = solver.m_interp.get_data(idx);
@@ -1565,7 +1565,7 @@ double ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_area()
 #endif
                 }
 
-                AHDeriv deriv = solver.diff(in, u
+                AHDerivData deriv = solver.diff(in, u
 #if CH_SPACEDIM == 3
                                             ,
                                             v

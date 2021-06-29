@@ -473,10 +473,10 @@ AHInterpolation_t<SurfaceGeometry, AHFunction>::get_coords(int idx) const
 }
 
 template <class SurfaceGeometry, class AHFunction>
-const AHData<int, double>
+const AHVarsData<int, double>
 AHInterpolation_t<SurfaceGeometry, AHFunction>::get_data(int idx) const
 {
-    return get_AHData_idx(idx, m_data);
+    return get_AHVarsData_idx(idx, m_data);
 }
 
 template <class SurfaceGeometry, class AHFunction>
@@ -516,10 +516,10 @@ void AHInterpolation_t<SurfaceGeometry, AHFunction>::interpolate_extra_vars(
 }
 
 template <class SurfaceGeometry, class AHFunction>
-const AHData<std::string, double>
+const AHVarsData<std::string, double>
 AHInterpolation_t<SurfaceGeometry, AHFunction>::get_extra_data(int idx) const
 {
-    return get_AHData_idx(idx, m_extra);
+    return get_AHVarsData_idx(idx, m_extra);
 }
 
 #endif // _AHINTERPOLATION_IMPL_HPP_

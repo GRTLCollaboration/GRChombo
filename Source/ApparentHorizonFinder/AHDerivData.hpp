@@ -14,7 +14,7 @@
 #define DDWIDTH 6
 
 //! class to store 1st and 2nd derivatives of 'F'
-struct AHDeriv
+struct AHDerivData
 {
     double duF;
     double duduF;
@@ -38,10 +38,10 @@ struct AHDeriv
     double dvdv_weights[DDWIDTH];
 #endif
 
-    AHDeriv()
+    AHDerivData()
     {
-        // force all (double) elements of AHDeriv to be 0
-        memset(this, 0, sizeof(AHDeriv));
+        // force all (double) elements of AHDerivData to be 0
+        memset(this, 0, sizeof(AHDerivData));
     }
 };
 
