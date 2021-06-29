@@ -42,7 +42,7 @@ SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
     // only interp points on rank 0
     if (procID() == 0)
     {
-        FOR1(idir) { m_interp_coords[idir].resize(m_num_interp_points); }
+        FOR(idir) { m_interp_coords[idir].resize(m_num_interp_points); }
 
         for (int isurface = 0; isurface < m_params.num_surfaces; ++isurface)
         {
@@ -55,7 +55,7 @@ SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
                 for (int iv = 0; iv < m_params.num_points_v; ++iv)
                 {
                     double v = m_geom.v(iv, m_params.num_points_v);
-                    FOR1(idir)
+                    FOR(idir)
                     {
                         int idx = index(isurface, iu, iv);
                         m_interp_coords[idir][idx] = m_geom.get_grid_coord(
@@ -158,7 +158,7 @@ void SurfaceExtraction<SurfaceGeometry>::extract(
     }
     // m_num_interp_points is 0 on ranks > 0
     InterpolationQuery query(m_num_interp_points);
-    FOR1(idir) { query.setCoords(idir, m_interp_coords[idir].data()); }
+    FOR(idir) { query.setCoords(idir, m_interp_coords[idir].data()); }
     for (int ivar = 0; ivar < m_vars.size(); ++ivar)
     {
         // note the difference in order between the m_vars tuple in this class

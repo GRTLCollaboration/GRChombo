@@ -57,7 +57,7 @@ class ChiExtractionTaggingCriterion
         // first test the gradients for regions of high curvature
         const auto d2 = m_deriv.template diff2<Vars>(current_cell);
         data_t mod_d2_chi = 0;
-        FOR2(idir, jdir)
+        FOR(idir, jdir)
         {
             mod_d2_chi += d2.chi[idir][jdir] * d2.chi[idir][jdir];
         }

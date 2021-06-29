@@ -40,7 +40,7 @@ void BoundaryConditions::params_t::set_is_periodic(
     const std::array<bool, CH_SPACEDIM> &a_is_periodic)
 {
     is_periodic = a_is_periodic;
-    FOR1(idir)
+    FOR(idir)
     {
         if (!is_periodic[idir])
             nonperiodic_boundaries_exist = true;
@@ -49,7 +49,7 @@ void BoundaryConditions::params_t::set_is_periodic(
 void BoundaryConditions::params_t::set_hi_boundary(
     const std::array<int, CH_SPACEDIM> &a_hi_boundary)
 {
-    FOR1(idir)
+    FOR(idir)
     {
         if (!is_periodic[idir])
         {
@@ -85,7 +85,7 @@ void BoundaryConditions::params_t::set_hi_boundary(
 void BoundaryConditions::params_t::set_lo_boundary(
     const std::array<int, CH_SPACEDIM> &a_lo_boundary)
 {
-    FOR1(idir)
+    FOR(idir)
     {
         if (!is_periodic[idir])
         {
@@ -218,7 +218,7 @@ void BoundaryConditions::define(double a_dx,
     m_domain = a_domain;
     m_domain_box = a_domain.domainBox();
     m_num_ghosts = a_num_ghosts;
-    FOR1(i) { m_center[i] = a_center[i]; }
+    FOR(i) { m_center[i] = a_center[i]; }
     is_defined = true;
 }
 
@@ -307,7 +307,7 @@ void BoundaryConditions::write_boundary_conditions(const params_t &a_params)
                                            {REFLECTIVE_BC, "Reflective"},
                                            {EXTRAPOLATING_BC, "Extrapolating"},
                                            {MIXED_BC, "Mixed"}};
-    FOR1(idir)
+    FOR(idir)
     {
         if (!a_params.is_periodic[idir])
         {
@@ -398,7 +398,7 @@ void BoundaryConditions::fill_rhs_boundaries(const Side::LoHiSide a_side,
     CH_TIME("BoundaryConditions::fill_rhs_boundaries");
 
     // cycle through the directions, filling the rhs
-    FOR1(idir)
+    FOR(idir)
     {
         // only do something if this direction is not periodic
         if (!m_params.is_periodic[idir])
@@ -422,7 +422,7 @@ void BoundaryConditions::fill_solution_boundaries(const Side::LoHiSide a_side,
     CH_TIME("BoundaryConditions::fill_solution_boundaries");
 
     // cycle through the directions
-    FOR1(idir)
+    FOR(idir)
     {
         // only do something if this direction is not periodic and solution
         // boundary enforced in this direction
@@ -454,7 +454,7 @@ void BoundaryConditions::fill_diagnostic_boundaries(const Side::LoHiSide a_side,
     CH_TIME("BoundaryConditions::fill_diagnostic_boundaries");
 
     // cycle through the directions
-    FOR1(idir)
+    FOR(idir)
     {
         // only do something if this direction is not periodic
         if (!m_params.is_periodic[idir])
@@ -587,7 +587,7 @@ void BoundaryConditions::fill_sommerfeld_cell(
     loc *= m_dx;
     loc -= m_center;
     double radius_squared = 0.0;
-    FOR1(i) { radius_squared += loc[i] * loc[i]; }
+    FOR(i) { radius_squared += loc[i] * loc[i]; }
     double radius = sqrt(radius_squared);
     IntVect lo_local_offset = iv - soln_box.smallEnd();
     IntVect hi_local_offset = soln_box.bigEnd() - iv;
@@ -596,7 +596,7 @@ void BoundaryConditions::fill_sommerfeld_cell(
     for (int icomp : sommerfeld_comps)
     {
         rhs_box(iv, icomp) = 0.0;
-        FOR1(idir2)
+        FOR(idir2)
         {
             IntVect iv_offset1 = iv;
             IntVect iv_offset2 = iv;
@@ -704,7 +704,7 @@ void BoundaryConditions::fill_extrapolating_cell(
             {
                 IntVect iv_tmp = iv;
                 iv_tmp[dir] += -units_from_edge - i;
-                FOR1(idir)
+                FOR(idir)
                 {
                     if (iv_tmp[idir] > m_domain_box.bigEnd(idir))
                     {
@@ -734,7 +734,7 @@ void BoundaryConditions::fill_extrapolating_cell(
             {
                 IntVect iv_tmp = iv;
                 iv_tmp[dir] += units_from_edge + i;
-                FOR1(idir)
+                FOR(idir)
                 {
                     if (iv_tmp[idir] > m_domain_box.bigEnd(idir))
                     {
@@ -796,7 +796,7 @@ void BoundaryConditions::copy_boundary_cells(const Side::LoHiSide a_side,
     if (a_src.boxLayout() == a_dest.boxLayout())
     {
         // cycle through the directions
-        FOR1(idir)
+        FOR(idir)
         {
             // only do something if this direction is not periodic
             if (!m_params.is_periodic[idir])
@@ -850,7 +850,7 @@ void BoundaryConditions::interp_boundaries(GRLevelData &a_fine_state,
     CH_TIME("BoundaryConditions::interp_boundaries");
 
     // cycle through the directions
-    FOR1(idir)
+    FOR(idir)
     {
         // only do something if this direction is not periodic
         if (!m_params.is_periodic[idir])
@@ -925,7 +925,7 @@ void BoundaryConditions::interp_boundaries(GRLevelData &a_fine_state,
                     // edges of the box
                     bool near_boundary = false;
                     IntVect local_boundary_offset = IntVect::Zero;
-                    FOR1(idir2)
+                    FOR(idir2)
                     {
                         if (idir2 == idir)
                         {
@@ -1023,7 +1023,7 @@ Box BoundaryConditions::get_boundary_box(
         // but only want to fill them once, so y fills x, z fills y and x
         // etc. Required in periodic direction corners in cases where there
         // are mixed boundaries, (otherwise these corners are full of nans)
-        FOR1(idir)
+        FOR(idir)
         {
             if (offset_lo[idir] > 0) // this direction is a low end boundary
             {
@@ -1070,7 +1070,7 @@ Box ExpandGridsToBoundaries::operator()(const Box &a_in_box)
         -out_box.smallEnd() + m_boundaries.m_domain_box.smallEnd();
     IntVect offset_hi = +out_box.bigEnd() - m_boundaries.m_domain_box.bigEnd();
 
-    FOR1(idir)
+    FOR(idir)
     {
         if (!m_boundaries.m_params.is_periodic[idir])
         {
@@ -1110,7 +1110,7 @@ void BoundaryConditions::expand_grids_to_boundaries(
 
     // Grow the problem domain to include the boundary ghosts
     ProblemDomain domain_with_boundaries = a_in_grids.physDomain();
-    FOR1(idir)
+    FOR(idir)
     {
         if (!m_params.is_periodic[idir])
         {

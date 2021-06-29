@@ -146,9 +146,9 @@ void BinaryBHLevel::specificPostTimeStep()
         {
             // Populate the Weyl Scalar values on the grid
             fillAllGhosts();
-            BoxLoops::loop(Weyl4(m_p.extraction_params.center, m_dx),
-                           m_state_new, m_state_diagnostics,
-                           EXCLUDE_GHOST_CELLS);
+            BoxLoops::loop(
+                Weyl4(m_p.extraction_params.center, m_dx, m_p.formulation),
+                m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 
             // Do the extraction on the min extraction level
             if (m_level == min_level)
@@ -222,10 +222,11 @@ void BinaryBHLevel::prePlotLevel()
     fillAllGhosts();
     if (m_p.activate_extraction == 1)
     {
-        BoxLoops::loop(make_compute_pack(
-                           Weyl4(m_p.extraction_params.center, m_dx),
-                           Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3))),
-                       m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+        BoxLoops::loop(
+            make_compute_pack(
+                Weyl4(m_p.extraction_params.center, m_dx, m_p.formulation),
+                Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3))),
+            m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
     }
 }
 #endif /* CH_USE_HDF5 */

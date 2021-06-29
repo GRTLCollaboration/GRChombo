@@ -42,7 +42,7 @@ void MatterConstraints<matter_t>::compute(Cell<data_t> current_cell) const
     out.Ham += -16.0 * M_PI * m_G_Newton * emtensor.rho;
 
     // Momentum constraints
-    FOR1(i) { out.Mom[i] += -8.0 * M_PI * m_G_Newton * emtensor.Si[i]; }
+    FOR(i) { out.Mom[i] += -8.0 * M_PI * m_G_Newton * emtensor.Si[i]; }
 
     // Write the constraints into the output FArrayBox
     current_cell.store_vars(out);
