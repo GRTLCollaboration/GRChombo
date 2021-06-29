@@ -32,5 +32,14 @@ kerr_spin = 5.
 kerr_spin_direction = 1. 0. 0.
 #AH_initial_guess = 5
 
+AH_num_ranks = 1
 AH_num_points_u = 21
 AH_num_points_v = 20
+AH_solve_interval = 1
+AH_print_interval = 1
+AH_track_center = false
+AH_predict_origin = false
+AH_level_to_run = 0
+AH_start_time = 0
+AH_give_up_time = -1.
+AH_verbose = 3

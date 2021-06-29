@@ -11,6 +11,21 @@
 
 // Other includes:
 
+#ifdef CH_MPI
+#include <mpi.h>
+#endif
+#include <petsc.h>
+
+#include "ApparentHorizon.hpp"
+#include "ChomboParameters.hpp"
+#include "Lagrange.hpp"
+
+// Chombo namespace
+#include "UsingNamespace.H"
+
+/////////////////////////////////////////////////////////////////////////////
+// SurfaceGeometry and AHFunction defauls
+
 // included so that user can re-define default AHSurfaceGeometry or AHFunction
 #include "UserVariables.hpp"
 
@@ -25,30 +40,7 @@
 #include "AHFunctions.hpp"
 #define AHFunction ExpansionFunction
 #endif
-
-#ifdef CH_MPI
-#include <mpi.h>
-#endif
-
-#include <petsc.h>
-
-#include "AHData.hpp"
-#include "AHDeriv.hpp"
-#include "AHGeometryData.hpp"
-#include "BoundaryConditions.hpp"
-#include "ChomboParameters.hpp"
-#include "Lagrange.hpp"
-#include "VariableType.hpp"
-
-// Chombo namespace
-#include "UsingNamespace.H"
-
-// declare classes, define them later
-template <class SurfaceGeometry, class AHFunction> class AHInterpolation;
-template <class SurfaceGeometry, class AHFunction> class ApparentHorizon;
-
-// Forward declaration for AMRInterpolator
-template <typename InterpAlgo> class AMRInterpolator;
+/////////////////////////////////////////////////////////////////////////////
 
 /*
 TF:
@@ -83,95 +75,11 @@ is more senstitive).
 */
 
 //! Class to manage AHs and its mergers + control PETSc MPI sub-communicator
-class AHFinder
+template <class SurfaceGeometry, class AHFunction> class AHFinder
 {
   public:
-    struct params // prepend with 'AH_' in params file
+    struct params : ApparentHorizon<SurfaceGeometry, AHFunction>::params
     {
-        int num_ranks; //!< number of ranks for PETSc sub-communicator (default
-                       //!< 0, which is 'all')
-        int num_points_u; //!< number of points for 2D coordinate grid
-#if CH_SPACEDIM == 3
-        int num_points_v; //!< number of points for 2D coordinate grid
-#endif
-        int solve_interval; //!< same as checkpoint_interval, for
-                            //!< ApparentHorizon::solve (default 1)
-        int print_interval; //!< same as solve_interval, but for prints (default
-                            //!< 1)
-        bool track_center;  //!< whether or not to update the center
-                            //!< (set to false if you know it won't move)
-                            //!< (default true)
-        bool predict_origin; //!< whether or not to estimate where the next
-                             //!< origin will be at (default = track_center)
-
-        int level_to_run; // if negative, it will count backwards (e.g. -1 is
-                          // 'last level') (default 0)
-
-        double start_time;   //!< time after which AH can start (default 0.)
-                             //!< Useful for ScalarField collapse
-        double give_up_time; //!< stop if at this time nothing was found
-                             //!< (<0 to never, which is default)
-                             //!< Useful for ScalarField collapse
-
-        //! mergers will be searched when distance between 'parent' BHs is
-        //! distance < merger_search_factor * 4. * (AH_initial_guess_1 +
-        //! AH_initial_guess_2) should be roughly '2M=2(m1+m2)' for initial
-        //! guess at m/2 (set to non-positive to 'always search')
-        double merger_search_factor; // see note above (default is 1)
-        //! initial guess for merger is 'merger_pre_factor * 4. *
-        //! (AH_initial_guess_1 + AH_initial_guess_2)'
-        //! set to somethig bigger to avoid finding the inner AH
-        double merger_pre_factor; // see note above (default to 1.)
-
-        bool allow_re_attempt; //!< re-attempt with initial guess if
-                               //!< previous convergence failed (default false)
-        int max_fails_after_lost; //!< number of time steps to try again after
-                                  //!< (-1 to never) the AH was lost
-                                  //!< (default is 0)
-
-        int verbose; //!< print information during execution (default is 1)
-
-        bool print_geometry_data; //!< print metric and extrinsic
-                                  //!< curvature of the AHs (default false)
-
-        bool re_solve_at_restart; //!< whether or not to re-run even if AH
-                                  //!< already exists (useful in order to be
-                                  //!< able to provide an initial guess and
-                                  //!< re-run the AHFinder on that time step)
-                                  //!< (default false)
-
-        bool stop_if_max_fails; //! breaks the run if AH doesn't converge
-                                //! 'max_fails_after_lost' times or if
-                                //! 'give_up_time' is reached without
-                                //! convergence (default is 'false')
-
-        std::map<std::string, std::tuple<int, VariableType, int>>
-            extra_vars;     //! extra vars to write to coordinates file (<enum,
-                            //! evolution or diagnostic, int for local|d1|d2>)
-        int num_extra_vars; // total number of extra vars (!=extra_vars.size()
-                            // as derivative count for multiple vars)
-
-        int extra_contain_diagnostic; // not a parameter (set internally);
-                                      // counts how many
-
-        std::string stats_path = "",
-                    stats_prefix =
-                        "stats_AH"; //!< name for stats file with
-                                    //!< area, spin and AH origin/center
-        std::string coords_path = "",
-                    coords_prefix =
-                        "coords_AH"; //!< name for coords file with AH
-                                     //!< coordinates at each time step
-
-        void read_params(GRParmParse &pp, const ChomboParameters &a_p);
-    };
-
-    enum verbose_level
-    {
-        NONE,
-        MIN,  // minimal
-        SOME, // a bit technical
-        MORE  // debug
     };
 
   private:
@@ -181,14 +89,14 @@ class AHFinder
     std::vector<std::pair<int, int>> m_merger_pairs;
     AMRInterpolator<Lagrange<4>> *m_interpolator; //!< The interpolator pointer
 
-    std::vector<ApparentHorizon<AHSurfaceGeometry, AHFunction> *>
+    std::vector<ApparentHorizon<SurfaceGeometry, AHFunction> *>
         m_apparent_horizons; //!< public in case user wants to solve by himself
 
   public:
     AHFinder(){};
     ~AHFinder();
 
-    ALWAYS_INLINE ApparentHorizon<AHSurfaceGeometry, AHFunction> *
+    ALWAYS_INLINE ApparentHorizon<SurfaceGeometry, AHFunction> *
     get(unsigned AH_i)
     {
         CH_assert(AH_i < m_apparent_horizons.size());
@@ -197,7 +105,7 @@ class AHFinder
 
     //! returns the index of the AH in m_apparent_horizons
     int
-    add_ah(const AHSurfaceGeometry &a_coord_system,
+    add_ah(const SurfaceGeometry &a_coord_system,
            double a_initial_guess, //!< Initial guess for radius (or whatever
                                    //!< coordinate you're solving for)
            const params &a_params, //!< set of AH parameters
@@ -207,7 +115,7 @@ class AHFinder
     //! returns the index of the AH in m_apparent_horizons
     //! allows for personalized optimizer that finds zero of function
     //! 'AHFunction' (that can have some ::params)
-    int add_ah(const AHSurfaceGeometry &a_coord_system, double a_initial_guess,
+    int add_ah(const SurfaceGeometry &a_coord_system, double a_initial_guess,
                const params &a_params,
                const typename AHFunction::params &a_func_params,
                bool solve_first_step = true);
@@ -238,31 +146,8 @@ class AHFinder
     bool solve_merger(int ah1, int ah2, double &initial_guess_merger,
                       std::array<double, CH_SPACEDIM> &origin_merged);
 
-    /////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////
-    ///////////////// PETSc control methods /////////////////
-    /////////////////////////////////////////////////////////
-    /////////////////////////////////////////////////////////
-
-    static bool m_initialized; //!< is initialized?
-
-#ifdef CH_MPI
-    static MPI_Group m_mpi_group; //!< set of MPI ranks for PETSc
-    static MPI_Comm m_mpi_comm;   //!< MPI sub-communicator
-#endif
-
-    //! define number of ranks of PETSc sub-communicator
-    static void set_num_ranks(int a_num_ranks);
-
-    //! initialize PETSc and its MPI sub-communicator
-    static PetscErrorCode PETSc_initialize(int a_num_ranks);
-
-    //! finalize PETSc
-    static PetscErrorCode PETSc_finalize();
-
-  public:
-    //! true if part of PETSc MPI sub-communicator
-    static bool is_rank_active();
 }; // namespace AHFinder
+
+#include "AHFinder.impl.hpp"
 
 #endif /* _AHFINDER_HPP_ */

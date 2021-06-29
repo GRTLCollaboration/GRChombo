@@ -30,17 +30,11 @@ using std::endl;
 // Problem specific includes:
 #include "AMRInterpolator.hpp"
 #include "ApparentHorizonTest3DLevel.hpp"
-#include "InterpolationQuery.hpp"
 #include "Lagrange.hpp"
 #include "SmallDataIO.hpp"
-#include "UserVariables.hpp"
-
-#ifdef _OPENMP
-#include <omp.h>
-#endif
 
 #ifdef USE_AHFINDER
-#include "ApparentHorizon.hpp"
+#include "AHFinder.hpp"
 #endif
 
 int runApparentHorizonTest3D(int argc, char *argv[])
@@ -60,18 +54,6 @@ int runApparentHorizonTest3D(int argc, char *argv[])
     int status = 0;
 
 #ifdef USE_AHFINDER
-    AHFinder::params AH_params = {1,
-                                  sim_params.AH_num_points_u,
-                                  sim_params.AH_num_points_v,
-                                  1,
-                                  1,
-                                  false,
-                                  false,
-                                  0,
-                                  0.,
-                                  -1.};
-    AH_params.verbose = 3;
-
     // Set up interpolator and PETSc subcommunicator when AH extraction is
     // active
     AMRInterpolator<Lagrange<4>> interpolator(
@@ -80,17 +62,18 @@ int runApparentHorizonTest3D(int argc, char *argv[])
     bh_amr.set_interpolator(&interpolator);
 
     AHSurfaceGeometry sph(sim_params.center);
-    bh_amr.m_ah_finder.add_ah(sph, sim_params.initial_guess, AH_params);
+    bh_amr.m_ah_finder.add_ah(sph, sim_params.initial_guess,
+                              sim_params.AH_params);
 
     if (!bh_amr.m_ah_finder.get(0)->get_converged())
-        status = 1;
+        status = 3;
     else
     {
 
         // get area from file to determine status
         auto stats = SmallDataIO::read("stats_AH1.dat");
         if (stats.size() == 0)
-            status = 1;
+            status = 2;
         else
         {
             double mass = stats[3][0];

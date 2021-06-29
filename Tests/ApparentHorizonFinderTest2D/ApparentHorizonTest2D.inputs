@@ -23,3 +23,14 @@ max_grid_size = 32
 block_factor = 4
 tag_buffer_size = 3
 checkpoint_interval = 1
+
+AH_num_ranks = 1
+AH_num_points_u = 20
+AH_solve_interval = 1
+AH_print_interval = 1
+AH_track_center = false
+AH_predict_origin = false
+AH_level_to_run = 0
+AH_start_time = 0
+AH_give_up_time = -1.
+AH_verbose = 3

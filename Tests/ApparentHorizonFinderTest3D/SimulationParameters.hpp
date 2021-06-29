@@ -12,6 +12,10 @@
 
 #include "KerrBH.hpp"
 
+#ifdef USE_AHFINDER
+#include "AHFinder.hpp"
+#endif
+
 class SimulationParameters : public ChomboParameters
 {
   public:
@@ -31,15 +35,14 @@ class SimulationParameters : public ChomboParameters
 
 #ifdef USE_AHFINDER
         pp.load("AH_initial_guess", initial_guess, kerr_params.mass * 0.5);
-        pp.load("AH_num_points_u", AH_num_points_u);
-        pp.load("AH_num_points_v", AH_num_points_v);
+        AH_params.read_params(pp, *this);
 #endif
     }
     KerrBH::params_t kerr_params;
 
 #ifdef USE_AHFINDER
     double initial_guess;
-    int AH_num_points_u, AH_num_points_v;
+    AHFinder<AHSurfaceGeometry, AHFunction>::params AH_params;
 #endif
 };
 

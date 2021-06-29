@@ -30,7 +30,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::initialise_PETSc()
 {
     CH_TIME("ApparentHorizon::initialise_PETSc");
 
-    if (!AHFinder::is_rank_active())
+    if (!PETScCommunicator::is_rank_active())
         return;
 
 #if PETSC_VERSION_LT(3, 5, 0)
@@ -134,7 +134,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::initialise_PETSc()
 
     SNESSetFromOptions(m_snes);
 
-    if (m_params.verbose > AHFinder::MIN)
+    if (m_params.verbose > MIN)
     {
         SNESType snes_type;
         SNESGetType(m_snes, &snes_type);
@@ -177,7 +177,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::initialise_PETSc()
 template <class SurfaceGeometry, class AHFunction>
 void ApparentHorizon<SurfaceGeometry, AHFunction>::finalise_PETSc()
 {
-    if (!AHFinder::is_rank_active())
+    if (!PETScCommunicator::is_rank_active())
         return;
 
     SNESDestroy(&m_snes);
@@ -265,7 +265,7 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::interpolate_ah(
         return false;
     }
 
-    if (m_params.verbose > AHFinder::NONE)
+    if (m_params.verbose > NONE)
     {
         pout() << "Number of AH points changed. Interpolating old ones."
                << std::endl;
@@ -348,7 +348,7 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::interpolate_ah(
         }
     }
 
-    if (m_params.verbose > AHFinder::NONE)
+    if (m_params.verbose > NONE)
     {
         pout() << "Interpolation Successfull." << std::endl;
     }

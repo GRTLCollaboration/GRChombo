@@ -9,15 +9,12 @@
 #include <petsc.h>
 // #include <petscviewerhdf5.h>
 
-#include "AHData.hpp"
 #include "AHDeriv.hpp"
-#include "AHFinder.hpp"
-#include "AHGeometryData.hpp"
 #include "AHInterpolation.hpp"
+#include "ChomboParameters.hpp"
 #include "IntegrationMethod.hpp"
 
 // Class to manage ApparentHorizon for 2+1D and 3+1D simulations
-// Class AHFinder manages it
 //! AHFunction defines the optimizing function (see AHFunction.hpp for
 //! expansion example calculation)
 template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
@@ -25,12 +22,103 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
     using Interpolation = AHInterpolation<SurfaceGeometry, AHFunction>;
 
   public:
+    // prepend with 'AH_' in params file
+    struct params
+    {
+        int num_ranks; //!< number of ranks for PETSc sub-communicator (default
+                       //!< 0, which is 'all')
+
+        int num_points_u; //!< number of points for 2D coordinate grid
+#if CH_SPACEDIM == 3
+        int num_points_v; //!< number of points for 2D coordinate grid
+#endif
+        int solve_interval; //!< same as checkpoint_interval, for
+                            //!< ApparentHorizon::solve (default 1)
+        int print_interval; //!< same as solve_interval, but for prints (default
+                            //!< 1)
+        bool track_center;  //!< whether or not to update the center
+                            //!< (set to false if you know it won't move)
+                            //!< (default true)
+        bool predict_origin; //!< whether or not to estimate where the next
+                             //!< origin will be at (default = track_center)
+
+        int level_to_run; // if negative, it will count backwards (e.g. -1 is
+                          // 'last level') (default 0)
+
+        double start_time;   //!< time after which AH can start (default 0.)
+                             //!< Useful for ScalarField collapse
+        double give_up_time; //!< stop if at this time nothing was found
+                             //!< (<0 to never, which is default)
+                             //!< Useful for ScalarField collapse
+
+        bool allow_re_attempt; //!< re-attempt with initial guess if
+                               //!< previous convergence failed (default false)
+        int max_fails_after_lost; //!< number of time steps to try again after
+                                  //!< (-1 to never) the AH was lost
+                                  //!< (default is 0)
+
+        int verbose; //!< print information during execution (default is 1)
+
+        bool print_geometry_data; //!< print metric and extrinsic
+                                  //!< curvature of the AHs (default false)
+
+        bool re_solve_at_restart; //!< whether or not to re-run even if AH
+                                  //!< already exists (useful in order to be
+                                  //!< able to provide an initial guess and
+                                  //!< re-run the AH on that time step)
+                                  //!< (default false)
+
+        bool stop_if_max_fails; //! breaks the run if AH doesn't converge
+                                //! 'max_fails_after_lost' times or if
+                                //! 'give_up_time' is reached without
+                                //! convergence (default is 'false')
+
+        std::map<std::string, std::tuple<int, VariableType, int>>
+            extra_vars;     //! extra vars to write to coordinates file (<enum,
+                            //! evolution or diagnostic, int for local|d1|d2>)
+        int num_extra_vars; // total number of extra vars (!=extra_vars.size()
+                            // as derivative count for multiple vars)
+
+        int extra_contain_diagnostic; // not a parameter (set internally);
+                                      // counts how many
+
+        std::string stats_path = "",
+                    stats_prefix =
+                        "stats_AH"; //!< name for stats file with
+                                    //!< area, spin and AH origin/center
+        std::string coords_path = "",
+                    coords_prefix =
+                        "coords_AH"; //!< name for coords file with AH
+                                     //!< coordinates at each time step
+
+        //! mergers will be searched when distance between 'parent' BHs is
+        //! distance < merger_search_factor * 4. * (AH_initial_guess_1 +
+        //! AH_initial_guess_2) should be roughly '2M=2(m1+m2)' for initial
+        //! guess at m/2 (set to non-positive to 'always search')
+        double merger_search_factor; // see note above (default is 1)
+        //! initial guess for merger is 'merger_pre_factor * 4. *
+        //! (AH_initial_guess_1 + AH_initial_guess_2)'
+        //! set to somethig bigger to avoid finding the inner AH
+        double merger_pre_factor; // see note above (default to 1.)
+
+        void read_params(GRParmParse &pp, const ChomboParameters &a_p);
+    };
+
+    enum verbose_level
+    {
+        NONE,
+        MIN,  // minimal
+        SOME, // a bit technical
+        MORE  // debug
+    };
+
+  public:
     //! AH that finds the zero of expansion
     ApparentHorizon(
         const Interpolation &a_interp, //!< Geometry class to exchange data
         double a_initial_guess, //!< Initial guess for radius (or whatever
                                 //!< coordinate you're solving for)
-        const AHFinder::params &a_params, //!< set of AH parameters
+        const params &a_params, //!< set of AH parameters
         const std::string &a_stats =
             "stats", //!< name for output file with area, spin and AH origin
         const std::string &a_coords =
@@ -42,7 +130,7 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
     //! 'a_function_to_optimize' (a void* 'a_function_to_optimize_params' can be
     //! passed for auxiliary parameters passed to 'a_function_to_optimize')
     ApparentHorizon(const Interpolation &a_interp, double a_initial_guess,
-                    const AHFinder::params &a_params,
+                    const params &a_params,
                     const typename AHFunction::params &a_func_params,
                     const std::string &a_stats = "stats",
                     const std::string &a_coords = "coords_",
@@ -76,12 +164,12 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
 
     bool do_solve(double a_dt, double a_time)
         const; //!< decide (based times passed to 'solve') whether or not
-               //!< to print (uses AHFinder::params::solve_interval)
+               //!< to print (uses params::solve_interval)
     bool do_print(double a_dt, double a_time)
-        const; //!< decide when to print (only AHFinder::params::print_interval
+        const; //!< decide when to print (only params::print_interval
                //!< out of all 'solve's)
 
-    const AHFinder::params &m_params; //!< set of AH parameters
+    const params m_params; //!< set of AH parameters
     const std::string m_stats,
         m_coords; //!< public base names for output files (no need for a set as
                   //!< they are const)

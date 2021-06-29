@@ -11,6 +11,7 @@
 #define _APPARENTHORIZON_IMPL_HPP_
 
 #include "GRAMR.hpp"
+#include "PETScCommunicator.hpp"
 #include "SmallDataIO.hpp"
 #include "TensorAlgebra.hpp"
 #include "UserVariables.hpp"
@@ -26,9 +27,8 @@
 template <class SurfaceGeometry, class AHFunction>
 ApparentHorizon<SurfaceGeometry, AHFunction>::ApparentHorizon(
     const AHInterpolation<SurfaceGeometry, AHFunction> &a_interp,
-    double a_initial_guess, const AHFinder::params &a_params,
-    const std::string &a_stats, const std::string &a_coords,
-    bool solve_first_step)
+    double a_initial_guess, const params &a_params, const std::string &a_stats,
+    const std::string &a_coords, bool solve_first_step)
     : ApparentHorizon(a_interp, a_initial_guess, a_params, AHFunction::params(),
                       a_stats, a_coords, solve_first_step)
 {
@@ -37,7 +37,7 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::ApparentHorizon(
 template <class SurfaceGeometry, class AHFunction>
 ApparentHorizon<SurfaceGeometry, AHFunction>::ApparentHorizon(
     const AHInterpolation<SurfaceGeometry, AHFunction> &a_interp,
-    double a_initial_guess, const AHFinder::params &a_params,
+    double a_initial_guess, const params &a_params,
     const typename AHFunction::params &a_func_params,
     const std::string &a_stats, const std::string &a_coords,
     bool solve_first_step)
@@ -99,6 +99,143 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::~ApparentHorizon()
 }
 
 template <class SurfaceGeometry, class AHFunction>
+void ApparentHorizon<SurfaceGeometry, AHFunction>::params::read_params(
+    GRParmParse &pp, const ChomboParameters &a_p)
+{
+    pp.load("AH_num_ranks", num_ranks, 0); // 0 means "all"
+
+    pp.load("AH_num_points_u", num_points_u);
+#if CH_SPACEDIM == 3
+    pp.load("AH_num_points_v", num_points_v);
+#endif
+
+    // if box division ends up with size less than 3, PETSc will
+    // complain (this only gives an estimate of the box side)
+    int size = 1;
+#if CH_MPI
+    MPI_Comm_size(Chombo_MPI::comm, &size);
+#endif
+    size = std::min(num_ranks, size);
+#if CH_SPACEDIM == 3
+    CH_assert(this->num_points_u > 0 && this->num_points_v > 0);
+    CH_assert(this->num_points_u / sqrt(size) >= 3); // make sure for size 'u'
+    CH_assert(this->num_points_v / sqrt(size) >= 3); // make sure for size 'v'
+#elif CH_SPACEDIM == 2
+    CH_assert(this->num_points_u > 0);
+    CH_assert(this->num_points_u / size >= 3); // make sure for size 'u'
+#endif
+
+    pp.load("AH_solve_interval", solve_interval, 1);
+    pp.load("AH_print_interval", print_interval, 1);
+    pp.load("AH_track_center", track_center, true);
+    pp.load("AH_predict_origin", predict_origin, track_center);
+    // can't predict if center is not being tracked
+    CH_assert(!(predict_origin && !track_center));
+
+    pp.load("AH_level_to_run", level_to_run, 0);
+    CH_assert(level_to_run <= a_p.max_level &&
+              level_to_run > -(a_p.max_level + 1));
+    if (level_to_run < 0) // if negative, count backwards
+        level_to_run += a_p.max_level + 1;
+
+    pp.load("AH_start_time", start_time, 0.0);
+    pp.load("AH_give_up_time", give_up_time, -1.0);
+
+    pp.load("AH_allow_re_attempt", allow_re_attempt, false);
+    pp.load("AH_max_fails_after_lost", max_fails_after_lost, 0);
+    pp.load("AH_stop_if_max_fails", stop_if_max_fails, false);
+
+    pp.load("AH_verbose", verbose, (int)MIN);
+    pp.load("AH_print_geometry_data", print_geometry_data, false);
+    pp.load("AH_re_solve_at_restart", re_solve_at_restart, false);
+
+    // sanity checks
+    CH_assert(solve_interval > 0 && print_interval > 0);
+    CH_assert(level_to_run >= 0 && level_to_run <= a_p.max_level);
+
+    // load vars to write to coord files
+    num_extra_vars = 0;
+    extra_contain_diagnostic = 0;
+
+    int AH_num_extra_vars;
+    pp.load("AH_num_extra_vars", AH_num_extra_vars, 0);
+    if (AH_num_extra_vars > 0)
+    {
+        std::vector<std::string> AH_extra_var_names(AH_num_extra_vars, "");
+        pp.load("AH_extra_vars", AH_extra_var_names, AH_num_extra_vars);
+        for (const std::string &full_name : AH_extra_var_names)
+        {
+            std::string var_name = full_name;
+
+            // variable names might start with "d1_" or "d2_" to indicate
+            // the user wants derivatives
+            int der_type = 0;
+            std::string der = var_name.substr(0, 3);
+            if (der == "d1_")
+            {
+                der_type = 1;
+                var_name = var_name.substr(3);
+            }
+            else if (der == "d2_")
+            {
+                der_type = 2;
+                var_name = var_name.substr(3);
+            }
+
+            // first assume extra_var is a normal evolution var
+            int var = UserVariables::variable_name_to_enum(var_name);
+            VariableType var_type = VariableType::evolution;
+            if (var < 0)
+            {
+                // if not an evolution var check if it's a diagnostic var
+                var = DiagnosticVariables::variable_name_to_enum(var_name);
+                if (var < 0)
+                {
+                    // it's neither :(
+                    pout() << "Variable with name " << var_name
+                           << " not found.\n";
+                }
+                else
+                {
+                    var_type = VariableType::diagnostic;
+                    ++extra_contain_diagnostic;
+                }
+            }
+            if (var >= 0)
+            {
+                extra_vars[full_name] =
+                    std::tuple<int, VariableType, int>(var, var_type, der_type);
+                if (der_type == 0)
+                    num_extra_vars += 1;
+                else if (der_type == 1)
+                    num_extra_vars += CH_SPACEDIM;
+                else // if (der_type == 2)
+                    num_extra_vars += CH_SPACEDIM * (CH_SPACEDIM + 1) / 2;
+            }
+        }
+    }
+
+    stats_path = a_p.data_path;
+
+    if (pp.contains("AH_coords_subpath"))
+    {
+        pp.load("AH_coords_subpath", coords_path);
+        if (!coords_path.empty() && coords_path.back() != '/')
+            coords_path += "/";
+        if (a_p.output_path != "./" && !a_p.output_path.empty())
+            coords_path = a_p.output_path + coords_path;
+    }
+    else
+        coords_path = stats_path;
+
+    pp.load("AH_stats_prefix", stats_prefix, std::string("stats_AH"));
+    pp.load("AH_coords_prefix", coords_prefix, std::string("coords_AH"));
+
+    pp.load("AH_merger_search_factor", merger_search_factor, 1.);
+    pp.load("AH_merger_pre_factor", merger_pre_factor, 1.);
+}
+
+template <class SurfaceGeometry, class AHFunction>
 bool ApparentHorizon<SurfaceGeometry, AHFunction>::good_to_go(
     double a_dt, double a_time) const
 {
@@ -157,7 +294,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::set_origin(
     m_interp_minus.set_origin(a_origin);
     origin_already_updated = true;
 
-    if (m_params.verbose > AHFinder::SOME)
+    if (m_params.verbose > SOME)
     {
         pout() << "Setting origin to (" << a_origin[0] << "," << a_origin[1]
 #if CH_SPACEDIM == 3
@@ -236,7 +373,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::reset_initial_guess()
 {
     CH_TIME("ApparentHorizon::reset_initial_guess");
 
-    if (!AHFinder::is_rank_active())
+    if (!PETScCommunicator::is_rank_active())
         return;
 
     auto origin = get_origin();
@@ -245,7 +382,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::reset_initial_guess()
     bool out_of_grid = m_interp.is_in_grid(origin, m_initial_guess);
     CH_assert(!out_of_grid);
 
-    if (m_params.verbose > AHFinder::NONE)
+    if (m_params.verbose > NONE)
     {
         pout() << "Setting Initial Guess to f=" << m_initial_guess
                << " centered at (" << origin[0] << "," << origin[1]
@@ -295,7 +432,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::predict_next_origin()
                                   2. * m_old_centers[1][a]);
             }
         }
-        if (m_params.verbose > AHFinder::SOME)
+        if (m_params.verbose > SOME)
         {
             pout() << "OLD[-2]: (" << m_old_centers[2][0] << ","
                    << m_old_centers[2][1]
@@ -318,7 +455,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::predict_next_origin()
             }
         }
 
-        if (m_params.verbose > AHFinder::SOME)
+        if (m_params.verbose > SOME)
         {
             pout() << "OLD[-1]: (" << m_old_centers[1][0] << ","
                    << m_old_centers[1][1]
@@ -333,7 +470,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::predict_next_origin()
 #endif
                    << ")" << std::endl;
         }
-        if (m_params.verbose > AHFinder::MIN)
+        if (m_params.verbose > MIN)
         {
             pout() << "Estimated center: (" << new_center[0] << ","
                    << new_center[1]
@@ -401,12 +538,12 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
 
         PetscInt its;
         SNESGetIterationNumber(m_snes, &its);
-        if (m_params.verbose > AHFinder::MIN)
+        if (m_params.verbose > MIN)
         {
             pout() << "SNES Iteration number " << its << endl;
         }
         SNESGetLinearSolveIterations(m_snes, &its);
-        if (m_params.verbose > AHFinder::MIN)
+        if (m_params.verbose > MIN)
         {
             pout() << "KSP Iteration number " << its << endl;
         }
@@ -414,7 +551,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
     }
 
     {
-        if (m_params.verbose > AHFinder::SOME)
+        if (m_params.verbose > SOME)
         {
             pout() << "In [ApparentHorizon::solve::post-solving]" << endl;
         }
@@ -433,7 +570,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
         if (save_converged && !get_converged() && m_params.allow_re_attempt)
         {
             --m_num_failed_convergences; // reduce failed and try again
-            if (m_params.verbose > AHFinder::NONE)
+            if (m_params.verbose > NONE)
             {
                 pout() << "Re-attempting to solve using initial guess."
                        << std::endl;
@@ -468,13 +605,13 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
         m_spin_z_alt = calculate_spin_dimensionless(m_area);
 #endif
 
-        if (m_params.verbose > AHFinder::NONE)
+        if (m_params.verbose > NONE)
         {
             pout() << "mass = " << m_mass << endl;
 #if CH_SPACEDIM == 3
             pout() << "spin = " << m_spin << endl;
 #endif
-            if (m_params.verbose > AHFinder::MIN)
+            if (m_params.verbose > MIN)
             {
                 pout() << "irreducible mass = " << m_irreducible_mass << endl;
 #if CH_SPACEDIM == 3
@@ -510,7 +647,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
         MayDay::Error("Reached max fails. Stopping. Parameter "
                       "'stop_if_max_fails' is set to true.");
 
-    if (m_params.verbose > AHFinder::SOME)
+    if (m_params.verbose > SOME)
     {
         pout() << "ApparentHorizon::solve finished successfully!" << endl;
     }
@@ -525,7 +662,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
     // the frequency of writing outputs) and the class will still be able to
     // restart from the correct file  (this only applies for frequency increase,
     // for which the file number will suddenly jump, as for frequency decrease
-    // the AHFinder may override old coord files)
+    // the AH may override old coord files)
 
     // print stats (area, spin, origin, center) and coordinates
     // stop printing if it stopped converging
@@ -533,7 +670,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
     if (do_print(a_dt, a_time))
     {
         CH_TIME("ApparentHorizon::solve::printing");
-        if (m_params.verbose > AHFinder::MIN)
+        if (m_params.verbose > MIN)
         {
             pout() << "Printing statistics and coordinates." << std::endl;
         }
@@ -636,7 +773,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::check_convergence()
     // https://www.mcs.anl.gov/petsc/petsc-current/docs/manualpages/SNES/SNESConvergedReason.html#SNESConvergedReason
 
     int result;
-    if (AHFinder::is_rank_active())
+    if (PETScCommunicator::is_rank_active())
     {
         SNESConvergedReason reason;
         SNESGetConvergedReason(m_snes, &reason);
@@ -673,13 +810,13 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::check_convergence()
         ++m_num_failed_convergences;
     }
 
-    if (m_params.verbose > AHFinder::NONE)
+    if (m_params.verbose > NONE)
     {
         pout() << (m_converged ? "Solver converged. Horizon FOUND."
                                : "Solver diverged. Horizon NOT found.")
                << std::endl;
 
-        if (m_params.verbose > AHFinder::MIN)
+        if (m_params.verbose > MIN)
         {
             pout() << "SNESConvergedReason = " << result << std::endl;
         }
@@ -733,7 +870,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
     double old_print_dt = 0.;
     if (stats.size() == 0)
     { // case when it never ran the AH or the file doesn't exist
-        if (m_params.verbose > AHFinder::NONE && current_step != 0)
+        if (m_params.verbose > NONE && current_step != 0)
         {
             pout() << "Empty stats file '" << file
                    << "'. Assuming AHFinder was not run yet for this AH."
@@ -764,7 +901,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
         else // if we can't know, just default to the current one
             old_print_dt = current_solve_dt * m_params.print_interval;
 
-        if (m_params.verbose > AHFinder::SOME)
+        if (m_params.verbose > SOME)
         {
             if (idx >= 0)
                 pout() << "stats[0][idx] = " << stats[0][idx] << std::endl;
@@ -778,7 +915,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
         if (idx < 0)
         { // case when job was restarted at a point before the AH was first ever
           // found
-            if (m_params.verbose > AHFinder::NONE)
+            if (m_params.verbose > NONE)
             {
                 pout()
                     << "First time step is after restart in '" << file
@@ -795,7 +932,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
                  -(old_print_dt == 0. ? eps : old_print_dt - eps))
         { // case when the PETSc stopped converging and stopped printing
           // so there is a mismatch with the last time in the file
-            if (m_params.verbose > AHFinder::NONE)
+            if (m_params.verbose > NONE)
             {
                 pout() << "Last time step not found in '" << file
                        << "'. Assuming AH stopped converging." << std::endl;
@@ -811,7 +948,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
           // having converged
           // OR when job was restarted at a point before the AH was first ever
           // found
-            if (m_params.verbose > AHFinder::NONE)
+            if (m_params.verbose > NONE)
             {
                 pout() << "Last time step is NAN in '" << file
                        << "'. Assuming AH wasn't found and PETSc didn't "
@@ -826,7 +963,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
         }
         else
         { // case when the AH was found and there is a coordinate file
-            if (m_params.verbose > AHFinder::NONE)
+            if (m_params.verbose > NONE)
             {
                 pout() << "Last time step found in '" << file
                        << "'. Reading coordinates file." << std::endl;
@@ -875,7 +1012,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
         int offset = CH_SPACEDIM + was_center_tracked * CH_SPACEDIM;
         FOR1(a) { origin[a] = stats[cols - offset + a][idx]; }
 
-        if (m_params.verbose > AHFinder::NONE)
+        if (m_params.verbose > NONE)
         {
             pout() << "Setting origin from stats file '"
                    << m_params.stats_path + m_stats << "' at (" << origin[0]
@@ -898,8 +1035,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
             // SET OLD CENTERS directly if old 'dt' matches current 'dt'
             if (std::abs(old_print_dt - current_solve_dt) < eps)
             {
-                if (m_params.verbose > AHFinder::NONE &&
-                    m_params.predict_origin)
+                if (m_params.verbose > NONE && m_params.predict_origin)
                 {
                     pout() << "Reading old centers to predict next origin."
                            << std::endl;
@@ -942,8 +1078,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
                         old_centers_time_index.push_back(index);
                 }
 
-                if (m_params.verbose > AHFinder::NONE &&
-                    m_params.predict_origin)
+                if (m_params.verbose > NONE && m_params.predict_origin)
                 {
                     if (old_centers_time_index.size() == 0)
                         pout() << "AH time step changed and no old centers "
@@ -985,7 +1120,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
                     m_converged++;
                     update_old_centers(old_center);
 
-                    if (m_params.verbose > AHFinder::SOME)
+                    if (m_params.verbose > SOME)
                     {
                         pout() << "OLD[-" << i + 1 << "] = (" << old_center[0]
                                << "," << old_center[1]
@@ -1019,14 +1154,14 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
 
         auto coords = SmallDataIO::read(coords_filename);
 
-        if (m_params.verbose > AHFinder::NONE)
+        if (m_params.verbose > NONE)
         {
             pout() << "Setting Initial Guess to previous file '"
                    << coords_filename << "' found." << std::endl;
         }
 
         // now write local points based on file (or interpolated file)
-        if (AHFinder::is_rank_active())
+        if (PETScCommunicator::is_rank_active())
         {
             // read PETSc array to 'f'
             dmda_arr_t f;
@@ -1073,7 +1208,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_coords_file(
         return;
     }
 
-    if (m_params.verbose > AHFinder::NONE && write_geometry_data)
+    if (m_params.verbose > NONE && write_geometry_data)
         pout() << "Writing geometry data." << std::endl;
 
     CH_assert(a_dt != 0); // Check if time was set!!
@@ -1152,7 +1287,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_coords_file(
         num_components + m_params.num_extra_vars + CH_SPACEDIM;
 
     // step 1
-    if (AHFinder::is_rank_active())
+    if (PETScCommunicator::is_rank_active())
     {
 
 #ifdef CH_MPI
@@ -1775,7 +1910,7 @@ double ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_area()
     area = integral;
 #endif
 
-    if (m_params.verbose > AHFinder::MIN)
+    if (m_params.verbose > MIN)
     {
         pout() << "area = " << area << endl;
     }
@@ -1811,9 +1946,10 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_center()
     std::array<double, CH_SPACEDIM> min_temp = max_temp;
 
     int idx = 0;
-    if (AHFinder::is_rank_active()) // in principle this wouldn't be needed, as
-                                    // non-PETSc processes wouldn't even enter
-                                    // the loop anyways
+    if (PETScCommunicator::is_rank_active()) // in principle this wouldn't be
+                                             // needed, as non-PETSc processes
+                                             // wouldn't even enter the loop
+                                             // anyways
     {
 #if CH_SPACEDIM == 3
         for (int v = m_vmin; v < m_vmax; ++v)
@@ -1870,7 +2006,7 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_center()
         center[i] = (max_point[i] + min_point[i]) / 2.;
     }
 
-    if (m_params.verbose > AHFinder::SOME)
+    if (m_params.verbose > SOME)
     {
         pout() << "max_point: (" << max_point[0] << ", " << max_point[1]
 #if CH_SPACEDIM == 3
@@ -1886,7 +2022,7 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_center()
 
     update_old_centers(center); // set new
 
-    if (m_params.verbose > AHFinder::MIN)
+    if (m_params.verbose > MIN)
     {
         pout() << "center: (" << center[0] << ", " << center[1]
 #if CH_SPACEDIM == 3
@@ -1906,7 +2042,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_minmax_F() const
 
     double local_max = std::numeric_limits<int>::min();
     double local_min = std::numeric_limits<int>::max();
-    if (AHFinder::is_rank_active())
+    if (PETScCommunicator::is_rank_active())
     {
         auto local_minmax = (std::minmax_element(m_F.begin(), m_F.end()));
         local_min = *(local_minmax.first);
@@ -1935,7 +2071,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_average_F() const
     int local_size = 0;
     double local_sum = 0.;
     double local_sum_sq = 0.;
-    if (AHFinder::is_rank_active())
+    if (PETScCommunicator::is_rank_active())
     {
         std::pair<double, double> sums(0., 0.);
         auto lambda_sum = [](std::pair<double, double> sums, double r) {

@@ -28,7 +28,7 @@ class BHAMR : public GRAMR
 #endif
 
 #ifdef USE_AHFINDER
-    AHFinder m_ah_finder;
+    AHFinder<AHSurfaceGeometry, AHFunction> m_ah_finder;
 #endif
 
     BHAMR() {}

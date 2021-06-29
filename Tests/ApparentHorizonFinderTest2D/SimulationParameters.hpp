@@ -9,10 +9,23 @@
 // General includes
 #include "ChomboParameters.hpp"
 
+#ifdef USE_AHFINDER
+#include "AHFinder.hpp"
+#endif
+
 class SimulationParameters : public ChomboParameters
 {
   public:
-    SimulationParameters(GRParmParse &pp) : ChomboParameters(pp) {}
+    SimulationParameters(GRParmParse &pp) : ChomboParameters(pp)
+    {
+#ifdef USE_AHFINDER
+        AH_params.read_params(pp, *this);
+#endif
+    }
+
+#ifdef USE_AHFINDER
+    AHFinder<AHSurfaceGeometry, AHFunction>::params AH_params;
+#endif
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */

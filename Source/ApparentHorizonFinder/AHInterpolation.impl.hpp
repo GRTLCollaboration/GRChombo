@@ -10,9 +10,7 @@
 #ifndef _AHINTERPOLATION_IMPL_HPP_
 #define _AHINTERPOLATION_IMPL_HPP_
 
-#include "AHFinder.hpp"
-#include "DimensionDefinitions.hpp" // make sure GR_SPACEDIM exists
-#include "TensorAlgebra.hpp"
+#include "PETScCommunicator.hpp"
 
 template <class SurfaceGeometry, class AHFunction>
 AHInterpolation<SurfaceGeometry, AHFunction>::AHInterpolation(
@@ -235,7 +233,7 @@ bool AHInterpolation<SurfaceGeometry,
 {
     CH_TIME("AMRInterpolator::keep_interpolating_if_inactive");
 
-    if (!AHFinder::is_rank_active())
+    if (!PETScCommunicator::is_rank_active())
     {
         int keep_interpolating = 1;
         while (keep_interpolating)

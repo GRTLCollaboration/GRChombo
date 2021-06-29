@@ -36,7 +36,6 @@ recompile again for 2D when compiling this example)
 
 #ifdef USE_AHFINDER
 #include "AHFinder.hpp"
-#include "ApparentHorizon.hpp"
 #endif
 
 int runApparentHorizonTest2D(int argc, char *argv[])
@@ -63,25 +62,22 @@ int runApparentHorizonTest2D(int argc, char *argv[])
         sim_params.verbosity);
     gr_amr.set_interpolator(&interpolator);
 
-    AHFinder ah_finder;
+    AHFinder<AHSurfaceGeometry, AHFunction> ah_finder;
     AHStringGeometry sph(sim_params.L);
-
-    AHFinder::params AH_params = {1, 20, 1, 1, false, false, 0, 0., -1.};
-    AH_params.verbose = 3;
 
     // use 2. as initial guess, doesn't matter much (as long as it converges to
     // the correct solution)
     ah_finder.set_interpolator(&interpolator);
-    ah_finder.add_ah(sph, 2., AH_params);
+    ah_finder.add_ah(sph, 2., sim_params.AH_params);
 
     if (!ah_finder.get(0)->get_converged())
-        status = 1;
+        status = 3;
     else
     {
         // get area from file to determine status
         auto stats = SmallDataIO::read("stats_AH1.dat");
         if (stats.size() == 0)
-            status = 1;
+            status = 2;
         else
         {
             double area = stats[2][0];

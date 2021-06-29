@@ -327,7 +327,7 @@ class SimulationParametersBase : public ChomboParameters
 
 #ifdef USE_AHFINDER
     bool AH_activate;
-    AHFinder::params AH_params;
+    AHFinder<AHSurfaceGeometry, AHFunction>::params AH_params;
 #endif
 };
 
