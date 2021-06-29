@@ -219,8 +219,14 @@ struct ExpansionFunction : AHFunctionDefault
 
     struct params
     {
-        double expansion_radius_power = 1.;
+        double expansion_radius_power;
+
+        void read_params(GRParmParse &pp)
+        {
+            pp.load("AH_expansion_radius_power", expansion_radius_power, 1.);
+        }
     };
+
     double get(const AHGeometryData &geo_data, const AHDeriv &deriv,
                const params &a_params) const
     {
@@ -362,12 +368,21 @@ struct ChiContourFunction : AHFunctionDefault
         chi = a_data.vars.at(c_chi);
     }
 
-    using params = double; // chi contour to look for
+    struct params
+    {
+        double look_for_chi_contour;
+
+        void read_params(GRParmParse &pp)
+        {
+            pp.load("AH_look_for_chi_contour", look_for_chi_contour);
+            CH_assert(look_for_chi_contour > 0.);
+        }
+    };
+
     double get(const AHGeometryData &geo_data, const AHDeriv &deriv,
                const params &a_params) const
     {
-        double look_for_chi_contour = a_params;
-        return chi - look_for_chi_contour;
+        return chi - a_params.look_for_chi_contour;
     }
 };
 

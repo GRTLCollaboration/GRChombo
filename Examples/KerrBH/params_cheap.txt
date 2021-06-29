@@ -169,7 +169,7 @@ AH_verbose = 2
 
 # AH_initial_guess = 0.5
 
-# look_for_chi_contour = 0.2
+# AH_look_for_chi_contour = 0.2
 
 AH_num_extra_vars = 2
 AH_extra_vars = chi d1_Ham

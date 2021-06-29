@@ -29,8 +29,7 @@ template <class SurfaceGeometry, class AHFunction> class PETScAHSolver
   public:
     //! AH that finds the zero of expansion
     PETScAHSolver(const AHInterpolation &a_interp, double a_initial_guess,
-                  const AHParams &a_params,
-                  const typename AHFunction::params &a_func_params);
+                  const AHParams &a_params);
     ~PETScAHSolver();
 
     //! function to calculate 1st and 2nd derivatives of 'in'
@@ -109,10 +108,6 @@ template <class SurfaceGeometry, class AHFunction> class PETScAHSolver
 #if CH_SPACEDIM == 3
     PetscInt m_nv;
 #endif
-
-    // any parameters that want to be saved to be passed to optimization
-    // function
-    typename AHFunction::params m_func_params;
 
     // variables
   private:

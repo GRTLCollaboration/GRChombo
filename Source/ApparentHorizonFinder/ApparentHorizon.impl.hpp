@@ -26,22 +26,11 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::ApparentHorizon(
     const AHInterpolation &a_interp, double a_initial_guess,
     const AHParams &a_params, const std::string &a_stats,
     const std::string &a_coords, bool solve_first_step)
-    : ApparentHorizon(a_interp, a_initial_guess, a_params, AHFunction::params(),
-                      a_stats, a_coords, solve_first_step)
-{
-}
-
-template <class SurfaceGeometry, class AHFunction>
-ApparentHorizon<SurfaceGeometry, AHFunction>::ApparentHorizon(
-    const AHInterpolation &a_interp, double a_initial_guess,
-    const AHParams &a_params, const typename AHFunction::params &a_func_params,
-    const std::string &a_stats, const std::string &a_coords,
-    bool solve_first_step)
     : m_params(a_params),
 
       m_stats(a_stats), m_coords(a_coords),
 
-      solver(a_interp, a_initial_guess, a_params, a_func_params),
+      solver(a_interp, a_initial_guess, a_params),
 
       m_printed_once(false),
 

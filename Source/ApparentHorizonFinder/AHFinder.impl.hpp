@@ -26,16 +26,6 @@ int AHFinder<SurfaceGeometry, AHFunction>::add_ah(
     const SurfaceGeometry &a_coord_system, double a_initial_guess,
     const AHParams &a_params, bool solve_first_step)
 {
-    return add_ah(a_coord_system, a_initial_guess, a_params,
-                  typename AHFunction::params(), solve_first_step);
-}
-
-template <class SurfaceGeometry, class AHFunction>
-int AHFinder<SurfaceGeometry, AHFunction>::add_ah(
-    const SurfaceGeometry &a_coord_system, double a_initial_guess,
-    const AHParams &a_params, const typename AHFunction::params &a_func_params,
-    bool solve_first_step)
-{
     PETScCommunicator::initialize(a_params.num_ranks);
 
     if (!FilesystemTools::directory_exists(a_params.stats_path))
@@ -51,7 +41,7 @@ int AHFinder<SurfaceGeometry, AHFunction>::add_ah(
 
     m_apparent_horizons.push_back(
         new ApparentHorizon<SurfaceGeometry, AHFunction>(
-            interp, a_initial_guess, a_params, a_func_params,
+            interp, a_initial_guess, a_params,
             a_params.stats_prefix + std::to_string(num_ah + 1),
             a_params.coords_prefix + std::to_string(num_ah + 1) + "_",
             solve_first_step));
@@ -80,11 +70,7 @@ int AHFinder<SurfaceGeometry, AHFunction>::add_ah_merger(
         m_apparent_horizons[ah1]->get_ah_interp().get_coord_system();
     coord_system.set_origin(origin_merger);
 
-    auto &function_to_optimize_params =
-        m_apparent_horizons[ah1]->get_petsc_solver().m_func_params;
-
-    int num = add_ah(coord_system, initial_guess_merger, a_params,
-                     function_to_optimize_params, do_solve);
+    int num = add_ah(coord_system, initial_guess_merger, a_params, do_solve);
     m_merger_pairs[num] = {ah1, ah2};
 
     return num;

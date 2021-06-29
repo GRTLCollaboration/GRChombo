@@ -20,7 +20,7 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
     using AHParams = AHParams_t<SurfaceGeometry, AHFunction>;
 
   public:
-    //! AH that finds the zero of expansion
+    //! AH that finds the zero of AHFunction
     ApparentHorizon(
         const AHInterpolation &a_interp, //!< Geometry class to exchange data
         double a_initial_guess,   //!< Initial guess for radius (or whatever
@@ -33,15 +33,6 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
                        //!< time step
         bool solve_first_step = true //!< whether or not to solve if t=0
     );
-    //! personalized optimizer that finds zero of function
-    //! 'a_function_to_optimize' (a void* 'a_function_to_optimize_params' can be
-    //! passed for auxiliary parameters passed to 'a_function_to_optimize')
-    ApparentHorizon(const AHInterpolation &a_interp, double a_initial_guess,
-                    const AHParams &a_params,
-                    const typename AHFunction::params &a_func_params,
-                    const std::string &a_stats = "stats",
-                    const std::string &a_coords = "coords_",
-                    bool solve_first_step = true);
 
     void solve(double a_dt, double a_time, double a_restart_time);
 

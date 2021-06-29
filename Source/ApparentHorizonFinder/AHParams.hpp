@@ -86,6 +86,8 @@ template <class SurfaceGeometry, class AHFunction> struct AHParams_t
     //! set to somethig bigger to avoid finding the inner AH
     double merger_pre_factor; // see note above (default to 1.)
 
+    typename AHFunction::params func_params;
+
     enum verbose_level
     {
         NONE,
@@ -232,6 +234,8 @@ void AHParams_t<SurfaceGeometry, AHFunction>::read_params(
 
     pp.load("AH_merger_search_factor", merger_search_factor, 1.);
     pp.load("AH_merger_pre_factor", merger_pre_factor, 1.);
+
+    func_params.read_params(pp);
 }
 
 #endif /* _AHPARAMS_HPP_ */

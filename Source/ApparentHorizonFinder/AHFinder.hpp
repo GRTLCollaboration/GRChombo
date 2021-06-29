@@ -102,14 +102,6 @@ template <class SurfaceGeometry, class AHFunction> class AHFinder
            bool solve_first_step = true //!< whether or not to solve if t=0
     );
 
-    //! returns the index of the AH in m_apparent_horizons
-    //! allows for personalized optimizer that finds zero of function
-    //! 'AHFunction' (that can have some ::params)
-    int add_ah(const SurfaceGeometry &a_coord_system, double a_initial_guess,
-               const AHParams &a_params,
-               const typename AHFunction::params &a_func_params,
-               bool solve_first_step = true);
-
     // returns the index of the AH in m_apparent_horizons
     int add_ah_merger(int ah1, int ah2, const AHParams &a_params);
 

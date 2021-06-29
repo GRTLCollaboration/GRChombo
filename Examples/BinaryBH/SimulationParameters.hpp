@@ -47,8 +47,6 @@ class SimulationParameters : public SimulationParametersBase
                 0.5 * bh2_params.mass);
         pp.load("AH_set_origins_to_punctures", AH_set_origins_to_punctures,
                 false);
-        pp.load("AH_expansion_radius_power",
-                expansion_params.expansion_radius_power, 1.);
 #endif
     }
 
@@ -323,7 +321,6 @@ class SimulationParameters : public SimulationParametersBase
     double AH_1_initial_guess;
     double AH_2_initial_guess;
     bool AH_set_origins_to_punctures;
-    ExpansionFunction::params expansion_params;
 #endif
 };
 

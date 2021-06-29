@@ -22,10 +22,10 @@
 template <class SurfaceGeometry, class AHFunction>
 PETScAHSolver<SurfaceGeometry, AHFunction>::PETScAHSolver(
     const AHInterpolation &a_interp, double a_initial_guess,
-    const AHParams &a_params, const typename AHFunction::params &a_func_params)
+    const AHParams &a_params)
     : m_initial_guess(a_initial_guess),
 
-      m_params(a_params), m_func_params(a_func_params),
+      m_params(a_params),
 
       m_interp(a_interp), m_interp_plus(a_interp), m_interp_minus(a_interp),
 
@@ -852,7 +852,7 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::form_function(Vec F, Vec Rhs)
                 const auto coords = m_interp.get_coords(idx);
                 const auto coords_cart = m_interp.get_cartesian_coords(idx);
                 AHFunction func(data, coords, coords_cart);
-                _out = func.get(geometry_data, deriv, m_func_params);
+                _out = func.get(geometry_data, deriv, m_params.func_params);
             }
 
             ++idx;
@@ -1076,7 +1076,7 @@ double PETScAHSolver<SurfaceGeometry, AHFunction>::point_jacobian(
         const auto coords = interp_plus.get_coords(idx);
         const auto coords_cart = interp_plus.get_cartesian_coords(idx);
         AHFunction func(data, coords, coords_cart);
-        expansionPlus = func.get(geometry_data, deriv, m_func_params);
+        expansionPlus = func.get(geometry_data, deriv, m_params.func_params);
 
         _in = in_old;
     }
@@ -1099,7 +1099,7 @@ double PETScAHSolver<SurfaceGeometry, AHFunction>::point_jacobian(
         const auto coords = interp_minus.get_coords(idx);
         const auto coords_cart = interp_minus.get_cartesian_coords(idx);
         AHFunction func(data, coords, coords_cart);
-        expansionMinus = func.get(geometry_data, deriv, m_func_params);
+        expansionMinus = func.get(geometry_data, deriv, m_params.func_params);
 
         _in = in_old;
     }

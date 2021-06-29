@@ -10,6 +10,7 @@
 #include "AHDeriv.hpp"
 #include "AHGeometryData.hpp"
 #include "AlwaysInline.hpp"
+#include "GRParmParse.hpp"
 #include "Tensor.hpp"
 
 /////////////////////////////////////////////////////////
@@ -57,6 +58,7 @@ struct AHFunctionDefault
 
     struct params // no params needed
     {
+        void read_params(GRParmParse &pp) {}
     };
 
     // not defined by default

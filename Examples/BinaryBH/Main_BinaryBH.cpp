@@ -83,11 +83,9 @@ int runGRChombo(int argc, char *argv[])
         AHSurfaceGeometry sph2(sim_params.bh2_params.center);
 
         bh_amr.m_ah_finder.add_ah(sph1, sim_params.AH_1_initial_guess,
-                                  sim_params.AH_params,
-                                  sim_params.expansion_params);
+                                  sim_params.AH_params);
         bh_amr.m_ah_finder.add_ah(sph2, sim_params.AH_2_initial_guess,
-                                  sim_params.AH_params,
-                                  sim_params.expansion_params);
+                                  sim_params.AH_params);
         bh_amr.m_ah_finder.add_ah_merger(0, 1, sim_params.AH_params);
     }
 #endif
