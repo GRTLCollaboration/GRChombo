@@ -22,7 +22,7 @@ recompile again for 2D when compiling this example)
 // General includes:
 #include <iostream>
 
-#include "BHAMR.hpp"
+#include "GRAMR.hpp"
 #include "parstream.H" //Gives us pout()
 
 #include "SetupFunctions.hpp"
@@ -35,6 +35,7 @@ recompile again for 2D when compiling this example)
 #include "SmallDataIO.hpp"
 
 #ifdef USE_AHFINDER
+#include "AHFinder.hpp"
 #include "ApparentHorizon.hpp"
 #endif
 
@@ -47,30 +48,33 @@ int runApparentHorizonTest2D(int argc, char *argv[])
     GRParmParse pp(0, argv + argc, NULL, in_string.c_str());
     SimulationParameters sim_params(pp);
 
-    BHAMR bh_amr;
+    GRAMR gr_amr;
     DefaultLevelFactory<ApparentHorizonTest2DLevel> ah_test_level_fact(
-        bh_amr, sim_params);
-    setupAMRObject(bh_amr, ah_test_level_fact);
+        gr_amr, sim_params);
+    setupAMRObject(gr_amr, ah_test_level_fact);
 
     int status = 0;
 
 #ifdef USE_AHFINDER
-    AHFinder::params AH_params = {1, 20, 1, 1, false, false, 0, 0., -1.};
-    AH_params.verbose = 3;
-
     // Set up interpolator and PETSc subcommunicator when AH extraction is
     // active
     AMRInterpolator<Lagrange<4>> interpolator(
-        bh_amr, sim_params.origin, sim_params.dx, sim_params.boundary_params,
+        gr_amr, sim_params.origin, sim_params.dx, sim_params.boundary_params,
         sim_params.verbosity);
-    bh_amr.set_interpolator(&interpolator);
+    gr_amr.set_interpolator(&interpolator);
 
+    AHFinder ah_finder;
     AHStringGeometry sph(sim_params.L);
+
+    AHFinder::params AH_params = {1, 20, 1, 1, false, false, 0, 0., -1.};
+    AH_params.verbose = 3;
+
     // use 2. as initial guess, doesn't matter much (as long as it converges to
     // the correct solution)
-    bh_amr.m_ah_finder.add_ah(sph, 2., AH_params);
+    ah_finder.set_interpolator(&interpolator);
+    ah_finder.add_ah(sph, 2., AH_params);
 
-    if (!bh_amr.m_ah_finder.get(0)->get_converged())
+    if (!ah_finder.get(0)->get_converged())
         status = 1;
     else
     {
