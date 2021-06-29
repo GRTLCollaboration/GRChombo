@@ -20,7 +20,7 @@ AHInterpolation_t<SurfaceGeometry, AHFunction>::AHInterpolation_t(
 {
     // below:
     // determine maximum and minimum physical coordinate of the grid
-    // (so that 'fit_in_grid' knows when PETSc has diverged out of the grid and
+    // (so that 'is_in_grid' knows when PETSc has diverged out of the grid and
     // doesn't let him do so,
     //  as it would cause an error in the AMRInterpolator)
 
@@ -110,67 +110,15 @@ void AHInterpolation_t<SurfaceGeometry, AHFunction>::set_origin(
 }
 
 template <class SurfaceGeometry, class AHFunction>
-bool AHInterpolation_t<SurfaceGeometry, AHFunction>::is_in_grid(
-    const std::array<double, CH_SPACEDIM> &a_origin, double a_initial_guess)
-{
-    bool out_of_grid = false;
-
-    double x = a_origin[0];
-    double y = a_origin[1];
+bool AHInterpolation_t<SurfaceGeometry, AHFunction>::is_in_grid(double &x,
+                                                                double &y
 #if CH_SPACEDIM == 3
-    double z = a_origin[2];
-#endif
-
-#if CH_SPACEDIM == 3
-    out_of_grid |= fit_in_grid(x, y, z);
-
-    x = a_origin[0] - a_initial_guess;
-    out_of_grid |= fit_in_grid(x, y, z);
-
-    x = a_origin[0] + a_initial_guess;
-    out_of_grid |= fit_in_grid(x, y, z);
-
-    x = a_origin[0];
-    y = a_origin[1] - a_initial_guess;
-    out_of_grid |= fit_in_grid(x, y, z);
-
-    y = a_origin[1] + a_initial_guess;
-    out_of_grid |= fit_in_grid(x, y, z);
-
-    y = a_origin[1];
-    z = a_origin[2] - a_initial_guess;
-    out_of_grid |= fit_in_grid(x, y, z);
-
-    z = a_origin[2] + a_initial_guess;
-    out_of_grid |= fit_in_grid(x, y, z);
-#elif CH_SPACEDIM == 2
-    out_of_grid |= fit_in_grid(x, y);
-    /*
-        x = a_origin[0] - a_initial_guess;
-        out_of_grid |= fit_in_grid(x, y);
-
-        x = a_origin[0] + a_initial_guess;
-        out_of_grid |= fit_in_grid(x, y);
-    */
-    y = a_origin[1] - a_initial_guess;
-    out_of_grid |= fit_in_grid(x, y);
-
-    y = a_origin[1] + a_initial_guess;
-    out_of_grid |= fit_in_grid(x, y);
-#endif
-
-    return out_of_grid;
-}
-template <class SurfaceGeometry, class AHFunction>
-bool AHInterpolation_t<SurfaceGeometry, AHFunction>::fit_in_grid(double &x,
-                                                                 double &y
-#if CH_SPACEDIM == 3
-                                                                 ,
-                                                                 double &z
+                                                                ,
+                                                                double &z
 #endif
 )
 {
-    CH_TIME("AHInterpolation::fit_in_grid");
+    CH_TIME("AHInterpolation::is_in_grid");
 
     bool out_of_grid = false;
 
@@ -418,10 +366,10 @@ bool AHInterpolation_t<SurfaceGeometry, AHFunction>::set_coordinates(
 
         // don't let PETSc diverge to outside of the grid (this can happen if
         // there is no BH)
-        out_of_grid |= fit_in_grid(m_x[i], m_y[i]
+        out_of_grid |= is_in_grid(m_x[i], m_y[i]
 #if CH_SPACEDIM == 3
-                                   ,
-                                   m_z[i]
+                                  ,
+                                  m_z[i]
 #endif
         );
     }

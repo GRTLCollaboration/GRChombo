@@ -6,9 +6,9 @@
 #ifndef _AHFUNCTIONDEFAULT_HPP_
 #define _AHFUNCTIONDEFAULT_HPP_
 
-#include "AHVarsData.hpp"
 #include "AHDerivData.hpp"
 #include "AHGeometryData.hpp"
+#include "AHVarsData.hpp"
 #include "AlwaysInline.hpp"
 #include "GRParmParse.hpp"
 #include "Tensor.hpp"
@@ -45,6 +45,11 @@ struct AHFunctionDefault
         Tensor<2, double> g = {0.};
         FOR1(i) { g[i][i] = 1.; }
         return g;
+    }
+    ALWAYS_INLINE const Tensor<2, double> get_inverse_metric() const
+    {
+        // cartesian flat metric
+        return get_metric();
     }
     ALWAYS_INLINE const Tensor<2, double> get_extrinsic_curvature() const
     {

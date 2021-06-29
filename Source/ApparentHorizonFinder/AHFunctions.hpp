@@ -66,6 +66,10 @@ struct ExpansionFunction : AHFunctionDefault
     static ALWAYS_INLINE int d1_vars_max() { return c_K - 1; }
 
     ALWAYS_INLINE const Tensor<2, double> get_metric() const { return g; }
+    ALWAYS_INLINE const Tensor<2, double> get_inverse_metric() const
+    {
+        return g_UU;
+    }
     ALWAYS_INLINE const Tensor<2, double> get_extrinsic_curvature() const
     {
         return K;

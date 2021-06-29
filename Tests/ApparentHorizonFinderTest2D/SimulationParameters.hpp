@@ -24,7 +24,7 @@ class SimulationParameters : public ChomboParameters
     }
 
 #ifdef USE_AHFINDER
-    AHParams_t<AHSurfaceGeometry, AHFunction> AH_params;
+    AHParams_t<AHFunction> AH_params;
 #endif
 };
 

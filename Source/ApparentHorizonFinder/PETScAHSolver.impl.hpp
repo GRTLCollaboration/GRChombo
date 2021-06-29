@@ -21,7 +21,7 @@
 
 template <class SurfaceGeometry, class AHFunction>
 PETScAHSolver<SurfaceGeometry, AHFunction>::PETScAHSolver(
-    const AHInterpolation &a_interp, double a_initial_guess,
+    const AHInterpolation &a_interp, const AHInitialGuessPtr a_initial_guess,
     const AHParams &a_params)
     : m_initial_guess(a_initial_guess),
 
@@ -417,16 +417,10 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::set_origin(
 }
 
 template <class SurfaceGeometry, class AHFunction>
-double PETScAHSolver<SurfaceGeometry, AHFunction>::get_initial_guess() const
+const AHInitialGuessPtr
+PETScAHSolver<SurfaceGeometry, AHFunction>::get_initial_guess() const
 {
     return m_initial_guess;
-}
-
-template <class SurfaceGeometry, class AHFunction>
-void PETScAHSolver<SurfaceGeometry, AHFunction>::set_initial_guess(
-    double a_initial_guess)
-{
-    m_initial_guess = a_initial_guess;
 }
 
 template <class SurfaceGeometry, class AHFunction>
@@ -439,23 +433,12 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::reset_initial_guess()
 
     auto origin = get_origin();
 
-    // verify origin +- initial guess is inside the grid
-    bool out_of_grid = m_interp.is_in_grid(origin, m_initial_guess);
-    CH_assert(!out_of_grid);
-
-    if (m_params.verbose > AHParams::NONE)
-    {
-        pout() << "Setting Initial Guess to f=" << m_initial_guess
-               << " centered at (" << origin[0] << "," << origin[1]
-#if CH_SPACEDIM == 3
-               << "," << origin[2]
-#endif
-               << ")" << std::endl;
-    }
-
     // read PETSc array to 'f'
     dmda_arr_t f;
     DMDAVecGetArray(m_dmda, m_snes_soln, &f);
+
+    bool out_of_grid = false;
+    const SurfaceGeometry &coord_system = m_interp.get_coord_system();
 
 #if CH_SPACEDIM == 3
     for (int v = m_vmin; v < m_vmax; ++v)
@@ -463,15 +446,28 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::reset_initial_guess()
     {
         for (int u = m_umin; u < m_umax; ++u)
         {
+            double u_val = m_interp.get_coord_system().u(u, m_num_global_u);
 #if CH_SPACEDIM == 3
+            double v_val = m_interp.get_coord_system().v(v, m_num_global_v);
             double &f_point = f[v][u];
+            f_point = m_initial_guess->get(u_val, v_val);
+
+            double x = coord_system.get_grid_coord(0, f_point, u_val, v_val);
+            double y = coord_system.get_grid_coord(1, f_point, u_val, v_val);
+            double z = coord_system.get_grid_coord(2, f_point, u_val, v_val);
+            out_of_grid |= m_interp.is_in_grid(x, y, z);
 #else
             double &f_point = f[u];
-#endif
+            f_point = m_initial_guess->get(u_val);
 
-            f_point = m_initial_guess;
+            double x = coord_system.get_grid_coord(0, f_point, u_val);
+            double y = coord_system.get_grid_coord(1, f_point, u_val);
+            out_of_grid |= m_interp.is_in_grid(x, y);
+#endif
         }
     }
+
+    CH_assert(!out_of_grid);
 
     // write PETSc array back
     DMDAVecRestoreArray(m_dmda, m_snes_soln, &f);
@@ -692,11 +688,11 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::set_stencils(AHDerivData &out,
 }
 
 template <class SurfaceGeometry, class AHFunction>
-AHDerivData PETScAHSolver<SurfaceGeometry, AHFunction>::diff(const dmda_arr_t in,
-                                                         int u
+AHDerivData
+PETScAHSolver<SurfaceGeometry, AHFunction>::diff(const dmda_arr_t in, int u
 #if CH_SPACEDIM == 3
-                                                         ,
-                                                         int v
+                                                 ,
+                                                 int v
 #endif
 )
 {
@@ -830,8 +826,8 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::form_function(Vec F, Vec Rhs)
 
             AHDerivData deriv = diff(in, u
 #if CH_SPACEDIM == 3
-                                 ,
-                                 v
+                                     ,
+                                     v
 #endif
             );
 
@@ -924,8 +920,8 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::form_jacobian(Vec F, Mat J)
 
                 const AHDerivData deriv = diff(in, u
 #if CH_SPACEDIM == 3
-                                           ,
-                                           v
+                                               ,
+                                               v
 #endif
                 );
 
@@ -972,8 +968,8 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::form_jacobian(Vec F, Mat J)
 
                 const AHDerivData deriv_default = diff(in, u
 #if CH_SPACEDIM == 3
-                                                   ,
-                                                   v
+                                                       ,
+                                                       v
 #endif
                 );
 
@@ -1066,8 +1062,8 @@ double PETScAHSolver<SurfaceGeometry, AHFunction>::point_jacobian(
 
         const AHDerivData deriv = diff(in, u
 #if CH_SPACEDIM == 3
-                                   ,
-                                   v
+                                       ,
+                                       v
 #endif
         );
 
@@ -1089,8 +1085,8 @@ double PETScAHSolver<SurfaceGeometry, AHFunction>::point_jacobian(
 
         const AHDerivData deriv = diff(in, u
 #if CH_SPACEDIM == 3
-                                   ,
-                                   v
+                                       ,
+                                       v
 #endif
         );
 

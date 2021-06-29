@@ -24,11 +24,12 @@ template <class SurfaceGeometry, class AHFunction> class PETScAHSolver
 {
   public:
     using AHInterpolation = AHInterpolation_t<SurfaceGeometry, AHFunction>;
-    using AHParams = AHParams_t<SurfaceGeometry, AHFunction>;
+    using AHParams = AHParams_t<AHFunction>;
 
   public:
     //! AH that finds the zero of expansion
-    PETScAHSolver(const AHInterpolation &a_interp, double a_initial_guess,
+    PETScAHSolver(const AHInterpolation &a_interp,
+                  const AHInitialGuessPtr a_initial_guess,
                   const AHParams &a_params);
     ~PETScAHSolver();
 
@@ -37,8 +38,8 @@ template <class SurfaceGeometry, class AHFunction> class PETScAHSolver
     //! in the 'u' and 'v' directions
     AHDerivData diff(const dmda_arr_t in, int u
 #if CH_SPACEDIM == 3
-                 ,
-                 int v
+                     ,
+                     int v
 #endif
     );
 
@@ -55,8 +56,7 @@ template <class SurfaceGeometry, class AHFunction> class PETScAHSolver
     // must be called at the end of the function that called 'get_dmda_arr_t'
     void restore_dmda_arr_t(Vec &localF, dmda_arr_t &in);
 
-    double get_initial_guess() const;
-    void set_initial_guess(double a_initial_guess);
+    const AHInitialGuessPtr get_initial_guess() const;
     void reset_initial_guess();
 
     const std::array<double, CH_SPACEDIM> &get_origin() const;
@@ -111,8 +111,9 @@ template <class SurfaceGeometry, class AHFunction> class PETScAHSolver
 
     // variables
   private:
-    double m_initial_guess; //!< initial guess for AH (saved so that it can be
-                            //!< re-used when atempting to solve again)
+    const AHInitialGuessPtr
+        m_initial_guess; //!< initial guess for AH (saved so that it can be
+                         //!< re-used when atempting to solve again)
 
     const AHParams &m_params; //!< set of AH parameters
 

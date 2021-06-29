@@ -13,9 +13,18 @@
 #include "NewConstraints.hpp"
 #include "PositiveChiAndAlpha.hpp"
 #include "SetValue.hpp"
-#include "SingleBH.hpp"
 #include "SixthOrderDerivatives.hpp"
 #include "TraceARemoval.hpp"
+
+// where 'USE_ISOTROPIC_BOOSTED_BH' may be defined
+#include "SimulationParameters.hpp"
+
+#ifndef USE_ISOTROPIC_BOOSTED_BH
+#include "SingleBH.hpp"
+#else
+#include "GammaCalculator.hpp"
+#include "IsotropicBoostedBH.hpp"
+#endif
 
 void SingleBHLevel::specificAdvance()
 {
@@ -36,13 +45,24 @@ void SingleBHLevel::initialData()
     if (m_verbosity)
         pout() << "SingleBHLevel::initialData " << m_level << endl;
 
+#ifndef USE_ISOTROPIC_BOOSTED_BH
     // Set up the compute class for the SingleBH initial data
-    SingleBH single(m_p.bh_params, m_dx);
+    SingleBH bh(m_p.bh_params, m_dx);
+#else
+    // Set up the compute class for the SingleBH initial data
+    IsotropicBoostedBH bh(m_p.bh_params, m_dx);
+#endif
 
     // First set everything to zero (to avoid undefinded values in constraints)
     // then calculate initial data
-    BoxLoops::loop(make_compute_pack(SetValue(0.), single), m_state_new,
+    BoxLoops::loop(make_compute_pack(SetValue(0.), bh), m_state_new,
                    m_state_new, INCLUDE_GHOST_CELLS);
+
+#ifdef USE_ISOTROPIC_BOOSTED_BH
+    fillAllGhosts();
+    BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
+                   EXCLUDE_GHOST_CELLS);
+#endif
 }
 
 void SingleBHLevel::prePlotLevel()

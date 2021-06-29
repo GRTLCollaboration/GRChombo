@@ -209,6 +209,8 @@ AH_num_points_v = 48
 # AH_1_initial_guess = 0.3
 # AH_2_initial_guess = 0.3
 
+# AH_expansion_radius_power = 1.
+
 # AH_num_extra_vars = 2
 # AH_extra_vars = chi d1_Ham d2_A11
 

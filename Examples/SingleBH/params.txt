@@ -17,8 +17,8 @@ checkpoint_interval = 2
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
 plot_interval = 1
-num_plot_vars = 1
-plot_vars = chi
+num_plot_vars = 2
+plot_vars = chi Ham
 
 # subpaths - specific directories for hdf5, pout, extraction data
 # (these are created at runtime)
@@ -36,9 +36,9 @@ print_progress_only_to_rank_0 = 1
 #################################################
 # Initial Data parameters
 
-mass = 1.0
-offset = 0 0 0
-momentum = 0. -0.1 0.0
+mass = 1.
+offset = 0. 0. 0.
+momentum = 0.5 0. 0. # speed if using the IsotropicBoostBH ID
 
 #################################################
 # Grid parameters
@@ -50,8 +50,8 @@ momentum = 0. -0.1 0.0
 # NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full',
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
-N_full = 32
-L_full = 16
+N_full = 128
+L_full = 64
 
 # Maximum number of times you can regrid above coarsest level
 max_level = 4 # There are (max_level+1) grids, so min is zero
@@ -61,7 +61,7 @@ max_level = 4 # There are (max_level+1) grids, so min is zero
 # Generally you do not need to regrid frequently on every level
 # Level Regridding:   0   1   2   3   4
 regrid_interval   =   1   2   4   8  16
-regrid_threshold  = 0.05
+regrid_threshold  = 0.03
 
 # Max and min box sizes
 max_box_size = 16
@@ -82,7 +82,7 @@ isPeriodic = 0 0 0
 # 0 = static, 1 = sommerfeld, 2 = reflective
 # (see BoundaryConditions.hpp for details)
 hi_boundary = 1 1 1
-lo_boundary = 1 1 1
+lo_boundary = 1 2 2
 
 # if reflective boundaries selected, must set
 # parity of all vars (in order given by UserVariables.hpp)
@@ -148,13 +148,13 @@ sigma = 1.0
 
 AH_activate = 1
 AH_num_ranks = 4
-AH_num_points_u = 11
-AH_num_points_v = 20
+AH_num_points_u = 41
+AH_num_points_v = 40
 AH_solve_interval = 1
 AH_print_interval = 1
-# AH_track_center = true
-# AH_predict_origin = true
-# AH_level_to_run = 0
+# AH_track_center = 1
+# AH_predict_origin = 1
+AH_level_to_run = 0
 # AH_allow_re_attempt = 0
 # AH_stop_if_max_fails = 0
 # AH_start_time = 0.
@@ -162,9 +162,11 @@ AH_print_interval = 1
 # AH_max_fails_after_lost = 0 # -1 to never
 # AH_print_geometry_data = 0
 # AH_re_solve_at_restart = 0
-AH_verbose = 3
+# AH_verbose = 1
+# AH_expansion_radius_power = 1.
 
 # AH_initial_guess = 0.5
+# AH_use_ellipsoid = 1 # for IsotropicBoostedBH ID
 
 # look_for_chi_contour = 0.2
 

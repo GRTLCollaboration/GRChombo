@@ -21,6 +21,8 @@ enum Lapse
     CHI
 };
 
+// Just a wrapper of the BoostedBH class, to be used by itself (instead of a
+// BinaryBH)
 class SingleBH
 {
   protected:

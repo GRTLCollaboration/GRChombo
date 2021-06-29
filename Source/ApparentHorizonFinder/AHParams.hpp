@@ -6,11 +6,12 @@
 #ifndef _AHPARAMS_HPP_
 #define _AHPARAMS_HPP_
 
+#include "AHInitialGuess.hpp"
 #include "ChomboParameters.hpp"
 #include "GRParmParse.hpp"
 
 // prepend with 'AH_' in params file
-template <class SurfaceGeometry, class AHFunction> struct AHParams_t
+template <class AHFunction> struct AHParams_t
 {
     int num_ranks; //!< number of ranks for PETSc sub-communicator (default
                    //!< 0, which is 'all')
@@ -99,9 +100,9 @@ template <class SurfaceGeometry, class AHFunction> struct AHParams_t
     void read_params(GRParmParse &pp, const ChomboParameters &a_p);
 };
 
-template <class SurfaceGeometry, class AHFunction>
-void AHParams_t<SurfaceGeometry, AHFunction>::read_params(
-    GRParmParse &pp, const ChomboParameters &a_p)
+template <class AHFunction>
+void AHParams_t<AHFunction>::read_params(GRParmParse &pp,
+                                         const ChomboParameters &a_p)
 {
     pp.load("AH_num_ranks", num_ranks, 0); // 0 means "all"
 

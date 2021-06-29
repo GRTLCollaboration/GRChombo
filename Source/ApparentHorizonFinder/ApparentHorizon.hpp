@@ -17,13 +17,14 @@
 template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
 {
     using AHInterpolation = AHInterpolation_t<SurfaceGeometry, AHFunction>;
-    using AHParams = AHParams_t<SurfaceGeometry, AHFunction>;
+    using AHParams = AHParams_t<AHFunction>;
 
   public:
     //! AH that finds the zero of AHFunction
     ApparentHorizon(
         const AHInterpolation &a_interp, //!< Geometry class to exchange data
-        double a_initial_guess,   //!< Initial guess for radius (or whatever
+        const AHInitialGuessPtr
+            a_initial_guess,      //!< Initial guess for radius (or whatever
                                   //!< coordinate you're solving for)
         const AHParams &a_params, //!< set of AH parameters
         const std::string &a_stats =

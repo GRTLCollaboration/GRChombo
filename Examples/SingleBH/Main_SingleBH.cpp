@@ -43,8 +43,13 @@ int runGRChombo(int argc, char *argv[])
     if (sim_params.AH_activate)
     {
         AHSurfaceGeometry sph(sim_params.bh_params.center);
+#ifndef USE_ISOTROPIC_BOOSTED_BH
         bh_amr.m_ah_finder.add_ah(sph, sim_params.AH_initial_guess,
                                   sim_params.AH_params);
+#else
+        bh_amr.m_ah_finder.add_ah(sph, sim_params.AH_initial_guess_elipsoid,
+                                  sim_params.AH_params);
+#endif
     }
 #endif
 

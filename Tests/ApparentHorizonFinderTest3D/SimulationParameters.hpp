@@ -42,7 +42,7 @@ class SimulationParameters : public ChomboParameters
 
 #ifdef USE_AHFINDER
     double initial_guess;
-    AHParams_t<AHSurfaceGeometry, AHFunction> AH_params;
+    AHParams_t<AHFunction> AH_params;
 #endif
 };
 

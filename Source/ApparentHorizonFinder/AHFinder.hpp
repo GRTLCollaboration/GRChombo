@@ -42,6 +42,13 @@
 #include "AHFunctions.hpp"
 #define AHFunction ExpansionFunction
 #endif
+
+#include "AHInitialGuess.hpp"
+// // default to constant initial guess
+// #ifndef AHInitialGuess
+// #include "AHInitialGuess.hpp"
+// #define AHInitialGuess AHInitialGuessConstant
+// #endif
 /////////////////////////////////////////////////////////////////////////////
 
 /*
@@ -77,10 +84,12 @@ is more senstitive).
 */
 
 //! Class to manage AHs and its mergers + control PETSc MPI sub-communicator
-template <class SurfaceGeometry, class AHFunction> class AHFinder
+template <class SurfaceGeometry = AHSurfaceGeometry,
+          class AHFunction = AHFunction>
+class AHFinder
 {
     using AHInterpolation = AHInterpolation_t<SurfaceGeometry, AHFunction>;
-    using AHParams = AHParams_t<SurfaceGeometry, AHFunction>;
+    using AHParams = AHParams_t<AHFunction>;
 
   public:
     AHFinder(){};
@@ -94,6 +103,23 @@ template <class SurfaceGeometry, class AHFunction> class AHFinder
     }
 
     //! returns the index of the AH in m_apparent_horizons
+    template <class AHInitialGuess>
+    int add_ah(const SurfaceGeometry &a_coord_system,
+               AHInitialGuess
+                   a_initial_guess, //!< Initial guess for radius (or whatever
+                                    //!< coordinate you're solving for)
+               const AHParams &a_params,    //!< set of AH parameters
+               bool solve_first_step = true //!< whether or not to solve if t=0
+    );
+    //! returns the index of the AH in m_apparent_horizons
+    int add_ah(const SurfaceGeometry &a_coord_system,
+               AHInitialGuessPtr
+                   a_initial_guess, //!< Initial guess for radius (or whatever
+                                    //!< coordinate you're solving for)
+               const AHParams &a_params,    //!< set of AH parameters
+               bool solve_first_step = true //!< whether or not to solve if t=0
+    );
+    //! backward-compatibility: forces AHInitialGuess = AHInitialGuessConstant
     int
     add_ah(const SurfaceGeometry &a_coord_system,
            double a_initial_guess,   //!< Initial guess for radius (or whatever
@@ -125,7 +151,7 @@ template <class SurfaceGeometry, class AHFunction> class AHFinder
   private:
     //! returns false if 'parent' AHs are too far
     //! sets the initial guess and the origin for the merger
-    bool solve_merger(int ah1, int ah2, double &initial_guess_merger,
+    bool solve_merger(int ah1, int ah2, AHInitialGuessPtr initial_guess_merger,
                       std::array<double, CH_SPACEDIM> &origin_merged);
 
   private:

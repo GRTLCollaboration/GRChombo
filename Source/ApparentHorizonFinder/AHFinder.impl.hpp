@@ -22,8 +22,19 @@ AHFinder<SurfaceGeometry, AHFunction>::~AHFinder()
 }
 
 template <class SurfaceGeometry, class AHFunction>
+template <class AHInitialGuess>
 int AHFinder<SurfaceGeometry, AHFunction>::add_ah(
-    const SurfaceGeometry &a_coord_system, double a_initial_guess,
+    const SurfaceGeometry &a_coord_system, AHInitialGuess a_initial_guess,
+    const AHParams &a_params, bool solve_first_step)
+{
+    return add_ah(a_coord_system,
+                  AHInitialGuessPtr(new AHInitialGuess(a_initial_guess)),
+                  a_params, solve_first_step);
+}
+
+template <class SurfaceGeometry, class AHFunction>
+int AHFinder<SurfaceGeometry, AHFunction>::add_ah(
+    const SurfaceGeometry &a_coord_system, AHInitialGuessPtr a_initial_guess,
     const AHParams &a_params, bool solve_first_step)
 {
     PETScCommunicator::initialize(a_params.num_ranks);
@@ -51,6 +62,17 @@ int AHFinder<SurfaceGeometry, AHFunction>::add_ah(
 }
 
 template <class SurfaceGeometry, class AHFunction>
+int AHFinder<SurfaceGeometry, AHFunction>::add_ah(
+    const SurfaceGeometry &a_coord_system, double a_initial_guess,
+    const AHParams &a_params, bool solve_first_step)
+{
+    return add_ah(
+        a_coord_system,
+        AHInitialGuessPtr(new AHInitialGuessConstant(a_initial_guess)),
+        a_params, solve_first_step);
+}
+
+template <class SurfaceGeometry, class AHFunction>
 int AHFinder<SurfaceGeometry, AHFunction>::add_ah_merger(
     int ah1, int ah2, const AHParams &a_params)
 {
@@ -61,7 +83,7 @@ int AHFinder<SurfaceGeometry, AHFunction>::add_ah_merger(
     CH_assert(ah2 >= 0 && ah2 < num_ah);
     CH_assert(ah1 != ah2);
 
-    double initial_guess_merger;
+    AHInitialGuessPtr initial_guess_merger;
     std::array<double, CH_SPACEDIM> origin_merger;
     bool do_solve = solve_merger(ah1, ah2, initial_guess_merger, origin_merger);
 
@@ -175,7 +197,7 @@ void AHFinder<SurfaceGeometry, AHFunction>::solve(double a_dt, double a_time,
                     continue;
                 }
 
-                double initial_guess_merger;
+                AHInitialGuessPtr initial_guess_merger;
                 std::array<double, CH_SPACEDIM> center_merger;
                 bool do_solve =
                     solve_merger(pair.first, pair.second, initial_guess_merger,
@@ -200,8 +222,6 @@ void AHFinder<SurfaceGeometry, AHFunction>::solve(double a_dt, double a_time,
                     ah_solved[pair.second] == SOLVED)
                 {
                     m_apparent_horizons[i]->set_origin(center_merger);
-                    // m_apparent_horizons[i]->set_initial_guess(
-                    // initial_guess_merger); // should still be the same
                 }
             }
 
@@ -246,7 +266,7 @@ bool AHFinder<SurfaceGeometry, AHFunction>::need_diagnostics(
 
 template <class SurfaceGeometry, class AHFunction>
 bool AHFinder<SurfaceGeometry, AHFunction>::solve_merger(
-    int ah1, int ah2, double &initial_guess_merger,
+    int ah1, int ah2, AHInitialGuessPtr initial_guess_merger,
     std::array<double, CH_SPACEDIM> &center_merger)
 {
     // SKIP if 'parents' not yet close enough
@@ -258,36 +278,14 @@ bool AHFinder<SurfaceGeometry, AHFunction>::solve_merger(
     auto initial_guess1 = AH1->get_petsc_solver().get_initial_guess();
     auto initial_guess2 = AH2->get_petsc_solver().get_initial_guess();
 
-    if (m_merger_pairs[ah1].first >= 0)
-    {
-        double merger_pre_factor =
-            std::max(m_apparent_horizons[m_merger_pairs[ah1].first]
-                         ->m_params.merger_pre_factor,
-                     m_apparent_horizons[m_merger_pairs[ah1].second]
-                         ->m_params.merger_pre_factor);
-        if (merger_pre_factor >
-            0.) // undo the factor is this a merger from a merger
-            initial_guess1 /= (merger_pre_factor * 4.);
-    }
-    if (m_merger_pairs[ah2].first >= 0)
-    {
-        double merger_pre_factor =
-            std::max(m_apparent_horizons[m_merger_pairs[ah2].first]
-                         ->m_params.merger_pre_factor,
-                     m_apparent_horizons[m_merger_pairs[ah2].second]
-                         ->m_params.merger_pre_factor);
-        if (merger_pre_factor >
-            0.) // undo the factor is this a merger from a merger
-            initial_guess2 /= (merger_pre_factor * 4.);
-    }
-
-    double initial_guess_sum = (initial_guess1 + initial_guess2);
-
-    // some tests revealed it was about 1.2 * initial_guess_sum, but 1.5 to
-    // ensure we don't catch the inner AH
     double merger_pre_factor = std::max(AH1->m_params.merger_pre_factor,
                                         AH2->m_params.merger_pre_factor);
-    initial_guess_merger = merger_pre_factor * 4. * initial_guess_sum;
+    double merger_search_factor = std::max(AH1->m_params.merger_search_factor,
+                                           AH2->m_params.merger_search_factor);
+
+    initial_guess_merger = AHInitialGuessPtr(
+        new AHInitialGuessMerger(initial_guess1, initial_guess2,
+                                 merger_pre_factor, merger_search_factor));
 
     // update center of merged, otherwise it does it by
     // itself in solve
@@ -309,10 +307,7 @@ bool AHFinder<SurfaceGeometry, AHFunction>::solve_merger(
 #endif
         );
 
-    double merger_search_factor = std::max(AH1->m_params.merger_search_factor,
-                                           AH2->m_params.merger_search_factor);
-
-    double min_distance = merger_search_factor * 4. * initial_guess_sum;
+    double min_distance = initial_guess_merger->get_merger_min_distance();
 
     bool do_solve = false;
 
@@ -321,11 +316,6 @@ bool AHFinder<SurfaceGeometry, AHFunction>::solve_merger(
         if (AH1->get_converged() && AH2->get_converged())
         {
             do_solve = merger_search_factor <= 0. || distance <= min_distance;
-
-            if (do_solve)
-                // make sure twice the radius of the guess is bigger than AH
-                // distance
-                CH_assert(min_distance <= 2. * initial_guess_merger);
 
             if (AH1->m_params.verbose > AHParams::NONE)
             {
