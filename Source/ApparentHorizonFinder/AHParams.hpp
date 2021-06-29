@@ -10,6 +10,64 @@
 #include "ChomboParameters.hpp"
 #include "GRParmParse.hpp"
 
+// PETSc Solver related params
+// not very relevant to change, but this allows us to in case we want
+// possible the only relevant one is 'snes_maxit' ('AH_SNES_max_iterations')
+// which for highly ellipsoidal AHs sometimes needs to be increased as
+// convergence is rather slow
+// (as of 06/2021, the code outputs this as a recommendation when that happens)
+struct PETSc_params
+{
+    /*
+    (defaults show according to a certain PETSc version,
+    can't assure it is the same for all)
+    atol    - absolute convergence tolerance (default 1e-50)
+    rtol    - relative convergence tolerance (default 1e-08)
+    stol    - convergence tolerance in terms of the norm of the change in the
+            solution between steps (default 1e-08)
+    maxit   - maximum number of iterations (default 50)
+    maxf    - maximum number of function evaluations (default 10000)
+    divtol  - divergence tolerance (default 10000)
+    */
+    PetscReal snes_atol = -1., snes_rtol = -1., snes_stol = -1.;
+    PetscInt snes_maxit = -1, snes_maxf = -1;
+    PetscReal snes_divtol = -1.;
+
+    /*
+    rtol    - the relative convergence tolerance (default 1e-05)
+    abstol  - the absolute convergence tolerance (default 1e-50)
+    dtol    - the divergence tolerance (default 10000)
+    maxits  - maximum number of iterations (default 10000)
+    */
+    PetscReal ksp_rtol = -1., ksp_abstol = -1., ksp_dtol = -1.;
+    PetscInt ksp_maxits = -1;
+
+    void read_params(GRParmParse &pp)
+    {
+        if (pp.contains("AH_SNES_absolute_tolerance"))
+            pp.load("AH_SNES_absolute_tolerance", snes_atol);
+        if (pp.contains("AH_SNES_relative_tolerance"))
+            pp.load("AH_SNES_relative_tolerance", snes_rtol);
+        if (pp.contains("AH_SNES_step_change_tolerance"))
+            pp.load("AH_SNES_step_change_tolerance", snes_stol);
+        if (pp.contains("AH_SNES_max_iterations"))
+            pp.load("AH_SNES_max_iterations", snes_maxit);
+        if (pp.contains("AH_SNES_max_evaluations"))
+            pp.load("AH_SNES_max_evaluations", snes_maxf);
+        if (pp.contains("AH_SNES_divergence_tolerance"))
+            pp.load("AH_SNES_divergence_tolerance", snes_divtol);
+
+        if (pp.contains("AH_KSP_relative_tolerance"))
+            pp.load("AH_KSP_relative_tolerance", ksp_rtol);
+        if (pp.contains("AH_KSP_absolute_tolerance"))
+            pp.load("AH_KSP_absolute_tolerance", ksp_abstol);
+        if (pp.contains("AH_KSP_divergence_tolerance"))
+            pp.load("AH_KSP_divergence_tolerance", ksp_dtol);
+        if (pp.contains("AH_KSP_max_evaluations"))
+            pp.load("AH_KSP_max_evaluations", ksp_maxits);
+    }
+};
+
 // prepend with 'AH_' in params file
 template <class AHFunction> struct AHParams_t
 {
@@ -88,6 +146,8 @@ template <class AHFunction> struct AHParams_t
     double merger_pre_factor; // see note above (default to 1.)
 
     typename AHFunction::params func_params;
+
+    PETSc_params petsc_params;
 
     enum verbose_level
     {
@@ -237,6 +297,7 @@ void AHParams_t<AHFunction>::read_params(GRParmParse &pp,
     pp.load("AH_merger_pre_factor", merger_pre_factor, 1.);
 
     func_params.read_params(pp);
+    petsc_params.read_params(pp);
 }
 
 #endif /* _AHPARAMS_HPP_ */

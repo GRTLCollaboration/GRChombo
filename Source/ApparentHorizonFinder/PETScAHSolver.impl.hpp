@@ -156,8 +156,10 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::initialise()
 
     SNESSetFromOptions(m_snes);
 
-    if (m_params.verbose > AHParams::MIN)
+    // setup options
     {
+        const PETSc_params &pars = m_params.petsc_params;
+
         SNESType snes_type;
         SNESGetType(m_snes, &snes_type);
         PetscReal snes_atol, snes_rtol, snes_stol;
@@ -177,22 +179,91 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::initialise()
         KSPGetTolerances(snes_ksp, &ksp_rtol, &ksp_abstol, &ksp_dtol,
                          &ksp_maxits);
 
-        pout() << "-------------------------------------\n";
-        pout() << "PETScAHSolver Options:\n";
-        pout() << "-------------------------------------\n";
-        pout() << "PETSc SNES Options:\n";
-        pout() << "Type: " << snes_type << "\n";
-        pout() << "atol = " << snes_atol << ", rtol = " << snes_rtol
-               << ", stol = " << snes_stol << ",\n";
-        pout() << "maxit = " << snes_maxit << ", maxf = " << snes_maxf << "\n";
-        pout() << "divtol = " << snes_divtol << "\n";
-        pout() << "-------------------------------------\n";
-        pout() << "PETSc KSP Options:\n";
-        pout() << "Type: " << ksp_type << "\n";
-        pout() << "rtol = " << ksp_rtol << ", abstol = " << ksp_abstol
-               << ", dtol = " << ksp_dtol << ", maxits = " << ksp_maxits
-               << "\n";
-        pout() << "-------------------------------------" << std::endl;
+        bool any_changed = false; // SNES params
+        if (pars.snes_atol > 0 && pars.snes_atol != snes_atol)
+        {
+            any_changed = true;
+            snes_atol = pars.snes_atol;
+        }
+        if (pars.snes_rtol > 0 && pars.snes_rtol != snes_rtol)
+        {
+            any_changed = true;
+            snes_rtol = pars.snes_rtol;
+        }
+        if (pars.snes_stol > 0 && pars.snes_stol != snes_stol)
+        {
+            any_changed = true;
+            snes_stol = pars.snes_stol;
+        }
+        if (pars.snes_maxit > 0 && pars.snes_maxit != snes_maxit)
+        {
+            any_changed = true;
+            snes_maxit = pars.snes_maxit;
+        }
+        if (pars.snes_maxf > 0 && pars.snes_maxf != snes_maxf)
+        {
+            any_changed = true;
+            snes_maxf = pars.snes_maxf;
+        }
+        if (any_changed)
+        {
+            SNESSetTolerances(m_snes, snes_atol, snes_rtol, snes_stol,
+                              snes_maxit, snes_maxf);
+        }
+
+        if (pars.snes_divtol > 0 && pars.snes_divtol != snes_divtol)
+        {
+            snes_divtol = pars.snes_divtol;
+            SNESSetDivergenceTolerance(m_snes, snes_divtol);
+        }
+
+        any_changed = false; // KSP params
+        if (pars.ksp_rtol > 0 && pars.ksp_rtol != ksp_rtol)
+        {
+            any_changed = true;
+            ksp_rtol = pars.ksp_rtol;
+        }
+        if (pars.ksp_abstol > 0 && pars.ksp_abstol != ksp_abstol)
+        {
+            any_changed = true;
+            ksp_abstol = pars.ksp_abstol;
+        }
+        if (pars.ksp_dtol > 0 && pars.ksp_dtol != ksp_dtol)
+        {
+            any_changed = true;
+            ksp_dtol = pars.ksp_dtol;
+        }
+        if (pars.ksp_maxits > 0 && pars.ksp_maxits != ksp_maxits)
+        {
+            any_changed = true;
+            ksp_maxits = pars.ksp_maxits;
+        }
+        if (any_changed)
+        {
+            KSPSetTolerances(snes_ksp, ksp_rtol, ksp_abstol, ksp_dtol,
+                             ksp_maxits);
+        }
+
+        if (m_params.verbose > AHParams::MIN)
+        {
+            pout() << "-------------------------------------\n";
+            pout() << "PETScAHSolver Options:\n";
+            pout() << "-------------------------------------\n";
+            pout() << "PETSc SNES Options:\n";
+            pout() << "Type: " << snes_type << "\n";
+            pout() << "atol = " << snes_atol << ", rtol = " << snes_rtol
+                   << ", stol = " << snes_stol << ",\n";
+            pout() << "maxit = " << snes_maxit << ", maxf = " << snes_maxf
+                   << "\n";
+            pout() << "divtol = " << snes_divtol << "\n";
+            pout() << "-------------------------------------\n";
+            pout() << "PETSc KSP Options:\n";
+            pout() << "Type: " << ksp_type << "\n";
+            pout() << "rtol = " << ksp_rtol << ", abstol = " << ksp_abstol
+                   << ", dtol = " << ksp_dtol << ", maxits = " << ksp_maxits
+                   << "\n";
+            pout() << "-------------------------------------" << std::endl;
+        }
     }
 }
 

@@ -571,9 +571,12 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::check_convergence()
                << std::endl;
 
         if (m_params.verbose > AHParams::MIN)
-        {
             pout() << "SNESConvergedReason = " << result << std::endl;
-        }
+
+        if (result == SNES_DIVERGED_MAX_IT)
+            pout() << "(maximum iterations reached, try increasing "
+                      "AH_SNES_max_iterations)"
+                   << std::endl;
     }
 
     if (!m_has_been_found && m_converged)
