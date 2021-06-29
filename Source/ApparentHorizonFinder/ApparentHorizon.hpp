@@ -6,119 +6,26 @@
 #ifndef _APPARENTHORIZON_HPP_
 #define _APPARENTHORIZON_HPP_
 
-#include <petsc.h>
-// #include <petscviewerhdf5.h>
-
-#include "AHDeriv.hpp"
 #include "AHInterpolation.hpp"
-#include "ChomboParameters.hpp"
+#include "AHParams.hpp"
 #include "IntegrationMethod.hpp"
+#include "PETScAHSolver.hpp"
 
 // Class to manage ApparentHorizon for 2+1D and 3+1D simulations
 //! AHFunction defines the optimizing function (see AHFunction.hpp for
 //! expansion example calculation)
 template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
 {
-    using Interpolation = AHInterpolation<SurfaceGeometry, AHFunction>;
-
-  public:
-    // prepend with 'AH_' in params file
-    struct params
-    {
-        int num_ranks; //!< number of ranks for PETSc sub-communicator (default
-                       //!< 0, which is 'all')
-
-        int num_points_u; //!< number of points for 2D coordinate grid
-#if CH_SPACEDIM == 3
-        int num_points_v; //!< number of points for 2D coordinate grid
-#endif
-        int solve_interval; //!< same as checkpoint_interval, for
-                            //!< ApparentHorizon::solve (default 1)
-        int print_interval; //!< same as solve_interval, but for prints (default
-                            //!< 1)
-        bool track_center;  //!< whether or not to update the center
-                            //!< (set to false if you know it won't move)
-                            //!< (default true)
-        bool predict_origin; //!< whether or not to estimate where the next
-                             //!< origin will be at (default = track_center)
-
-        int level_to_run; // if negative, it will count backwards (e.g. -1 is
-                          // 'last level') (default 0)
-
-        double start_time;   //!< time after which AH can start (default 0.)
-                             //!< Useful for ScalarField collapse
-        double give_up_time; //!< stop if at this time nothing was found
-                             //!< (<0 to never, which is default)
-                             //!< Useful for ScalarField collapse
-
-        bool allow_re_attempt; //!< re-attempt with initial guess if
-                               //!< previous convergence failed (default false)
-        int max_fails_after_lost; //!< number of time steps to try again after
-                                  //!< (-1 to never) the AH was lost
-                                  //!< (default is 0)
-
-        int verbose; //!< print information during execution (default is 1)
-
-        bool print_geometry_data; //!< print metric and extrinsic
-                                  //!< curvature of the AHs (default false)
-
-        bool re_solve_at_restart; //!< whether or not to re-run even if AH
-                                  //!< already exists (useful in order to be
-                                  //!< able to provide an initial guess and
-                                  //!< re-run the AH on that time step)
-                                  //!< (default false)
-
-        bool stop_if_max_fails; //! breaks the run if AH doesn't converge
-                                //! 'max_fails_after_lost' times or if
-                                //! 'give_up_time' is reached without
-                                //! convergence (default is 'false')
-
-        std::map<std::string, std::tuple<int, VariableType, int>>
-            extra_vars;     //! extra vars to write to coordinates file (<enum,
-                            //! evolution or diagnostic, int for local|d1|d2>)
-        int num_extra_vars; // total number of extra vars (!=extra_vars.size()
-                            // as derivative count for multiple vars)
-
-        int extra_contain_diagnostic; // not a parameter (set internally);
-                                      // counts how many
-
-        std::string stats_path = "",
-                    stats_prefix =
-                        "stats_AH"; //!< name for stats file with
-                                    //!< area, spin and AH origin/center
-        std::string coords_path = "",
-                    coords_prefix =
-                        "coords_AH"; //!< name for coords file with AH
-                                     //!< coordinates at each time step
-
-        //! mergers will be searched when distance between 'parent' BHs is
-        //! distance < merger_search_factor * 4. * (AH_initial_guess_1 +
-        //! AH_initial_guess_2) should be roughly '2M=2(m1+m2)' for initial
-        //! guess at m/2 (set to non-positive to 'always search')
-        double merger_search_factor; // see note above (default is 1)
-        //! initial guess for merger is 'merger_pre_factor * 4. *
-        //! (AH_initial_guess_1 + AH_initial_guess_2)'
-        //! set to somethig bigger to avoid finding the inner AH
-        double merger_pre_factor; // see note above (default to 1.)
-
-        void read_params(GRParmParse &pp, const ChomboParameters &a_p);
-    };
-
-    enum verbose_level
-    {
-        NONE,
-        MIN,  // minimal
-        SOME, // a bit technical
-        MORE  // debug
-    };
+    using AHInterpolation = AHInterpolation_t<SurfaceGeometry, AHFunction>;
+    using AHParams = AHParams_t<SurfaceGeometry, AHFunction>;
 
   public:
     //! AH that finds the zero of expansion
     ApparentHorizon(
-        const Interpolation &a_interp, //!< Geometry class to exchange data
-        double a_initial_guess, //!< Initial guess for radius (or whatever
-                                //!< coordinate you're solving for)
-        const params &a_params, //!< set of AH parameters
+        const AHInterpolation &a_interp, //!< Geometry class to exchange data
+        double a_initial_guess,   //!< Initial guess for radius (or whatever
+                                  //!< coordinate you're solving for)
+        const AHParams &a_params, //!< set of AH parameters
         const std::string &a_stats =
             "stats", //!< name for output file with area, spin and AH origin
         const std::string &a_coords =
@@ -129,13 +36,12 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
     //! personalized optimizer that finds zero of function
     //! 'a_function_to_optimize' (a void* 'a_function_to_optimize_params' can be
     //! passed for auxiliary parameters passed to 'a_function_to_optimize')
-    ApparentHorizon(const Interpolation &a_interp, double a_initial_guess,
-                    const params &a_params,
+    ApparentHorizon(const AHInterpolation &a_interp, double a_initial_guess,
+                    const AHParams &a_params,
                     const typename AHFunction::params &a_func_params,
                     const std::string &a_stats = "stats",
                     const std::string &a_coords = "coords_",
                     bool solve_first_step = true);
-    ~ApparentHorizon();
 
     void solve(double a_dt, double a_time, double a_restart_time);
 
@@ -149,9 +55,8 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
 
     const std::array<double, CH_SPACEDIM> &get_origin() const;
     const std::array<double, CH_SPACEDIM> &get_center() const;
-    double get_initial_guess() const;
-    void set_initial_guess(double a_initial_guess);
-    const Interpolation &get_ah_interp() const;
+    const AHInterpolation &get_ah_interp() const;
+    PETScAHSolver<SurfaceGeometry, AHFunction> &get_petsc_solver();
 
     // set origin to whatever you want (e.g. punctures) before solving if you
     // want, otherwise we use the last center or the estimate next center
@@ -169,14 +74,12 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
         const; //!< decide when to print (only params::print_interval
                //!< out of all 'solve's)
 
-    const params m_params; //!< set of AH parameters
+    // variables
+  public:
+    const AHParams m_params; //!< set of AH parameters
     const std::string m_stats,
         m_coords; //!< public base names for output files (no need for a set as
                   //!< they are const)
-
-    // any parameters that want to be saved to be passed to optimization
-    // function
-    typename AHFunction::params m_func_params;
 
   private:
     void write_outputs(double a_dt, double a_time, double a_restart_time);
@@ -207,8 +110,6 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
     void calculate_minmax_F() const;
     void calculate_average_F() const;
 
-    void reset_initial_guess();
-
     void update_old_centers(std::array<double, CH_SPACEDIM>);
     void predict_next_origin();
     std::array<double, CH_SPACEDIM>
@@ -230,9 +131,6 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
     // default to simpson rule and change if invalid
     void check_integration_methods();
 
-    void initialise_PETSc(); //!< initialise automatically done in constructor
-    void finalise_PETSc();   //!< finalise automatically done in destructor
-
     // variables
   private:
     bool m_printed_once;
@@ -243,9 +141,6 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
                            //!< (read using 'has_been_found()')
     int m_num_failed_convergences; //!< the number of failed consecutive
                                    //!< convergences
-
-    double m_initial_guess; //!< initial guess for AH (saved so that it can be
-                            //!< re-used when atempting to solve again)
 
     //! used to estimate where the new center will be before solving
     //! (currently last 2 centers saved to make a parabolic regression)
@@ -269,127 +164,9 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
     // before 'solve'
     bool origin_already_updated;
 
-    /////////////////////////////////////////////////////////////////////////
-    /////////////////////////// PETSc stuff below ///////////////////////////
-    /////////////////////////////////////////////////////////////////////////
-
-#if CH_SPACEDIM == 3
-    typedef PetscScalar **dmda_arr_t;
-#elif CH_SPACEDIM == 2
-    typedef PetscScalar *dmda_arr_t;
-#endif
-
-    //! Geometries of the AH
-    //! 'm_geom_plus' and 'm_geom_minus' are used to calculate the
-    //! jacobian of the expansion using a 'delta' numerical differentiation
-    Interpolation m_interp;
-    Interpolation m_interp_plus;
-    Interpolation m_interp_minus;
-
-    //!< used to compute jacobian of expansion (numerical differentiation)
-    static constexpr double eps = 1e-7;
-
-    const bool m_periodic_u; //!< is 'u' periodic?
-    PetscInt m_num_global_u; //!< total number of grid points in 'u' coordinate
-    double m_du;             //!< physical 'delta' in 'u' coordinate
-
-#if CH_SPACEDIM == 3
-    const bool m_periodic_v; //!< is 'v' periodic?
-    PetscInt m_num_global_v; //!< total number of grid points in 'u' coordinate
-    double m_dv;             //!< physical 'delta' in 'v' coordinate
-#endif
-
-    //! vectors to store and manipulate 'F', u', and 'v'
-    //! internally, in interaction with the 'Interpolation's
-    std::vector<double> m_F;
-    std::vector<double> m_u;
-#if CH_SPACEDIM == 3
-    std::vector<double> m_v;
-#endif
-
-    //! minimums and maximums of coordinates 'u' and 'v'
-    //! of the PETSc grid specific to the current rank
-    PetscInt m_umin;
-    PetscInt m_umax;
-
-#if CH_SPACEDIM == 3
-    PetscInt m_vmin;
-    PetscInt m_vmax;
-#endif
-
-    //! number of points in 'u' and 'v' direction
-    //! (m_nu = m_umax - m_umin)
-    PetscInt m_nu;
-#if CH_SPACEDIM == 3
-    PetscInt m_nv;
-#endif
-
-    // PETSc main object
-    DM m_dmda;
-    //! Scalable Nonlinear Equations Solvers
-    SNES m_snes;
-
-    Vec m_snes_soln;
-    Vec m_snes_rhs;
-    Mat m_snes_jac;
-
-    //! interpolate (u,v) 2D grid points at restart if number of points in
-    //! either direction changed
-    //! This only interpolates the points that the PETSc rank that called it has
-    //! returns whether or not points were interpolated
-    bool interpolate_ah(dmda_arr_t f,
-                        const std::vector<std::vector<double>> &old_coords);
-
-    //! set the default stencils of AHDeriv at position {u,v}
-    void set_stencils(AHDeriv &out, int u
-#if CH_SPACEDIM == 3
-                      ,
-                      int v
-#endif
-    );
-
-    //! function to calculate 1st and 2nd derivatives of 'in'
-    //! (tipically corresponds to our 'f' function)
-    //! in the 'u' and 'v' directions
-    AHDeriv diff(const dmda_arr_t in, int u
-#if CH_SPACEDIM == 3
-                 ,
-                 int v
-#endif
-    );
-
-    //! private functions used to compute the RHS (the expansion) and it's
-    //! jacobian
-    void form_function(Vec F, Vec Rhs);
-    void form_jacobian(Vec F, Mat J);
-
-    //! helper for 'form_jacobian'
-    double point_jacobian(int u, int u_stencil,
-#if CH_SPACEDIM == 3
-                          int v, int v_stencil,
-#endif
-                          dmda_arr_t in, int idx,
-                          const Interpolation &interp_plus,
-                          const Interpolation &interp_minus);
-
-    //! functions used by PETSc based on 'form_function' and 'form_jacobian'
-    static PetscErrorCode Petsc_form_function(SNES snes, Vec F, Vec Rhs,
-                                              void *ptr);
-
-    static PetscErrorCode
-#if PETSC_VERSION_GE(3, 5, 0)
-    Petsc_form_jacobian(SNES snes, Vec F, Mat Amat, Mat Pmat, void *ptr);
-#else
-    Petsc_form_jacobian(SNES snes, Vec F, Mat *Amat, Mat *Pmat,
-                        MatStructure *flag, void *ptr);
-#endif
-
-    // monitor function required for SNES
-    static PetscErrorCode Petsc_SNES_monitor(SNES snes, PetscInt its,
-                                             PetscReal norm, void *ptr);
+    PETScAHSolver<SurfaceGeometry, AHFunction> solver;
 };
 
 #include "ApparentHorizon.impl.hpp"
-#include "ApparentHorizon_petsc.impl.hpp"
 
 #endif /* _APPARENTHORIZON_HPP_ */

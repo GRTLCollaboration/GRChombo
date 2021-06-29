@@ -16,6 +16,8 @@
 #endif
 #include <petsc.h>
 
+#include "AHInterpolation.hpp"
+#include "AHParams.hpp"
 #include "ApparentHorizon.hpp"
 #include "ChomboParameters.hpp"
 #include "Lagrange.hpp"
@@ -77,20 +79,8 @@ is more senstitive).
 //! Class to manage AHs and its mergers + control PETSc MPI sub-communicator
 template <class SurfaceGeometry, class AHFunction> class AHFinder
 {
-  public:
-    struct params : ApparentHorizon<SurfaceGeometry, AHFunction>::params
-    {
-    };
-
-  private:
-    //! if this AH is supposed to track the formation of a merger
-    //! this pair indicates the indices of the 2 AHs in the vector
-    //! 'm_apparent_horizons'
-    std::vector<std::pair<int, int>> m_merger_pairs;
-    AMRInterpolator<Lagrange<4>> *m_interpolator; //!< The interpolator pointer
-
-    std::vector<ApparentHorizon<SurfaceGeometry, AHFunction> *>
-        m_apparent_horizons; //!< public in case user wants to solve by himself
+    using AHInterpolation = AHInterpolation_t<SurfaceGeometry, AHFunction>;
+    using AHParams = AHParams_t<SurfaceGeometry, AHFunction>;
 
   public:
     AHFinder(){};
@@ -106,9 +96,9 @@ template <class SurfaceGeometry, class AHFunction> class AHFinder
     //! returns the index of the AH in m_apparent_horizons
     int
     add_ah(const SurfaceGeometry &a_coord_system,
-           double a_initial_guess, //!< Initial guess for radius (or whatever
-                                   //!< coordinate you're solving for)
-           const params &a_params, //!< set of AH parameters
+           double a_initial_guess,   //!< Initial guess for radius (or whatever
+                                     //!< coordinate you're solving for)
+           const AHParams &a_params, //!< set of AH parameters
            bool solve_first_step = true //!< whether or not to solve if t=0
     );
 
@@ -116,12 +106,12 @@ template <class SurfaceGeometry, class AHFunction> class AHFinder
     //! allows for personalized optimizer that finds zero of function
     //! 'AHFunction' (that can have some ::params)
     int add_ah(const SurfaceGeometry &a_coord_system, double a_initial_guess,
-               const params &a_params,
+               const AHParams &a_params,
                const typename AHFunction::params &a_func_params,
                bool solve_first_step = true);
 
     // returns the index of the AH in m_apparent_horizons
-    int add_ah_merger(int ah1, int ah2, const params &a_params);
+    int add_ah_merger(int ah1, int ah2, const AHParams &a_params);
 
     //! Find AH; Calculate area and spin; Update center; Print outputs
     void solve(double a_dt, double a_time, double a_restart_time);
@@ -145,6 +135,16 @@ template <class SurfaceGeometry, class AHFunction> class AHFinder
     //! sets the initial guess and the origin for the merger
     bool solve_merger(int ah1, int ah2, double &initial_guess_merger,
                       std::array<double, CH_SPACEDIM> &origin_merged);
+
+  private:
+    //! if this AH is supposed to track the formation of a merger
+    //! this pair indicates the indices of the 2 AHs in the vector
+    //! 'm_apparent_horizons'
+    std::vector<std::pair<int, int>> m_merger_pairs;
+    AMRInterpolator<Lagrange<4>> *m_interpolator; //!< The interpolator pointer
+
+    std::vector<ApparentHorizon<SurfaceGeometry, AHFunction> *>
+        m_apparent_horizons; //!< public in case user wants to solve by himself
 
 }; // namespace AHFinder
 

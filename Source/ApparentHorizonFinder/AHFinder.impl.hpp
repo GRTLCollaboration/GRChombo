@@ -10,8 +10,6 @@
 #ifndef _AHFINDER_IMPL_HPP_
 #define _AHFINDER_IMPL_HPP_
 
-#include "AHInterpolation.hpp"
-#include "ApparentHorizon.hpp"
 #include "FilesystemTools.hpp"
 
 template <class SurfaceGeometry, class AHFunction>
@@ -26,8 +24,7 @@ AHFinder<SurfaceGeometry, AHFunction>::~AHFinder()
 template <class SurfaceGeometry, class AHFunction>
 int AHFinder<SurfaceGeometry, AHFunction>::add_ah(
     const SurfaceGeometry &a_coord_system, double a_initial_guess,
-    const AHFinder<SurfaceGeometry, AHFunction>::params &a_params,
-    bool solve_first_step)
+    const AHParams &a_params, bool solve_first_step)
 {
     return add_ah(a_coord_system, a_initial_guess, a_params,
                   typename AHFunction::params(), solve_first_step);
@@ -36,8 +33,8 @@ int AHFinder<SurfaceGeometry, AHFunction>::add_ah(
 template <class SurfaceGeometry, class AHFunction>
 int AHFinder<SurfaceGeometry, AHFunction>::add_ah(
     const SurfaceGeometry &a_coord_system, double a_initial_guess,
-    const AHFinder<SurfaceGeometry, AHFunction>::params &a_params,
-    const typename AHFunction::params &a_func_params, bool solve_first_step)
+    const AHParams &a_params, const typename AHFunction::params &a_func_params,
+    bool solve_first_step)
 {
     PETScCommunicator::initialize(a_params.num_ranks);
 
@@ -50,8 +47,7 @@ int AHFinder<SurfaceGeometry, AHFunction>::add_ah(
     // determine how many AH there are already
     const int num_ah = m_apparent_horizons.size();
 
-    AHInterpolation<SurfaceGeometry, AHFunction> interp(a_coord_system,
-                                                        m_interpolator);
+    AHInterpolation interp(a_coord_system, m_interpolator);
 
     m_apparent_horizons.push_back(
         new ApparentHorizon<SurfaceGeometry, AHFunction>(
@@ -65,8 +61,8 @@ int AHFinder<SurfaceGeometry, AHFunction>::add_ah(
 }
 
 template <class SurfaceGeometry, class AHFunction>
-int AHFinder<SurfaceGeometry, AHFunction>::add_ah_merger(int ah1, int ah2,
-                                                         const params &a_params)
+int AHFinder<SurfaceGeometry, AHFunction>::add_ah_merger(
+    int ah1, int ah2, const AHParams &a_params)
 {
     CH_assert(a_params.track_center); // center tracking must be on for mergers
 
@@ -84,7 +80,8 @@ int AHFinder<SurfaceGeometry, AHFunction>::add_ah_merger(int ah1, int ah2,
         m_apparent_horizons[ah1]->get_ah_interp().get_coord_system();
     coord_system.set_origin(origin_merger);
 
-    auto &function_to_optimize_params = m_apparent_horizons[ah1]->m_func_params;
+    auto &function_to_optimize_params =
+        m_apparent_horizons[ah1]->get_petsc_solver().m_func_params;
 
     int num = add_ah(coord_system, initial_guess_merger, a_params,
                      function_to_optimize_params, do_solve);
@@ -169,7 +166,7 @@ void AHFinder<SurfaceGeometry, AHFunction>::solve(double a_dt, double a_time,
                       m_apparent_horizons[pair.second]->has_been_found()))
                 {
                     if (m_apparent_horizons[i]->m_params.verbose >
-                        ApparentHorizon<SurfaceGeometry, AHFunction>::NONE)
+                        AHParams::NONE)
                     {
                         pout() << "Skipping BH #" << i << std::endl;
                     }
@@ -183,7 +180,7 @@ void AHFinder<SurfaceGeometry, AHFunction>::solve(double a_dt, double a_time,
                 { // if one of the 'parents' is a merger too far away to be
                   // solved, skip children too
                     if (m_apparent_horizons[i]->m_params.verbose >
-                        ApparentHorizon<SurfaceGeometry, AHFunction>::NONE)
+                        AHParams::NONE)
                     {
                         pout() << "Skipping BH #" << i << std::endl;
                     }
@@ -226,8 +223,7 @@ void AHFinder<SurfaceGeometry, AHFunction>::solve(double a_dt, double a_time,
             // the past
             if (m_apparent_horizons[i]->good_to_go(a_dt, a_time))
             {
-                if (m_apparent_horizons[i]->m_params.verbose >
-                    ApparentHorizon<SurfaceGeometry, AHFunction>::NONE)
+                if (m_apparent_horizons[i]->m_params.verbose > AHParams::NONE)
                     pout() << "Solving AH #" << i << std::endl;
 
                 m_apparent_horizons[i]->solve(a_dt, a_time, a_restart_time);
@@ -237,8 +233,7 @@ void AHFinder<SurfaceGeometry, AHFunction>::solve(double a_dt, double a_time,
             }
             else
             {
-                if (m_apparent_horizons[i]->m_params.verbose >
-                    ApparentHorizon<SurfaceGeometry, AHFunction>::NONE)
+                if (m_apparent_horizons[i]->m_params.verbose > AHParams::NONE)
                 {
                     pout() << "Skipping BH #" << i << ". Not good to go."
                            << std::endl;
@@ -274,8 +269,8 @@ bool AHFinder<SurfaceGeometry, AHFunction>::solve_merger(
     auto center1 = AH1->get_center();
     auto center2 = AH2->get_center();
 
-    auto initial_guess1 = AH1->get_initial_guess();
-    auto initial_guess2 = AH2->get_initial_guess();
+    auto initial_guess1 = AH1->get_petsc_solver().get_initial_guess();
+    auto initial_guess2 = AH2->get_petsc_solver().get_initial_guess();
 
     if (m_merger_pairs[ah1].first >= 0)
     {
@@ -346,8 +341,7 @@ bool AHFinder<SurfaceGeometry, AHFunction>::solve_merger(
                 // distance
                 CH_assert(min_distance <= 2. * initial_guess_merger);
 
-            if (AH1->m_params.verbose >
-                ApparentHorizon<SurfaceGeometry, AHFunction>::NONE)
+            if (AH1->m_params.verbose > AHParams::NONE)
             {
                 pout() << "BHs #" << ah1 << " and #" << ah2
                        << " at distance = " << distance;
@@ -367,8 +361,7 @@ bool AHFinder<SurfaceGeometry, AHFunction>::solve_merger(
     }
     else
     {
-        if (AH1->m_params.verbose >
-            ApparentHorizon<SurfaceGeometry, AHFunction>::NONE)
+        if (AH1->m_params.verbose > AHParams::NONE)
         {
             pout() << "Original BH not yet found. Skipping solve for merger."
                    << std::endl;

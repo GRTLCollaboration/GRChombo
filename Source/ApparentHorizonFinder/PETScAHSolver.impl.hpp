@@ -3,12 +3,12 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef _APPARENTHORIZON_HPP_
-#error "This file should only be included through ApparentHorizon.hpp"
+#ifndef _PETSCAHSOLVER_HPP_
+#error "This file should only be included through PETScAHSolver.hpp"
 #endif
 
-#ifndef _APPARENTHORIZON_PETSC_IMPL_HPP_
-#define _APPARENTHORIZON_PETSC_IMPL_HPP_
+#ifndef _PETSCAHSOLVER_IMPL_HPP_
+#define _PETSCAHSOLVER_IMPL_HPP_
 
 // petsc libraries
 #include "petscsys.h"
@@ -19,16 +19,38 @@
 #include "SimpleArrayBox.hpp"
 #include "SimpleInterpSource.hpp"
 
-/////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////
-/////////////////////////// PETSc stuff below ///////////////////////////
-/////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////
+template <class SurfaceGeometry, class AHFunction>
+PETScAHSolver<SurfaceGeometry, AHFunction>::PETScAHSolver(
+    const AHInterpolation &a_interp, double a_initial_guess,
+    const AHParams &a_params, const typename AHFunction::params &a_func_params)
+    : m_initial_guess(a_initial_guess),
+
+      m_params(a_params), m_func_params(a_func_params),
+
+      m_interp(a_interp), m_interp_plus(a_interp), m_interp_minus(a_interp),
+
+      m_periodic_u(a_interp.get_coord_system().is_u_periodic()),
+      m_num_global_u(a_params.num_points_u)
+
+#if CH_SPACEDIM == 3
+      ,
+      m_periodic_v(a_interp.get_coord_system().is_v_periodic()),
+      m_num_global_v(a_params.num_points_v)
+#endif
+{
+    initialise();
+}
 
 template <class SurfaceGeometry, class AHFunction>
-void ApparentHorizon<SurfaceGeometry, AHFunction>::initialise_PETSc()
+PETScAHSolver<SurfaceGeometry, AHFunction>::~PETScAHSolver()
 {
-    CH_TIME("ApparentHorizon::initialise_PETSc");
+    finalise();
+}
+
+template <class SurfaceGeometry, class AHFunction>
+void PETScAHSolver<SurfaceGeometry, AHFunction>::initialise()
+{
+    CH_TIME("PETScAHSolver::initialise_PETSc");
 
     if (!PETScCommunicator::is_rank_active())
         return;
@@ -134,7 +156,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::initialise_PETSc()
 
     SNESSetFromOptions(m_snes);
 
-    if (m_params.verbose > MIN)
+    if (m_params.verbose > AHParams::MIN)
     {
         SNESType snes_type;
         SNESGetType(m_snes, &snes_type);
@@ -156,7 +178,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::initialise_PETSc()
                          &ksp_maxits);
 
         pout() << "-------------------------------------\n";
-        pout() << "ApparentHorizon Options:\n";
+        pout() << "PETScAHSolver Options:\n";
         pout() << "-------------------------------------\n";
         pout() << "PETSc SNES Options:\n";
         pout() << "Type: " << snes_type << "\n";
@@ -175,7 +197,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::initialise_PETSc()
 }
 
 template <class SurfaceGeometry, class AHFunction>
-void ApparentHorizon<SurfaceGeometry, AHFunction>::finalise_PETSc()
+void PETScAHSolver<SurfaceGeometry, AHFunction>::finalise()
 {
     if (!PETScCommunicator::is_rank_active())
         return;
@@ -188,9 +210,13 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::finalise_PETSc()
 }
 
 template <class SurfaceGeometry, class AHFunction>
-bool ApparentHorizon<SurfaceGeometry, AHFunction>::interpolate_ah(
-    dmda_arr_t f, const std::vector<std::vector<double>> &old_coords)
+bool PETScAHSolver<SurfaceGeometry, AHFunction>::interpolate_ah(
+    const std::vector<std::vector<double>> &old_coords)
 {
+    // read PETSc array to 'f'
+    dmda_arr_t f;
+    DMDAVecGetArray(m_dmda, m_snes_soln, &f);
+
     // check if number of points changed
     bool points_changed = false;
     const double du = old_coords[0][1] - old_coords[0][0];
@@ -213,6 +239,8 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::interpolate_ah(
     // int total_new_points = m_num_global_u;
 #endif
     points_changed |= (old_number_of_u != m_num_global_u);
+
+    bool force_restart = false;
 
     if (!points_changed)
     {
@@ -261,107 +289,245 @@ bool ApparentHorizon<SurfaceGeometry, AHFunction>::interpolate_ah(
 #endif
             }
         }
-
-        return false;
     }
-
-    if (m_params.verbose > NONE)
+    else
     {
-        pout() << "Number of AH points changed. Interpolating old ones."
-               << std::endl;
-    }
+        force_restart = true;
 
-    // start interpolating
-
-#if CH_SPACEDIM == 3
-    // local, no derivative
-    std::array<int, CH_SPACEDIM - 1> derivs = {0, 0};
-    std::array<double, CH_SPACEDIM - 1> dxs = {du, dv};
-
-    SimpleArrayBox<CH_SPACEDIM - 1> box(
-        {old_number_of_u, old_number_of_v}, old_coords[CH_SPACEDIM - 1],
-        {m_interp.get_coord_system().is_u_periodic(),
-         m_interp.get_coord_system().is_v_periodic()});
-    SimpleInterpSource<CH_SPACEDIM - 1> source(
-        {old_number_of_u, old_number_of_v}, dxs,
-        {m_interp.get_coord_system().is_u_periodic(),
-         m_interp.get_coord_system().is_v_periodic()});
-#elif CH_SPACEDIM == 2
-    std::array<int, CH_SPACEDIM - 1> derivs = {0};
-    std::array<double, CH_SPACEDIM - 1> dxs = {du};
-
-    SimpleArrayBox<CH_SPACEDIM - 1> box(
-        {old_number_of_u}, old_coords[CH_SPACEDIM - 1],
-        {m_interp.get_coord_system().is_u_periodic()});
-    SimpleInterpSource<CH_SPACEDIM - 1> source(
-        {old_number_of_u}, dxs, {m_interp.get_coord_system().is_u_periodic()});
-#endif
-
-    const int Order = 4;
-    bool verbose = false;
-    Lagrange<Order, CH_SPACEDIM - 1> interpolator4(source, verbose);
-
-#if CH_SPACEDIM == 3
-    for (int v = m_vmin; v < m_vmax; ++v)
-    {
-        double v_val = m_interp.get_coord_system().v(v, m_num_global_v);
-        double v_old_idx = v_val / dv;
-        // round such that we don't get AMRInterpolator errors
-        // (e.g. the last point idx=N-1 should be exact, and not being exact was
-        // generating this error in the Lagrange intrepolator trying to access
-        // cells beyond the last cell, and hence error... this fixed it)
-        if (v_old_idx - int(v_old_idx) < 1.e-7)
-            v_old_idx = int(v_old_idx);
-#else
-    {
-#endif
-        for (int u = m_umin; u < m_umax; ++u)
+        if (m_params.verbose > AHParams::NONE)
         {
-            double u_val = m_interp.get_coord_system().u(u, m_num_global_u);
-            double u_old_idx = u_val / du;
-            // round such that we don't get AMRInterpolator errors (same as for
-            // 'v')
-            if (u_old_idx - int(u_old_idx) < 1.e-7)
-                u_old_idx = int(u_old_idx);
+            pout() << "Number of AH points changed. Interpolating old ones."
+                   << std::endl;
+        }
+
+        // start interpolating
 
 #if CH_SPACEDIM == 3
-            // int idx_global = v * m_num_global_u + u;
-            int idx_local = (v - m_vmin) * m_nu + (u - m_umin);
+        // local, no derivative
+        std::array<int, CH_SPACEDIM - 1> derivs = {0, 0};
+        std::array<double, CH_SPACEDIM - 1> dxs = {du, dv};
 
-            std::array<double, CH_SPACEDIM - 1> evalCoord = {u_old_idx,
-                                                             v_old_idx};
+        SimpleArrayBox<CH_SPACEDIM - 1> box(
+            {old_number_of_u, old_number_of_v}, old_coords[CH_SPACEDIM - 1],
+            {m_interp.get_coord_system().is_u_periodic(),
+             m_interp.get_coord_system().is_v_periodic()});
+        SimpleInterpSource<CH_SPACEDIM - 1> source(
+            {old_number_of_u, old_number_of_v}, dxs,
+            {m_interp.get_coord_system().is_u_periodic(),
+             m_interp.get_coord_system().is_v_periodic()});
 #elif CH_SPACEDIM == 2
-            // int idx_global = u;
-            int idx_local = (u - m_umin);
-            std::array<double, CH_SPACEDIM - 1> evalCoord = {u_old_idx};
+        std::array<int, CH_SPACEDIM - 1> derivs = {0};
+        std::array<double, CH_SPACEDIM - 1> dxs = {du};
+
+        SimpleArrayBox<CH_SPACEDIM - 1> box(
+            {old_number_of_u}, old_coords[CH_SPACEDIM - 1],
+            {m_interp.get_coord_system().is_u_periodic()});
+        SimpleInterpSource<CH_SPACEDIM - 1> source(
+            {old_number_of_u}, dxs,
+            {m_interp.get_coord_system().is_u_periodic()});
 #endif
 
-            interpolator4.setup(derivs, evalCoord);
-            m_F[idx_local] = interpolator4.interpData(box);
+        const int Order = 4;
+        bool verbose = false;
+        Lagrange<Order, CH_SPACEDIM - 1> interpolator4(source, verbose);
 
 #if CH_SPACEDIM == 3
-            // as 'write_coords_file' preserves order
-            f[v][u] = m_F[idx_local];
-#elif CH_SPACEDIM == 2
-            f[u] = m_F[idx_local];
+        for (int v = m_vmin; v < m_vmax; ++v)
+        {
+            double v_val = m_interp.get_coord_system().v(v, m_num_global_v);
+            double v_old_idx = v_val / dv;
+            // round such that we don't get AMRInterpolator errors
+            // (e.g. the last point idx=N-1 should be exact, and not being exact
+            // was generating this error in the Lagrange intrepolator trying to
+            // access cells beyond the last cell, and hence error... this fixed
+            // it)
+            if (v_old_idx - int(v_old_idx) < 1.e-7)
+                v_old_idx = int(v_old_idx);
+#else
+        {
 #endif
+            for (int u = m_umin; u < m_umax; ++u)
+            {
+                double u_val = m_interp.get_coord_system().u(u, m_num_global_u);
+                double u_old_idx = u_val / du;
+                // round such that we don't get AMRInterpolator errors (same as
+                // for 'v')
+                if (u_old_idx - int(u_old_idx) < 1.e-7)
+                    u_old_idx = int(u_old_idx);
+
+#if CH_SPACEDIM == 3
+                // int idx_global = v * m_num_global_u + u;
+                int idx_local = (v - m_vmin) * m_nu + (u - m_umin);
+
+                std::array<double, CH_SPACEDIM - 1> evalCoord = {u_old_idx,
+                                                                 v_old_idx};
+#elif CH_SPACEDIM == 2
+                // int idx_global = u;
+                int idx_local = (u - m_umin);
+                std::array<double, CH_SPACEDIM - 1> evalCoord = {u_old_idx};
+#endif
+
+                interpolator4.setup(derivs, evalCoord);
+                m_F[idx_local] = interpolator4.interpData(box);
+
+#if CH_SPACEDIM == 3
+                // as 'write_coords_file' preserves order
+                f[v][u] = m_F[idx_local];
+#elif CH_SPACEDIM == 2
+                f[u] = m_F[idx_local];
+#endif
+            }
+        }
+
+        if (m_params.verbose > AHParams::NONE)
+        {
+            pout() << "Interpolation Successfull." << std::endl;
         }
     }
 
-    if (m_params.verbose > NONE)
-    {
-        pout() << "Interpolation Successfull." << std::endl;
-    }
+    // write PETSc array back
+    DMDAVecRestoreArray(m_dmda, m_snes_soln, &f);
 
-    return true;
+    return force_restart;
 }
 
 template <class SurfaceGeometry, class AHFunction>
-void ApparentHorizon<SurfaceGeometry, AHFunction>::set_stencils(AHDeriv &out,
-                                                                int u
+const std::array<double, CH_SPACEDIM> &
+PETScAHSolver<SurfaceGeometry, AHFunction>::get_origin() const
+{
+    return m_interp.get_coord_system().get_origin();
+}
+
+template <class SurfaceGeometry, class AHFunction>
+void PETScAHSolver<SurfaceGeometry, AHFunction>::set_origin(
+    const std::array<double, CH_SPACEDIM> &a_origin)
+{
+    m_interp.set_origin(a_origin);
+    m_interp_plus.set_origin(a_origin);
+    m_interp_minus.set_origin(a_origin);
+
+    if (m_params.verbose > AHParams::SOME)
+    {
+        pout() << "Setting origin to (" << a_origin[0] << "," << a_origin[1]
 #if CH_SPACEDIM == 3
-                                                                ,
-                                                                int v
+               << "," << a_origin[2]
+#endif
+               << ")" << std::endl;
+    }
+}
+
+template <class SurfaceGeometry, class AHFunction>
+double PETScAHSolver<SurfaceGeometry, AHFunction>::get_initial_guess() const
+{
+    return m_initial_guess;
+}
+
+template <class SurfaceGeometry, class AHFunction>
+void PETScAHSolver<SurfaceGeometry, AHFunction>::set_initial_guess(
+    double a_initial_guess)
+{
+    m_initial_guess = a_initial_guess;
+}
+
+template <class SurfaceGeometry, class AHFunction>
+void PETScAHSolver<SurfaceGeometry, AHFunction>::reset_initial_guess()
+{
+    CH_TIME("ApparentHorizon::reset_initial_guess");
+
+    if (!PETScCommunicator::is_rank_active())
+        return;
+
+    auto origin = get_origin();
+
+    // verify origin +- initial guess is inside the grid
+    bool out_of_grid = m_interp.is_in_grid(origin, m_initial_guess);
+    CH_assert(!out_of_grid);
+
+    if (m_params.verbose > AHParams::NONE)
+    {
+        pout() << "Setting Initial Guess to f=" << m_initial_guess
+               << " centered at (" << origin[0] << "," << origin[1]
+#if CH_SPACEDIM == 3
+               << "," << origin[2]
+#endif
+               << ")" << std::endl;
+    }
+
+    // read PETSc array to 'f'
+    dmda_arr_t f;
+    DMDAVecGetArray(m_dmda, m_snes_soln, &f);
+
+#if CH_SPACEDIM == 3
+    for (int v = m_vmin; v < m_vmax; ++v)
+#endif
+    {
+        for (int u = m_umin; u < m_umax; ++u)
+        {
+#if CH_SPACEDIM == 3
+            double &f_point = f[v][u];
+#else
+            double &f_point = f[u];
+#endif
+
+            f_point = m_initial_guess;
+        }
+    }
+
+    // write PETSc array back
+    DMDAVecRestoreArray(m_dmda, m_snes_soln, &f);
+}
+
+template <class SurfaceGeometry, class AHFunction>
+void PETScAHSolver<SurfaceGeometry, AHFunction>::solve()
+{
+    // actual solve happens here!
+    SNESSolve(m_snes, NULL, m_snes_soln);
+
+    PetscInt its;
+    SNESGetIterationNumber(m_snes, &its);
+    if (m_params.verbose > AHParams::MIN)
+    {
+        pout() << "SNES Iteration number " << its << endl;
+    }
+    SNESGetLinearSolveIterations(m_snes, &its);
+    if (m_params.verbose > AHParams::MIN)
+    {
+        pout() << "KSP Iteration number " << its << endl;
+    }
+}
+
+template <class SurfaceGeometry, class AHFunction>
+SNESConvergedReason
+PETScAHSolver<SurfaceGeometry, AHFunction>::getConvergedReason() const
+{
+    SNESConvergedReason reason;
+    SNESGetConvergedReason(m_snes, &reason);
+    return reason;
+}
+
+template <class SurfaceGeometry, class AHFunction>
+void PETScAHSolver<SurfaceGeometry, AHFunction>::get_dmda_arr_t(Vec &localF,
+                                                                dmda_arr_t &in)
+{
+    DMGetLocalVector(m_dmda, &localF);
+    DMGlobalToLocalBegin(m_dmda, m_snes_soln, INSERT_VALUES, localF);
+    DMGlobalToLocalEnd(m_dmda, m_snes_soln, INSERT_VALUES, localF);
+    DMDAVecGetArray(m_dmda, localF, &in);
+}
+template <class SurfaceGeometry, class AHFunction>
+void PETScAHSolver<SurfaceGeometry, AHFunction>::restore_dmda_arr_t(
+    Vec &localF, dmda_arr_t &in)
+{
+    DMDAVecRestoreArray(m_dmda, localF, &in);
+    DMRestoreLocalVector(m_dmda, &localF);
+}
+
+template <class SurfaceGeometry, class AHFunction>
+void PETScAHSolver<SurfaceGeometry, AHFunction>::set_stencils(AHDeriv &out,
+                                                              int u
+#if CH_SPACEDIM == 3
+                                                              ,
+                                                              int v
 #endif
 )
 {
@@ -526,15 +692,15 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::set_stencils(AHDeriv &out,
 }
 
 template <class SurfaceGeometry, class AHFunction>
-AHDeriv ApparentHorizon<SurfaceGeometry, AHFunction>::diff(const dmda_arr_t in,
-                                                           int u
+AHDeriv PETScAHSolver<SurfaceGeometry, AHFunction>::diff(const dmda_arr_t in,
+                                                         int u
 #if CH_SPACEDIM == 3
-                                                           ,
-                                                           int v
+                                                         ,
+                                                         int v
 #endif
 )
 {
-    CH_TIME("ApparentHorizon::diff");
+    CH_TIME("PETScAHSolver::diff");
 
     AHDeriv out;
     set_stencils(out, u
@@ -603,9 +769,9 @@ AHDeriv ApparentHorizon<SurfaceGeometry, AHFunction>::diff(const dmda_arr_t in,
 }
 
 template <class SurfaceGeometry, class AHFunction>
-void ApparentHorizon<SurfaceGeometry, AHFunction>::form_function(Vec F, Vec Rhs)
+void PETScAHSolver<SurfaceGeometry, AHFunction>::form_function(Vec F, Vec Rhs)
 {
-    CH_TIME("ApparentHorizon::form_function");
+    CH_TIME("PETScAHSolver::form_function");
 
     // Scatter ghost cells
     Vec localF;
@@ -699,9 +865,9 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::form_function(Vec F, Vec Rhs)
 }
 
 template <class SurfaceGeometry, class AHFunction>
-void ApparentHorizon<SurfaceGeometry, AHFunction>::form_jacobian(Vec F, Mat J)
+void PETScAHSolver<SurfaceGeometry, AHFunction>::form_jacobian(Vec F, Mat J)
 {
-    CH_TIME("ApparentHorizon::form_jacobian");
+    CH_TIME("PETScAHSolver::form_jacobian");
 
     // Scatter ghost cells
     Vec localF;
@@ -878,14 +1044,13 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::form_jacobian(Vec F, Mat J)
 }
 
 template <class SurfaceGeometry, class AHFunction>
-double ApparentHorizon<SurfaceGeometry, AHFunction>::point_jacobian(
+double PETScAHSolver<SurfaceGeometry, AHFunction>::point_jacobian(
     int u, int u_stencil,
 #if CH_SPACEDIM == 3
     int v, int v_stencil,
 #endif
-    dmda_arr_t in, int idx,
-    const AHInterpolation<SurfaceGeometry, AHFunction> &interp_plus,
-    const AHInterpolation<SurfaceGeometry, AHFunction> &interp_minus)
+    dmda_arr_t in, int idx, const AHInterpolation &interp_plus,
+    const AHInterpolation &interp_minus)
 {
 #if CH_SPACEDIM == 3
     double &_in = in[v_stencil][u_stencil];
@@ -944,13 +1109,10 @@ double ApparentHorizon<SurfaceGeometry, AHFunction>::point_jacobian(
 
 //! functions used by PETSc based on 'form_function' and 'form_jacobian'
 template <class SurfaceGeometry, class AHFunction>
-PetscErrorCode
-ApparentHorizon<SurfaceGeometry, AHFunction>::Petsc_form_function(SNES snes,
-                                                                  Vec F,
-                                                                  Vec Rhs,
-                                                                  void *ptr)
+PetscErrorCode PETScAHSolver<SurfaceGeometry, AHFunction>::Petsc_form_function(
+    SNES snes, Vec F, Vec Rhs, void *ptr)
 {
-    ApparentHorizon &ah = *reinterpret_cast<ApparentHorizon *>(ptr);
+    PETScAHSolver &ah = *reinterpret_cast<PETScAHSolver *>(ptr);
     CH_assert(ah.m_snes == snes);
     ah.form_function(F, Rhs);
     return 0;
@@ -959,14 +1121,16 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::Petsc_form_function(SNES snes,
 template <class SurfaceGeometry, class AHFunction>
 PetscErrorCode
 #if PETSC_VERSION_GE(3, 5, 0)
-ApparentHorizon<SurfaceGeometry, AHFunction>::Petsc_form_jacobian(
-    SNES snes, Vec F, Mat Amat, Mat Pmat, void *ptr)
+PETScAHSolver<SurfaceGeometry, AHFunction>::Petsc_form_jacobian(SNES snes,
+                                                                Vec F, Mat Amat,
+                                                                Mat Pmat,
+                                                                void *ptr)
 #else
-ApparentHorizon<SurfaceGeometry, AHFunction>::Petsc_form_jacobian(
+PETScAHSolver<SurfaceGeometry, AHFunction>::Petsc_form_jacobian(
     SNES snes, Vec F, Mat *Amat, Mat *Pmat, MatStructure *flag, void *ptr)
 #endif
 {
-    ApparentHorizon &ah = *reinterpret_cast<ApparentHorizon *>(ptr);
+    PETScAHSolver &ah = *reinterpret_cast<PETScAHSolver *>(ptr);
 
 #if PETSC_VERSION_GE(3, 5, 0)
     CH_assert(ah.m_snes == snes && Amat == Pmat);
@@ -980,12 +1144,12 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::Petsc_form_jacobian(
 }
 
 template <class SurfaceGeometry, class AHFunction>
-PetscErrorCode ApparentHorizon<SurfaceGeometry, AHFunction>::Petsc_SNES_monitor(
+PetscErrorCode PETScAHSolver<SurfaceGeometry, AHFunction>::Petsc_SNES_monitor(
     SNES snes, PetscInt its, PetscReal norm, void *ptr)
 {
-    ApparentHorizon &ah = *reinterpret_cast<ApparentHorizon *>(ptr);
+    PETScAHSolver &ah = *reinterpret_cast<PETScAHSolver *>(ptr);
     CH_assert(ah.m_snes == snes);
     return 0;
 }
 
-#endif // _APPARENTHORIZON_PETSC_IMPL_HPP_
+#endif // _PETSCAHSOLVER_IMPL_HPP_

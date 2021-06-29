@@ -16,7 +16,7 @@
 
 //! Class used for interpolation of the variables needed to calculate expansion
 //! with the data from a given 'SurfaceGeometry'
-template <class SurfaceGeometry, class AHFunction> class AHInterpolation
+template <class SurfaceGeometry, class AHFunction> class AHInterpolation_t
 {
   private:
     SurfaceGeometry m_coord_system;
@@ -55,8 +55,8 @@ template <class SurfaceGeometry, class AHFunction> class AHInterpolation
     );
 
   public:
-    AHInterpolation(const SurfaceGeometry &a_coordSystem,
-                    AMRInterpolator<Lagrange<4>> *a_interpolator);
+    AHInterpolation_t(const SurfaceGeometry &a_coordSystem,
+                      AMRInterpolator<Lagrange<4>> *a_interpolator);
 
     const AMRInterpolator<Lagrange<4>> *get_interpolator() const;
     const SurfaceGeometry &get_coord_system() const;
