@@ -103,8 +103,8 @@ void IsotropicBoostedBH::compute(Cell<data_t> current_cell) const
         }
     }
 
-    FOR2(i, j) { vars.h[i][j] = vars.chi * gammaLL[i][j]; }
-    FOR2(i, j)
+    FOR(i, j) { vars.h[i][j] = vars.chi * gammaLL[i][j]; }
+    FOR(i, j)
     {
         vars.A[i][j] = vars.chi * (KLL[i][j] - vars.K * gammaLL[i][j] / 3.);
     }

@@ -63,7 +63,7 @@ SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
                     }
                 }
 #elif CH_SPACEDIM == 2
-                FOR1(idir)
+                FOR(idir)
                 {
                     int idx = index(isurface, iu);
                     m_interp_coords[idir][idx] =

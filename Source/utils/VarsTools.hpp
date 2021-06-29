@@ -46,7 +46,7 @@ void define_symmetric_enum_mapping(
                       DEFAULT_TENSOR_DIM * (DEFAULT_TENSOR_DIM + 1) / 2,
                   "Interval has wrong size");
     int idx = 0;
-    FOR1(idir1)
+    FOR(idir1)
     {
         for (int idir2 = idir1; idir2 < DEFAULT_TENSOR_DIM; ++idir2, ++idx)
         {

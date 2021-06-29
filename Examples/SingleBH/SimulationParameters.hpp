@@ -43,7 +43,7 @@ class SimulationParameters : public SimulationParametersBase
         // provided)
         std::array<double, CH_SPACEDIM> offset;
         pp.load("offset", offset, {0.0, 0.0, 0.0});
-        FOR1(idir) { bh_params.center[idir] = center[idir] + offset[idir]; }
+        FOR(idir) { bh_params.center[idir] = center[idir] + offset[idir]; }
 
 #ifdef USE_AHFINDER
         pp.load("AH_initial_guess", AH_initial_guess, 0.5 * bh_params.mass);

@@ -80,10 +80,10 @@ Tensor<1, data_t, 3> transform_vector(const Tensor<1, data_t, 3> &vec_U,
                                       const Tensor<2, data2_t, 3> &jacobian)
 {
     Tensor<1, data_t, 3> transformed_U;
-    FOR1(i)
+    FOR(i)
     {
         transformed_U[i] = 0.0;
-        FOR1(j) { transformed_U[i] += jacobian[i][j] * vec_U[j]; }
+        FOR(j) { transformed_U[i] += jacobian[i][j] * vec_U[j]; }
     }
     return transformed_U;
 }
@@ -95,10 +95,10 @@ Tensor<1, data_t, 3> transform_covector(const Tensor<1, data_t, 3> &vec_L,
                                         const Tensor<2, data2_t, 3> &jacobian)
 {
     Tensor<1, data_t, 3> transformed_L;
-    FOR1(i)
+    FOR(i)
     {
         transformed_L[i] = 0.0;
-        FOR1(j) { transformed_L[i] += vec_L[j] * jacobian[j][i]; }
+        FOR(j) { transformed_L[i] += vec_L[j] * jacobian[j][i]; }
     }
     return transformed_L;
 }
@@ -110,10 +110,10 @@ Tensor<2, data_t, 3> transform_tensor_UU(const Tensor<2, data_t, 3> &tensor_UU,
                                          const Tensor<2, data2_t, 3> &jacobian)
 {
     Tensor<2, data_t, 3> transformed_UU;
-    FOR2(i, j)
+    FOR(i, j)
     {
         transformed_UU[i][j] = 0.;
-        FOR2(k, l)
+        FOR(k, l)
         {
             transformed_UU[i][j] +=
                 jacobian[i][k] * jacobian[j][l] * tensor_UU[k][l];
@@ -129,10 +129,10 @@ Tensor<2, data_t, 3> transform_tensor_LL(const Tensor<2, data_t, 3> &tensor_LL,
                                          const Tensor<2, data2_t, 3> &jacobian)
 {
     Tensor<2, data_t, 3> transformed_LL;
-    FOR2(i, j)
+    FOR(i, j)
     {
         transformed_LL[i][j] = 0.;
-        FOR2(k, l)
+        FOR(k, l)
         {
             transformed_LL[i][j] +=
                 tensor_LL[k][l] * jacobian[k][i] * jacobian[l][j];

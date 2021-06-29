@@ -289,7 +289,7 @@ bool AHFinder<SurfaceGeometry, AHFunction>::solve_merger(
 
     // update center of merged, otherwise it does it by
     // itself in solve
-    FOR1(a)
+    FOR(a)
     {
         if (!AH1->get_ah_interp().get_interpolator()->get_boundary_reflective(
                 Side::Lo, a))
@@ -373,7 +373,7 @@ void AHFinder<SurfaceGeometry, AHFunction>::set_origins(
                     auto origin2 = m_apparent_horizons[m_merger_pairs[i].second]
                                        ->get_origin();
                     std::array<double, CH_SPACEDIM> origin;
-                    FOR1(a) { origin[a] = (origin1[a] + origin2[a]) / 2.; }
+                    FOR(a) { origin[a] = (origin1[a] + origin2[a]) / 2.; }
                     m_apparent_horizons[i]->set_origin(origin);
                 }
             }

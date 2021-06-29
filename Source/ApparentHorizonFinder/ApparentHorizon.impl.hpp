@@ -188,7 +188,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::predict_next_origin()
     std::array<double, CH_SPACEDIM> new_center = m_old_centers[0];
     if (m_converged >= 3) // add 2nd derivative
     {
-        FOR1(a)
+        FOR(a)
         {
             if (!solver.m_interp.get_interpolator()->get_boundary_reflective(
                     Side::Lo, a) &&
@@ -211,7 +211,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::predict_next_origin()
     }
     if (m_converged >= 2) // add 1st derivative
     {
-        FOR1(a)
+        FOR(a)
         {
             if (!solver.m_interp.get_interpolator()->get_boundary_reflective(
                     Side::Lo, a) &&
@@ -255,7 +255,7 @@ template <class SurfaceGeometry, class AHFunction>
 void ApparentHorizon<SurfaceGeometry, AHFunction>::update_old_centers(
     std::array<double, CH_SPACEDIM> new_center)
 {
-    FOR1(a)
+    FOR(a)
     {
         if (!solver.m_interp.get_interpolator()->get_boundary_reflective(
                 Side::Lo, a) &&
@@ -355,7 +355,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
 
 #if CH_SPACEDIM == 3
         m_spin = J_norm / m_mass;
-        FOR1(a) { m_dimensionless_spin_vector[a] = J[a] / (m_mass * m_mass); }
+        FOR(a) { m_dimensionless_spin_vector[a] = J[a] / (m_mass * m_mass); }
 
         m_spin_z_alt = calculate_spin_dimensionless(m_area);
 #endif
@@ -461,7 +461,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
         values[idx++] = m_irreducible_mass;
 #if CH_SPACEDIM == 3
         values[idx++] = m_spin;
-        FOR1(a) { values[idx++] = m_dimensionless_spin_vector[a]; }
+        FOR(a) { values[idx++] = m_dimensionless_spin_vector[a]; }
         values[idx++] = m_spin_z_alt;
 #endif
 #endif
@@ -767,7 +767,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
 #endif
 
         int offset = CH_SPACEDIM + was_center_tracked * CH_SPACEDIM;
-        FOR1(a) { origin[a] = stats[cols - offset + a][idx]; }
+        FOR(a) { origin[a] = stats[cols - offset + a][idx]; }
 
         if (m_params.verbose > AHParams::NONE)
         {
@@ -1318,7 +1318,7 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_spin_dimensionless(
                               deriv.dvF * geometry_data.dxdf[2];
 
                     double norm2 = 0.;
-                    FOR2(i, j) norm2 += g[i][j] * dxdv[i] * dxdv[j];
+                    FOR(i, j) norm2 += g[i][j] * dxdv[i] * dxdv[j];
                     CH_assert(norm2 >= 0.);
 
                     double weight = m_integration_methods[1].weight(
@@ -1412,17 +1412,14 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
                 Tensor<1, double> S_U = func.get_spatial_normal_U(s_L);
 
                 Tensor<1, double> coords_cart_centered;
-                FOR1(i)
-                {
-                    coords_cart_centered[i] = coords_cart[i] - center[i];
-                }
+                FOR(i) { coords_cart_centered[i] = coords_cart[i] - center[i]; }
 
                 Tensor<1, double> spin_integrand = {0.};
                 double directions[3][3] = {
                     {0, -coords_cart_centered[2], coords_cart_centered[1]},
                     {coords_cart_centered[2], 0., -coords_cart_centered[0]},
                     {-coords_cart_centered[1], coords_cart_centered[0], 0.}};
-                FOR3(a, b, c)
+                FOR(a, b, c)
                 {
                     // as in arXiv:gr-qc/0206008 eq. 25
                     // but computing with 'killing vector' in directions 'x,y,z'
@@ -1436,7 +1433,7 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
                 // Calculate Jacobian matrix for transformation from Cartesian
                 // to (f,u,v) coords
                 Tensor<2, double> Jac;
-                FOR1(k)
+                FOR(k)
                 {
                     Jac[0][k] = geometric_data.dxdf[k];
                     Jac[1][k] = geometric_data.dxdu[k];
@@ -1445,7 +1442,7 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
 
                 // Now do the coordinate transformation
                 Tensor<2, double> g_spherical = {0.};
-                FOR4(i, j, k, l)
+                FOR(i, j, k, l)
                 {
                     g_spherical[i][j] += Jac[i][k] * Jac[j][l] * g[k][l];
                 }
@@ -1472,7 +1469,7 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
                     u, m_params.num_points_u,
                     solver.m_interp.get_coord_system().is_u_periodic());
 
-                FOR1(a)
+                FOR(a)
                 {
                     double element = spin_integrand[a] / (8. * M_PI) *
                                      sqrt(det) * weight * solver.m_du;
@@ -1490,10 +1487,7 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
             double weight = m_integration_methods[1].weight(
                 v, m_params.num_points_v,
                 solver.m_interp.get_coord_system().is_v_periodic());
-            FOR1(a)
-            {
-                integrals[a] += weight * solver.m_dv * inner_integral[a];
-            }
+            FOR(a) { integrals[a] += weight * solver.m_dv * inner_integral[a]; }
         }
 
         solver.restore_dmda_arr_t(localF, in);
@@ -1508,7 +1502,7 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
     MPI_Allreduce(&integrals, &J, GR_SPACEDIM, MPI_DOUBLE, MPI_SUM,
                   Chombo_MPI::comm);
 #else // serial
-    FOR1(a) { J[a] = integrals[a]; }
+    FOR(a) { J[a] = integrals[a]; }
 #endif
 
     return J;
@@ -1559,7 +1553,7 @@ double ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_area()
                 // Calculate Jacobian matrix for transformation from Cartesian
                 // to (f,u,v) coords
                 Tensor<2, double> Jac;
-                FOR1(k)
+                FOR(k)
                 {
                     Jac[0][k] = geometric_data.dxdf[k];
                     Jac[1][k] = geometric_data.dxdu[k];
@@ -1577,7 +1571,7 @@ double ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_area()
 
                 // Now do the coordinate transformation
                 Tensor<2, double> g_spherical = {0.};
-                FOR4(i, j, k, l)
+                FOR(i, j, k, l)
                 {
                     g_spherical[i][j] += Jac[i][k] * Jac[j][l] * g[k][l];
                 }

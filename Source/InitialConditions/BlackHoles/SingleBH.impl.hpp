@@ -25,7 +25,7 @@ template <class data_t> void SingleBH::compute(Cell<data_t> current_cell) const
     vars.chi = compute_chi(coords);
 
     // Conformal metric is flat
-    FOR1(i) vars.h[i][i] = 1.;
+    FOR(i) vars.h[i][i] = 1.;
 
     vars.A = compute_A(vars.chi, coords);
 
@@ -63,7 +63,7 @@ Tensor<2, data_t> SingleBH::compute_A(data_t chi,
     Tensor<2, data_t> out;
 
     // Aij(CCZ4) = psi^(-6) * Aij(Baumgarte&Shapiro book)
-    FOR2(i, j) out[i][j] = pow(chi, 3 / 2.) * Aij[i][j];
+    FOR(i, j) out[i][j] = pow(chi, 3 / 2.) * Aij[i][j];
 
     return out;
 }

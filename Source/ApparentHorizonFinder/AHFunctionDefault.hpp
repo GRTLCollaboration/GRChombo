@@ -43,7 +43,7 @@ struct AHFunctionDefault
     {
         // cartesian flat metric
         Tensor<2, double> g = {0.};
-        FOR1(i) { g[i][i] = 1.; }
+        FOR(i) { g[i][i] = 1.; }
         return g;
     }
     ALWAYS_INLINE const Tensor<2, double> get_inverse_metric() const

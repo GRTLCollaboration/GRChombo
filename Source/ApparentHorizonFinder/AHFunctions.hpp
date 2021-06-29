@@ -155,7 +155,7 @@ struct ExpansionFunction : AHFunctionDefault
 
         // INVERSE METRIC
         Tensor<2, double, CH_SPACEDIM> h_DD;
-        FOR2(i, j) { h_DD[i][j] = a_data.vars.at(h[i][j]); }
+        FOR(i, j) { h_DD[i][j] = a_data.vars.at(h[i][j]); }
 
         Tensor<2, double, CH_SPACEDIM> h_UU =
             TensorAlgebra::compute_inverse_sym(h_DD);
@@ -163,7 +163,7 @@ struct ExpansionFunction : AHFunctionDefault
         // Reconstructing ADM variables
         Tensor<1, double, CH_SPACEDIM> dchi;
 
-        FOR1(i) { dchi[i] = a_data.d1.at(c_chi)[i]; }
+        FOR(i) { dchi[i] = a_data.d1.at(c_chi)[i]; }
 
         for (int i = 0; i < CH_SPACEDIM; ++i)
         {
@@ -211,11 +211,11 @@ struct ExpansionFunction : AHFunctionDefault
         coords = a_coords_cartesian;
 
         double hww = a_data.vars.at(comp_hww);
-        FOR1(a) { dhww[a] = a_data.d1.at(comp_hww)[a]; }
+        FOR(a) { dhww[a] = a_data.d1.at(comp_hww)[a]; }
         double Aww = a_data.vars.at(comp_Aww);
 
         g_hd = hww / chi;
-        FOR1(a) { dg_hd[a] = (dhww[a] - (hww * dchi[a]) / chi) / chi; }
+        FOR(a) { dg_hd[a] = (dhww[a] - (hww * dchi[a]) / chi) / chi; }
 
         Kww = Aww / chi + trK * g_hd / GR_SPACEDIM;
 #endif
@@ -244,7 +244,7 @@ struct ExpansionFunction : AHFunctionDefault
         // calculate D_i S^i and S^i S^j K_ij
         double DiSi = 0.;
         double Kij_dot_Si_Sj = 0.;
-        FOR2(a, b)
+        FOR(a, b)
         {
             DiSi += (g_UU[a][b] - S_U[a] * S_U[b]) * Ds[a][b] / norm_s;
             Kij_dot_Si_Sj += S_U[a] * S_U[b] * K[a][b];
@@ -257,7 +257,7 @@ struct ExpansionFunction : AHFunctionDefault
 #if GR_SPACEDIM != CH_SPACEDIM
         expansion += (GR_SPACEDIM - CH_SPACEDIM) * S_U[CH_SPACEDIM - 1] /
                      coords[CH_SPACEDIM - 1];
-        FOR1(a)
+        FOR(a)
         {
             expansion +=
                 (GR_SPACEDIM - CH_SPACEDIM) * 0.5 * dg_hd[a] / g_hd * S_U[a];
@@ -281,7 +281,7 @@ struct ExpansionFunction : AHFunctionDefault
         // D_a L = d_a f - dF/du * du/dx^a - dF/dv * dv/dx^a
 
         Tensor<1, double> s_L = {0.}; // not normalized, just D_a L
-        FOR1(a)
+        FOR(a)
         {
             s_L[a] = geo_data.df[a] - (deriv.duF * geo_data.du[a])
 #if CH_SPACEDIM == 3
@@ -306,14 +306,14 @@ struct ExpansionFunction : AHFunctionDefault
 
         // norm of s_L = | D_a L| (the 'u' in 6.7.12 of Alcubierre)
         norm_s = 0.0;
-        FOR2(a, b) { norm_s += g_UU[a][b] * s_L[a] * s_L[b]; }
+        FOR(a, b) { norm_s += g_UU[a][b] * s_L[a] * s_L[b]; }
         norm_s = sqrt(norm_s);
 
         // raise s_L
         Tensor<1, double> s_U = {0.};
-        FOR2(a, b) { s_U[a] += g_UU[a][b] * s_L[b]; }
+        FOR(a, b) { s_U[a] += g_UU[a][b] * s_L[b]; }
 
-        FOR1(a) { S_U[a] = s_U[a] / norm_s; }
+        FOR(a) { S_U[a] = s_U[a] / norm_s; }
     }
 
     Tensor<2, double> get_level_function_2nd_covariant_derivative(
@@ -324,7 +324,7 @@ struct ExpansionFunction : AHFunctionDefault
         // for the level function L = f - F(u,v)
 
         Tensor<2, double> ds = {0.};
-        FOR2(a, b)
+        FOR(a, b)
         {
             ds[a][b] = geo_data.ddf[a][b] - (deriv.duF * geo_data.ddu[a][b]) -
                        (deriv.duduF * geo_data.du[a] * geo_data.du[b])
@@ -339,7 +339,7 @@ struct ExpansionFunction : AHFunctionDefault
 
         // calculate Christoffels on this point (u,v,f)
         Tensor<3, double> chris = {0.};
-        FOR4(a, b, c, d)
+        FOR(a, b, c, d)
         {
             chris[a][b][c] +=
                 0.5 * g_UU[a][d] * (dg[b][d][c] + dg[c][d][b] - dg[b][c][d]);
@@ -347,10 +347,10 @@ struct ExpansionFunction : AHFunctionDefault
 
         // covariant derivatrive of s_a to use for DS
         Tensor<2, double> Ds = {0.};
-        FOR2(a, b)
+        FOR(a, b)
         {
             Ds[a][b] = ds[a][b];
-            FOR1(c) { Ds[a][b] -= chris[c][a][b] * s_L[c]; }
+            FOR(c) { Ds[a][b] -= chris[c][a][b] * s_L[c]; }
         }
 
         return Ds;
