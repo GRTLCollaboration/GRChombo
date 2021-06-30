@@ -45,6 +45,57 @@ using std::endl;
 // Chombo namespace
 #include "UsingNamespace.H"
 
+void surface_integration(
+    const spherical_extraction_params_t &extraction_params_lo,
+    const SimulationParameters &sim_params,
+    AMRInterpolator<Lagrange<4>> &interpolator,
+    std::pair<std::vector<double>, std::vector<double>> &integral_lo,
+    std::pair<std::vector<double>, std::vector<double>> &integral_hi,
+    const IntegrationMethod &method)
+{
+    // low resolution spherical extraction
+    SphericalExtractionUniform spherical_extraction_lo(
+        extraction_params_lo, sim_params.coarsest_dx * sim_params.dt_multiplier,
+        0.0, true, 0.0);
+    spherical_extraction_lo.add_var(c_phi_Re);
+    spherical_extraction_lo.add_var(c_phi_Im);
+    spherical_extraction_lo.extract(&interpolator);
+    spherical_extraction_lo.write_extraction("ExtractionOutLo_");
+
+    // high resolution spherical extraction
+    spherical_extraction_params_t extraction_params_hi = extraction_params_lo;
+    // we are only checking the converence in theta integration
+    // extraction_params_hi.num_points_phi *= 2;
+    extraction_params_hi.num_points_theta *= 2;
+    SphericalExtractionUniform spherical_extraction_hi(
+        extraction_params_hi, sim_params.coarsest_dx * sim_params.dt_multiplier,
+        0.0, true, 0.0);
+    spherical_extraction_hi.add_var(c_phi_Re);
+    spherical_extraction_hi.add_var(c_phi_Im);
+    spherical_extraction_hi.extract(&interpolator);
+    spherical_extraction_hi.write_extraction("ExtractionOutHi_");
+
+    // real part is the zeroth componenent and imaginary part is first component
+    auto extracted_harmonic = [](std::vector<double> &data, double, double,
+                                 double) {
+        return std::make_pair(data[0], data[1]);
+    };
+
+    // add the spherical harmonic mode integrands for each resolution
+    // Always use trapezium rule in phi as this is periodic
+    bool broadcast_integral = true;
+    spherical_extraction_lo.add_mode_integrand(
+        sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
+        integral_lo, method, IntegrationMethod::trapezium, broadcast_integral);
+    spherical_extraction_hi.add_mode_integrand(
+        sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
+        integral_hi, method, IntegrationMethod::trapezium, broadcast_integral);
+
+    // do the surface integration
+    spherical_extraction_lo.integrate();
+    spherical_extraction_hi.integrate();
+}
+
 int runSphericalExtractionUniformTest(int argc, char *argv[])
 {
     // Load the parameter file and construct the SimulationParameter class
@@ -65,84 +116,54 @@ int runSphericalExtractionUniformTest(int argc, char *argv[])
     AMRInterpolator<Lagrange<4>> interpolator(
         gr_amr, sim_params.origin, sim_params.dx, sim_params.boundary_params);
 
-    // low resolution spherical extraction
-    SphericalExtractionUniform spherical_extraction_lo(
-        sim_params.extraction_params_lo,
-        sim_params.coarsest_dx * sim_params.dt_multiplier, 0.0, true, 0.0);
-    spherical_extraction_lo.add_var(c_phi_Re);
-    spherical_extraction_lo.add_var(c_phi_Im);
-    spherical_extraction_lo.extract(&interpolator);
-    spherical_extraction_lo.write_extraction("ExtractionOutLo_");
-
-    // high resolution spherical extraction
-    spherical_extraction_params_t extraction_params_hi =
-        sim_params.extraction_params_lo;
-    // we are only checking the converence in theta integration
-    // extraction_params_hi.num_points_phi *= 2;
-    extraction_params_hi.num_points_theta *= 2;
-    SphericalExtractionUniform spherical_extraction_hi(
-        extraction_params_hi, sim_params.coarsest_dx * sim_params.dt_multiplier,
-        0.0, true, 0.0);
-    spherical_extraction_hi.add_var(c_phi_Re);
-    spherical_extraction_hi.add_var(c_phi_Im);
-    spherical_extraction_hi.extract(&interpolator);
-    spherical_extraction_hi.write_extraction("ExtractionOutHi_");
-
-    // real part is the zeroth componenent and imaginary part is first component
-    auto extracted_harmonic = [](std::vector<double> &data, double, double,
-                                 double) {
-        return std::make_pair(data[0], data[1]);
-    };
-
-    // add the spherical harmonic mode integrands for each resolution and for
-    // the midpoint rule and Milne's regularized rule, Open 3rd and Open 4th
-    // order rules
-    // Always use trapezium rule in phi as this is periodic
-    bool broadcast_integral = true;
     std::pair<std::vector<double>, std::vector<double>> integral_lo_midpoint,
         integral_hi_midpoint;
-    spherical_extraction_lo.add_mode_integrand(
-        sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
-        integral_lo_midpoint, IntegrationMethod::midpoint,
-        IntegrationMethod::trapezium, broadcast_integral);
-    spherical_extraction_hi.add_mode_integrand(
-        sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
-        integral_hi_midpoint, IntegrationMethod::midpoint,
-        IntegrationMethod::trapezium, broadcast_integral);
+    spherical_extraction_params_t extraction_params_lo_midpoint =
+        sim_params.extraction_params_lo;
+    // must be multiple of 2
+    extraction_params_lo_midpoint.num_points_theta =
+        std::ceil(extraction_params_lo_midpoint.num_points_theta / 2) * 2;
+    surface_integration(extraction_params_lo_midpoint, sim_params, interpolator,
+                        integral_lo_midpoint, integral_hi_midpoint,
+                        IntegrationMethod::midpoint);
+
     std::pair<std::vector<double>, std::vector<double>>
         integral_lo_milne_regularized, integral_hi_milne_regularized;
-    spherical_extraction_lo.add_mode_integrand(
-        sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
-        integral_lo_milne_regularized, IntegrationMethod::milne_regularized,
-        IntegrationMethod::trapezium, broadcast_integral);
-    spherical_extraction_hi.add_mode_integrand(
-        sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
-        integral_hi_milne_regularized, IntegrationMethod::milne_regularized,
-        IntegrationMethod::trapezium, broadcast_integral);
+    spherical_extraction_params_t extraction_params_lo_milne_regularized =
+        sim_params.extraction_params_lo;
+    // must be multiple of 3
+    extraction_params_lo_milne_regularized.num_points_theta =
+        std::ceil(extraction_params_lo_milne_regularized.num_points_theta / 3) *
+        3;
+    surface_integration(extraction_params_lo_milne_regularized, sim_params,
+                        interpolator, integral_lo_milne_regularized,
+                        integral_hi_milne_regularized,
+                        IntegrationMethod::milne_regularized);
+
     std::pair<std::vector<double>, std::vector<double>>
         integral_lo_open_3rd_order, integral_hi_open_3rd_order;
-    spherical_extraction_lo.add_mode_integrand(
-        sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
-        integral_lo_open_3rd_order, IntegrationMethod::open_3rd_order,
-        IntegrationMethod::trapezium, broadcast_integral);
-    spherical_extraction_hi.add_mode_integrand(
-        sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
-        integral_hi_open_3rd_order, IntegrationMethod::open_3rd_order,
-        IntegrationMethod::trapezium, broadcast_integral);
+    spherical_extraction_params_t extraction_params_lo_open_3rd_order =
+        sim_params.extraction_params_lo;
+    // must be multiple of 4
+    extraction_params_lo_open_3rd_order.num_points_theta =
+        std::ceil(extraction_params_lo_open_3rd_order.num_points_theta / 4) * 4;
+    surface_integration(extraction_params_lo_open_3rd_order, sim_params,
+                        interpolator, integral_lo_open_3rd_order,
+                        integral_hi_open_3rd_order,
+                        IntegrationMethod::open_3rd_order);
+
     std::pair<std::vector<double>, std::vector<double>>
         integral_lo_open_4th_order, integral_hi_open_4th_order;
-    spherical_extraction_lo.add_mode_integrand(
-        sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
-        integral_lo_open_4th_order, IntegrationMethod::open_4th_order,
-        IntegrationMethod::trapezium, broadcast_integral);
-    spherical_extraction_hi.add_mode_integrand(
-        sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
-        integral_hi_open_4th_order, IntegrationMethod::open_4th_order,
-        IntegrationMethod::trapezium, broadcast_integral);
-
-    // do the surface integration
-    spherical_extraction_lo.integrate();
-    spherical_extraction_hi.integrate();
+    spherical_extraction_params_t extraction_params_lo_open_4th_order =
+        sim_params.extraction_params_lo;
+    // must be multiple of 5
+    extraction_params_lo_open_4th_order.num_points_theta =
+        std::floor(extraction_params_lo_open_4th_order.num_points_theta / 5) *
+        5;
+    surface_integration(extraction_params_lo_open_4th_order, sim_params,
+                        interpolator, integral_lo_open_4th_order,
+                        integral_hi_open_4th_order,
+                        IntegrationMethod::open_4th_order);
 
     int status = 0;
     pout() << std::setprecision(10);

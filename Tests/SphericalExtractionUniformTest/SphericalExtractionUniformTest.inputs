@@ -18,12 +18,12 @@ checkpoint_interval = 1
 # extraction params
 num_extraction_radii = 2
 extraction_radii = 4. 6.
-num_points_phi_lo = 60
-num_points_theta_lo = 60 # multiple of 3,4,5
+num_points_phi_lo = 12
+num_points_theta_lo = 12 # multiple of 3 for Milne's method, 
+						 # must be multiple of 4 for 3rd order 
+						 # and of 5 for the 4th order open method
 
 # Spherical Harmonic to set and extract
-# needed to choose a complicated mode, otherwise computation
-# is too precise (since we use 60 points) and doesn't converge
-es = -1
-el = 6
-em = 1
+es = 0
+el = 3 # 2 was too easy for the 4th order method and not give convergence
+em = 0
