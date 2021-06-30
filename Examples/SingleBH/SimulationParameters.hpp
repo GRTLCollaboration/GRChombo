@@ -60,7 +60,7 @@ class SimulationParameters : public SimulationParametersBase
             r_x *= contraction;
         }
 
-        AH_initial_guess_elipsoid.set_params(r_x, r_y, r_z);
+        AH_initial_guess_ellipsoid.set_params(r_x, r_y, r_z);
 #endif
 #endif
     }
@@ -74,7 +74,7 @@ class SimulationParameters : public SimulationParametersBase
 #ifdef USE_AHFINDER
     double AH_initial_guess;
 #ifdef USE_ISOTROPIC_BOOSTED_BH
-    AHInitialGuessElipsoid AH_initial_guess_elipsoid;
+    AHInitialGuessEllipsoid AH_initial_guess_ellipsoid;
 #endif
 #endif
 };

@@ -47,7 +47,7 @@ int runGRChombo(int argc, char *argv[])
         bh_amr.m_ah_finder.add_ah(sph, sim_params.AH_initial_guess,
                                   sim_params.AH_params);
 #else
-        bh_amr.m_ah_finder.add_ah(sph, sim_params.AH_initial_guess_elipsoid,
+        bh_amr.m_ah_finder.add_ah(sph, sim_params.AH_initial_guess_ellipsoid,
                                   sim_params.AH_params);
 #endif
     }

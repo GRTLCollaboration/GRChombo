@@ -72,8 +72,8 @@ class AHInitialGuessMerger : public AHInitialGuessDefault
   public:
     const AHInitialGuessPtr m_ah1, m_ah2;
 
-    double m_merger_search_factor; // see note above (default is 1)
-    double m_merger_pre_factor;    // see notes in AHParams
+    double m_merger_pre_factor; // see notes in AHParams
+    double m_merger_search_factor;
 
     AHInitialGuessMerger(const AHInitialGuessPtr a_ah1,
                          const AHInitialGuessPtr a_ah2,
@@ -116,7 +116,7 @@ class AHInitialGuessMerger : public AHInitialGuessDefault
 };
 
 // ellipsoid aligned with one of the axis
-class AHInitialGuessElipsoid : public AHInitialGuessDefault
+class AHInitialGuessEllipsoid : public AHInitialGuessDefault
 {
   public:
     double m_radius_x, m_radius_y;
@@ -124,11 +124,11 @@ class AHInitialGuessElipsoid : public AHInitialGuessDefault
     double m_radius_z;
 #endif
 
-    AHInitialGuessElipsoid() {}
+    AHInitialGuessEllipsoid() {}
 
 #if CH_SPACEDIM == 3
-    AHInitialGuessElipsoid(double a_radius_x, double a_radius_y,
-                           double a_radius_z)
+    AHInitialGuessEllipsoid(double a_radius_x, double a_radius_y,
+                            double a_radius_z)
     {
         set_params(a_radius_x, a_radius_y, a_radius_z);
     }
@@ -157,7 +157,7 @@ class AHInitialGuessElipsoid : public AHInitialGuessDefault
         return radius;
     }
 #elif CH_SPACEDIM == 2
-    AHInitialGuessElipsoid(double a_radius_x, double a_radius_y)
+    AHInitialGuessEllipsoid(double a_radius_x, double a_radius_y)
     {
         set_params(a_radius_x, a_radius_y);
     }

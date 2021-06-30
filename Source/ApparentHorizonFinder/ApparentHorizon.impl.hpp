@@ -30,8 +30,6 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::ApparentHorizon(
 
       m_stats(a_stats), m_coords(a_coords),
 
-      solver(a_interp, a_initial_guess, a_params),
-
       m_printed_once(false),
 
       m_converged(0),
@@ -57,7 +55,9 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::ApparentHorizon(
       m_area(NAN), m_spin(NAN), m_mass(NAN), m_irreducible_mass(NAN),
       m_spin_z_alt(NAN), m_dimensionless_spin_vector({NAN}),
 
-      origin_already_updated(false)
+      origin_already_updated(false),
+
+      solver(a_interp, a_initial_guess, a_params)
 {
     set_origin(a_interp.get_coord_system().get_origin());
     check_integration_methods();

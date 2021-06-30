@@ -23,20 +23,16 @@ template <class SurfaceGeometry, class AHFunction>
 PETScAHSolver<SurfaceGeometry, AHFunction>::PETScAHSolver(
     const AHInterpolation &a_interp, const AHInitialGuessPtr a_initial_guess,
     const AHParams &a_params)
-    : m_initial_guess(a_initial_guess),
-
-      m_params(a_params),
-
-      m_interp(a_interp), m_interp_plus(a_interp), m_interp_minus(a_interp),
+    : m_interp(a_interp), m_interp_plus(a_interp), m_interp_minus(a_interp),
 
       m_periodic_u(a_interp.get_coord_system().is_u_periodic()),
-      m_num_global_u(a_params.num_points_u)
-
+      m_num_global_u(a_params.num_points_u),
 #if CH_SPACEDIM == 3
-      ,
       m_periodic_v(a_interp.get_coord_system().is_v_periodic()),
-      m_num_global_v(a_params.num_points_v)
+      m_num_global_v(a_params.num_points_v),
 #endif
+
+      m_initial_guess(a_initial_guess), m_params(a_params)
 {
     initialise();
 }
