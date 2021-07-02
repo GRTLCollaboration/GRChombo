@@ -405,6 +405,7 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
     m_level_grids = a_new_grids;
 
     mortonOrdering(m_level_grids);
+    const DisjointBoxLayout level_domain = m_grids = loadBalance(a_new_grids);
 
     // save data for later copy, including boundary cells
     m_state_new.copyTo(m_state_new.interval(), m_state_old,
@@ -413,12 +414,29 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
     // Specifically copy boundary cells
     copyBdyGhosts(m_state_new, m_state_old);
 
-    // define new grids, LevelDatas, patchers and interpolators
-    defineNewGrids(a_new_grids);
+    // reshape state with new grids
+    IntVect iv_ghosts = m_num_ghosts * IntVect::Unit;
+    m_state_new.define(level_domain, NUM_VARS, iv_ghosts);
+
+    // maintain interlevel stuff
+    defineExchangeCopier(level_domain);
+    m_coarse_average.define(level_domain, NUM_VARS, m_ref_ratio);
+    m_fine_interp.define(level_domain, NUM_VARS, m_ref_ratio, m_problem_domain);
 
     if (m_coarser_level_ptr != nullptr)
     {
         GRAMRLevel *coarser_gr_amr_level_ptr = gr_cast(m_coarser_level_ptr);
+	m_patcher.define(level_domain, coarser_gr_amr_level_ptr->m_grids,
+                         NUM_VARS, coarser_gr_amr_level_ptr->problemDomain(),
+                         m_ref_ratio, m_num_ghosts);
+        if (NUM_DIAGNOSTIC_VARS > 0)
+	  {
+            m_patcher_diagnostics.define(
+		level_domain, coarser_gr_amr_level_ptr->m_grids,
+		NUM_DIAGNOSTIC_VARS, coarser_gr_amr_level_ptr->problemDomain(),
+		m_ref_ratio, m_num_ghosts);
+	  }
+
         // interpolate from coarser level
         m_fine_interp.interpToFine(m_state_new,
                                    coarser_gr_amr_level_ptr->m_state_new);
@@ -446,10 +464,10 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
 
     m_state_old.define(level_domain, NUM_VARS, iv_ghosts);
     if (NUM_DIAGNOSTIC_VARS > 0)
-    {
+      {
         m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS,
                                    iv_ghosts);
-    }
+      }
 
     // if 'print_progress_only_to_rank_0', print progress only on regrids
     // (except for rank 0, which kept doing prints)
