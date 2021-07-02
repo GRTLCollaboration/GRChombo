@@ -231,8 +231,6 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     /// copying ghost cells between boxes
     virtual void defineExchangeCopier(const DisjointBoxLayout &a_level_domain);
 
-    void printProgress(const std::string &from) const;
-
     BoundaryConditions m_boundaries; // the class for implementing BCs
 
     GRLevelData m_state_old;              //!< the solution at the old time
