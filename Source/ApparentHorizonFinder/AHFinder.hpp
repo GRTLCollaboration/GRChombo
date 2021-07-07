@@ -113,9 +113,9 @@ class AHFinder
     );
     //! returns the index of the AH in m_apparent_horizons
     int add_ah(const SurfaceGeometry &a_coord_system,
-               AHInitialGuessPtr
-                   a_initial_guess, //!< Initial guess for radius (or whatever
-                                    //!< coordinate you're solving for)
+               const AHInitialGuessPtr
+                   &a_initial_guess, //!< Initial guess for radius (or whatever
+                                     //!< coordinate you're solving for)
                const AHParams &a_params,    //!< set of AH parameters
                bool solve_first_step = true //!< whether or not to solve if t=0
     );
@@ -151,7 +151,7 @@ class AHFinder
   private:
     //! returns false if 'parent' AHs are too far
     //! sets the initial guess and the origin for the merger
-    bool solve_merger(int ah1, int ah2, AHInitialGuessPtr initial_guess_merger,
+    bool solve_merger(int ah1, int ah2, AHInitialGuessPtr &initial_guess_merger,
                       std::array<double, CH_SPACEDIM> &origin_merged);
 
   private:

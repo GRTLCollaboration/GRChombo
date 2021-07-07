@@ -34,8 +34,9 @@ int AHFinder<SurfaceGeometry, AHFunction>::add_ah(
 
 template <class SurfaceGeometry, class AHFunction>
 int AHFinder<SurfaceGeometry, AHFunction>::add_ah(
-    const SurfaceGeometry &a_coord_system, AHInitialGuessPtr a_initial_guess,
-    const AHParams &a_params, bool solve_first_step)
+    const SurfaceGeometry &a_coord_system,
+    const AHInitialGuessPtr &a_initial_guess, const AHParams &a_params,
+    bool solve_first_step)
 {
     PETScCommunicator::initialize(a_params.num_ranks);
 
@@ -266,7 +267,7 @@ bool AHFinder<SurfaceGeometry, AHFunction>::need_diagnostics(
 
 template <class SurfaceGeometry, class AHFunction>
 bool AHFinder<SurfaceGeometry, AHFunction>::solve_merger(
-    int ah1, int ah2, AHInitialGuessPtr initial_guess_merger,
+    int ah1, int ah2, AHInitialGuessPtr &initial_guess_merger,
     std::array<double, CH_SPACEDIM> &center_merger)
 {
     // SKIP if 'parents' not yet close enough

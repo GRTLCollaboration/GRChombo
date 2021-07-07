@@ -23,7 +23,7 @@
 
 template <class SurfaceGeometry, class AHFunction>
 ApparentHorizon<SurfaceGeometry, AHFunction>::ApparentHorizon(
-    const AHInterpolation &a_interp, const AHInitialGuessPtr a_initial_guess,
+    const AHInterpolation &a_interp, const AHInitialGuessPtr &a_initial_guess,
     const AHParams &a_params, const std::string &a_stats,
     const std::string &a_coords, bool solve_first_step)
     : m_params(a_params),

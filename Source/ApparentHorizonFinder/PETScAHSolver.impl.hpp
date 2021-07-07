@@ -21,7 +21,7 @@
 
 template <class SurfaceGeometry, class AHFunction>
 PETScAHSolver<SurfaceGeometry, AHFunction>::PETScAHSolver(
-    const AHInterpolation &a_interp, const AHInitialGuessPtr a_initial_guess,
+    const AHInterpolation &a_interp, const AHInitialGuessPtr &a_initial_guess,
     const AHParams &a_params)
     : m_interp(a_interp), m_interp_plus(a_interp), m_interp_minus(a_interp),
 
@@ -484,7 +484,7 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::set_origin(
 }
 
 template <class SurfaceGeometry, class AHFunction>
-const AHInitialGuessPtr
+const AHInitialGuessPtr &
 PETScAHSolver<SurfaceGeometry, AHFunction>::get_initial_guess() const
 {
     return m_initial_guess;

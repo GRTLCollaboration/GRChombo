@@ -24,7 +24,7 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
     ApparentHorizon(
         const AHInterpolation &a_interp, //!< Geometry class to exchange data
         const AHInitialGuessPtr
-            a_initial_guess,      //!< Initial guess for radius (or whatever
+            &a_initial_guess,     //!< Initial guess for radius (or whatever
                                   //!< coordinate you're solving for)
         const AHParams &a_params, //!< set of AH parameters
         const std::string &a_stats =

@@ -7,6 +7,7 @@
 #define _AHINITIALGUESS_HPP_
 
 #include "AlwaysInline.hpp"
+#include "DimensionDefinitions.hpp"
 
 #include <cmath>  // sin, cos, sqrt
 #include <memory> // std::shared_ptr
@@ -16,21 +17,25 @@ class AHInitialGuessDefault
   public:
 #if CH_SPACEDIM == 3
     virtual double get(double u, double v) const = 0;
-    inline virtual double get_merger_contribution(double u, double v) const
+    ALWAYS_INLINE virtual double get_merger_contribution(double u,
+                                                         double v) const
     {
         return get(u, v);
     };
-    inline virtual double get_merger_min_distance() const
+    ALWAYS_INLINE virtual double get_merger_min_distance() const
     {
         return get(0., 0.);
     };
 #elif CH_SPACEDIM == 2
     virtual double get(double u) const = 0;
-    inline virtual double get_merger_contribution(double u) const
+    ALWAYS_INLINE virtual double get_merger_contribution(double u) const
     {
         return get(u);
     };
-    inline virtual double get_merger_min_distance() const { return get(0.); };
+    ALWAYS_INLINE virtual double get_merger_min_distance() const
+    {
+        return get(0.);
+    };
 #endif
 };
 
@@ -58,12 +63,15 @@ class AHInitialGuessConstant : public AHInitialGuessDefault
     }
 
 #if CH_SPACEDIM == 3
-    ALWAYS_INLINE double get(double u, double v) const
+    ALWAYS_INLINE double get(double u, double v) const override
     {
         return m_initial_guess;
     }
 #elif CH_SPACEDIM == 2
-    ALWAYS_INLINE double get(double u) const { return m_initial_guess; }
+    ALWAYS_INLINE double get(double u) const override
+    {
+        return m_initial_guess;
+    }
 #endif
 };
 
@@ -84,7 +92,7 @@ class AHInitialGuessMerger : public AHInitialGuessDefault
     {
     }
 
-    inline virtual double get_merger_min_distance() const override
+    ALWAYS_INLINE double get_merger_min_distance() const override
     {
         return m_merger_search_factor * 4. *
                (m_ah1->get_merger_min_distance() +
@@ -92,7 +100,7 @@ class AHInitialGuessMerger : public AHInitialGuessDefault
     };
 
 #if CH_SPACEDIM == 3
-    ALWAYS_INLINE double get(double u, double v) const
+    ALWAYS_INLINE double get(double u, double v) const override
     {
         return m_merger_pre_factor * 4. * get_merger_contribution(u, v);
     }
@@ -103,7 +111,7 @@ class AHInitialGuessMerger : public AHInitialGuessDefault
                m_ah2->get_merger_contribution(u, v);
     }
 #elif CH_SPACEDIM == 2
-    ALWAYS_INLINE double get(double u) const
+    ALWAYS_INLINE double get(double u) const override
     {
         return m_merger_pre_factor * 4. * get_merger_contribution(u);
     }
@@ -142,7 +150,12 @@ class AHInitialGuessEllipsoid : public AHInitialGuessDefault
                << m_radius_y << ", " << m_radius_z << ")" << std::endl;
     }
 
-    ALWAYS_INLINE double get(double u, double v) const
+    ALWAYS_INLINE double get_merger_min_distance() const override
+    {
+        return std::max(m_radius_x, std::max(m_radius_y, m_radius_z));
+    };
+
+    ALWAYS_INLINE double get(double u, double v) const override
     {
         double sin_u = sin(u);
         double cos_u = cos(u);
@@ -153,8 +166,14 @@ class AHInitialGuessEllipsoid : public AHInitialGuessDefault
             sqrt(sin_u * sin_u * cos_v * cos_v / (m_radius_x * m_radius_x) +
                  sin_u * sin_u * sin_v * sin_v / (m_radius_y * m_radius_y) +
                  cos_u * cos_u / (m_radius_z * m_radius_z));
-        // std::cout << u << "|" << v << "|" << radius << std::endl;
+        // pout() << u << "|" << v << "|" << radius << std::endl;
         return radius;
+    }
+    ALWAYS_INLINE double get_merger_contribution(double u,
+                                                 double v) const override
+    {
+        return get_merger_min_distance(); // use constant
+        // return get(u, v); // use ellipsoid
     }
 #elif CH_SPACEDIM == 2
     AHInitialGuessEllipsoid(double a_radius_x, double a_radius_y)
@@ -166,19 +185,31 @@ class AHInitialGuessEllipsoid : public AHInitialGuessDefault
     {
         m_radius_x = a_radius_x;
         m_radius_y = a_radius_y;
-        pout() << "Setting Initial Guess to ellipsoid=(" << m_radius_x << ", "
+        pout() << "Setting Initial Guess to ellipsoid = (" << m_radius_x << ", "
                << m_radius_y << ")" << std::endl;
     }
 
-    ALWAYS_INLINE double get(double u) const
+    ALWAYS_INLINE double get_merger_min_distance() const override
+    {
+        return std::max(m_radius_x, m_radius_y);
+    };
+
+    ALWAYS_INLINE double get(double u) const override
     {
         double sin_u = sin(u);
         double cos_u = cos(u);
         // u = 0 corresponds to (x,y)=(-1,0)
         // u = pi/2 corresponds to (x,y)=(0,1)
         // u = pi corresponds to (x,y)=(1,0)
-        return 1. / sqrt(cos_u * cos_u / (m_radius_x * m_radius_x) +
-                         sin_u * sin_u / (m_radius_y * m_radius_y));
+        double radius = 1. / sqrt(cos_u * cos_u / (m_radius_x * m_radius_x) +
+                                  sin_u * sin_u / (m_radius_y * m_radius_y));
+        // pout() << u << "|" << radius << std::endl;
+        return radius;
+    }
+    ALWAYS_INLINE double get_merger_contribution(double u) const override
+    {
+        return get_merger_min_distance(); // use constant
+        // return get(u); // use ellipsoid
     }
 #endif
 };

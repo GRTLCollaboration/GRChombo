@@ -29,7 +29,7 @@ template <class SurfaceGeometry, class AHFunction> class PETScAHSolver
   public:
     //! AH that finds the zero of expansion
     PETScAHSolver(const AHInterpolation &a_interp,
-                  const AHInitialGuessPtr a_initial_guess,
+                  const AHInitialGuessPtr &a_initial_guess,
                   const AHParams &a_params);
     ~PETScAHSolver();
 
@@ -56,7 +56,7 @@ template <class SurfaceGeometry, class AHFunction> class PETScAHSolver
     // must be called at the end of the function that called 'get_dmda_arr_t'
     void restore_dmda_arr_t(Vec &localF, dmda_arr_t &in);
 
-    const AHInitialGuessPtr get_initial_guess() const;
+    const AHInitialGuessPtr &get_initial_guess() const;
     void reset_initial_guess();
 
     const std::array<double, CH_SPACEDIM> &get_origin() const;

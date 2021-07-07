@@ -142,7 +142,7 @@ template <class AHFunction> struct AHParams_t
     double merger_search_factor; // see note above (default is 1)
     //! initial guess for merger is 'merger_pre_factor * 4. *
     //! (AH_initial_guess_1 + AH_initial_guess_2)'
-    //! set to somethig bigger to avoid finding the inner AH
+    //! set to something bigger to avoid finding the inner AH
     double merger_pre_factor; // see note above (default to 1.)
 
     typename AHFunction::params func_params;
