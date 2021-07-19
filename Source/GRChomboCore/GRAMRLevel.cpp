@@ -253,30 +253,37 @@ void GRAMRLevel::postTimeStep()
         pout() << "GRAMRLevel::postTimeStep " << m_level << " finished" << endl;
 }
 
+// things to do before tagging cells using truncation tagging
+void GRAMRLevel::preTagCellsTruncationTagging()
+{
+    CH_TIME("GRAMRLevel::preTagCellsTruncationTagging");
+    if (m_coarser_level_ptr != nullptr)
+    {
+        GRAMRLevel *coarser_gr_amr_level_ptr = gr_cast(m_coarser_level_ptr);
+        // interpolate from coarser level
+        m_fine_interp_truncation_error.interpToFine(
+            m_state_truncation_error_coarse_alias,
+            coarser_gr_amr_level_ptr->m_state_truncation_error_old);
+    }
+    for (int ivar = 0; ivar < m_p.num_truncation_error_vars; ++ivar)
+    {
+        const int var = m_p.truncation_error_vars[ivar].first;
+        // copy these grid variables to m_state_truncation_error so that we
+        // can have all the quantities needed to compute truncation error
+        // in one object (m_state_truncation_error_coarse_alias is an alias
+        // to the second half)
+        m_state_new.copyTo(Interval(var, var), m_state_truncation_error,
+                           Interval(ivar, ivar));
+    }
+}
+
 // things to do before tagging cells
 void GRAMRLevel::preTagCells()
 {
     CH_TIME("GRAMRLevel::preTagCells");
     if (m_p.use_truncation_error_tagging)
     {
-        if (m_coarser_level_ptr != nullptr)
-        {
-            GRAMRLevel *coarser_gr_amr_level_ptr = gr_cast(m_coarser_level_ptr);
-            // interpolate from coarser level
-            m_fine_interp_truncation_error.interpToFine(
-                m_state_truncation_error_coarse_alias,
-                coarser_gr_amr_level_ptr->m_state_truncation_error_old);
-        }
-        for (int ivar = 0; ivar < m_p.num_truncation_error_vars; ++ivar)
-        {
-            const int var = m_p.truncation_error_vars[ivar].first;
-            // copy these grid variables to m_state_truncation_error so that we
-            // can have all the quantities needed to compute truncation error
-            // in one object (m_state_truncation_error_coarse_alias is an alias
-            // to the second half)
-            m_state_new.copyTo(Interval(var, var), m_state_truncation_error,
-                               Interval(ivar, ivar));
-        }
+        preTagCellsTruncationTagging();
     }
     else
         fillAllEvolutionGhosts(); // We need filled ghost cells to calculate

@@ -194,6 +194,9 @@ class GRAMRLevel : public AMRLevel, public InterpSource
         const Interval &a_comps = Interval(0, std::numeric_limits<int>::max()));
 
   protected:
+    /// things to do before tagging cells using truncation tagging
+    virtual void preTagCellsTruncationTagging();
+
     /// Fill all evolution ghosts cells (i.e. those in m_state_new)
     virtual void
     fillAllEvolutionGhosts(const Interval &a_comps = Interval(0, NUM_VARS - 1));
