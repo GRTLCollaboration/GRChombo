@@ -8,7 +8,7 @@
 
 // General includes
 #include "BoundaryConditions.hpp"
-#include "CCZ4.hpp"
+#include "CCZ4RHS.hpp"
 #include "ChomboParameters.hpp"
 #include "GRParmParse.hpp"
 #include "SphericalExtraction.hpp"
@@ -41,9 +41,14 @@ class SimulationParametersBase : public ChomboParameters
 
         // CCZ4 parameters
         pp.load("formulation", formulation, 0);
-        pp.load("kappa1", ccz4_params.kappa1, 0.1);
-        pp.load("kappa2", ccz4_params.kappa2, 0.0);
-        pp.load("kappa3", ccz4_params.kappa3, 1.0);
+        pp.load("kappa1", ccz4_base_params.kappa1, 0.1);
+        pp.load("kappa2", ccz4_base_params.kappa2, 0.0);
+        pp.load("kappa3", ccz4_base_params.kappa3, 1.0);
+        pp.load("covariantZ4", ccz4_base_params.covariantZ4, true);
+        ccz4_params.kappa1 = ccz4_base_params.kappa1;
+        ccz4_params.kappa2 = ccz4_base_params.kappa2;
+        ccz4_params.kappa3 = ccz4_base_params.kappa3;
+        ccz4_params.covariantZ4 = ccz4_base_params.covariantZ4;
 
         // Dissipation
         pp.load("sigma", sigma, 0.1);
@@ -137,10 +142,10 @@ class SimulationParametersBase : public ChomboParameters
         // 0.0"); check_parameter("min_lapse", min_lapse, (min_lapse >= 0.0)
         // "must be >= 0.0");
         check_parameter("formulation", formulation,
-                        (formulation == CCZ4::USE_CCZ4) ||
-                            (formulation == CCZ4::USE_BSSN),
+                        (formulation == CCZ4RHS<>::USE_CCZ4) ||
+                            (formulation == CCZ4RHS<>::USE_BSSN),
                         "must be 0 or 1");
-        if (formulation == CCZ4::USE_CCZ4)
+        if (formulation == CCZ4RHS<>::USE_CCZ4)
         {
             warn_parameter(
                 "kappa1", ccz4_params.kappa1, ccz4_params.kappa1 > 0.0,
@@ -151,7 +156,7 @@ class SimulationParametersBase : public ChomboParameters
                            "should be greater than -1.0 to damp constraints "
                            "(see arXiv:1106.2254)");
         }
-        else if (formulation == CCZ4::USE_BSSN)
+        else if (formulation == CCZ4RHS<>::USE_BSSN)
         {
             // maybe we should just set these to zero and print a warning
             // in the BSSN case
@@ -164,6 +169,7 @@ class SimulationParametersBase : public ChomboParameters
             warn_parameter("kappa3", ccz4_params.kappa3,
                            ccz4_params.kappa3 == 0.0,
                            "setting to 0.0 as required for BSSN");
+            // no warning necessary for ccz4_params.covariantZ4
             ccz4_params.kappa1 = 0.0;
             ccz4_params.kappa2 = 0.0;
             ccz4_params.kappa3 = 0.0;
@@ -171,23 +177,11 @@ class SimulationParametersBase : public ChomboParameters
 
         // only warn for gauge parameters as there are legitimate cases you may
         // want to deviate from the norm
-        warn_parameter("shift_Gamma_coeff", ccz4_params.shift_Gamma_coeff,
-                       abs(ccz4_params.shift_Gamma_coeff - 0.75) <
-                           std::numeric_limits<double>::epsilon(),
-                       "usually set to 0.75");
         warn_parameter("lapse_advec_coeff", ccz4_params.lapse_advec_coeff,
                        min(abs(ccz4_params.lapse_advec_coeff),
                            abs(ccz4_params.lapse_advec_coeff - 1.0)) <
                            std::numeric_limits<double>::epsilon(),
                        "usually set to 0.0 or 1.0");
-        warn_parameter("shift_advec_coeff", ccz4_params.shift_advec_coeff,
-                       min(abs(ccz4_params.shift_advec_coeff),
-                           abs(ccz4_params.shift_advec_coeff - 1.0)) <
-                           std::numeric_limits<double>::epsilon(),
-                       "usually set to 0.0 or 1.0");
-        warn_parameter("eta", ccz4_params.eta,
-                       ccz4_params.eta > 0.1 && ccz4_params.eta < 10,
-                       "usually O(1/M_ADM) so typically O(1) in code units");
         warn_parameter("lapse_power", ccz4_params.lapse_power,
                        abs(ccz4_params.lapse_power - 1.0) <
                            std::numeric_limits<double>::epsilon(),
@@ -196,6 +190,18 @@ class SimulationParametersBase : public ChomboParameters
                        abs(ccz4_params.lapse_coeff - 2.0) <
                            std::numeric_limits<double>::epsilon(),
                        "set to 2.0 for 1+log slicing");
+        warn_parameter("shift_Gamma_coeff", ccz4_params.shift_Gamma_coeff,
+                       abs(ccz4_params.shift_Gamma_coeff - 0.75) <
+                           std::numeric_limits<double>::epsilon(),
+                       "usually set to 0.75");
+        warn_parameter("shift_advec_coeff", ccz4_params.shift_advec_coeff,
+                       min(abs(ccz4_params.shift_advec_coeff),
+                           abs(ccz4_params.shift_advec_coeff - 1.0)) <
+                           std::numeric_limits<double>::epsilon(),
+                       "usually set to 0.0 or 1.0");
+        warn_parameter("eta", ccz4_params.eta,
+                       ccz4_params.eta > 0.1 && ccz4_params.eta < 10,
+                       "usually O(1/M_ADM) so typically O(1) in code units");
 
         // Now extraction parameters
         FOR1(idir)
@@ -238,6 +244,11 @@ class SimulationParametersBase : public ChomboParameters
         }
     }
 
+  protected:
+    // This is just the CCZ4 damping parameters in case you want to use
+    // a different gauge (with different parameters)
+    CCZ4_base_params_t ccz4_base_params;
+
   public:
     double sigma; // Kreiss-Oliger dissipation parameter
 
@@ -248,7 +259,10 @@ class SimulationParametersBase : public ChomboParameters
     int formulation; // Whether to use BSSN or CCZ4
 
     // Collection of parameters necessary for the CCZ4 RHS and extraction
-    CCZ4::params_t ccz4_params;
+    // Note the gauge parameters are specific to MovingPunctureGauge
+    // If you are using a different gauge, you need to load your parameters
+    // in your own SimulationParameters class.
+    CCZ4_params_t<> ccz4_params;
     SphericalExtraction::params_t extraction_params;
 };
 

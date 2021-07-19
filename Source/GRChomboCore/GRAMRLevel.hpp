@@ -16,10 +16,12 @@
 
 // Other includes
 #include "BoundaryConditions.hpp"
+#include "BoxLoops.hpp"
 #include "GRAMR.hpp"
 #include "GRLevelData.hpp"
 #include "InterpSource.hpp"
 #include "SimulationParameters.hpp"
+#include "TruncationErrorTagging.hpp"
 #include "UserVariables.hpp" // need NUM_VARS
 #include <fstream>
 #include <limits>
@@ -56,6 +58,9 @@ class GRAMRLevel : public AMRLevel, public InterpSource
                         const ProblemDomain &a_problem_domain, int a_level,
                         int a_ref_ratio);
 
+    /// define grids and other objects
+    virtual void defineNewGrids(const Vector<Box> &a_new_grids);
+
     /// advance by one timestep
     virtual Real advance();
 
@@ -70,6 +75,10 @@ class GRAMRLevel : public AMRLevel, public InterpSource
 
     /// create tags at initialization
     virtual void tagCellsInit(IntVectSet &a_tags);
+
+    /// implementation of tagCells and tagCellsInit
+    virtual void tagCellsImplem(IntVectSet &a_tags,
+                                bool a_use_truncation_error_tagging);
 
     /// regrid
     virtual void regrid(const Vector<Box> &a_new_grids);
@@ -154,6 +163,12 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     {
     }
 
+    /// Computes truncation error estimates which are used as the tagging
+    /// criterion if m_p.use_truncation_error_tagging and t > 0
+    virtual void
+    computeTruncationError(FArrayBox &tagging_criterion,
+                           const FArrayBox &a_state_truncation_error);
+
 #ifdef CH_USE_HDF5
     /// Things to do immediately before checkpointing
     virtual void preCheckpointLevel() {}
@@ -187,6 +202,9 @@ class GRAMRLevel : public AMRLevel, public InterpSource
         const Interval &a_comps = Interval(0, std::numeric_limits<int>::max()));
 
   protected:
+    /// things to do before tagging cells using truncation tagging
+    virtual void preTagCellsTruncationTagging();
+
     /// Fill all evolution ghosts cells (i.e. those in m_state_new)
     virtual void
     fillAllEvolutionGhosts(const Interval &a_comps = Interval(0, NUM_VARS - 1));
@@ -216,8 +234,19 @@ class GRAMRLevel : public AMRLevel, public InterpSource
 
     BoundaryConditions m_boundaries; // the class for implementing BCs
 
-    GRLevelData m_state_old; //!< the solution at the old time
-    GRLevelData m_state_new; //!< the solution at the new time
+    GRLevelData m_state_old;              //!< the solution at the old time
+    GRLevelData m_state_new;              //!< the solution at the new time
+    GRLevelData m_state_truncation_error; //!< the truncation error vars
+                                          //!< on this level and
+                                          //!< interpolated from the coarser
+                                          //!< level
+    GRLevelData
+        m_state_truncation_error_coarse_alias; //!< the truncation error vars
+                                               //!< interpolated from coarser
+                                               //!< level, alias to part of
+                                               //!< m_state_truncation_error
+    GRLevelData m_state_truncation_error_old;  //!< the truncation error vars
+                                               //!< before coarse-fine averaging
     GRLevelData m_state_diagnostics;
     Real m_dx; //!< grid spacing
     double m_restart_time;
@@ -239,6 +268,9 @@ class GRAMRLevel : public AMRLevel, public InterpSource
                                //!< fine levels of ghosts for diagnostics
     FourthOrderFineInterp m_fine_interp; //!< executes the interpolation from
                                          //!< coarse to fine when regridding
+    FourthOrderFineInterp
+        m_fine_interp_truncation_error; //!< fine interp for
+                                        //!< m_state_truncation_error
 
     DisjointBoxLayout m_grids;       //!< Holds grid setup (the layout of boxes)
     DisjointBoxLayout m_grown_grids; //!< Holds grown grid setup (for

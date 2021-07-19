@@ -3,28 +3,30 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#if !defined(CCZ4_HPP_)
-#error "This file should only be included through CCZ4.hpp"
+#if !defined(CCZ4RHS_HPP_)
+#error "This file should only be included through CCZ4RHS.hpp"
 #endif
 
-#ifndef CCZ4_IMPL_HPP_
-#define CCZ4_IMPL_HPP_
+#ifndef CCZ4RHS_IMPL_HPP_
+#define CCZ4RHS_IMPL_HPP_
 
-#define COVARIANTZ4
 #include "DimensionDefinitions.hpp"
 #include "GRInterval.hpp"
 #include "VarsTools.hpp"
 
-inline CCZ4::CCZ4(params_t params, double dx, double sigma, int formulation,
-                  double cosmological_constant)
-    : m_params(params), m_sigma(sigma), m_formulation(formulation),
-      m_cosmological_constant(cosmological_constant), m_deriv(dx)
+template <class gauge_t, class deriv_t>
+inline CCZ4RHS<gauge_t, deriv_t>::CCZ4RHS(
+    CCZ4_params_t<typename gauge_t::params_t> a_params, double a_dx,
+    double a_sigma, int a_formulation, double a_cosmological_constant)
+    : m_params(a_params), m_gauge(a_params), m_sigma(a_sigma),
+      m_formulation(a_formulation),
+      m_cosmological_constant(a_cosmological_constant), m_deriv(a_dx)
 {
     // A user who wants to use BSSN should also have damping paramters = 0
     if (m_formulation == USE_BSSN)
     {
-        if ((m_params.kappa1 != 0.) || (params.kappa2 != 0.) ||
-            (params.kappa3 != 0.))
+        if ((m_params.kappa1 != 0.) || (m_params.kappa2 != 0.) ||
+            (m_params.kappa3 != 0.))
         {
             MayDay::Error("BSSN formulation is selected - CCZ4 kappa values "
                           "should be set to zero in params");
@@ -34,7 +36,9 @@ inline CCZ4::CCZ4(params_t params, double dx, double sigma, int formulation,
         MayDay::Error("The requested formulation is not supported");
 }
 
-template <class data_t> void CCZ4::compute(Cell<data_t> current_cell) const
+template <class gauge_t, class deriv_t>
+template <class data_t>
+void CCZ4RHS<gauge_t, deriv_t>::compute(Cell<data_t> current_cell) const
 {
     const auto vars = current_cell.template load_vars<Vars>();
     const auto d1 = m_deriv.template diff1<Vars>(current_cell);
@@ -50,12 +54,14 @@ template <class data_t> void CCZ4::compute(Cell<data_t> current_cell) const
     current_cell.store_vars(rhs); // Write the rhs into the output FArrayBox
 }
 
+template <class gauge_t, class deriv_t>
 template <class data_t, template <typename> class vars_t,
           template <typename> class diff2_vars_t>
-void CCZ4::rhs_equation(vars_t<data_t> &rhs, const vars_t<data_t> &vars,
-                        const vars_t<Tensor<1, data_t>> &d1,
-                        const diff2_vars_t<Tensor<2, data_t>> &d2,
-                        const vars_t<data_t> &advec) const
+void CCZ4RHS<gauge_t, deriv_t>::rhs_equation(
+    vars_t<data_t> &rhs, const vars_t<data_t> &vars,
+    const vars_t<Tensor<1, data_t>> &d1,
+    const diff2_vars_t<Tensor<2, data_t>> &d2,
+    const vars_t<data_t> &advec) const
 {
     using namespace TensorAlgebra;
 
@@ -147,11 +153,11 @@ void CCZ4::rhs_equation(vars_t<data_t> &rhs, const vars_t<data_t> &vars,
         }
     }
 
-#ifdef COVARIANTZ4
-    data_t kappa1_lapse = m_params.kappa1;
-#else
-    data_t kappa1_lapse = m_params.kappa1 * vars.lapse;
-#endif
+    data_t kappa1_times_lapse;
+    if (m_params.covariantZ4)
+        kappa1_times_lapse = m_params.kappa1;
+    else
+        kappa1_times_lapse = m_params.kappa1 * vars.lapse;
 
     if (m_formulation == USE_BSSN)
     {
@@ -169,7 +175,7 @@ void CCZ4::rhs_equation(vars_t<data_t> &rhs, const vars_t<data_t> &vars,
                 (ricci.scalar - tr_A2 +
                  ((GR_SPACEDIM - 1.0) / (double)GR_SPACEDIM) * vars.K * vars.K -
                  2 * vars.Theta * vars.K) -
-            0.5 * vars.Theta * kappa1_lapse *
+            0.5 * vars.Theta * kappa1_times_lapse *
                 ((GR_SPACEDIM + 1) + m_params.kappa2 * (GR_SPACEDIM - 1)) -
             Z_dot_d1lapse;
 
@@ -177,7 +183,8 @@ void CCZ4::rhs_equation(vars_t<data_t> &rhs, const vars_t<data_t> &vars,
         rhs.K =
             advec.K +
             vars.lapse * (ricci.scalar + vars.K * (vars.K - 2 * vars.Theta)) -
-            kappa1_lapse * GR_SPACEDIM * (1 + m_params.kappa2) * vars.Theta -
+            kappa1_times_lapse * GR_SPACEDIM * (1 + m_params.kappa2) *
+                vars.Theta -
             tr_covd2lapse;
         rhs.K += -2 * vars.lapse * GR_SPACEDIM / (GR_SPACEDIM - 1.) *
                  m_cosmological_constant;
@@ -190,7 +197,7 @@ void CCZ4::rhs_equation(vars_t<data_t> &rhs, const vars_t<data_t> &vars,
                           (divshift * (chris.contracted[i] +
                                        2 * m_params.kappa3 * Z_over_chi[i]) -
                            2 * vars.lapse * vars.K * Z_over_chi[i]) -
-                      2 * kappa1_lapse * Z_over_chi[i];
+                      2 * kappa1_times_lapse * Z_over_chi[i];
         FOR1(j)
         {
             Gammadot[i] +=
@@ -216,19 +223,7 @@ void CCZ4::rhs_equation(vars_t<data_t> &rhs, const vars_t<data_t> &vars,
 
     FOR1(i) { rhs.Gamma[i] = advec.Gamma[i] + Gammadot[i]; }
 
-    const data_t etaDecay = 1.;
-
-    rhs.lapse = m_params.lapse_advec_coeff * advec.lapse -
-                m_params.lapse_coeff * pow(vars.lapse, m_params.lapse_power) *
-                    (vars.K - 2 * vars.Theta);
-    FOR1(i)
-    {
-        rhs.shift[i] = m_params.shift_advec_coeff * advec.shift[i] +
-                       m_params.shift_Gamma_coeff * vars.B[i];
-        rhs.B[i] = m_params.shift_advec_coeff * advec.B[i] +
-                   (1 - m_params.shift_advec_coeff) * advec.Gamma[i] +
-                   Gammadot[i] - m_params.eta * etaDecay * vars.B[i];
-    }
+    m_gauge.rhs_gauge(rhs, vars, d1, d2, advec);
 }
 
-#endif /* CCZ4_IMPL_HPP_ */
+#endif /* CCZ4RHS_IMPL_HPP_ */

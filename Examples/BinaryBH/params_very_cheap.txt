@@ -6,6 +6,9 @@ plot_prefix = BinaryBHPlot_
 # Set up grid spacings and regrid params
 # NB - the N values need to be multiples of block_factor
 
+# Spatial derivative order (only affects CCZ4 RHS)
+max_spatial_derivative_order = 4 # can be 4 or 6
+
 N_full = 32
 L_full = 16
 
@@ -55,7 +58,7 @@ eta = 1.82
 kappa1 = 0.1
 kappa2 = 0
 kappa3 = 1.
-covariantZ4 = 1 # 0: default. 1: dampk1 -> dampk1/lapse
+covariantZ4 = 1 # 0: keep kappa1; 1 [default]: replace kappa1 -> kappa1/lapse
 
 #coefficient for KO numerical dissipation
 sigma = 0.3
@@ -103,4 +106,3 @@ num_modes = 3
 modes = 2 0 # l m for spherical harmonics
         2 1
         2 2
-

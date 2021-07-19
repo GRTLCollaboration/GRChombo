@@ -11,8 +11,10 @@
 #include "parstream.H" //Gives us pout()
 
 // Other includes
+#include "ArrayTools.hpp"
 #include <algorithm>
 #include <memory>
+#include <type_traits>
 
 // Chombo namespace
 #include "UsingNamespace.H"
@@ -63,8 +65,8 @@ class GRParmParse : public ParmParse
 
     /// Loads a value from the parameter file
     template <class data_t>
-    typename std::enable_if<
-        !std::is_enum<data_t>::value>::type // Can't use for enum types
+    typename std::enable_if_t<
+        !std::is_enum<data_t>::value> // Can't use for enum types
     load(const char *name, data_t &parameter) const
     {
         get(name, parameter);
@@ -72,8 +74,8 @@ class GRParmParse : public ParmParse
 
     /// Loads an enum value from the parameter file
     template <typename enum_type>
-    typename std::enable_if<
-        std::is_enum<enum_type>::value>::type // Only enabled for enum types
+    typename std::enable_if_t<
+        std::is_enum<enum_type>::value> // Only enabled for enum types
     load(const char *name, enum_type &parameter) const
     {
         int iparam;
@@ -94,8 +96,7 @@ class GRParmParse : public ParmParse
         else
         {
             parameter = default_value;
-            pout() << "Parameter: " << name << " not found in parameter file. "
-                   << "It has been set to its default value." << std::endl;
+            default_message(name, default_value);
         }
     }
 
@@ -112,8 +113,7 @@ class GRParmParse : public ParmParse
         else
         {
             vector = default_vector;
-            pout() << "Parameter: " << name << " not found in parameter file. "
-                   << "It has been set to its default value." << std::endl;
+            default_message(name, default_vector);
         }
     }
 
@@ -125,6 +125,34 @@ class GRParmParse : public ParmParse
     {
         load(name, vector, num_comp,
              std::vector<data_t>(num_comp, default_value));
+    }
+
+  protected:
+    template <typename data_t,
+              std::enable_if_t<
+                  !ArrayTools::is_std_array_or_vector<data_t>::value,
+                  bool> = true> // this won't work for std::arrays and vectors
+    void default_message(const char *name, const data_t &default_value) const
+    {
+        pout() << "Parameter: " << name << " not found in parameter file. "
+               << "It has been set to its default value = " << default_value
+               << "." << std::endl;
+    }
+
+    template <typename data_t,
+              std::enable_if_t<
+                  ArrayTools::is_std_array_or_vector<data_t>::value,
+                  bool> = true> // use this code for std::arrays and vectors
+    void default_message(const char *name, const data_t &default_value) const
+    {
+        pout() << "Parameter: " << name << " not found in parameter file. "
+               << "It has been set to its default "
+                  "value =";
+        for (auto elem : default_value)
+        {
+            pout() << " " << elem;
+        }
+        pout() << "." << std::endl;
     }
 };
 

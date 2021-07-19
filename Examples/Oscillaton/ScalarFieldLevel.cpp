@@ -11,7 +11,7 @@
 #include "TraceARemoval.hpp"
 
 // For RHS update
-#include "MatterCCZ4.hpp"
+#include "MatterCCZ4RHS.hpp"
 
 // For constraints calculation
 #include "NewMatterConstraints.hpp"
@@ -129,7 +129,7 @@ void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     // Calculate MatterCCZ4 right hand side with matter_t = ScalarField
     Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
-    MatterCCZ4<ScalarFieldWithPotential> my_ccz4_matter(
+    MatterCCZ4RHS<ScalarFieldWithPotential> my_ccz4_matter(
         scalar_field, m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
         m_p.G_Newton);
     BoxLoops::loop(my_ccz4_matter, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
@@ -180,18 +180,20 @@ void ScalarFieldLevel::specificPostTimeStep()
         double rho2_sum = amr_reductions.sum(c_rho2);
         double source1_sum = amr_reductions.sum(c_source1);
         double source2_sum = amr_reductions.sum(c_source2);
-	double Ham_sum = amr_reductions.norm(c_Ham);
+        double Ham_sum = amr_reductions.norm(c_Ham);
 
         SmallDataIO integral_file("VolumeIntegrals", m_dt, m_time,
                                   m_restart_time, SmallDataIO::APPEND,
                                   first_step);
         // remove any duplicate data if this is post restart
         integral_file.remove_duplicate_time_data();
-        std::vector<double> data_for_writing = {rho1_sum, rho2_sum, source1_sum, source2_sum, Ham_sum};
+        std::vector<double> data_for_writing = {rho1_sum, rho2_sum, source1_sum,
+                                                source2_sum, Ham_sum};
         // write data
         if (first_step)
         {
-	  integral_file.write_header_line({"rho1", "rho2", "source1", "source2", "Ham"});
+            integral_file.write_header_line(
+                {"rho1", "rho2", "source1", "source2", "Ham"});
         }
         integral_file.write_time_data_line(data_for_writing);
 
@@ -208,15 +210,22 @@ void ScalarFieldLevel::specificPostTimeStep()
 
 void ScalarFieldLevel::preTagCells()
 {
-    // Pre tagging - fill ghost cells and calculate Ham terms
-    fillAllEvolutionGhosts();
-    Potential potential(m_p.potential_params);
-    ScalarFieldWithPotential scalar_field(potential);
-    BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
-                       scalar_field, m_dx, m_p.G_Newton, c_Ham,
-                       Interval(c_Mom, c_Mom), c_Ham_abs_sum,
-                       Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
-                   m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+    if (m_gr_amr.s_step == 0)
+    {
+        // Pre tagging - fill ghost cells and calculate Ham terms
+        fillAllEvolutionGhosts();
+        Potential potential(m_p.potential_params);
+        ScalarFieldWithPotential scalar_field(potential);
+        BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
+                           scalar_field, m_dx, m_p.G_Newton, c_Ham,
+                           Interval(c_Mom, c_Mom), c_Ham_abs_sum,
+                           Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
+                       m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+    }
+    else
+    {
+        GRAMRLevel::preTagCellsTruncationTagging();
+    }
 }
 
 void ScalarFieldLevel::computeDiagnosticsTaggingCriterion(
