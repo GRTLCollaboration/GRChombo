@@ -63,22 +63,22 @@ class ADMQuantities
         Tensor<1, data_t> dS_U = x;
 
         data_t dS_norm = 0.;
-        FOR2(i, j) { dS_norm += vars.h[i][j] / vars.chi * dS_U[i] * dS_U[j]; }
+        FOR(i, j) { dS_norm += vars.h[i][j] / vars.chi * dS_U[i] * dS_U[j]; }
         dS_norm = sqrt(dS_norm);
-        FOR1(i) { dS_U[i] /= dS_norm; }
+        FOR(i) { dS_U[i] /= dS_norm; }
 
         Tensor<1, data_t> dS_L;
-        FOR1(i)
+        FOR(i)
         {
             // dS_L[i] = dS_U[i];
             dS_L[i] = 0.;
-            FOR1(j) { dS_L[i] += vars.h[i][j] / vars.chi * dS_U[j]; }
+            FOR(j) { dS_L[i] += vars.h[i][j] / vars.chi * dS_U[j]; }
         }
 
         if (m_c_Madm >= 0)
         {
             data_t Madm = 0.0;
-            FOR4(i, j, k, l)
+            FOR(i, j, k, l)
             {
                 Madm += dS_L[i] / (16. * M_PI * m_G_Newton) /
                         (vars.chi * sqrt(vars.chi)) * h_UU[j][k] * h_UU[i][l] *
@@ -99,13 +99,13 @@ class ADMQuantities
             // not tensor (eps_tensor = eps_symbol * chi^-1.5)
             const Tensor<3, double> epsilon = TensorAlgebra::epsilon();
 
-            FOR3(i, j, k)
+            FOR(i, j, k)
             {
                 Jadm += -dS_L[i] / (8. * M_PI * m_G_Newton) *
                         epsilon[m_dir][j][k] * x[j] * vars.K *
                         TensorAlgebra::delta(i, k);
 
-                FOR2(l, m)
+                FOR(l, m)
                 {
                     Jadm += dS_L[i] / (8. * M_PI * m_G_Newton) *
                             epsilon[m_dir][j][k] * x[j] * h_UU[i][l] *

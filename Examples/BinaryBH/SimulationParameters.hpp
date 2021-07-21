@@ -82,7 +82,7 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("TP_momentum_plus", bh2_params.momentum);
         pp.load("TP_spin_plus", spin_plus);
         pp.load("TP_spin_minus", spin_minus);
-        FOR1(i)
+        FOR(i)
         {
             tp_params.par_P_minus[i] = bh1_params.momentum[i];
             tp_params.par_P_plus[i] = bh2_params.momentum[i];
@@ -92,15 +92,15 @@ class SimulationParameters : public SimulationParametersBase
 
         pout() << "The corresponding momenta are:";
         pout() << "\nP_plus = ";
-        FOR1(i) { pout() << tp_params.par_P_plus[i] << " "; }
+        FOR(i) { pout() << tp_params.par_P_plus[i] << " "; }
         pout() << "\nP_minus = ";
-        FOR1(i) { pout() << tp_params.par_P_minus[i] << " "; }
+        FOR(i) { pout() << tp_params.par_P_minus[i] << " "; }
 
         pout() << "\nThe corresponding spins are:";
         pout() << "\nS_plus = ";
-        FOR1(i) { pout() << tp_params.par_S_plus[i] << " "; }
+        FOR(i) { pout() << tp_params.par_S_plus[i] << " "; }
         pout() << "\nS_minus = ";
-        FOR1(i) { pout() << tp_params.par_S_minus[i] << " "; }
+        FOR(i) { pout() << tp_params.par_S_minus[i] << " "; }
         pout() << "\n";
 
         // interpolation type
@@ -199,7 +199,7 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("centerB", centerB, center);
         pp.load("offsetA", offsetA, {0.0, 0.0, 0.0});
         pp.load("offsetB", offsetB, {0.0, 0.0, 0.0});
-        FOR1(idir)
+        FOR(idir)
         {
             bh1_params.center[idir] = centerA[idir] + offsetA[idir];
             bh2_params.center[idir] = centerB[idir] + offsetB[idir];
@@ -273,7 +273,7 @@ class SimulationParameters : public SimulationParametersBase
             std::sqrt(ArrayTools::norm2(bh2_params.momentum)) <
                 0.3 * bh1_params.mass,
             "approximation used for boosted BH only valid for small boosts");
-        FOR1(idir)
+        FOR(idir)
         {
             std::string nameA = "centerA[" + std::to_string(idir) + "]";
             std::string nameB = "centerB[" + std::to_string(idir) + "]";

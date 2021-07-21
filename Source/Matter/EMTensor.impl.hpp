@@ -60,7 +60,7 @@ void EMTensor<matter_t>::compute(Cell<data_t> current_cell) const
     if (m_c_Si.size() > 0)
     {
 #if DEFAULT_TENSOR_DIM == 3
-        FOR1(i) { current_cell.store_vars(emtensor.Si[i], m_c_Si.begin() + i); }
+        FOR(i) { current_cell.store_vars(emtensor.Si[i], m_c_Si.begin() + i); }
 #endif
     }
 

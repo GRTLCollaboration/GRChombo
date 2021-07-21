@@ -32,7 +32,7 @@ void ScalarBubble::compute(Cell<data_t> current_cell) const
     vars.chi = 1;
 
     // conformal metric is flat
-    FOR1(i) vars.h[i][i] = 1.;
+    FOR(i) vars.h[i][i] = 1.;
 
     // Store the initial values of the variables
     current_cell.store_vars(vars);

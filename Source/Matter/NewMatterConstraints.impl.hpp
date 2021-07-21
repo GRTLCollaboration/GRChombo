@@ -51,7 +51,7 @@ void MatterConstraints<matter_t>::compute(Cell<data_t> current_cell) const
     // Momentum constraints
     if (m_c_Moms.size() > 0 || m_c_Moms_abs_terms.size() > 0)
     {
-        FOR1(i)
+        FOR(i)
         {
             out.Mom[i] += -8.0 * M_PI * m_G_Newton * emtensor.Si[i];
             out.Mom_abs_terms[i] +=

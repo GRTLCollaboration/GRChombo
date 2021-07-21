@@ -70,16 +70,16 @@ Constraints::Vars<data_t> Constraints::constraint_equations(
     if (m_c_Moms.size() > 0 || m_c_Moms_abs_terms.size() > 0)
     {
         Tensor<2, data_t> covd_A[CH_SPACEDIM];
-        FOR3(i, j, k)
+        FOR(i, j, k)
         {
             covd_A[i][j][k] = d1.A[j][k][i];
-            FOR1(l)
+            FOR(l)
             {
                 covd_A[i][j][k] += -chris.ULL[l][i][j] * vars.A[l][k] -
                                    chris.ULL[l][i][k] * vars.A[l][j];
             }
         }
-        FOR1(i)
+        FOR(i)
         {
             out.Mom[i] = -(GR_SPACEDIM - 1.) * d1.K[i] / GR_SPACEDIM;
             out.Mom_abs_terms[i] = abs(out.Mom[i]);
@@ -87,13 +87,13 @@ Constraints::Vars<data_t> Constraints::constraint_equations(
         Tensor<1, data_t> covd_A_term = 0.0;
         Tensor<1, data_t> d1_chi_term = 0.0;
         const data_t chi_regularised = simd_max(1e-6, vars.chi);
-        FOR3(i, j, k)
+        FOR(i, j, k)
         {
             covd_A_term[i] += h_UU[j][k] * covd_A[k][j][i];
             d1_chi_term[i] += -GR_SPACEDIM * h_UU[j][k] * vars.A[i][j] *
                               d1.chi[k] / (2 * chi_regularised);
         }
-        FOR1(i)
+        FOR(i)
         {
             out.Mom[i] += covd_A_term[i] + d1_chi_term[i];
             out.Mom_abs_terms[i] += abs(covd_A_term[i]) + abs(d1_chi_term[i]);
@@ -112,7 +112,7 @@ void Constraints::store_vars(Vars<data_t> &out,
         current_cell.store_vars(out.Ham_abs_terms, m_c_Ham_abs_terms);
     if (m_c_Moms.size() == GR_SPACEDIM)
     {
-        FOR1(i)
+        FOR(i)
         {
             int ivar = m_c_Moms.begin() + i;
             current_cell.store_vars(out.Mom[i], ivar);
@@ -121,13 +121,13 @@ void Constraints::store_vars(Vars<data_t> &out,
     else if (m_c_Moms.size() == 1)
     {
         data_t Mom_sq = 0.0;
-        FOR1(i) { Mom_sq += out.Mom[i] * out.Mom[i]; }
+        FOR(i) { Mom_sq += out.Mom[i] * out.Mom[i]; }
         data_t Mom = sqrt(Mom_sq);
         current_cell.store_vars(Mom, m_c_Moms.begin());
     }
     if (m_c_Moms_abs_terms.size() == GR_SPACEDIM)
     {
-        FOR1(i)
+        FOR(i)
         {
             int ivar = m_c_Moms_abs_terms.begin() + i;
             current_cell.store_vars(out.Mom_abs_terms[i], ivar);
@@ -136,7 +136,7 @@ void Constraints::store_vars(Vars<data_t> &out,
     else if (m_c_Moms_abs_terms.size() == 1)
     {
         data_t Mom_abs_terms_sq = 0.0;
-        FOR1(i)
+        FOR(i)
         {
             Mom_abs_terms_sq += out.Mom_abs_terms[i] * out.Mom_abs_terms[i];
         }

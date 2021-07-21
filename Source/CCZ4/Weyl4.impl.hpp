@@ -50,7 +50,7 @@ Weyl4::compute_epsilon3_LUU(const Vars<data_t> &vars,
     // raised normal vector, NB index 3 is time
     data_t n_U[4];
     n_U[3] = 1. / vars.lapse;
-    FOR1(i) { n_U[i] = -vars.shift[i] / vars.lapse; }
+    FOR(i) { n_U[i] = -vars.shift[i] / vars.lapse; }
 
     // 4D levi civita symbol and 3D levi civita tensor in LLL and LUU form
     const auto epsilon4 = TensorAlgebra::epsilon4D();
@@ -59,14 +59,14 @@ Weyl4::compute_epsilon3_LUU(const Vars<data_t> &vars,
 
     // Projection of antisymmentric Tensor onto hypersurface - see 8.3.17,
     // Alcubierre
-    FOR3(i, j, k)
+    FOR(i, j, k)
     {
         epsilon3_LLL[i][j][k] = 0.0;
         epsilon3_LUU[i][j][k] = 0.0;
     }
     // projection of 4-antisymetric tensor to 3-tensor on hypersurface
     // note last index contracted as per footnote 86 pg 290 Alcubierre
-    FOR3(i, j, k)
+    FOR(i, j, k)
     {
         for (int l = 0; l < 4; ++l)
         {
@@ -75,9 +75,9 @@ Weyl4::compute_epsilon3_LUU(const Vars<data_t> &vars,
         }
     }
     // rasing indices
-    FOR3(i, j, k)
+    FOR(i, j, k)
     {
-        FOR2(m, n)
+        FOR(m, n)
         {
             epsilon3_LUU[i][j][k] += epsilon3_LLL[i][m][n] * h_UU[m][j] *
                                      vars.chi * h_UU[n][k] * vars.chi;
@@ -118,12 +118,12 @@ EBFields_t<data_t> Weyl4::compute_EB_fields(
         compute_phys_chris(d1.chi, vars.chi, vars.h, h_UU, chris.ULL);
 
     // Extrinsic curvature and corresponding covariant and partial derivatives
-    FOR2(i, j)
+    FOR(i, j)
     {
         K_tensor[i][j] = vars.A[i][j] / vars.chi +
                          1. / 3. * (vars.h[i][j] * vars.K) / vars.chi;
 
-        FOR1(k)
+        FOR(k)
         {
             d1_K_tensor[i][j][k] = d1.A[i][j][k] / vars.chi -
                                    d1.chi[k] / vars.chi * K_tensor[i][j] +
@@ -132,11 +132,11 @@ EBFields_t<data_t> Weyl4::compute_EB_fields(
         }
     }
     // covariant derivative of K
-    FOR3(i, j, k)
+    FOR(i, j, k)
     {
         covariant_deriv_K_tensor[i][j][k] = d1_K_tensor[i][j][k];
 
-        FOR1(l)
+        FOR(l)
         {
             covariant_deriv_K_tensor[i][j][k] +=
                 -chris_phys[l][k][i] * K_tensor[l][j] -
@@ -151,18 +151,18 @@ EBFields_t<data_t> Weyl4::compute_EB_fields(
         K_minus_theta -= vars.Theta;
 
     // Calculate electric and magnetic fields
-    FOR2(i, j)
+    FOR(i, j)
     {
         out.E[i][j] = 0.0;
         out.B[i][j] = 0.0;
     }
 
-    FOR2(i, j)
+    FOR(i, j)
     {
         out.E[i][j] +=
             ricci_and_Z_terms.LL[i][j] + K_minus_theta * K_tensor[i][j];
 
-        FOR2(k, l)
+        FOR(k, l)
         {
             out.E[i][j] +=
                 -K_tensor[i][k] * K_tensor[l][j] * h_UU[k][l] * vars.chi;
@@ -206,7 +206,7 @@ NPScalar_t<data_t> Weyl4::compute_Weyl4(const EBFields_t<data_t> &ebfields,
     // Projection of Electric and magnetic field components using tetrads
     out.Real = 0.0;
     out.Im = 0.0;
-    FOR2(i, j)
+    FOR(i, j)
     {
         out.Real += 0.5 * (ebfields.E[i][j] * (tetrad.w[i] * tetrad.w[j] -
                                                tetrad.v[i] * tetrad.v[j]) -
@@ -255,7 +255,7 @@ Weyl4::compute_null_tetrad(const Vars<data_t> &vars,
     // floor on chi
     const data_t chi = simd_max(vars.chi, 1e-4);
 
-    FOR4(i, j, k, m)
+    FOR(i, j, k, m)
     {
         out.w[i] += 1. / sqrt(chi) * h_UU[i][j] * epsilon[j][k][m] * out.v[k] *
                     out.u[m];
@@ -264,29 +264,29 @@ Weyl4::compute_null_tetrad(const Vars<data_t> &vars,
     // Gram Schmitt orthonormalisation
     // Choice of orthonormalisaion to avoid frame-dragging
     data_t omega_11 = 0.0;
-    FOR2(i, j) { omega_11 += out.v[i] * out.v[j] * vars.h[i][j] / chi; }
-    FOR1(i) { out.v[i] = out.v[i] / sqrt(omega_11); }
+    FOR(i, j) { omega_11 += out.v[i] * out.v[j] * vars.h[i][j] / chi; }
+    FOR(i) { out.v[i] = out.v[i] / sqrt(omega_11); }
 
     data_t omega_12 = 0.0;
-    FOR2(i, j) { omega_12 += out.v[i] * out.u[j] * vars.h[i][j] / chi; }
-    FOR1(i) { out.u[i] += -omega_12 * out.v[i]; }
+    FOR(i, j) { omega_12 += out.v[i] * out.u[j] * vars.h[i][j] / chi; }
+    FOR(i) { out.u[i] += -omega_12 * out.v[i]; }
 
     data_t omega_22 = 0.0;
-    FOR2(i, j) { omega_22 += out.u[i] * out.u[j] * vars.h[i][j] / chi; }
-    FOR1(i) { out.u[i] = out.u[i] / sqrt(omega_22); }
+    FOR(i, j) { omega_22 += out.u[i] * out.u[j] * vars.h[i][j] / chi; }
+    FOR(i) { out.u[i] = out.u[i] / sqrt(omega_22); }
 
     data_t omega_13 = 0.0;
     data_t omega_23 = 0.0;
-    FOR2(i, j)
+    FOR(i, j)
     {
         omega_13 += out.v[i] * out.w[j] * vars.h[i][j] / chi;
         omega_23 += out.u[i] * out.w[j] * vars.h[i][j] / chi;
     }
-    FOR1(i) { out.w[i] += -(omega_13 * out.v[i] + omega_23 * out.u[i]); }
+    FOR(i) { out.w[i] += -(omega_13 * out.v[i] + omega_23 * out.u[i]); }
 
     data_t omega_33 = 0.0;
-    FOR2(i, j) { omega_33 += out.w[i] * out.w[j] * vars.h[i][j] / chi; }
-    FOR1(i) { out.w[i] = out.w[i] / sqrt(omega_33); }
+    FOR(i, j) { omega_33 += out.w[i] * out.w[j] * vars.h[i][j] / chi; }
+    FOR(i) { out.w[i] = out.w[i] / sqrt(omega_33); }
 
     return out;
 }

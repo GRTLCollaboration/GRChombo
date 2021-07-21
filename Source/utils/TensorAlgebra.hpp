@@ -110,7 +110,7 @@ ALWAYS_INLINE data_t compute_trace(const Tensor<2, data_t> &tensor_LL,
                                    const Tensor<2, data_t> &inverse_metric)
 {
     data_t trace = 0.;
-    FOR2(i, j) { trace += inverse_metric[i][j] * tensor_LL[i][j]; }
+    FOR(i, j) { trace += inverse_metric[i][j] * tensor_LL[i][j]; }
     return trace;
 }
 
@@ -119,7 +119,7 @@ template <class data_t>
 ALWAYS_INLINE data_t compute_trace(const Tensor<2, data_t> &tensor_UL)
 {
     data_t trace = 0.;
-    FOR1(i) trace += tensor_UL[i][i];
+    FOR(i) trace += tensor_UL[i][i];
     return trace;
 }
 
@@ -128,7 +128,7 @@ ALWAYS_INLINE data_t
 compute_trace(const Tensor<1, Tensor<1, data_t>> &tensor_UL)
 {
     data_t trace = 0.;
-    FOR1(i) trace += tensor_UL[i][i];
+    FOR(i) trace += tensor_UL[i][i];
     return trace;
 }
 
@@ -138,7 +138,7 @@ ALWAYS_INLINE data_t compute_dot_product(const Tensor<1, data_t> &vector_U,
                                          const Tensor<1, data_t> &covector_L)
 {
     data_t dot_product = 0.;
-    FOR1(i) dot_product += vector_U[i] * covector_L[i];
+    FOR(i) dot_product += vector_U[i] * covector_L[i];
     return dot_product;
 }
 
@@ -150,7 +150,7 @@ ALWAYS_INLINE data_t compute_dot_product(
     const Tensor<2, data_t> &inverse_metric)
 {
     data_t dot_product = 0.;
-    FOR2(m, n)
+    FOR(m, n)
     {
         dot_product += inverse_metric[m][n] * covector1_L[m] * covector2_L[n];
     }
@@ -167,7 +167,7 @@ ALWAYS_INLINE void make_trace_free(Tensor<2, data_t> &tensor_LL,
 {
     auto trace = compute_trace(tensor_LL, inverse_metric);
     double one_over_gr_spacedim = 1. / ((double)GR_SPACEDIM);
-    FOR2(i, j)
+    FOR(i, j)
     {
         tensor_LL[i][j] -= one_over_gr_spacedim * metric[i][j] * trace;
     }
@@ -194,7 +194,7 @@ raise_all(const Tensor<1, data_t> &tensor_L,
           const Tensor<2, data_t> &inverse_metric)
 {
     Tensor<1, data_t> tensor_U = 0.;
-    FOR2(i, j) { tensor_U[i] += inverse_metric[i][j] * tensor_L[j]; }
+    FOR(i, j) { tensor_U[i] += inverse_metric[i][j] * tensor_L[j]; }
     return tensor_U;
 }
 
@@ -205,7 +205,7 @@ raise_all(const Tensor<2, data_t> &tensor_LL,
           const Tensor<2, data_t> &inverse_metric)
 {
     Tensor<2, data_t> tensor_UU = 0.;
-    FOR4(i, j, k, l)
+    FOR(i, j, k, l)
     {
         tensor_UU[i][j] +=
             inverse_metric[i][k] * inverse_metric[j][l] * tensor_LL[k][l];
@@ -291,20 +291,20 @@ compute_christoffel(const Tensor<2, Tensor<1, data_t>> &d1_metric,
 {
     chris_t<data_t> out;
 
-    FOR3(i, j, k)
+    FOR(i, j, k)
     {
         out.LLL[i][j][k] = 0.5 * (d1_metric[j][i][k] + d1_metric[k][i][j] -
                                   d1_metric[j][k][i]);
     }
-    FOR3(i, j, k)
+    FOR(i, j, k)
     {
         out.ULL[i][j][k] = 0;
-        FOR1(l) { out.ULL[i][j][k] += h_UU[i][l] * out.LLL[l][j][k]; }
+        FOR(l) { out.ULL[i][j][k] += h_UU[i][l] * out.LLL[l][j][k]; }
     }
-    FOR1(i)
+    FOR(i)
     {
         out.contracted[i] = 0;
-        FOR2(j, k) { out.contracted[i] += h_UU[j][k] * out.ULL[i][j][k]; }
+        FOR(j, k) { out.contracted[i] += h_UU[j][k] * out.ULL[i][j][k]; }
     }
 
     return out;
@@ -318,13 +318,13 @@ Tensor<3, data_t> compute_phys_chris(const Tensor<1, data_t> &d1_chi,
                                      const Tensor<3, data_t> &chris_ULL)
 {
     Tensor<3, data_t> chris_phys;
-    FOR3(i, j, k)
+    FOR(i, j, k)
     {
         chris_phys[i][j][k] =
             chris_ULL[i][j][k] -
             0.5 / vars_chi *
                 (delta(i, k) * d1_chi[j] + delta(i, j) * d1_chi[k]);
-        FOR1(m)
+        FOR(m)
         {
             chris_phys[i][j][k] +=
                 0.5 / vars_chi * vars_h[j][k] * h_UU[i][m] * d1_chi[m];
