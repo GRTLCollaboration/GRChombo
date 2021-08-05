@@ -12,6 +12,8 @@
 #include "PETScAHSolver.hpp"
 
 // Class to manage ApparentHorizon for 2+1D and 3+1D simulations
+// (has only been implemented for 3+1 spacetimes, 3+1 cartoon-reduced to 2+1 and
+// 4+1 cartoon-reduced to 2+1)
 //! AHFunction defines the optimizing function (see AHFunction.hpp for
 //! expansion example calculation)
 template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
@@ -81,23 +83,35 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
                                     //!< based on the last output file and the
                                     //!< origin based on the stats file
 
-    double calculate_area(); //!< calculate AH area
+    // compute area, linear momentum and angular momentum of BH  (P only for 3D,
+    // J only for 3D without cartoon)
+    void calculate_ah_quantities(double &area
+#if GR_SPACEDIM == 3 // GR_SPACEDIM, not CH_SPACEDIM !!!
+                                 ,
+                                 Tensor<1, double> &P
+#if CH_SPACEDIM == 3
+                                 ,
+                                 Tensor<1, double> &J
+#endif
+#endif
+    );
 
+#if GR_SPACEDIM == 3 // GR_SPACEDIM, not CH_SPACEDIM !!!
     // estimate based on area and angular momentum J
-    ALWAYS_INLINE double calculate_mass(double area, double J_norm)
+    ALWAYS_INLINE static double calculate_mass(double area, double J_norm)
     {
         return sqrt(area / (16. * M_PI) + J_norm * J_norm * 4. * M_PI / area);
     }
-#if CH_SPACEDIM == 3
-    Tensor<1, double> calculate_angular_momentum_J(); //!< calculate spin, ONLY
-                                                      //!< FOR 3D
-    double calculate_spin_dimensionless(
-        double a_area); //!< calculate spin with 'z' direction, ONLY FOR 3D
 
-    ALWAYS_INLINE double calculate_irreducible_mass(double area)
+#if CH_SPACEDIM == 3
+    ALWAYS_INLINE static double calculate_irreducible_mass(double area)
     {
         return calculate_mass(area, 0.);
     }
+
+    double calculate_spin_dimensionless(
+        double a_area); //!< calculate spin with 'z' direction, ONLY FOR 3D
+#endif
 #endif
 
     void calculate_minmax_F() const;
@@ -150,10 +164,13 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
     std::array<IntegrationMethod, CH_SPACEDIM - 1> m_integration_methods;
 
     // just to save the result temporarily at each iteration
-    double m_area, m_mass;
+    double m_area;
+#if GR_SPACEDIM == 3
+    double m_mass, m_linear_momentum_P_norm;
 #if CH_SPACEDIM == 3
-    double m_spin, m_irreducible_mass, m_spin_z_alt;
-    Tensor<1, double> m_dimensionless_spin_vector;
+    double m_irreducible_mass, m_spin, m_spin_z_alt;
+    Tensor<1, double> m_dimensionless_spin_vector, m_linear_momentum_P;
+#endif
 #endif
 
     // prevents resetting the origin when the user externally did 'set_origin'

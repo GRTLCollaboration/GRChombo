@@ -13,10 +13,10 @@ plot_prefix = SingleBHPlot_
 # restart_file = SingleBH_000004.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 2
+checkpoint_interval = 20
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
-plot_interval = 1
+plot_interval = 10
 num_plot_vars = 2
 plot_vars = chi Ham
 
@@ -38,7 +38,7 @@ print_progress_only_to_rank_0 = 1
 
 mass = 1.
 offset = 0. 0. 0.
-momentum = 0.5 0. 0. # speed if using the IsotropicBoostBH ID
+momentum = 0.2 0.0 0.0 # speed if using the IsotropicBoostBH ID
 
 #################################################
 # Grid parameters
@@ -112,8 +112,8 @@ nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 
 # dt will be dx*dt_multiplier on each grid level
 dt_multiplier = 0.25
-# stop_time = 10.0
-max_steps = 10
+stop_time = 0.0
+# max_steps = 10
 
 # Spatial derivative order (only affects CCZ4 RHS)
 max_spatial_derivative_order = 4 # can be 4 or 6
@@ -164,6 +164,8 @@ AH_print_interval = 1
 # AH_re_solve_at_restart = 0
 # AH_verbose = 1
 # AH_expansion_radius_power = 1.
+
+AH_SNES_max_iterations = 500
 
 # AH_initial_guess = 0.5
 # AH_use_ellipsoid = 1 # for IsotropicBoostedBH ID

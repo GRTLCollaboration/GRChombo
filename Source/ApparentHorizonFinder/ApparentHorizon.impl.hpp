@@ -54,10 +54,13 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::ApparentHorizon(
 #endif
       }),
 
-      m_area(NAN), m_mass(NAN),
+      m_area(NAN),
+#if GR_SPACEDIM == 3
+      m_mass(NAN), m_linear_momentum_P_norm(NAN),
 #if CH_SPACEDIM == 3
-      m_spin(NAN), m_irreducible_mass(NAN), m_spin_z_alt(NAN),
-      m_dimensionless_spin_vector({NAN}),
+      m_irreducible_mass(NAN), m_spin(NAN), m_spin_z_alt(NAN),
+      m_dimensionless_spin_vector({NAN}), m_linear_momentum_P({NAN}),
+#endif
 #endif
 
       origin_already_updated(false),
@@ -313,7 +316,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
     {
         if (m_params.verbose > AHParams::SOME)
         {
-            pout() << "In [ApparentHorizon::solve::post-solving]" << endl;
+            pout() << "In [ApparentHorizon::solve::post-solving]" << std::endl;
         }
 
         CH_TIME("ApparentHorizon::solve::post-solving");
@@ -347,15 +350,27 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
 
         origin_already_updated = false;
 
-        m_area = calculate_area();
 #if GR_SPACEDIM == 3 // GR_SPACEDIM, not CH_SPACEDIM !!!
 #if CH_SPACEDIM == 3
-        Tensor<1, double> J = calculate_angular_momentum_J();
+        Tensor<1, double> J;
+        calculate_ah_quantities(m_area, m_linear_momentum_P, J);
+        m_linear_momentum_P_norm =
+            sqrt(m_linear_momentum_P[0] * m_linear_momentum_P[0] +
+                 m_linear_momentum_P[1] * m_linear_momentum_P[1] +
+                 m_linear_momentum_P[2] * m_linear_momentum_P[2]);
         double J_norm = sqrt(J[0] * J[0] + J[1] * J[1] + J[2] * J[2]);
         m_mass = calculate_mass(m_area, J_norm);
         m_irreducible_mass = calculate_irreducible_mass(m_area);
 #elif CH_SPACEDIM == 2
-        m_mass = calculate_mass(m_area, 0.);
+        Tensor<1, double> P;
+        calculate_ah_quantities(m_area, P);
+        // assume that P_y = 0 in Cartoon code (if we calculate it it
+        // will not be 0, but that is because in the Cartoon code the
+        // AH is only half an horizon, so the P_y gets wrongly
+        // calculated)
+        m_linear_momentum_P_norm = P[0];
+        double J_norm = 0.;
+        m_mass = calculate_mass(m_area, J_norm);
 #endif
 
 #if CH_SPACEDIM == 3
@@ -365,26 +380,42 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
         m_spin_z_alt = calculate_spin_dimensionless(m_area);
 #endif
 
+#else // GR_SPACEDIM != 3
+        calculate_ah_quantities(m_area);
+#endif
+
         if (m_params.verbose > AHParams::NONE)
         {
-            pout() << "mass = " << m_mass << endl;
+#if GR_SPACEDIM == 3 // GR_SPACEDIM, not CH_SPACEDIM !!!
+            pout() << "mass = " << m_mass << std::endl;
 #if CH_SPACEDIM == 3
-            pout() << "spin = " << m_spin << endl;
-
+            pout() << "spin = " << m_spin << std::endl;
+#endif
             if (m_params.verbose > AHParams::MIN)
             {
-                pout() << "irreducible mass = " << m_irreducible_mass << endl;
+#if CH_SPACEDIM == 3
+                pout() << "irreducible mass = " << m_irreducible_mass
+                       << std::endl;
                 pout() << "dimensionless spin vector = ("
                        << m_dimensionless_spin_vector[0] << ", "
                        << m_dimensionless_spin_vector[1] << ", "
-                       << m_dimensionless_spin_vector[2] << ")" << endl;
+                       << m_dimensionless_spin_vector[2] << ")" << std::endl;
                 pout() << "dimensionless spin in z (from equator-length "
                           "integral) = "
-                       << m_spin_z_alt << endl;
+                       << m_spin_z_alt << std::endl;
+#endif
+                pout() << "linear momentum norm |P| = "
+                       << m_linear_momentum_P_norm << std::endl;
+#if CH_SPACEDIM == 3
+                pout() << "linear momentum P = (" << m_linear_momentum_P[0]
+                       << ", " << m_linear_momentum_P[1] << ", "
+                       << m_linear_momentum_P[2] << ")" << std::endl;
 #endif
             }
-        }
+#else // GR_SPACEDIM != 3
+            pout() << "area = " << m_area << std::endl;
 #endif
+        }
 
         // reset min and max F, to force re-calculation
         m_max_F = 0.;
@@ -408,7 +439,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
 
     if (m_params.verbose > AHParams::SOME)
     {
-        pout() << "ApparentHorizon::solve finished successfully!" << endl;
+        pout() << "ApparentHorizon::solve finished successfully!" << std::endl;
     }
 }
 
@@ -456,9 +487,10 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
 
         CH_assert(CH_SPACEDIM == 3 || CH_SPACEDIM == 2);
         // first '1' corresponds to 'step'
-        // area+mass+irred.mass+spin+spin_vec+spin_alt OR area+mass
-        // in 2D Cartoon OR only area for other cases (e.g. 4D -> 2D cartoon)
-        int stats = (GR_SPACEDIM == 3 ? (CH_SPACEDIM == 3 ? 8 : 2) : 1);
+        // area+mass+irred.mass+spin+spin_vec+spin_alt+|P|+ P vec OR
+        // area+mass+|P| in 2D Cartoon OR only area for other cases (e.g.
+        // 4D -> 2D cartoon)
+        int stats = (GR_SPACEDIM == 3 ? (CH_SPACEDIM == 3 ? 12 : 3) : 1);
         std::vector<double> values(1 + stats +
                                    CH_SPACEDIM * (1 + m_params.track_center));
 
@@ -477,7 +509,12 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
         FOR(a) { values[idx++] = m_dimensionless_spin_vector[a]; }
         values[idx++] = m_spin_z_alt;
 #endif
+        values[idx++] = m_linear_momentum_P_norm;
+#if CH_SPACEDIM == 3
+        FOR(a) { values[idx++] = m_linear_momentum_P[a]; }
 #endif
+#endif
+
         for (int i = 0; i < CH_SPACEDIM; ++i)
             values[idx++] = origin[i];
         if (m_params.track_center)
@@ -503,6 +540,13 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
             headers[idx++] = "dimless spin-z";
             headers[idx++] = "dimless spin-z-alt";
 #endif
+            headers[idx++] = "linear mom. |P|";
+#if CH_SPACEDIM == 3
+            headers[idx++] = "linear mom. Px";
+            headers[idx++] = "linear mom. Py";
+            headers[idx++] = "linear mom. Pz";
+#endif
+
 #endif
             headers[idx++] = "origin_x";
             headers[idx++] = "origin_y";
@@ -765,13 +809,14 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
 #if CH_SPACEDIM == 3
         bool was_center_tracked =
             (cols >
-             10 +
-                 CH_SPACEDIM); // 10 for time + file + area + mass + irreducible
-                               // + spin + spin_vector + spin_z_alt
+             14 +
+                 CH_SPACEDIM); // 14 for time + file + area + mass + irreducible
+                               // + spin + spin_vector + spin_z_alt + |P| + P
+                               // vec
 #else
         // 3D -> 2D Cartoon method
         bool was_center_tracked =
-            (cols > 4 + CH_SPACEDIM); // 4 for time + file + area + mass
+            (cols > 5 + CH_SPACEDIM); // 5 for time + file + area + mass + |P|
 #endif
 #else
         bool was_center_tracked =
@@ -1295,7 +1340,6 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_spin_dimensionless(
     // 'solver.m_interp.break_interpolation_loop()'
     if (solver.m_interp.keep_interpolating_if_inactive())
     {
-
         int idx = 0;
 
         Vec localF;
@@ -1374,27 +1418,47 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_spin_dimensionless(
 }
 #endif
 
-#if CH_SPACEDIM == 3
-// ONLY FOR 3D
 template <class SurfaceGeometry, class AHFunction>
-Tensor<1, double>
-ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
+void ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_ah_quantities(
+    double &area
+#if GR_SPACEDIM == 3
+    ,
+    Tensor<1, double> &P
+#if CH_SPACEDIM == 3
+    ,
+    Tensor<1, double> &J
+#endif
+#endif
+)
 {
-    CH_assert(CH_SPACEDIM == 3);
-    CH_TIME("ApparentHorizon::calculate_angular_momentum_J");
+    CH_TIME("ApparentHorizon::calculate_ah_quantities");
 
     if (!get_converged())
-        return {NAN};
+    {
+        area = NAN;
+#if GR_SPACEDIM == 3
+        P = {NAN};
+#if CH_SPACEDIM == 3
+        J = {NAN};
+#endif
+#endif
+        return;
+    }
 
-    Tensor<1, double> J;
-    Tensor<1, double> integrals = {0.}; // temporary, but defined outside to be
-                                        // in scope for non-PETSc processes
+    // temporary, but defined outside to be
+    // in scope for non-PETSc processes
+    double integral_area = 0.;
+#if GR_SPACEDIM == 3
+    Tensor<1, double> integrals_P = {0.};
+#if CH_SPACEDIM == 3
+    Tensor<1, double> integrals_J = {0.};
+#endif
+#endif
 
     // PETSc processes go inside 'if', others "wait" until 'if' gets to
     // 'solver.m_interp.break_interpolation_loop()'
     if (solver.m_interp.keep_interpolating_if_inactive())
     {
-
         int idx = 0;
 
         Vec localF;
@@ -1405,12 +1469,27 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
 
         const std::array<double, CH_SPACEDIM> &center = get_center();
 
+#if CH_SPACEDIM == 3
         for (int v = solver.m_vmin; v < solver.m_vmax; ++v)
+#endif
         {
-            Tensor<1, double> inner_integral = {0.};
+
+            double inner_integral_area = 0.;
+#if GR_SPACEDIM == 3
+            Tensor<1, double> inner_integral_P = {0.};
+#if CH_SPACEDIM == 3
+            Tensor<1, double> inner_integral_J = {0.};
+#endif
+#endif
+
             for (int u = solver.m_umin; u < solver.m_umax; ++u)
             {
-                AHDerivData deriv = solver.diff(in, u, v);
+                AHDerivData deriv = solver.diff(in, u
+#if CH_SPACEDIM == 3
+                                                ,
+                                                v
+#endif
+                );
                 const auto geometric_data =
                     solver.m_interp.get_geometry_data(idx);
                 const auto data = solver.m_interp.get_data(idx);
@@ -1419,6 +1498,7 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
                     solver.m_interp.get_cartesian_coords(idx);
                 AHFunction func(data, coords, coords_cart);
                 Tensor<2, double> g = func.get_metric();
+#if GR_SPACEDIM == 3
                 Tensor<2, double> K = func.get_extrinsic_curvature();
                 Tensor<1, double> s_L =
                     func.get_level_function_derivative(geometric_data, deriv);
@@ -1427,9 +1507,22 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
                 Tensor<1, double> coords_cart_centered;
                 FOR(i) { coords_cart_centered[i] = coords_cart[i] - center[i]; }
 
+                // Linear Momentum P
+                Tensor<1, double> p_integrand = {0.};
+                // double directions[3][3] = {
+                //     {1., 0., 0.}, {0., 1., 0.}, {0., 0., 1.}};
+                // FOR(a, b, c)
+                // {
+                //     p_integrand[c] += directions[c][a] * S_U[b] * K[a][b];
+                // }
+                // simplify the commented above to:
+                FOR(a, b) { p_integrand[a] += S_U[b] * K[a][b]; }
+
+#if CH_SPACEDIM == 3
+                // Angular Momentum J
                 Tensor<1, double> spin_integrand = {0.};
                 double directions[3][3] = {
-                    {0, -coords_cart_centered[2], coords_cart_centered[1]},
+                    {0., -coords_cart_centered[2], coords_cart_centered[1]},
                     {coords_cart_centered[2], 0., -coords_cart_centered[0]},
                     {-coords_cart_centered[1], coords_cart_centered[0], 0.}};
                 FOR(a, b, c)
@@ -1440,7 +1533,8 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
                     // epsilon[c][j][a] * x[j], just like for ADM Momentum)
                     spin_integrand[c] += directions[c][a] * S_U[b] * K[a][b];
                 }
-
+#endif
+#endif
                 // now calculate sqrt(-g) area element
 
                 // Calculate Jacobian matrix for transformation from Cartesian
@@ -1450,7 +1544,9 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
                 {
                     Jac[0][k] = geometric_data.dxdf[k];
                     Jac[1][k] = geometric_data.dxdu[k];
+#if CH_SPACEDIM == 3
                     Jac[2][k] = geometric_data.dxdv[k];
+#endif
                 }
 
                 // Now do the coordinate transformation
@@ -1467,6 +1563,7 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
                 g_horizon[0][0] = g_spherical[1][1] +
                                   g_spherical[0][0] * deriv.duF * deriv.duF +
                                   2.0 * g_spherical[0][1] * deriv.duF;
+#if CH_SPACEDIM == 3
                 g_horizon[1][1] = g_spherical[2][2] +
                                   g_spherical[0][0] * deriv.dvF * deriv.dvF +
                                   2.0 * g_spherical[0][2] * deriv.dvF;
@@ -1475,6 +1572,7 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
                     g_spherical[0][0] * deriv.duF * deriv.dvF +
                     g_spherical[0][1] * deriv.dvF +
                     g_spherical[0][2] * deriv.duF;
+#endif
 
                 double det = TensorAlgebra::compute_determinant(g_horizon);
 
@@ -1482,26 +1580,87 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
                     u, m_params.num_points_u,
                     solver.m_interp.get_coord_system().is_u_periodic());
 
+                double element_area = sqrt(det) * weight * solver.m_du;
+
+// assume a (GR_SPACEDIM - CH_SPACEDIM)-sphere leftover
+#if GR_SPACEDIM != CH_SPACEDIM
+                double n_sphere = (GR_SPACEDIM - CH_SPACEDIM);
+                double element_hd = pow(sqrt(func.get_metric_hd()) *
+                                            coords_cart[CH_SPACEDIM - 1],
+                                        n_sphere);
+                element_area *= element_hd;
+#endif
+
+                inner_integral_area += element_area;
+
+#if GR_SPACEDIM == 3
+                // Linear Momentum P
                 FOR(a)
                 {
-                    double element = spin_integrand[a] / (8. * M_PI) *
-                                     sqrt(det) * weight * solver.m_du;
+                    double element_P = p_integrand[a] / (8. * M_PI) *
+                                       sqrt(det) * weight * solver.m_du;
+
+// assume a (GR_SPACEDIM - CH_SPACEDIM)-sphere leftover
+#if GR_SPACEDIM != CH_SPACEDIM
+                    element_P *= element_hd;
+#endif
+
+                    // hack for the poles (theta=0,\pi)
+                    // where nans appear in 'p_integrand', but
+                    // 'det' should be 0
+                    if (std::isnan(element_P))
+                        element_P = 0.;
+
+                    inner_integral_P[a] += element_P;
+                }
+
+#if CH_SPACEDIM == 3
+                // Angular Momentum J
+                FOR(a)
+                {
+                    double element_J = spin_integrand[a] / (8. * M_PI) *
+                                       sqrt(det) * weight * solver.m_du;
 
                     // hack for the poles (theta=0,\pi)
                     // where nans appear in 'spin_integrand', but
                     // 'det' should be 0
-                    if (std::isnan(element))
-                        element = 0.;
+                    if (std::isnan(element_J))
+                        element_J = 0.;
 
-                    inner_integral[a] += element;
+                    inner_integral_J[a] += element_J;
                 }
+#endif
+#endif
+
                 idx++;
             }
+#if CH_SPACEDIM == 3
             double weight = m_integration_methods[1].weight(
                 v, m_params.num_points_v,
                 solver.m_interp.get_coord_system().is_v_periodic());
-            FOR(a) { integrals[a] += weight * solver.m_dv * inner_integral[a]; }
+            double weight_dv = weight * solver.m_dv;
+            integral_area += weight_dv * inner_integral_area;
+            FOR(a) { integrals_P[a] += weight_dv * inner_integral_P[a]; }
+            FOR(a) { integrals_J[a] += weight_dv * inner_integral_J[a]; }
+#elif CH_SPACEDIM == 2
+            integral_area += inner_integral_area;
+#if GR_SPACEDIM == 3
+            FOR(a) { integrals_P[a] += inner_integral_P[a]; }
+#endif
+#endif
         }
+
+// do this separate so that the gamma is only calculated once
+#if GR_SPACEDIM != CH_SPACEDIM
+        double n_sphere = (GR_SPACEDIM - CH_SPACEDIM);
+        // this is 2pi for n=1, 4pi for n=2, 2pi^2 for n=3, ...
+        double n_sphere_coeff = 2. * std::pow(M_PI, (n_sphere + 1.) / 2.) /
+                                std::tgamma((n_sphere + 1.) / 2.);
+        integral_area *= n_sphere_coeff;
+#if GR_SPACEDIM == 3
+        FOR(a) { integrals_P[a] *= n_sphere_coeff; }
+#endif
+#endif
 
         solver.restore_dmda_arr_t(localF, in);
         solver.m_interp.break_interpolation_loop();
@@ -1512,161 +1671,25 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_angular_momentum_J()
     // ensures rank 0 will have 'integral' (even though for now the PETSc
     // processes always include rank 0)
 #ifdef CH_MPI
-    MPI_Allreduce(&integrals, &J, GR_SPACEDIM, MPI_DOUBLE, MPI_SUM,
+    MPI_Allreduce(&integral_area, &area, 1, MPI_DOUBLE, MPI_SUM,
                   Chombo_MPI::comm);
+#if GR_SPACEDIM == 3
+    MPI_Allreduce(&integrals_P, &P, GR_SPACEDIM, MPI_DOUBLE, MPI_SUM,
+                  Chombo_MPI::comm);
+#if CH_SPACEDIM == 3
+    MPI_Allreduce(&integrals_J, &J, GR_SPACEDIM, MPI_DOUBLE, MPI_SUM,
+                  Chombo_MPI::comm);
+#endif
+#endif
 #else // serial
-    FOR(a) { J[a] = integrals[a]; }
-#endif
-
-    return J;
-}
-#endif
-
-template <class SurfaceGeometry, class AHFunction>
-double ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_area()
-{
-    CH_TIME("ApparentHorizon::calculate_area");
-
-    if (!get_converged())
-        return NAN;
-
-    double area;
-    double integral =
-        0.; // temporary, but defined outside to exist for non-PETSc processes
-
-    // PETSc processes go inside 'if', others "wait" until 'if' gets to
-    // 'solver.m_interp.break_interpolation_loop()'
-    if (solver.m_interp.keep_interpolating_if_inactive())
-    {
-
-        int idx = 0;
-
-        Vec localF;
-        dmda_arr_t in;
-        solver.get_dmda_arr_t(localF, in);
-
-        // solver.m_F is already set from solve
-
+    area = integral_area;
+#if GR_SPACEDIM == 3
+    FOR(a) { P[a] = integrals_P[a]; }
 #if CH_SPACEDIM == 3
-        for (int v = solver.m_vmin; v < solver.m_vmax; ++v)
+    FOR(a) { J[a] = integrals_J[a]; }
 #endif
-        {
-            double inner_integral = 0.;
-            for (int u = solver.m_umin; u < solver.m_umax; ++u)
-            {
-                const auto geometric_data =
-                    solver.m_interp.get_geometry_data(idx);
-                const auto data = solver.m_interp.get_data(idx);
-                const auto coords = solver.m_interp.get_coords(idx);
-                const auto coords_cart =
-                    solver.m_interp.get_cartesian_coords(idx);
-                AHFunction func(data, coords, coords_cart);
-                Tensor<2, double> g = func.get_metric();
-
-                // Calculate Jacobian matrix for transformation from Cartesian
-                // to (f,u,v) coords
-                Tensor<2, double> Jac;
-                FOR(k)
-                {
-                    Jac[0][k] = geometric_data.dxdf[k];
-                    Jac[1][k] = geometric_data.dxdu[k];
-#if CH_SPACEDIM == 3
-                    Jac[2][k] = geometric_data.dxdv[k];
 #endif
-                }
-
-                AHDerivData deriv = solver.diff(in, u
-#if CH_SPACEDIM == 3
-                                                ,
-                                                v
 #endif
-                );
-
-                // Now do the coordinate transformation
-                Tensor<2, double> g_spherical = {0.};
-                FOR(i, j, k, l)
-                {
-                    g_spherical[i][j] += Jac[i][k] * Jac[j][l] * g[k][l];
-                }
-
-                // Construct the 2-metric on the horizon in (u,v) coords
-                // i.e. substitute df = (df/du)du + (df/dv)dv
-                // into the spherical metric
-                Tensor<2, double, CH_SPACEDIM - 1> g_horizon = {0.};
-                g_horizon[0][0] = g_spherical[1][1] +
-                                  g_spherical[0][0] * deriv.duF * deriv.duF +
-                                  2.0 * g_spherical[0][1] * deriv.duF;
-#if CH_SPACEDIM == 3
-                g_horizon[1][1] = g_spherical[2][2] +
-                                  g_spherical[0][0] * deriv.dvF * deriv.dvF +
-                                  2.0 * g_spherical[0][2] * deriv.dvF;
-                g_horizon[0][1] = g_horizon[1][0] =
-                    g_spherical[1][2] +
-                    g_spherical[0][0] * deriv.duF * deriv.dvF +
-                    g_spherical[0][1] * deriv.dvF +
-                    g_spherical[0][2] * deriv.duF;
-#endif
-
-                double det = TensorAlgebra::compute_determinant(g_horizon);
-
-                double weight = m_integration_methods[0].weight(
-                    u, m_params.num_points_u,
-                    solver.m_interp.get_coord_system().is_u_periodic());
-
-                double element = sqrt(det) * weight * solver.m_du;
-
-// assume a (GR_SPACEDIM - CH_SPACEDIM)-sphere leftover
-#if GR_SPACEDIM != CH_SPACEDIM
-                double n_sphere = (GR_SPACEDIM - CH_SPACEDIM);
-                element *= pow(sqrt(func.get_metric_hd()) *
-                                   coords_cart[CH_SPACEDIM - 1],
-                               n_sphere);
-#endif
-
-                inner_integral += element;
-                idx++;
-            }
-#if CH_SPACEDIM == 3
-            double weight = m_integration_methods[1].weight(
-                v, m_params.num_points_v,
-                solver.m_interp.get_coord_system().is_v_periodic());
-            integral += weight * solver.m_dv * inner_integral;
-#elif CH_SPACEDIM == 2
-            integral += inner_integral;
-#endif
-        }
-
-// do this separate so that the gamma is only calculated once
-#if GR_SPACEDIM != CH_SPACEDIM
-        double n_sphere = (GR_SPACEDIM - CH_SPACEDIM);
-        // this is 2pi for n=1, 4pi for n=2, 2pi^2 for n=3, ...
-        double n_sphere_coeff = 2. * std::pow(M_PI, (n_sphere + 1.) / 2.) /
-                                std::tgamma((n_sphere + 1.) / 2.);
-        integral *= n_sphere_coeff;
-#endif
-
-        solver.restore_dmda_arr_t(localF, in);
-        solver.m_interp.break_interpolation_loop();
-    }
-
-// reduction across all Chombo processes (note that 'area' is 0 for non-PETSc
-// processes) because SmallDataIO uses rank 0 to write this ensures rank 0 will
-// have the area (even though for now the PETSc processes always include rank 0)
-#ifdef CH_MPI
-    // we want all the processes to have the area so that all use it in the
-    // spin calculation (which in reality is needed not for the output files,
-    // but only for the pout() prints)
-    MPI_Allreduce(&integral, &area, 1, MPI_DOUBLE, MPI_SUM, Chombo_MPI::comm);
-#else // serial
-    area = integral;
-#endif
-
-    if (m_params.verbose > AHParams::MIN)
-    {
-        pout() << "area = " << area << endl;
-    }
-
-    return area;
 }
 
 template <class SurfaceGeometry, class AHFunction>
