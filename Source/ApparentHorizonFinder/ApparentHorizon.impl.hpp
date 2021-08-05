@@ -32,6 +32,8 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::ApparentHorizon(
 
       m_printed_once(false),
 
+      m_printed_after_restart(false),
+
       m_converged(0),
 
       m_has_been_found(false),
@@ -52,8 +54,11 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::ApparentHorizon(
 #endif
       }),
 
-      m_area(NAN), m_spin(NAN), m_mass(NAN), m_irreducible_mass(NAN),
-      m_spin_z_alt(NAN), m_dimensionless_spin_vector({NAN}),
+      m_area(NAN), m_mass(NAN),
+#if CH_SPACEDIM == 3
+      m_spin(NAN), m_irreducible_mass(NAN), m_spin_z_alt(NAN),
+      m_dimensionless_spin_vector({NAN}),
+#endif
 
       origin_already_updated(false),
 
@@ -347,11 +352,11 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
 #if CH_SPACEDIM == 3
         Tensor<1, double> J = calculate_angular_momentum_J();
         double J_norm = sqrt(J[0] * J[0] + J[1] * J[1] + J[2] * J[2]);
-#elif CH_SPACEDIM == 2
-        double J_norm = 0.;
-#endif
         m_mass = calculate_mass(m_area, J_norm);
         m_irreducible_mass = calculate_irreducible_mass(m_area);
+#elif CH_SPACEDIM == 2
+        m_mass = calculate_mass(m_area, 0.);
+#endif
 
 #if CH_SPACEDIM == 3
         m_spin = J_norm / m_mass;
@@ -365,11 +370,10 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::solve(double a_dt,
             pout() << "mass = " << m_mass << endl;
 #if CH_SPACEDIM == 3
             pout() << "spin = " << m_spin << endl;
-#endif
+
             if (m_params.verbose > AHParams::MIN)
             {
                 pout() << "irreducible mass = " << m_irreducible_mass << endl;
-#if CH_SPACEDIM == 3
                 pout() << "dimensionless spin vector = ("
                        << m_dimensionless_spin_vector[0] << ", "
                        << m_dimensionless_spin_vector[1] << ", "
@@ -430,6 +434,15 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
             pout() << "Printing statistics and coordinates." << std::endl;
         }
 
+        if (!m_printed_after_restart && m_printed_once)
+        {
+            // this forces 'remove_duplicate_time_data' to work (necessary for
+            // example with mergers, when the merger doesn't start right at
+            // restart but we still need to do 'remove_duplicate_time_data')
+            a_restart_time = a_time;
+            m_printed_after_restart = true;
+        }
+
         // write stats
         double fake_dt =
             a_dt * m_params.solve_interval * m_params.print_interval;
@@ -443,9 +456,9 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
 
         CH_assert(CH_SPACEDIM == 3 || CH_SPACEDIM == 2);
         // first '1' corresponds to 'step'
-        // area+mass+irred.mass+spin+spin_vec+spin_alt OR area+mass+irred.mass
+        // area+mass+irred.mass+spin+spin_vec+spin_alt OR area+mass
         // in 2D Cartoon OR only area for other cases (e.g. 4D -> 2D cartoon)
-        int stats = (GR_SPACEDIM == 3 ? (CH_SPACEDIM == 3 ? 8 : 3) : 1);
+        int stats = (GR_SPACEDIM == 3 ? (CH_SPACEDIM == 3 ? 8 : 2) : 1);
         std::vector<double> values(1 + stats +
                                    CH_SPACEDIM * (1 + m_params.track_center));
 
@@ -458,8 +471,8 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
         values[idx++] = m_area;
 #if GR_SPACEDIM == 3 // GR_SPACEDIM, not CH_SPACEDIM !!!
         values[idx++] = m_mass;
-        values[idx++] = m_irreducible_mass;
 #if CH_SPACEDIM == 3
+        values[idx++] = m_irreducible_mass;
         values[idx++] = m_spin;
         FOR(a) { values[idx++] = m_dimensionless_spin_vector[a]; }
         values[idx++] = m_spin_z_alt;
@@ -482,8 +495,8 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_outputs(
             headers[idx++] = "area";
 #if GR_SPACEDIM == 3 // GR_SPACEDIM, not CH_SPACEDIM !!!
             headers[idx++] = "mass";
-            headers[idx++] = "irreducible mass";
 #if CH_SPACEDIM == 3
+            headers[idx++] = "irreducible mass";
             headers[idx++] = "spin";
             headers[idx++] = "dimless spin-x";
             headers[idx++] = "dimless spin-y";
@@ -758,8 +771,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
 #else
         // 3D -> 2D Cartoon method
         bool was_center_tracked =
-            (cols > 5 + CH_SPACEDIM); // 5 for time + file + area + mass +
-                                      // irreducible mass
+            (cols > 4 + CH_SPACEDIM); // 4 for time + file + area + mass
 #endif
 #else
         bool was_center_tracked =
@@ -829,8 +841,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
                 // skip i=0, this one is directly in the file and is done after
                 for (int i = 1; i < m_old_centers.size(); ++i)
                 {
-                    double time = current_time - current_solve_dt * i;
-                    double index = idx - (current_time - time) / old_print_dt;
+                    double index = idx - (current_solve_dt * i) / old_print_dt;
 
                     if (index >= last_nan_idx)
                         old_centers_time_index.push_back(index);
@@ -846,8 +857,10 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
                                << std::endl;
                     else
                         pout()
-                            << "Old AH time step is different than current one "
-                               "(this might happen if 'AH_print_interval != "
+                            << "Old AH time step, " << old_print_dt
+                            << ", is different than current one, "
+                            << current_solve_dt
+                            << " (this might happen if 'AH_print_interval != "
                                "1').\nRecovering "
                             << old_centers_time_index.size()
                             << " old centers from interpolation, for accurate "

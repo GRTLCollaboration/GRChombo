@@ -59,7 +59,8 @@ class AHInitialGuessConstant : public AHInitialGuessDefault
     void set_params(double a_initial_guess)
     {
         m_initial_guess = a_initial_guess;
-        pout() << "Setting Initial Guess to f=" << m_initial_guess << std::endl;
+        pout() << "Setting Original Guess to f=" << m_initial_guess
+               << std::endl;
     }
 
 #if CH_SPACEDIM == 3
@@ -146,7 +147,7 @@ class AHInitialGuessEllipsoid : public AHInitialGuessDefault
         m_radius_x = a_radius_x;
         m_radius_y = a_radius_y;
         m_radius_z = a_radius_z;
-        pout() << "Setting Initial Guess to ellipsoid=(" << m_radius_x << ", "
+        pout() << "Setting Original Guess to ellipsoid=(" << m_radius_x << ", "
                << m_radius_y << ", " << m_radius_z << ")" << std::endl;
     }
 
@@ -185,8 +186,8 @@ class AHInitialGuessEllipsoid : public AHInitialGuessDefault
     {
         m_radius_x = a_radius_x;
         m_radius_y = a_radius_y;
-        pout() << "Setting Initial Guess to ellipsoid = (" << m_radius_x << ", "
-               << m_radius_y << ")" << std::endl;
+        pout() << "Setting Original Guess to ellipsoid = (" << m_radius_x
+               << ", " << m_radius_y << ")" << std::endl;
     }
 
     ALWAYS_INLINE double get_merger_min_distance() const override

@@ -83,21 +83,22 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
 
     double calculate_area(); //!< calculate AH area
 
-#if CH_SPACEDIM == 3
-    Tensor<1, double> calculate_angular_momentum_J(); //!< calculate spin, ONLY
-                                                      //!< FOR 3D
-    double calculate_spin_dimensionless(
-        double a_area); //!< calculate spin with 'z' direction, ONLY FOR 3D
-#endif
     // estimate based on area and angular momentum J
     ALWAYS_INLINE double calculate_mass(double area, double J_norm)
     {
         return sqrt(area / (16. * M_PI) + J_norm * J_norm * 4. * M_PI / area);
     }
+#if CH_SPACEDIM == 3
+    Tensor<1, double> calculate_angular_momentum_J(); //!< calculate spin, ONLY
+                                                      //!< FOR 3D
+    double calculate_spin_dimensionless(
+        double a_area); //!< calculate spin with 'z' direction, ONLY FOR 3D
+
     ALWAYS_INLINE double calculate_irreducible_mass(double area)
     {
         return calculate_mass(area, 0.);
     }
+#endif
 
     void calculate_minmax_F() const;
     void calculate_average_F() const;
@@ -125,7 +126,7 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
 
     // variables
   private:
-    bool m_printed_once;
+    bool m_printed_once, m_printed_after_restart;
 
     int m_converged; //!< flag saying if PETSc has converged the last 'N' times
                      //!<(read using 'get_converged()')
@@ -149,8 +150,11 @@ template <class SurfaceGeometry, class AHFunction> class ApparentHorizon
     std::array<IntegrationMethod, CH_SPACEDIM - 1> m_integration_methods;
 
     // just to save the result temporarily at each iteration
-    double m_area, m_spin, m_mass, m_irreducible_mass, m_spin_z_alt;
+    double m_area, m_mass;
+#if CH_SPACEDIM == 3
+    double m_spin, m_irreducible_mass, m_spin_z_alt;
     Tensor<1, double> m_dimensionless_spin_vector;
+#endif
 
     // prevents resetting the origin when the user externally did 'set_origin'
     // before 'solve'
