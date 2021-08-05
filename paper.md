@@ -215,8 +215,8 @@ The wide range of fundamental physics problems for which the code has been used 
 
 - The study of gravitational recoil in unequal mass binaries [@Radia:2021hjs].
 
-![Black hole trajectories \label{fig:recoil1}](figures/kick1.svg){ width=45% }
-![Black hole recoil velocities, spin and radiated energy \label{fig:recoil2}](figures/kick2.svg){ width=45% }
+![Black hole trajectories \label{fig:recoil1}](figures/kick1.png){ width=45% }
+![Black hole recoil velocities, spin and radiated energy \label{fig:recoil2}](figures/kick2.png){ width=45% }
 
 # Acknowledgements
 
