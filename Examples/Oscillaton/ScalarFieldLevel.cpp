@@ -55,19 +55,19 @@ void ScalarFieldLevel::initialData()
         pout() << "ScalarFieldLevel::initialData " << m_level << endl;
 
     // information about the csv file data
-    const int lines = 100002;
-    const double spacing = 0.01; // in r for the values
+    const int lines = 10000002;
+    const double spacing = 0.0001; // in r for the values
 
     std::array<double, 3> tmp = {0.0};
     std::vector<double> lapse_values, grr_values, Pi_values;
 
-    std::string lapse_file(m_p.initial_data_prefix + "alpha001.csv");
+    std::string lapse_file(m_p.initial_data_prefix + "alpha001_Thomas.csv");
     ifstream ifs0(lapse_file);
 
-    std::string grr_file(m_p.initial_data_prefix + "grr001.csv");
+    std::string grr_file(m_p.initial_data_prefix + "grr001_Thomas.csv");
     ifstream ifs1(grr_file);
 
-    std::string Pi_file(m_p.initial_data_prefix + "Pi001.csv");
+    std::string Pi_file(m_p.initial_data_prefix + "Pi001_Thomas.csv");
     ifstream ifs2(Pi_file);
 
     for (int i = 0; i < lines; ++i)
