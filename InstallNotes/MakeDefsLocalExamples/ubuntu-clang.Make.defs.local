@@ -1,0 +1,29 @@
+#begin  -- dont change this line
+# This is used for the github action that runs the tests
+# To use clang++ with the ubuntu openmpi package, set the environment variable
+# export OMPI_CXX=clang++
+
+DIM            = 3
+DEBUG          = TRUE
+PRECISION      = DOUBLE
+OPT            = TRUE
+PROFILE        = FALSE
+CXX            = clang++
+FC             = gfortran
+MPI            = TRUE
+OPENMPCC       = TRUE
+MPICXX         = mpicxx
+USE_64         = TRUE
+USE_HDF        = TRUE
+HDFINCFLAGS    = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include
+HDFLIBFLAGS    = -L/usr/lib/x86_64-linux-gnu/hdf5/serial/lib -lhdf5 -lz
+HDFMPIINCFLAGS = -I/usr/lib/x86_64-linux-gnu/hdf5/openmpi/include
+HDFMPILIBFLAGS = -L/usr/lib/x86_64-linux-gnu/hdf5/openmpi/lib -lhdf5 -lz
+# The following line puts all of the Chombo code in a Chombo namespace
+NAMESPACE      = TRUE
+USE_MT         = FALSE
+cxxoptflags    = -march=native -O3
+foptflags      = -march=native -O3
+syslibflags    = -lblas -llapack
+
+#end  -- dont change this line
