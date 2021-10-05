@@ -1,0 +1,23 @@
+name: Build and update Doxygen documentation
+
+on: [push]
+
+jobs:
+  doxygen:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout GRChombo
+      uses: actions/checkout@v2
+
+    - name: Build Doxygen documentation
+      uses: mattnotmitt/doxygen-action@v1
+      with:
+        working-directory: 'Doxygen'
+        doxyfile-path: 'doxygen_config'
+
+    - name: Upload Doxygen documentation
+      uses: actions/upload-artifact@v2
+      with:
+        name: doxygen_documentation
+        path: 'Doxygen/html'
