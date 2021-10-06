@@ -20,12 +20,31 @@ jobs:
 
     - name: Fix local URLs
       run: |
+        echo "grchombo_shortsha=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
         sudo chown -R $USER: .
-        sed -i "s|/github/workspace|https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}|g" *.html
+        sed -i "s|/github/workspace/GRChombo|https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}|g" *.html
       working-directory: 'GRChombo/Doxygen/html'
 
-    - name: Upload Doxygen documentation
-      uses: actions/upload-artifact@v2
+    - name: Checkout GRChombo.github.io
+      uses: actions/checkout@v2
       with:
-        name: doxygen_documentation
-        path: 'GRChombo/Doxygen/html'
+        repository: GRChombo/GRChombo.github.io
+        path: GRChombo.github.io
+
+    - name: Replace old Doxygen documentation with newly generated ones
+      run: |
+        rm -rf html
+        cp -r $GITHUB_WORKSPACE/GRChombo/Doxygen/html .
+      working-directory: ${{ github.workspace }}/GRChombo.github.io/Doxygen
+
+    - name: Make pull request in GRChombo.github.io
+      uses: peter-evans/create-pull-request@v3
+      with:
+        token: ${{ secrets.REPO_GITHUB_TOKEN }}
+        path: 'GRChombo.github.io'
+        commit-message: 'Update Doxygen documentation'
+        branch: 'enhancement/update_doxygen'
+        title: 'Update Doxygen documentation'
+        body: |
+          Automated pull request to update Doxygen documentation for
+          GRChombo commit ${{ env.grchombo_shortsha }}.
