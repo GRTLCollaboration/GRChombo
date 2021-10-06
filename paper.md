@@ -143,16 +143,16 @@ Strong gravity regimes are described by the *Einstein Field Equation* (EFE) of G
 \begin{equation}
    R_{\mu \nu} - \frac{1}{2} R g_{\mu \nu} = 8 \pi G T_{\mu\nu} ~,
 \end{equation}
-where $g_{\mu\nu}$ is the gravitational metric describing spacetime distances, $R$ and $R_{\mu\nu}$ are related to its second derivatives in space and time, and $T_{\mu\nu}$ is the stress-energy tensor of matter present.
+where $g_{\mu\nu}$ is the gravitational metric describing spacetime distances, $R$ and $R_{\mu\nu}$ are related to its second derivatives in space and time, and $T_{\mu\nu}$ is the stress-energy tensor of any matter or fields present.
 Analytic solutions to the EFE only exist where there is a high degree of symmetry; in general the equations must be solved numerically. The need for observational predictions has thus led to the development of *numerical relativity* (NR), methods for numerically solving the above expression, typically utilising high performance computing (HPC) resources.
-Expanding out the tensorial notation above, the EFE is a set of coupled, non linear second order partial differential equations for $g_{\mu\nu}$, which describes the curvature of spacetime in the presence of matter with stress-energy $T_{\mu\nu}$, i.e.,
+Expanding out the tensorial notation above, the EFE is a set of coupled, non linear second order partial differential equations for $g_{\mu\nu}$, which describes the curvature of spacetime in the presence of stress-energy $T_{\mu\nu}$, that is, schematically the equation we are trying to solve has the form:
 \begin{equation}
    \partial_t \partial_t g_{\mu\nu} \sim \partial_x \partial_x g_{\mu\nu} + \partial_y \partial_y g_{\mu\nu} + \partial_z \partial_z g_{\mu\nu} + {\rm non ~ linear ~ cross ~ terms} 
-          + 8 \pi G T_{\mu\nu}
+          + 8 \pi G T_{\mu\nu} ~,
 \end{equation}
-where the indices $\mu, \nu$ run over the spacetime indices -- in 4 dimensions, $t, x, y, z$. Given that $g_{\mu\nu}$ is symmetric in its indices, this gives a set of ten coupled non-linear partial differential equations, sourced by the stress-energy of any matter present in the spacetime.
+where the indices $\mu, \nu$ run over the spacetime indices -- in 4 dimensions, $t, x, y, z$. Given that $g_{\mu\nu}$ is symmetric in its indices, this gives a set of ten coupled non-linear partial differential equations, sourced by the stress-energy of any matter or fields present in the spacetime.
 
-One common approach to NR is to specify an initial spatial distribution for the metric and matter fields (subject to certain constraints), and then solve a time evolution for all metric and matter quantities, thus populating their values thoughout the four dimensional spacetime. The canonical example of this is the simulation of two black holes in orbit around each other, which permits extraction of the gravitational wave signal produced during the merger. Such numerical results have been instrumental in discovering signals in the noisy LIGO/VIRGO detector data, as well as confirming the predictions of GR to a high precision in the strong field regime.
+One common approach to NR is to specify an initial spatial distribution for the metric and matter fields (subject to certain constraints), and then solve a time evolution for all metric and matter quantities, thus populating their values thoughout the four dimensional spacetime. The canonical example of this is the simulation of two black holes in orbit around each other, which permits extraction of the gravitational wave signal produced during the merger. Such numerical results have been instrumental in discovering signals in the noisy LIGO/VIRGO detector data, as well as confirming the predictions of GR to a high precision in the strong field regime [@Abbott:2016blz;@Abbott:2020niy].
 
 GRChombo is an open-source code for performing such NR time evolutions, built on top of the publicly available Chombo software [@Adams:2015kgr] for the solution of PDEs. Whilst GRChombo uses standard techniques in NR, it focusses on applications in theoretical physics where adaptability, both in terms of grid structure, and in terms of code modification, are key drivers. 
 
@@ -162,11 +162,11 @@ Since its initial announcement in 2015 [@Clough:2015sqa], the GRChombo code has 
 
 The key features of GRChombo are as follows:
 
-- BSSN/CCZ4 formalism with moving punctures: GRChombo evolves the Einstein equation in the BSSN [@Nakamura:1987zz;@Shibata:1995we;@Baumgarte:1998te] or CCZ4 [@Gundlach:2005eh;@Alic:2011gg] formalism with conformal factor $\chi = \det(\gamma_{ij})^{-1/3}$. Singularities of black holes are managed using the moving puncture gauge conditions [@Campanelli:2005dd;@Baker:2005vv], and Kreiss-Oliger dissipation is used to control high-frequency noise, both from truncation and the interpolation associated with regridding.
+- BSSN/CCZ4 formalism with moving punctures: GRChombo evolves the Einstein equation in the BSSN [@Nakamura:1987zz;@Shibata:1995we;@Baumgarte:1998te] or CCZ4 [@Gundlach:2005eh;@Alic:2011gg] formalism with conformal factor $\chi = \det(\gamma_{ij})^{-1/3}$, where $\gamma_{ij}$ is the induced metric on the spatial hyperslices. Singularities of black holes are managed using the moving puncture gauge conditions [@Campanelli:2005dd;@Baker:2005vv], and Kreiss-Oliger dissipation [@kreiss1973methods] is used to control high-frequency noise, both from truncation and the interpolation associated with regridding.
 
 - Boundary Conditions: The code implements periodic, Sommerfeld (radiative), extrapolating and reflective boundary conditions.
 
-- Initial Conditions: The current examples provide analytic or semi-analytic initial data for black hole binaries, Kerr black holes and scalar matter. The code also incorporates a standalone version of the TwoPunctures code [@Ansorg:2004ds] for accurate binary BH data of arbitrary spins, masses and momenta.
+- Initial Conditions: The current examples provide analytic or semi-analytic initial data for black hole binaries, Kerr black holes and scalar matter. The code also incorporates a standalone version of the TwoPunctures code [@Ansorg:2004ds] for accurate binary BH data of arbitrary spins (up to the usual limit for Bowen York data of around $a/M = 0.9$ for the dimensionless spin parameter), masses and momenta.
 
 - Diagnostics: GRChombo has routines for finding black hole horizons, calculating spacetime masses, angular momenta, densities, fluxes and extracting gravitational waves. 
 
@@ -192,31 +192,37 @@ The wide range of fundamental physics problems for which the code has been used 
 
 ![Inhomoegenous inflaton field in Early Universe Cosmology \label{fig:cosmo1}](figures/cosmo1.png){ width=45% }
 ![Evolutions of the equation of state and density \label{fig:cosmo2}](figures/cosmo2.png){ width=45% }
+*Images of Imhomogeneous inflaton field in [@Aurrekoetxea:2019fhr] and evolution of the equation of state and density in [@Joana:2020rxm].*
 
 - the study of modified gravity, and violation of cosmic censorship [@Figueras:2020dzx;@Andrade:2020dgc;@Bantilan:2019bvf;@Figueras:2017zwa;@Figueras:2015hkb].
 
-![Testing cosmic censorship in higher dimenional black rings \label{fig:blackstring1}](figures/mgcc1.png){ width=45% }
+![Testing cosmic censorship in higher dimensional black rings \label{fig:blackstring1}](figures/mgcc1.png){ width=45% }
 ![Mapping regions of validity for modified gravity \label{fig:blackstring2}](figures/mgcc2.png){ width=45% }
+*Images of testing cosmic censorship with higher dimensional black rings in [@Figueras:2017zwa] and mapping regions of validity for modified gravity in [@Figueras:2020dzx].*
 
 - the formation, collapse and collisions of exotic compact objects (ECOs) and dark matter stars [@Nazari:2020fmk;@Muia:2019coe;@Widdicombe:2019woy;@Widdicombe:2018oeo;@Clough:2018exo;@Dietrich:2018bvi;@Helfer:2018vtq;@Helfer:2016ljl].
 
 ![Axion star collapse \label{fig:axionstar1}](figures/eco1.png){ width=45% }
 ![GW signals from ECO collision \label{fig:axionstar2}](figures/eco2.png){ width=45% }
+*Images of axion star collapse from [@Helfer:2016ljl] and GW signals from an ECO collision [@Helfer:2018vtq].*
 
-- Gravitational wave emission from cosmic string collapse [@Aurrekoetxea:2020tuw;@Helfer:2018qgv] and scalar radiation from global cosmic(/axion) strings [@Drew:2019mzc].
+- gravitational wave emission from cosmic string collapse [@Aurrekoetxea:2020tuw;@Helfer:2018qgv] and scalar radiation from global cosmic(/axion) strings [@Drew:2019mzc].
 
-![Glocal axion strings \label{fig:cosmicstring1}](figures/string1.png){ width=45% }
+![Global axion strings \label{fig:cosmicstring1}](figures/string1.png){ width=45% }
 ![GW signal from cosmic string loop collapse \label{fig:cosmicstring2}](figures/string2.png){ width=45% }
+*Images of global axion strings from [@Drew:2019mzc] and the GW signal from cosmic string loop collapse in [@Aurrekoetxea:2020tuw].*
 
 - the study of light bosonic dark matter and neutrino-like particles in black holes environments [@Bamber:2020bpu;@Clough:2019jpm;@Alexandre:2018crg;@Traykova2021].
 
 ![Scalar field around spinning black hole \label{fig:dm1}](figures/enviro1.png){ width=45% }
 ![Relativistic scaling of dynamical friction in scalar dark matter \label{fig:dm2}](figures/enviro2.png){ width=45% }
+*Images of scalar field accretion around a spinning BH from [@Bamber:2020bpu], and the relativistic scaling of dynamical friction from [@Traykova2021].*
 
-- The study of gravitational recoil in unequal mass binaries [@Radia:2021hjs].
+- the study of gravitational recoil in unequal mass binaries [@Radia:2021hjs].
 
 ![Black hole trajectories \label{fig:recoil1}](figures/kick1.png){ width=45% }
 ![Black hole recoil velocities, spin and radiated energy \label{fig:recoil2}](figures/kick2.png){ width=45% }
+*Images of the BH trajectories and recoil velocities, spin and radiated energy in [@Radia:2021hjs].*
 
 # Acknowledgements
 
