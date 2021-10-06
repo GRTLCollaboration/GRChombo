@@ -9,21 +9,23 @@ jobs:
     steps:
     - name: Checkout GRChombo
       uses: actions/checkout@v2
+      with:
+        path: GRChombo
 
     - name: Build Doxygen documentation
       uses: mattnotmitt/doxygen-action@v1
       with:
-        working-directory: 'Doxygen'
+        working-directory: 'GRChombo/Doxygen'
         doxyfile-path: 'doxygen_config'
 
     - name: Fix local URLs
       run: |
         sudo chown -R $USER: .
         sed -i "s|/github/workspace|https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}|g" *.html
-      working-directory: 'Doxygen/html'
+      working-directory: 'GRChombo/Doxygen/html'
 
     - name: Upload Doxygen documentation
       uses: actions/upload-artifact@v2
       with:
         name: doxygen_documentation
-        path: 'Doxygen/html'
+        path: 'GRChombo/Doxygen/html'
