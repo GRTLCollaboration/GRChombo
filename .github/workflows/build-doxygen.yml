@@ -42,9 +42,9 @@ jobs:
       with:
         token: ${{ secrets.REPO_GITHUB_TOKEN }}
         path: 'GRChombo.github.io'
-        commit-message: 'Update Doxygen documentation'
+        commit-message: 'Update Doxygen documentation from commit ${{ env.grchombo_shortsha }}'
         branch: 'enhancement/update_doxygen'
         title: 'Update Doxygen documentation'
         body: |
-          Automated pull request to update Doxygen documentation for
-          GRChombo commit ${{ env.grchombo_shortsha }}.
+          Automated pull request to update Doxygen documentation to that generated from GRChombo at commit [`${{ env.grchombo_shortsha }}`](https://github.com/GRChombo/GRChombo/commit/${{ env.grchombo_shortsha }}).
+        reviewers: 'mirenradia,KAClough'
