@@ -16,6 +16,12 @@ jobs:
         working-directory: 'Doxygen'
         doxyfile-path: 'doxygen_config'
 
+    - name: Fix local URLs
+      run: |
+        sudo chown -R $USER: .
+        sed -i "s|/github/workspace|https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}|g" *.html
+      working-directory: 'Doxygen/html'
+
     - name: Upload Doxygen documentation
       uses: actions/upload-artifact@v2
       with:
