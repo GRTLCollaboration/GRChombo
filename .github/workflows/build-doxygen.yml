@@ -37,6 +37,11 @@ jobs:
         cp -r $GITHUB_WORKSPACE/GRChombo/Doxygen/html .
       working-directory: ${{ github.workspace }}/GRChombo.github.io/Doxygen
 
+    - name: Assign Doxygen PR reviewer
+      run: |
+        PR_REVIEWER="mirenradia" && [[ $GITHUB_ACTOR == "mirenradia" ]] && PR_REVIEWER="KAClough"
+        echo "pr_reviewer=${PR_REVIEWER}" >> $GITHUB_ENV
+
     - name: Make pull request in GRChombo.github.io
       uses: peter-evans/create-pull-request@v3
       with:
@@ -47,4 +52,4 @@ jobs:
         title: 'Update Doxygen documentation'
         body: |
           Automated pull request to update Doxygen documentation to that generated from GRChombo at commit [`${{ env.grchombo_shortsha }}`](https://github.com/GRChombo/GRChombo/commit/${{ env.grchombo_shortsha }}).
-        reviewers: 'mirenradia,KAClough'
+        reviewers: ${{ env.pr_reviewer }}
