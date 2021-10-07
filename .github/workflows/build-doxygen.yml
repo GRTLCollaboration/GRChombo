@@ -1,6 +1,9 @@
 name: Build and update Doxygen documentation
 
-on: [push]
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   doxygen:
