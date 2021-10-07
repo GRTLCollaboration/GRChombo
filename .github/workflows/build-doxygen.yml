@@ -1,0 +1,58 @@
+name: Build and update Doxygen documentation
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  doxygen:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout GRChombo
+      uses: actions/checkout@v2
+      with:
+        path: GRChombo
+
+    - name: Build Doxygen documentation
+      uses: mattnotmitt/doxygen-action@v1
+      with:
+        working-directory: 'GRChombo/Doxygen'
+        doxyfile-path: 'doxygen_config'
+
+    - name: Fix local URLs
+      run: |
+        echo "grchombo_shortsha=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        sudo chown -R $USER: .
+        sed -i "s|/github/workspace/GRChombo|https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/${GITHUB_SHA}|g" *.html
+      working-directory: 'GRChombo/Doxygen/html'
+
+    - name: Checkout GRChombo.github.io
+      uses: actions/checkout@v2
+      with:
+        repository: GRChombo/GRChombo.github.io
+        path: GRChombo.github.io
+
+    - name: Replace old Doxygen documentation with newly generated ones
+      run: |
+        rm -rf html
+        cp -r $GITHUB_WORKSPACE/GRChombo/Doxygen/html .
+      working-directory: ${{ github.workspace }}/GRChombo.github.io/Doxygen
+
+    - name: Assign Doxygen PR reviewer
+      run: |
+        PR_REVIEWER="mirenradia" && [[ $GITHUB_ACTOR == "mirenradia" ]] && PR_REVIEWER="KAClough"
+        echo "pr_reviewer=${PR_REVIEWER}" >> $GITHUB_ENV
+
+    - name: Make pull request in GRChombo.github.io
+      uses: peter-evans/create-pull-request@v3
+      with:
+        token: ${{ secrets.REPO_GITHUB_TOKEN }}
+        path: 'GRChombo.github.io'
+        commit-message: 'Update Doxygen documentation from commit ${{ env.grchombo_shortsha }}'
+        branch: 'enhancement/update_doxygen'
+        title: 'Update Doxygen documentation'
+        body: |
+          Automated pull request to update Doxygen documentation to that generated from GRChombo at commit [`${{ env.grchombo_shortsha }}`](https://github.com/GRChombo/GRChombo/commit/${{ env.grchombo_shortsha }}).
+        reviewers: ${{ env.pr_reviewer }}
