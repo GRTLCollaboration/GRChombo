@@ -21,4 +21,5 @@ GRChombo. Please refer to our
 [wiki](https://github.com/GRChombo/GRChombo/wiki) for a more pedagogical
 introduction to GRChombo. We currently do not guarantee that this doxygen is
 kept completely up to date. For the latest version, please generate your own
-documentation by following the instructions in the folder "Doxygen" in GRChombo.
+documentation by following the instructions on 
+[this wiki page](https://github.com/GRChombo/GRChombo/wiki/Doxygen-documentation)
