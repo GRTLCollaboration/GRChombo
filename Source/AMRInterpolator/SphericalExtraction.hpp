@@ -121,8 +121,8 @@ class ModeExtraction : public SurfaceExtraction<spherical_geometry>
             // note that spin_Y_lm requires the coordinates with the center
             // at the origin
             double x = geom.get_grid_coord(dirs[0], r, theta, phi) - center[0];
-            double y = geom.get_grid_coord(dirs[0], r, theta, phi) - center[1];
-            double z = geom.get_grid_coord(dirs[0], r, theta, phi) - center[2];
+            double y = geom.get_grid_coord(dirs[1], r, theta, phi) - center[1];
+            double z = geom.get_grid_coord(dirs[2], r, theta, phi) - center[2];
             SphericalHarmonics::Y_lm_t<double> Y_lm =
                 SphericalHarmonics::spin_Y_lm(x, y, z, es, el, em);
             auto function_here = a_function(a_data_here, r, theta, phi);
