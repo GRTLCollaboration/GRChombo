@@ -1,7 +1,7 @@
 #begin  -- dont change this line
 # This is used for the github action that runs the tests
 # Dependencies can be installed with the command:
-# sudo apt-get install csh make gfortran-8 g++-8 cpp-8 libhdf5-dev \
+# sudo apt-get install csh make gfortran-10 g++-10 cpp-10 libhdf5-dev \
 # libhdf5-openmpi-dev openmpi-bin libblas-dev liblapack-dev \
 # libgetopt-complete-perl ssh
 

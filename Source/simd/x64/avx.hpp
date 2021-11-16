@@ -33,6 +33,7 @@ template <> struct simd<double> : public simd_base<double>
     typedef typename simd_traits<double>::data_t data_t;
     typedef typename simd_traits<double>::mask_t mask_t;
 
+#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wuninitialized"
     ALWAYS_INLINE
     simd() : simd_base<double>(_mm256_setzero_pd()) {}
