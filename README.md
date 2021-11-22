@@ -1,5 +1,5 @@
 # GRChombo
-GRChombo is an open-source code for numerical general relativity simulations.
+GRChombo is an open-source code for numerical relativity simulations.
 It is developed and maintained by a collaboration of numerical relativists with a
 wide range of research interests, from early universe cosmology to astrophysics
 and mathematical general relativity, and has been used in many papers since its
