@@ -1,0 +1,29 @@
+# In order to build with ParaView Catalyst insitu visualisation, include this 
+# makefile before mk/Make.test is included in your example and after src_dirs
+# are set
+
+# Decide whether we want to build with ParaView Catalyst by checking whether 
+# PARAVIEW_DIR environment variable is set
+ifdef PARAVIEW_DIR
+ifneq (,$(wildcard $(PARAVIEW_DIR)/bin/paraview-config))
+  $(info ================== Using ParaView Catalyst ==================)
+  USE_CATALYST := TRUE
+else
+  $(error No paraview-config in \$\(PARAVIEW_DIR\)/bin/. Has ParaView been built with Catalyst?)
+endif
+endif
+
+ifeq ($(USE_CATALYST),TRUE)
+  src_dirs += $(GRCHOMBO_SOURCE)/Insitu
+  # This won't work if these make variables are overwritten in Make.defs.local
+  cxxcppflags += -DUSE_CATALYST
+  # These components are correct in v5.9 but may differ in other versions
+  # The paraview-config command may also change
+  PARAVIEW_COMPONENTS := PythonCatalyst
+  VTK_COMPONENTS := CommonDataModel PythonUsed
+  PARAVIEW_CONFIG_EXEC := $(PARAVIEW_DIR)/bin/paraview-config
+  # The Chombo mkdep script cannot cope with the space in "-isystem /include/path"
+  # so we have to remove it
+  cxxcppflags += $(subst -isystem ,-isystem,$(shell $(PARAVIEW_CONFIG_EXEC) --cppflags -c "$(PARAVIEW_COMPONENTS)" -v "$(VTK_COMPONENTS)"))
+  XTRALDFLAGS += $(shell $(PARAVIEW_CONFIG_EXEC) --ldflags -c "$(PARAVIEW_COMPONENTS)" -v "$(VTK_COMPONENTS)")
+endif

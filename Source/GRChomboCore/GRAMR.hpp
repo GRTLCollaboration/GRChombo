@@ -18,6 +18,10 @@
 #include <ratio>
 #include <vector>
 
+#ifdef USE_CATALYST
+#include "CatalystAdaptor.hpp"
+#endif
+
 // Chombo namespace
 #include "UsingNamespace.H"
 

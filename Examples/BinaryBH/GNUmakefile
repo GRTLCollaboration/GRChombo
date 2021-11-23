@@ -41,4 +41,8 @@ ifeq ($(USE_TWOPUNCTURES),TRUE)
   src_dirs += $(TWOPUNCTURES_SOURCE)
 endif
 
+# ParaView Catalyst insitu visualisation
+# Set PARAVIEW_DIR environment variable to use
+include $(GRCHOMBO_SOURCE)/Insitu/Make.insitu
+
 include $(CHOMBO_HOME)/mk/Make.test
