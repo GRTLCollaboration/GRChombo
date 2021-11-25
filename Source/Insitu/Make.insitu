@@ -22,8 +22,6 @@ ifeq ($(USE_CATALYST),TRUE)
   PARAVIEW_COMPONENTS := PythonCatalyst
   VTK_COMPONENTS := CommonDataModel PythonUsed
   PARAVIEW_CONFIG_EXEC := $(PARAVIEW_DIR)/bin/paraview-config
-  # The Chombo mkdep script cannot cope with the space in "-isystem /include/path"
-  # so we have to remove it
-  cxxcppflags += $(subst -isystem ,-isystem,$(shell $(PARAVIEW_CONFIG_EXEC) --cppflags -c "$(PARAVIEW_COMPONENTS)" -v "$(VTK_COMPONENTS)"))
+  cxxcppflags += $(shell $(PARAVIEW_CONFIG_EXEC) --cppflags -c "$(PARAVIEW_COMPONENTS)" -v "$(VTK_COMPONENTS)")
   XTRALDFLAGS += $(shell $(PARAVIEW_CONFIG_EXEC) --ldflags -c "$(PARAVIEW_COMPONENTS)" -v "$(VTK_COMPONENTS)")
 endif
