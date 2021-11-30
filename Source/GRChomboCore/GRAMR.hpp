@@ -38,6 +38,9 @@ class GRAMRLevel;
 // Forward declaration for AMRInterpolator
 template <typename InterpAlgo> class AMRInterpolator;
 
+// Forward declaration for CatalystAdaptor
+class CatalystAdaptor;
+
 class GRAMR : public AMR
 {
   private:
@@ -49,6 +52,9 @@ class GRAMR : public AMR
     AMRInterpolator<Lagrange<4>> *m_interpolator; //!< The interpolator pointer
 
     GRAMR();
+
+    // just calls AMR::conclude unless USE_CATALYST == TRUE
+    void conclude();
 
     // defined here due to auto return type
     auto get_walltime()
@@ -75,6 +81,13 @@ class GRAMR : public AMR
         const Interval &a_comps = Interval(0, std::numeric_limits<int>::max()),
         const int a_min_level = 0,
         const int a_max_level = std::numeric_limits<int>::max()) const;
+
+#ifdef USE_CATALYST
+    void setup_catalyst(const std::string &a_python_script_path);
+#endif
+
+  protected:
+    CatalystAdaptor *m_insitu;
 };
 
 #endif /* GRAMR_HPP_ */
