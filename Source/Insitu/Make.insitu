@@ -19,9 +19,9 @@ ifeq ($(USE_CATALYST),TRUE)
   cxxcppflags += -DUSE_CATALYST
   # These components are correct in v5.9 but may differ in other versions
   # The paraview-config command may also change
-  PARAVIEW_COMPONENTS := PythonCatalyst
-  VTK_COMPONENTS := CommonDataModel PythonUsed
+  PARAVIEW_COMPONENT_FLAGS := -c PythonCatalyst
+  VTK_COMPONENT_FLAGS := -v CommonDataModel -v PythonUsed
   PARAVIEW_CONFIG_EXEC := $(PARAVIEW_DIR)/bin/paraview-config
-  cxxcppflags += $(shell $(PARAVIEW_CONFIG_EXEC) --cppflags -c "$(PARAVIEW_COMPONENTS)" -v "$(VTK_COMPONENTS)")
-  XTRALDFLAGS += $(shell $(PARAVIEW_CONFIG_EXEC) --ldflags -c "$(PARAVIEW_COMPONENTS)" -v "$(VTK_COMPONENTS)")
+  cxxcppflags += $(shell $(GRCHOMBO_SOURCE)/Insitu/cache.sh $(PARAVIEW_CONFIG_EXEC) --cppflags $(PARAVIEW_COMPONENT_FLAGS) $(VTK_COMPONENT_FLAGS))
+  XTRALDFLAGS += $(shell $(GRCHOMBO_SOURCE)/Insitu/cache.sh $(PARAVIEW_CONFIG_EXEC) --ldflags $(PARAVIEW_COMPONENT_FLAGS) $(VTK_COMPONENT_FLAGS))
 endif
