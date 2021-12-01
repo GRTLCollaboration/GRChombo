@@ -20,6 +20,7 @@
 
 // ParaView/VTK/Catalyst includes
 #include <vtkAMRBox.h>
+#include <vtkAMRInformation.h>
 #include <vtkCPDataDescription.h>
 #include <vtkCPInputDataDescription.h>
 #include <vtkCPProcessor.h>
@@ -44,29 +45,30 @@ class CatalystAdaptor
     CatalystAdaptor();
 
     // full constructor (calls initialise)
-    CatalystAdaptor(const GRAMR *a_gr_amr_ptr,
-                    std::string a_python_script_path);
+    CatalystAdaptor(GRAMR *a_gr_amr_ptr, std::string a_python_script_path);
 
     // destructor
     ~CatalystAdaptor();
 
     // Initialisation/Finalisation
-    void initialise(const GRAMR *m_gr_amr_ptr,
-                    std::string a_python_script_path);
+    void initialise(GRAMR *m_gr_amr_ptr, std::string a_python_script_path);
     void finalise();
 
     // update the AMR grid (no grid data)
     void build_vtk_grid();
 
     // send variables to catalyst
-    void add_var();
+    void add_vars(vtkCPInputDataDescription *a_input_data_desc);
 
     // do Catalyst processing
     void coprocess(double time);
 
   private:
+    vtkDoubleArray *fab_to_vtk_array(FArrayBox &a_fab, int a_var,
+                                     const std::string &a_name);
+
     bool m_initialised = false;
-    const GRAMR *m_gr_amr_ptr = nullptr;
+    GRAMR *m_gr_amr_ptr = nullptr;
     std::string m_python_script_path;
 
     vtkCPProcessor *m_proc_ptr = nullptr;

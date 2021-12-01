@@ -10,7 +10,7 @@
 
 CatalystAdaptor::CatalystAdaptor() {}
 
-CatalystAdaptor::CatalystAdaptor(const GRAMR *a_gr_amr_ptr,
+CatalystAdaptor::CatalystAdaptor(GRAMR *a_gr_amr_ptr,
                                  std::string a_python_script_path)
 {
     initialise(a_gr_amr_ptr, a_python_script_path);
@@ -24,7 +24,7 @@ CatalystAdaptor::~CatalystAdaptor()
     }
 }
 
-void CatalystAdaptor::initialise(const GRAMR *a_gr_amr_ptr,
+void CatalystAdaptor::initialise(GRAMR *a_gr_amr_ptr,
                                  std::string a_python_script_path)
 {
     // don't initalise twice
@@ -156,8 +156,94 @@ void CatalystAdaptor::build_vtk_grid()
     m_vtk_grid_ptr->GenerateParentChildInformation();
 }
 
-void CatalystAdaptor::add_var() {}
+void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
+{
+    std::array<bool, NUM_VARS> requested_evolution_vars;
+    std::array<bool, NUM_DIAGNOSTIC_VARS> requested_diagnostic_vars;
+
+    for (int ivar = 0; ivar < NUM_VARS; ++ivar)
+    {
+        requested_evolution_vars[ivar] = a_input_data_desc->IsFieldNeeded(
+            UserVariables::variable_names[ivar].c_str(), vtkDataObject::CELL);
+    }
+    for (int ivar = 0; ivar < NUM_DIAGNOSTIC_VARS; ++ivar)
+    {
+        requested_diagnostic_vars[ivar] = a_input_data_desc->IsFieldNeeded(
+            DiagnosticVariables::variable_names[ivar].c_str(),
+            vtkDataObject::CELL);
+    }
+
+    vtkAMRInformation *amr_info = m_vtk_grid_ptr->GetAMRInfo();
+    auto gramrlevels = m_gr_amr_ptr->get_gramrlevels();
+
+    for (int ilevel = 0; ilevel < gramrlevels.size(); ++ilevel)
+    {
+        GRAMRLevel *level = gramrlevels[ilevel];
+        // Unfortunately it doesn't seem possible to pass const pointers
+        // to Catalyst
+        GRLevelData &evolution_level_data = const_cast<GRLevelData &>(
+            level->getLevelData(VariableType::evolution));
+        GRLevelData &diagnostic_level_data = const_cast<GRLevelData &>(
+            level->getLevelData(VariableType::diagnostic));
+
+        const DisjointBoxLayout &level_box_layout =
+            evolution_level_data.disjointBoxLayout();
+        LayoutIterator lit = level_box_layout.layoutIterator();
+        int ibox;
+        for (ibox = 0, lit.begin(); lit.ok(); ++lit, ++ibox)
+        {
+            // only add data that we have locally
+            bool local_box = (procID() == level_box_layout.procID(lit()));
+            if (local_box)
+            {
+                vtkUniformGrid *vtk_uniform_grid_ptr =
+                    m_vtk_grid_ptr->GetDataSet(ilevel, ibox);
+                // hopefully this promotion works
+                DataIndex dind(lit());
+                FArrayBox &evolution_fab = evolution_level_data[dind];
+                FArrayBox &diagnostic_fab = diagnostic_level_data[dind];
+
+                for (int ivar = 0; ivar < NUM_VARS; ++ivar)
+                {
+                    if (requested_evolution_vars[ivar])
+                    {
+                        vtkDoubleArray *vtk_double_arr = fab_to_vtk_array(
+                            evolution_fab, ivar,
+                            UserVariables::variable_names[ivar]);
+                        vtk_uniform_grid_ptr->GetCellData()->AddArray(
+                            vtk_double_arr);
+                    }
+                }
+                for (int ivar = 0; ivar < NUM_DIAGNOSTIC_VARS; ++ivar)
+                {
+                    if (requested_diagnostic_vars[ivar])
+                    {
+                        vtkDoubleArray *vtk_double_arr = fab_to_vtk_array(
+                            diagnostic_fab, ivar,
+                            DiagnosticVariables::variable_names[ivar]);
+                        vtk_uniform_grid_ptr->GetCellData()->AddArray(
+                            vtk_double_arr);
+                    }
+                }
+            }
+        }
+    }
+}
 
 void CatalystAdaptor::coprocess(double time) {}
+
+vtkDoubleArray *CatalystAdaptor::fab_to_vtk_array(FArrayBox &a_fab, int a_var,
+                                                  const std::string &a_name)
+{
+    vtkDoubleArray *out = vtkDoubleArray::New();
+    vtkIdType num_cells = a_fab.size().product();
+    out->SetNumberOfTuples(num_cells);
+    out->SetName(a_name.c_str());
+    // this prevents Catalyst from deallocating the Chombo
+    // data pointers
+    int save_data = 1;
+    out->SetArray(a_fab.dataPtr(a_var), num_cells, save_data);
+    return out;
+}
 
 #endif /* USE_CATALYST */
