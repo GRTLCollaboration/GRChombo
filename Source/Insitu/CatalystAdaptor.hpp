@@ -56,7 +56,7 @@ class CatalystAdaptor
     void finalise();
 
     // update the AMR grid (no grid data)
-    void update_vtk_grid();
+    void build_vtk_grid();
 
     // send variables to catalyst
     void add_var();
