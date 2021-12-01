@@ -83,11 +83,15 @@ class GRAMR : public AMR
         const int a_max_level = std::numeric_limits<int>::max()) const;
 
 #ifdef USE_CATALYST
-    void setup_catalyst(const std::string &a_python_script_path);
+    void setup_catalyst(bool a_activate_catalyst,
+                        const std::string &a_python_script_path);
 #endif
 
   protected:
+#ifdef USE_CATALYST
+    bool m_activate_catalyst = false;
     CatalystAdaptor *m_insitu;
+#endif
 };
 
 #endif /* GRAMR_HPP_ */

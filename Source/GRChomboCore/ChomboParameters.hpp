@@ -21,6 +21,10 @@
 #include <algorithm>
 #include <string>
 
+#ifdef USE_CATALYST
+#include <vtkCPPythonPipeline.h>
+#endif
+
 // Chombo namespace
 #include "UsingNamespace.H"
 
@@ -126,6 +130,15 @@ class ChomboParameters
 
         pp.load("print_progress_only_to_rank_0", print_progress_only_to_rank_0,
                 false);
+
+#ifdef USE_CATALYST
+        pp.load("activate_catalyst", activate_catalyst, false);
+        pp.load("catalyst_script_path", catalyst_script_path);
+        pp.load("catalyst_coprocess_level", catalyst_coprocess_level, 0);
+        UserVariables::load_vars_to_vector(pp, "catalyst_vars",
+                                           "num_catalyst_vars", catalyst_vars,
+                                           num_catalyst_vars);
+#endif
     }
 
     void read_filesystem_params(GRParmParse &pp)
@@ -464,6 +477,28 @@ class ChomboParameters
                                 "parity type undefined");
             }
         }
+
+#ifdef USE_CATALYST
+        if (activate_catalyst)
+        {
+            bool catalyst_script_exists =
+                (access(catalyst_script_path.c_str(), R_OK) == 0);
+            check_parameter("catalyst_script_path", catalyst_script_path,
+                            catalyst_script_exists, "file does not exist");
+            bool catalyst_script_valid =
+                (vtkCPPythonPipeline::DetectScriptVersion(
+                     catalyst_script_path.c_str()) != 0);
+            check_parameter("catalyst_script_path", catalyst_script_path,
+                            catalyst_script_valid,
+                            "not a valid ParaView Catalyst script");
+
+            check_parameter("catalyst_coprocess_level",
+                            catalyst_coprocess_level,
+                            catalyst_coprocess_level >= 0 &&
+                                catalyst_coprocess_level <= max_level,
+                            "not a valid level");
+        }
+#endif
     }
 
     // General parameters
@@ -523,6 +558,15 @@ class ChomboParameters
     // GRAMR (or child) object
     bool just_check_params = false;
     bool print_progress_only_to_rank_0;
+
+#ifdef USE_CATALYST
+    bool activate_catalyst;
+    std::string catalyst_script_path;
+    int catalyst_coprocess_level;
+    // variables to pass to Catalyst
+    int num_catalyst_vars;
+    std::vector<std::pair<int, VariableType>> catalyst_vars;
+#endif
 
   protected:
     // the low and high corners of the domain taking into account reflective BCs

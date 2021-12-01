@@ -12,7 +12,10 @@ void GRAMR::conclude()
 {
     AMR::conclude();
 #ifdef USE_CATALYST
-    m_insitu->finalise();
+    if (m_activate_catalyst)
+    {
+        m_insitu->finalise();
+    }
 #endif
 }
 
@@ -61,10 +64,15 @@ void GRAMR::fill_multilevel_ghosts(const VariableType a_var_type,
 }
 
 #ifdef USE_CATALYST
-void GRAMR::setup_catalyst(const std::string &a_python_script_path)
+void GRAMR::setup_catalyst(bool a_activate_catalyst,
+                           const std::string &a_python_script_path)
 {
-    pout() << "GRAMR::setup_catalyst" << std::endl;
-    m_insitu = new CatalystAdaptor;
-    m_insitu->initialise(this, a_python_script_path);
+    m_activate_catalyst = a_activate_catalyst;
+    if (m_activate_catalyst)
+    {
+        pout() << "GRAMR::setup_catalyst" << std::endl;
+        m_insitu = new CatalystAdaptor;
+        m_insitu->initialise(this, a_python_script_path);
+    }
 }
 #endif

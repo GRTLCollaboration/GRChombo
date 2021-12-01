@@ -181,6 +181,10 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
         MayDay::Error("GRChombo restart only defined with hdf5");
 #endif
     }
+#ifdef USE_CATALYST
+    gr_amr.setup_catalyst(chombo_params.activate_catalyst,
+                          chombo_params.catalyst_script_path);
+#endif
 }
 
 #endif /* SETUP_FUNCTIONS_HPP_ */
