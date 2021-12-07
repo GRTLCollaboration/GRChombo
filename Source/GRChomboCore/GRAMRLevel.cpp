@@ -178,6 +178,27 @@ void GRAMRLevel::postTimeStep()
 
     specificPostTimeStep();
 
+#ifdef USE_CATALYST
+    if (m_p.activate_catalyst && m_level == m_p.catalyst_coprocess_level)
+    {
+        if (m_verbosity)
+        {
+            pout() << "GRAMRLevel::postTimestep: Calling Catalyst CoProcess"
+                   << std::endl;
+        }
+
+        unsigned int level_timestep = std::round(m_time / m_dt);
+        m_gr_amr.m_insitu->coprocess(m_time, level_timestep);
+
+        if (m_verbosity)
+        {
+            pout() << "GRAMRLevel::postTimestep: Calling Catalyst CoProcess "
+                      "finished"
+                   << std::endl;
+        }
+    }
+#endif
+
     // enforce solution BCs - this is required after the averaging
     // and postentially after specificPostTimeStep actions
     fillBdyGhosts(m_state_new);

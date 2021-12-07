@@ -45,28 +45,31 @@ class CatalystAdaptor
     CatalystAdaptor();
 
     // full constructor (calls initialise)
-    CatalystAdaptor(GRAMR *a_gr_amr_ptr, std::string a_python_script_path);
+    CatalystAdaptor(GRAMR *a_gr_amr_ptr, std::string a_python_script_path,
+                    int a_verbosity);
 
     // destructor
     ~CatalystAdaptor();
 
     // Initialisation/Finalisation
-    void initialise(GRAMR *m_gr_amr_ptr, std::string a_python_script_path);
+    void initialise(GRAMR *m_gr_amr_ptr, std::string a_python_script_path,
+                    int a_verbosity);
     void finalise();
 
+    // do Catalyst processing
+    void coprocess(double a_time, unsigned int a_timestep);
+
+  private:
     // update the AMR grid (no grid data)
     void build_vtk_grid();
 
     // send variables to catalyst
     void add_vars(vtkCPInputDataDescription *a_input_data_desc);
 
-    // do Catalyst processing
-    void coprocess(double time);
-
-  private:
     vtkDoubleArray *fab_to_vtk_array(FArrayBox &a_fab, int a_var,
                                      const std::string &a_name);
 
+    int m_verbosity;
     bool m_initialised = false;
     GRAMR *m_gr_amr_ptr = nullptr;
     std::string m_python_script_path;

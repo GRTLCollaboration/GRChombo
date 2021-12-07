@@ -87,7 +87,6 @@ class GRAMR : public AMR
                         const std::string &a_python_script_path);
 #endif
 
-  protected:
 #ifdef USE_CATALYST
     bool m_activate_catalyst = false;
     CatalystAdaptor *m_insitu;

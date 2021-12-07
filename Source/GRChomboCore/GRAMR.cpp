@@ -72,7 +72,7 @@ void GRAMR::setup_catalyst(bool a_activate_catalyst,
     {
         pout() << "GRAMR::setup_catalyst" << std::endl;
         m_insitu = new CatalystAdaptor;
-        m_insitu->initialise(this, a_python_script_path);
+        m_insitu->initialise(this, a_python_script_path, m_verbosity);
     }
 }
 #endif

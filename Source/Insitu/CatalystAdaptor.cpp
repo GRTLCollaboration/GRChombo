@@ -11,9 +11,10 @@
 CatalystAdaptor::CatalystAdaptor() {}
 
 CatalystAdaptor::CatalystAdaptor(GRAMR *a_gr_amr_ptr,
-                                 std::string a_python_script_path)
+                                 std::string a_python_script_path,
+                                 int a_verbosity)
 {
-    initialise(a_gr_amr_ptr, a_python_script_path);
+    initialise(a_gr_amr_ptr, a_python_script_path, a_verbosity);
 }
 
 CatalystAdaptor::~CatalystAdaptor()
@@ -25,7 +26,8 @@ CatalystAdaptor::~CatalystAdaptor()
 }
 
 void CatalystAdaptor::initialise(GRAMR *a_gr_amr_ptr,
-                                 std::string a_python_script_path)
+                                 std::string a_python_script_path,
+                                 int a_verbosity)
 {
     // don't initalise twice
     if (m_initialised)
@@ -66,6 +68,8 @@ void CatalystAdaptor::initialise(GRAMR *a_gr_amr_ptr,
         MayDay::Warning(pipeline_fail_warning.c_str());
     }
 
+    m_verbosity = a_verbosity;
+
     m_initialised = true;
 }
 
@@ -86,6 +90,10 @@ void CatalystAdaptor::finalise()
 
 void CatalystAdaptor::build_vtk_grid()
 {
+    if (m_verbosity)
+    {
+        pout() << "CatalystAdaptor::build_vtk_grid" << std::endl;
+    }
     if (m_vtk_grid_ptr != nullptr)
         m_vtk_grid_ptr->Delete();
 
@@ -158,20 +166,36 @@ void CatalystAdaptor::build_vtk_grid()
 
 void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
 {
+    if (m_verbosity)
+    {
+        pout() << "CatalystAdaptor::add_vars" << std::endl;
+    }
+
     std::array<bool, NUM_VARS> requested_evolution_vars;
     std::array<bool, NUM_DIAGNOSTIC_VARS> requested_diagnostic_vars;
+
+    if (m_verbosity > 1)
+    {
+        pout() << "CatalystAdaptor Requested variables:\n";
+    }
 
     for (int ivar = 0; ivar < NUM_VARS; ++ivar)
     {
         requested_evolution_vars[ivar] = a_input_data_desc->IsFieldNeeded(
             UserVariables::variable_names[ivar].c_str(), vtkDataObject::CELL);
+        if (m_verbosity > 1 && requested_evolution_vars[ivar])
+            pout() << UserVariables::variable_names[ivar] << " ";
     }
     for (int ivar = 0; ivar < NUM_DIAGNOSTIC_VARS; ++ivar)
     {
         requested_diagnostic_vars[ivar] = a_input_data_desc->IsFieldNeeded(
             DiagnosticVariables::variable_names[ivar].c_str(),
             vtkDataObject::CELL);
+        if (m_verbosity > 1 && requested_diagnostic_vars[ivar])
+            pout() << DiagnosticVariables::variable_names[ivar] << " ";
     }
+    if (m_verbosity > 1)
+        pout() << std::endl;
 
     vtkAMRInformation *amr_info = m_vtk_grid_ptr->GetAMRInfo();
     auto gramrlevels = m_gr_amr_ptr->get_gramrlevels();
@@ -230,7 +254,25 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
     }
 }
 
-void CatalystAdaptor::coprocess(double time) {}
+void CatalystAdaptor::coprocess(double a_time, unsigned int a_timestep)
+{
+    pout() << "CatalystAdaptor::coprocess at time " << a_time << " and step "
+           << a_timestep << std::endl;
+
+    vtkNew<vtkCPDataDescription> data_description;
+    data_description->AddInput("input");
+    data_description->SetTimeData(a_time, a_timestep);
+
+    if (m_proc_ptr->RequestDataDescription(data_description) != 0)
+    {
+        build_vtk_grid();
+        auto input_data_description =
+            data_description->GetInputDescriptionByName("input");
+        add_vars(input_data_description);
+        input_data_description->SetGrid(m_vtk_grid_ptr);
+        m_proc_ptr->CoProcess(data_description);
+    }
+}
 
 vtkDoubleArray *CatalystAdaptor::fab_to_vtk_array(FArrayBox &a_fab, int a_var,
                                                   const std::string &a_name)

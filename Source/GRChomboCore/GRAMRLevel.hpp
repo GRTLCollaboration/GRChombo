@@ -188,6 +188,10 @@ class GRAMRLevel : public AMRLevel, public InterpSource
         const VariableType var_type = VariableType::evolution,
         const Interval &a_comps = Interval(0, std::numeric_limits<int>::max()));
 
+#ifdef USE_CATALYST
+    virtual void preCatalystCoProcess() {}
+#endif
+
   protected:
     /// Fill all evolution ghosts cells (i.e. those in m_state_new)
     virtual void
