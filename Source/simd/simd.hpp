@@ -99,12 +99,16 @@ template <typename t> struct simd
     {
         return simd(op(m_value, arg));
     }
+#if !defined(__x86_64__) && !defined(__ARM_NEON)
+    static const int simd_len = 1;
+#endif
 };
 
 #include "simd_base.hpp" //Define all the simd-functions whose implementation does not depend on the architecture
-
 #if defined(__x86_64__)
 #include "x64/x64.hpp" //Define simd-functions whose implementation depends on the architecture
+#elif defined(__ARM_NEON)
+#include "arm/neon.hpp"
 #endif
 
 // We have defined various simd-specific calls (simd_compare_lt,
