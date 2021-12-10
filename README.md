@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/118786602.svg)](https://zenodo.org/badge/latestdoi/118786602)
+
 # GRChombo
 GRChombo is an open-source code for numerical relativity simulations.
 It is developed and maintained by a collaboration of numerical relativists with a
