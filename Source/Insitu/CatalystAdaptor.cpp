@@ -135,14 +135,23 @@ void CatalystAdaptor::build_vtk_grid()
         {
             // first get the box without ghosts
             Box box = level_box_layout[lit];
+            const IntVect &small_end = box.smallEnd();
+            const IntVect &big_end = box.bigEnd();
 
             // now grow the box to make the ghosted box
             Box ghosted_box = box;
             ghosted_box.grow(level_data.ghostVect());
-            const IntVect &small_end = ghosted_box.smallEnd();
-            const IntVect &big_end = ghosted_box.bigEnd();
+            const IntVect &small_ghosted_end = ghosted_box.smallEnd();
+            const IntVect &big_ghosted_end = ghosted_box.bigEnd();
 
-            vtkAMRBox vtk_amr_box(small_end.dataPtr(), big_end.dataPtr());
+            // vtkAMRBox vtk_amr_box(small_ghosted_end.dataPtr(),
+            //                       big_ghosted_end.dataPtr());
+            double origin[3] = {dx_arr[0] * small_ghosted_end[0],
+                                dx_arr[1] * small_ghosted_end[1],
+                                dx_arr[2] * small_ghosted_end[2]};
+
+            vtkAMRBox vtk_amr_box(origin, ghosted_box.size().dataPtr(), dx_arr,
+                                  origin_global);
             m_vtk_grid_ptr->SetAMRBox(ilevel, ibox, vtk_amr_box);
 
             bool local_box = (procID() == level_box_layout.procID(lit()));
@@ -152,16 +161,24 @@ void CatalystAdaptor::build_vtk_grid()
                 vtkNew<vtkUniformGrid> vtk_uniform_grid_ptr;
                 vtk_uniform_grid_ptr->SetOrigin(origin_global);
                 vtk_uniform_grid_ptr->SetSpacing(dx_arr);
-                vtk_uniform_grid_ptr->SetExtent(small_end[0], big_end[0] + 1,
-                                                small_end[1], big_end[1] + 1,
-                                                small_end[2], big_end[2] + 1);
+                vtk_uniform_grid_ptr->SetExtent(
+                    small_ghosted_end[0], big_ghosted_end[0] + 1,
+                    small_ghosted_end[1], big_ghosted_end[1] + 1,
+                    small_ghosted_end[2], big_ghosted_end[2] + 1);
+                // add the ghost cell information
+                int no_ghost[6] = {small_end[0], big_end[0] + 1,
+                                   small_end[1], big_end[1] + 1,
+                                   small_end[2], big_end[2] + 1};
+                bool cell_data = true;
+                vtk_uniform_grid_ptr->GenerateGhostArray(no_ghost, cell_data);
                 m_vtk_grid_ptr->SetDataSet(ilevel, ibox, vtk_uniform_grid_ptr);
             }
         }
     }
 
+    m_vtk_grid_ptr->Audit();
     // not sure if this is necessary but it was on the OverlappingAMR example
-    m_vtk_grid_ptr->GenerateParentChildInformation();
+    // m_vtk_grid_ptr->GenerateParentChildInformation();
 }
 
 void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
