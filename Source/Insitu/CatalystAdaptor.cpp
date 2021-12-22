@@ -116,14 +116,20 @@ void CatalystAdaptor::build_vtk_grid()
 
     // The origin is always at (0, 0, 0) in Chombo
     double origin_global[3] = {0., 0., 0.};
-    m_vtk_grid_ptr->SetOrigin(origin_global);
+    const IntVect &coarsest_ghost_vect =
+        gramrlevels[0]->getLevelData().ghostVect();
+    const double coarsest_dx = gramrlevels[0]->get_dx();
+    RealVect ghosted_origin_global_vect = -coarsest_dx * coarsest_ghost_vect;
+    m_vtk_grid_ptr->SetOrigin(ghosted_origin_global_vect.dataPtr());
 
     // now add all the boxes
     for (int ilevel = 0; ilevel < num_levels; ++ilevel)
     {
+        // pout() << "========================================\n";
+        // pout() << "Level: " << ilevel << std::endl;
         const GRAMRLevel *level = gramrlevels[ilevel];
         const double dx = level->get_dx();
-        const double dx_arr[3] = {dx, dx, dx};
+        double dx_arr[3] = {dx, dx, dx};
         m_vtk_grid_ptr->SetSpacing(ilevel, dx_arr);
         m_vtk_grid_ptr->SetRefinementRatio(ilevel, level->refRatio());
         const GRLevelData &level_data = level->getLevelData();
@@ -149,9 +155,12 @@ void CatalystAdaptor::build_vtk_grid()
             double origin[3] = {dx_arr[0] * small_ghosted_end[0],
                                 dx_arr[1] * small_ghosted_end[1],
                                 dx_arr[2] * small_ghosted_end[2]};
+            // RealVect level_origin = -dx * level_data.ghostVect();
 
             vtkAMRBox vtk_amr_box(origin, ghosted_box.size().dataPtr(), dx_arr,
-                                  origin_global);
+                                  ghosted_origin_global_vect.dataPtr());
+            // vtk_amr_box.Print(pout());
+            // pout() << "\n";
             m_vtk_grid_ptr->SetAMRBox(ilevel, ibox, vtk_amr_box);
 
             bool local_box = (procID() == level_box_layout.procID(lit()));
@@ -159,6 +168,7 @@ void CatalystAdaptor::build_vtk_grid()
             if (local_box)
             {
                 vtkNew<vtkUniformGrid> vtk_uniform_grid_ptr;
+                /*
                 vtk_uniform_grid_ptr->SetOrigin(origin_global);
                 vtk_uniform_grid_ptr->SetSpacing(dx_arr);
                 vtk_uniform_grid_ptr->SetExtent(
@@ -171,9 +181,19 @@ void CatalystAdaptor::build_vtk_grid()
                                    small_end[2], big_end[2] + 1};
                 bool cell_data = true;
                 vtk_uniform_grid_ptr->GenerateGhostArray(no_ghost, cell_data);
+                */
+
+                vtk_uniform_grid_ptr->Initialize(
+                    &vtk_amr_box, origin_global, dx_arr,
+                    level_data.ghostVect().dataPtr());
                 m_vtk_grid_ptr->SetDataSet(ilevel, ibox, vtk_uniform_grid_ptr);
             }
+            else
+            {
+                m_vtk_grid_ptr->SetDataSet(ilevel, ibox, nullptr);
+            }
         }
+        pout() << std::endl;
     }
 
     m_vtk_grid_ptr->Audit();
@@ -191,7 +211,7 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
     std::array<bool, NUM_VARS> requested_evolution_vars;
     std::array<bool, NUM_DIAGNOSTIC_VARS> requested_diagnostic_vars;
 
-    if (m_verbosity > 1)
+    if (m_verbosity)
     {
         pout() << "CatalystAdaptor Requested variables:\n";
     }
@@ -200,7 +220,7 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
     {
         requested_evolution_vars[ivar] = a_input_data_desc->IsFieldNeeded(
             UserVariables::variable_names[ivar].c_str(), vtkDataObject::CELL);
-        if (m_verbosity > 1 && requested_evolution_vars[ivar])
+        if (m_verbosity && requested_evolution_vars[ivar])
             pout() << UserVariables::variable_names[ivar] << " ";
     }
     for (int ivar = 0; ivar < NUM_DIAGNOSTIC_VARS; ++ivar)
@@ -208,10 +228,10 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
         requested_diagnostic_vars[ivar] = a_input_data_desc->IsFieldNeeded(
             DiagnosticVariables::variable_names[ivar].c_str(),
             vtkDataObject::CELL);
-        if (m_verbosity > 1 && requested_diagnostic_vars[ivar])
+        if (m_verbosity && requested_diagnostic_vars[ivar])
             pout() << DiagnosticVariables::variable_names[ivar] << " ";
     }
-    if (m_verbosity > 1)
+    if (m_verbosity)
         pout() << std::endl;
 
     vtkAMRInformation *amr_info = m_vtk_grid_ptr->GetAMRInfo();
@@ -239,10 +259,53 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
             {
                 vtkUniformGrid *vtk_uniform_grid_ptr =
                     m_vtk_grid_ptr->GetDataSet(ilevel, ibox);
+
                 // hopefully this promotion works
                 DataIndex dind(lit());
                 FArrayBox &evolution_fab = evolution_level_data[dind];
                 FArrayBox &diagnostic_fab = diagnostic_level_data[dind];
+
+#if DEBUG
+                vtkAMRBox vtk_box = m_vtk_grid_ptr->GetAMRBox(ilevel, ibox);
+                // shift to account for different indexing
+                IntVect vtk_origin_offset =
+                    -ipow(2, ilevel) * evolution_level_data.ghostVect();
+                vtk_box.Shift(vtk_origin_offset.dataPtr());
+                const int *vtk_box_lo = vtk_box.GetLoCorner();
+                const int *vtk_box_hi = vtk_box.GetHiCorner();
+
+                const Box &evolution_box = evolution_fab.box();
+                const IntVect &evolution_box_lo = evolution_box.smallEnd();
+                const IntVect &evolution_box_hi = evolution_box.bigEnd();
+
+                const Box &diagnostic_box = diagnostic_fab.box();
+                const IntVect &diagnostic_box_lo = diagnostic_box.smallEnd();
+                const IntVect &diagnostic_box_hi = diagnostic_box.bigEnd();
+                // add 1 to hi corner of VTK box as this is what is meant by hi
+                // corner in VTK
+                bool all_same_boxes =
+                    (vtk_box_lo[0] == evolution_box_lo[0]) &&
+                    (vtk_box_lo[1] == evolution_box_lo[1]) &&
+                    (vtk_box_lo[2] == evolution_box_lo[2]) &&
+                    (vtk_box_hi[0] + 1 == evolution_box_hi[0]) &&
+                    (vtk_box_hi[1] + 1 == evolution_box_hi[1]) &&
+                    (vtk_box_hi[2] + 1 == evolution_box_hi[2]) &&
+                    (vtk_box_lo[0] == diagnostic_box_lo[0]) &&
+                    (vtk_box_lo[1] == diagnostic_box_lo[1]) &&
+                    (vtk_box_lo[2] == diagnostic_box_lo[2]) &&
+                    (vtk_box_hi[0] + 1 == diagnostic_box_hi[0]) &&
+                    (vtk_box_hi[1] + 1 == diagnostic_box_hi[1]) &&
+                    (vtk_box_hi[2] + 1 == diagnostic_box_hi[2]);
+                if (!all_same_boxes)
+                {
+                    pout() << "Boxes do not agree: \n";
+                    pout() << "vtk_box: ";
+                    vtk_box.Print(pout());
+                    pout() << "\n";
+                    pout() << "evolution_box: " << evolution_box << "\n";
+                    pout() << "diagnostic_box: " << diagnostic_box << std::endl;
+                }
+#endif
 
                 for (int ivar = 0; ivar < NUM_VARS; ++ivar)
                 {
@@ -286,6 +349,8 @@ void CatalystAdaptor::coprocess(double a_time, unsigned int a_timestep)
         auto input_data_description =
             data_description->GetInputDescriptionByName("input");
         add_vars(input_data_description);
+        // vtkNew<vtkOverlappingAMR> stripped_vtk_grid;
+        // vtkAMRUtilities::StripGhostLayers(m_vtk_grid_ptr, stripped_vtk_grid);
         input_data_description->SetGrid(m_vtk_grid_ptr);
         m_proc_ptr->CoProcess(data_description);
     }
