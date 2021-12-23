@@ -10,7 +10,7 @@ plot_prefix = BinaryBHp_
 # restart_file = BinaryBHChk_000000.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = -1
+checkpoint_interval = 100
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
 plot_interval = 1
@@ -186,6 +186,6 @@ modes = 2 0 # l m for spherical harmonics
 
 activate_catalyst = true
 catalyst_script_path = catalyst_scripts/slice_chi.py
-catalyst_coprocess_level = 2
+catalyst_coprocess_level = 0
 num_catalyst_vars = 1
 caralyst_vars = chi
