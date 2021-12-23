@@ -179,24 +179,7 @@ void GRAMRLevel::postTimeStep()
     specificPostTimeStep();
 
 #ifdef USE_CATALYST
-    if (m_p.activate_catalyst && m_level == m_p.catalyst_coprocess_level)
-    {
-        if (m_verbosity)
-        {
-            pout() << "GRAMRLevel::postTimestep: Calling Catalyst CoProcess"
-                   << std::endl;
-        }
-
-        unsigned int level_timestep = std::round(m_time / m_dt);
-        m_gr_amr.m_insitu->coprocess(m_time, level_timestep);
-
-        if (m_verbosity)
-        {
-            pout() << "GRAMRLevel::postTimestep: Calling Catalyst CoProcess "
-                      "finished"
-                   << std::endl;
-        }
-    }
+    catalystCoProcess();
 #endif
 
     // enforce solution BCs - this is required after the averaging
@@ -206,6 +189,34 @@ void GRAMRLevel::postTimeStep()
     if (m_verbosity)
         pout() << "GRAMRLevel::postTimeStep " << m_level << " finished" << endl;
 }
+
+#ifdef USE_CATALYST
+void GRAMRLevel::catalystCoProcess()
+{
+    if (m_p.activate_catalyst)
+    {
+        if (at_level_timestep_multiple(m_p.catalyst_coprocess_level))
+        {
+            preCatalystCoProcess();
+        }
+        if (m_level == m_p.catalyst_coprocess_level)
+        {
+            if (m_verbosity)
+            {
+                pout() << "GRAMRLevel::catalystCoProcess" << std::endl;
+            }
+
+            unsigned int level_timestep = std::round(m_time / m_dt);
+            m_gr_amr.m_insitu->coprocess(m_time, level_timestep);
+
+            if (m_verbosity)
+            {
+                pout() << "GRAMRLevel::catalystCoProcess finished" << std::endl;
+            }
+        }
+    }
+}
+#endif
 
 // for examples that don't implement a computeTaggingCriterion with diagnostic
 // variables

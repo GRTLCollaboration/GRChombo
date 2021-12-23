@@ -168,7 +168,7 @@ void CatalystAdaptor::build_vtk_grid()
             if (local_box)
             {
                 vtkNew<vtkUniformGrid> vtk_uniform_grid_ptr;
-                /*
+
                 vtk_uniform_grid_ptr->SetOrigin(origin_global);
                 vtk_uniform_grid_ptr->SetSpacing(dx_arr);
                 vtk_uniform_grid_ptr->SetExtent(
@@ -176,29 +176,32 @@ void CatalystAdaptor::build_vtk_grid()
                     small_ghosted_end[1], big_ghosted_end[1] + 1,
                     small_ghosted_end[2], big_ghosted_end[2] + 1);
                 // add the ghost cell information
-                int no_ghost[6] = {small_end[0], big_end[0] + 1,
-                                   small_end[1], big_end[1] + 1,
-                                   small_end[2], big_end[2] + 1};
-                bool cell_data = true;
-                vtk_uniform_grid_ptr->GenerateGhostArray(no_ghost, cell_data);
-                */
+                // int no_ghost[6] = {small_end[0], big_end[0] + 1,
+                //    small_end[1], big_end[1] + 1,
+                //    small_end[2], big_end[2] + 1};
+                // bool cell_data = true;
+                // vtk_uniform_grid_ptr->GenerateGhostArray(no_ghost,
+                // cell_data);
 
-                vtk_uniform_grid_ptr->Initialize(
-                    &vtk_amr_box, origin_global, dx_arr,
-                    level_data.ghostVect().dataPtr());
+                // vtk_uniform_grid_ptr->Initialize(
+                // &vtk_amr_box, origin_global, dx_arr,
+                // level_data.ghostVect().dataPtr());
+
                 m_vtk_grid_ptr->SetDataSet(ilevel, ibox, vtk_uniform_grid_ptr);
             }
-            else
-            {
-                m_vtk_grid_ptr->SetDataSet(ilevel, ibox, nullptr);
-            }
         }
-        pout() << std::endl;
     }
 
     m_vtk_grid_ptr->Audit();
+    const double *vtk_grid_bounds = m_vtk_grid_ptr->GetAMRInfo()->GetBounds();
+    pout() << "VTK Grid Bounds:"
+           << "(" << vtk_grid_bounds[0] << "," << vtk_grid_bounds[2] << ","
+           << vtk_grid_bounds[4] << "), (" << vtk_grid_bounds[1] << ","
+           << vtk_grid_bounds[3] << "," << vtk_grid_bounds[5] << ")"
+           << std::endl;
+
     // not sure if this is necessary but it was on the OverlappingAMR example
-    // m_vtk_grid_ptr->GenerateParentChildInformation();
+    m_vtk_grid_ptr->GenerateParentChildInformation();
 }
 
 void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)

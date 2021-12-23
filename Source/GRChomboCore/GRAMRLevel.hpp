@@ -189,6 +189,9 @@ class GRAMRLevel : public AMRLevel, public InterpSource
         const Interval &a_comps = Interval(0, std::numeric_limits<int>::max()));
 
 #ifdef USE_CATALYST
+    /// Calls Catalyst CoProcess
+    void catalystCoProcess();
+
     virtual void preCatalystCoProcess() {}
 #endif
 
