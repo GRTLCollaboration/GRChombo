@@ -11,9 +11,12 @@
 #include "TensorAlgebra.hpp"
 #include "simd.hpp"
 
+// Here include coordinate transformation of cartesian <-> 
+// spherical/cylindrical coordinate.
 namespace CoordinateTransformations
 {
 
+// 1. Cartesian <-> Spherical Coordinate
 // Jacobian transformation matrix
 template <class data_t>
 static Tensor<2, data_t> spherical_jacobian(const data_t x, const double y,
@@ -262,6 +265,255 @@ data_t area_element_sphere(const Tensor<2, data_t> &spherical_g)
 {
     return sqrt(spherical_g[1][1] * spherical_g[2][2] -
                 spherical_g[1][2] * spherical_g[2][1]);
+}
+
+
+// 2. Cylindrical coordinate <-> Cartesian coordinate
+
+// Jacobian transformation matrix
+template <class data_t>
+static Tensor<2, data_t> cylindrical_jacobian(const data_t x, const double y,
+                                            const double z)
+{
+    // calculate useful position quantities
+    data_t rho2 = simd_max(x * x + y * y, 1e-12);
+    data_t rho = sqrt(rho2);
+
+    // And the sines and cosines of phi and theta
+    data_t cos_phi = x / rho;
+    data_t sin_phi = y / rho;
+
+    // derivatives for jacobian matrix - drdx etc
+    Tensor<2, data_t> jac;
+    jac[0][0] = cos_phi;
+    jac[1][0] = -sin_phi / rho;
+    jac[2][0] = 0.0;
+    jac[0][1] = sin_phi;
+    jac[1][1] = cos_phi / rho;
+    jac[2][1] = 0.0;
+    jac[0][2] = 0.0;
+    jac[1][2] = 0.0;
+    jac[2][2] = 1.0;
+    return jac;
+}
+
+// Incerse Jacobian
+template <class data_t>
+static Tensor<2, data_t>
+inverse_cylindrical_jacobian(const data_t x, const double y, const double z)
+{
+    // calculate useful position quantities
+    data_t rho2 = simd_max(x * x + y * y, 1e-12);
+    data_t rho = sqrt(rho2);
+
+    // And the sines and cosines of phi and theta
+    // data_t sin_theta = rho / r;
+    data_t cos_phi = x / rho;
+    data_t sin_phi = y / rho;
+
+    // derivatives for inverse jacobian matrix - drdx etc
+    Tensor<2, data_t> inv_jac;
+    inv_jac[0][0] = x / rho;
+    inv_jac[1][0] = y / rho;
+    inv_jac[2][0] = 0.0;
+    inv_jac[0][1] = -y;
+    inv_jac[1][1] = x;
+    inv_jac[2][1] = 0.0;
+    inv_jac[0][2] = 0.0;
+    inv_jac[1][2] = 0.0;
+    inv_jac[2][2] = 1.0;
+    return inv_jac;
+}
+
+// Convert a Tensor (with two lower indices) in cylindrical coords to cartesian
+// coords
+template <class data_t>
+static Tensor<2, data_t> 
+cylindrical_to_cartesian_LL(const Tensor<2, data_t> &cylindrical_g, const data_t x,
+                          const double y, const double z)
+{
+    Tensor<2, data_t> cartesian_g;
+
+    // derivatives for jacobian matrix - drdx etc
+    Tensor<2, data_t> jac = cylindrical_jacobian(x, y, z);
+
+    // Convert the Tensor to cartesian coords
+    FOR(i, j)
+    {
+        cartesian_g[i][j] = 0.;
+        FOR(k, l)
+        {
+            cartesian_g[i][j] += cylindrical_g[k][l] * jac[k][i] * jac[l][j];
+        }
+    }
+    return cartesian_g;
+}
+
+// Convert a Tensor (with two upper indices) in cylindrical coords to cartesian
+// coords
+template <class data_t>
+static Tensor<2, data_t>
+cylindrical_to_cartesian_UU(const Tensor<2, data_t> &cylindrical_g_UU,
+                          const data_t x, const double y, const double z)
+{
+    Tensor<2, data_t> cartesian_g_UU;
+
+    // derivatives for jacobian matrix - drdx etc
+    Tensor<2, data_t> inv_jac = inverse_cylindrical_jacobian(x, y, z);
+
+    // Convert the Tensor to cartesian coords
+    FOR(i, j)
+    {
+        cartesian_g_UU[i][j] = 0.;
+        FOR(k, l)
+        {
+            cartesian_g_UU[i][j] +=
+                cylindrical_g_UU[k][l] * inv_jac[i][k] * inv_jac[j][l];
+        }
+    }
+    return cartesian_g_UU;
+}
+
+// Convert a Tensor (with two lower indices) in cartesian coords to cylindrical
+// coords
+template <class data_t>
+static Tensor<2, data_t>
+cartesian_to_cylindrical_LL(const Tensor<2, data_t> &cartesian_g, const data_t x,
+                          const double y, const double z)
+{
+    Tensor<2, data_t> cylindrical_g;
+
+    // derivatives for inverse jacobian matrix - drdx etc
+    Tensor<2, data_t> inv_jac = inverse_cylindrical_jacobian(x, y, z);
+
+    // Convert the Tensor to cylindrical coords
+    FOR(i, j)
+    {
+        cylindrical_g[i][j] = 0.;
+        FOR(k, l)
+        {
+            cylindrical_g[i][j] +=
+                cartesian_g[k][l] * inv_jac[k][i] * inv_jac[l][j];
+        }
+    }
+    return cylindrical_g;
+}
+
+// Convert a Tensor (with two upper indices) in cartesian coords to cylindrical
+// coords
+template <class data_t>
+static Tensor<2, data_t>
+cartesian_to_cylindrical_UU(const Tensor<2, data_t> &cartesian_g_UU, data_t x,
+                          double y, double z)
+{
+    Tensor<2, data_t> cylindrical_g_UU;
+
+    // derivatives for jacobian matrix - drdx etc
+    Tensor<2, data_t> jac = cylindrical_jacobian(x, y, z);
+
+    // Convert the Tensor to cylindrical coords
+    FOR(i, j)
+    {
+        cylindrical_g_UU[i][j] = 0.;
+        FOR(k, l)
+        {
+            cylindrical_g_UU[i][j] +=
+                cartesian_g_UU[k][l] * jac[i][k] * jac[j][l];
+        }
+    }
+    return cylindrical_g_UU;
+}
+
+// Convert a vector (with one upper index) in cylindrical coords to cartesian
+// coords
+template <class data_t>
+Tensor<1, data_t>
+cylindrical_to_cartesian_U(const Tensor<1, data_t> &cylindrical_v_U, data_t x,
+                         double y, double z)
+{
+    Tensor<1, data_t> cartesian_v_U;
+
+    // derivatives for inverse jacobian matrix - drdx etc
+    Tensor<2, data_t> inv_jac = inverse_cylindrical_jacobian(x, y, z);
+
+    // transform the vector to cartesian coords
+    FOR(i)
+    {
+        cartesian_v_U[i] = 0.0;
+        FOR(j) { cartesian_v_U[i] += inv_jac[i][j] * cylindrical_v_U[j]; }
+    }
+    return cartesian_v_U;
+}
+
+// Convert a vector (with one lower index) in cylindrical coords to cartesian
+// coords
+template <class data_t>
+Tensor<1, data_t>
+cylindrical_to_cartesian_L(const Tensor<1, data_t> &cylindrical_v_L, data_t x,
+                         double y, double z)
+{
+    Tensor<1, data_t> cartesian_v_L;
+
+    // derivatives for jacobian matrix - drdx etc
+    Tensor<2, data_t> jac = cylindrical_jacobian(x, y, z);
+
+    // transform the vector to cartesian coords
+    FOR(i)
+    {
+        cartesian_v_L[i] = 0.0;
+        FOR(j) { cartesian_v_L[i] += cylindrical_v_L[j] * jac[j][i]; }
+    }
+    return cartesian_v_L;
+}
+
+// Convert a vector (with one upper index) in cartesian coords to cylindrical
+// coords
+template <class data_t>
+Tensor<1, data_t>
+cartesian_to_cylindrical_U(const Tensor<1, data_t> &cartesian_v_U, data_t x,
+                         double y, double z)
+{
+    Tensor<1, data_t> cylindrical_v_U;
+
+    // derivatives for jacobian matrix - drdx etc
+    Tensor<2, data_t> jac = cylindrical_jacobian(x, y, z);
+
+    // transform the vector to cartesian coords
+    FOR(i)
+    {
+        cylindrical_v_U[i] = 0.0;
+        FOR(j) { cylindrical_v_U[i] += jac[i][j] * cartesian_v_U[j]; }
+    }
+    return cylindrical_v_U;
+}
+
+// Convert a vector (with one lower index) in cartesian coords to cylindrical
+// coords
+template <class data_t>
+Tensor<1, data_t>
+cartesian_to_cylindrical_L(const Tensor<1, data_t> &cartesian_v_L, data_t x,
+                         double y, double z)
+{
+    Tensor<1, data_t> cylindrical_v_L;
+
+    // derivatives for inverse jacobian matrix - drdx etc
+    Tensor<2, data_t> inv_jac = inverse_cylindrical_jacobian(x, y, z);
+
+    // transform the vector to cartesian coords
+    FOR(i)
+    {
+        cylindrical_v_L[i] = 0.0;
+        FOR(j) { cylindrical_v_L[i] += cartesian_v_L[j] * inv_jac[j][i]; }
+    }
+    return cylindrical_v_L;
+}
+
+// The area element of a cylinder
+template <class data_t>
+data_t area_element_cylinder(const Tensor<2, data_t> &cylindrical_g)
+{
+    return sqrt(cylindrical_g[1][1] * cylindrical_g[2][2] -
+                cylindrical_g[1][2] * cylindrical_g[2][1]);
 }
 
 } // namespace CoordinateTransformations

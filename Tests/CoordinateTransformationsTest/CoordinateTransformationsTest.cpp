@@ -81,6 +81,7 @@ int main()
     const double z = coords.z;
     const double r = coords.get_radius();
     double rho2 = simd_max(x * x + y * y, 1e-12);
+    double rho = sqrt(rho2);
     double r2sin2theta = rho2;
 
     /* for debugging
@@ -88,16 +89,19 @@ int main()
     std::cout << "y " << y << std::endl;
     std::cout << "z " << z << std::endl;
     std::cout << "r " << r << std::endl;
+    std::cout << "rho " << rho << std::endl;
     */
 
     using namespace TensorAlgebra;
     using namespace CoordinateTransformations;
 
+    // 1. Test spherical <-> cartesian coordinate
+    
     // Test if inv_jac is really the inverse of the jacobian
-    Tensor<2, double> jac = spherical_jacobian(x, y, z);
-    Tensor<2, double> inv_jac = inverse_spherical_jacobian(x, y, z);
-    Tensor<2, double> inv_jac_check = compute_inverse(jac);
-    failed |= check_tensor(inv_jac, inv_jac_check, "inverse_jacobian");
+    Tensor<2, double> jac_spher = spherical_jacobian(x, y, z);
+    Tensor<2, double> inv_jac_spher = inverse_spherical_jacobian(x, y, z);
+    Tensor<2, double> inv_jac_check_spher = compute_inverse(jac_spher);
+    failed |= check_tensor(inv_jac_spher, inv_jac_check_spher, "inverse_jacobian (spherical)");
 
     // Test tensor transformations
     Tensor<2, double> Mij_cart;
@@ -178,15 +182,104 @@ int main()
         check_vector(si_cart_L_check, si_cart, "spherical_to_cartesian_L");
 
     // Test area_element_sphere
-    double area_element = r * sqrt(rho2);
-    double area_element_check = area_element_sphere(Mij_spher);
-    if (!almost_equal(area_element, area_element_check, ulp))
+    double area_element_spher = r * sqrt(rho2);
+    double area_element_check_spher = area_element_sphere(Mij_spher);
+    if (!almost_equal(area_element_spher, area_element_check_spher, ulp))
     {
-        std::cout << "Failed area_element\n";
-        std::cout << "value: " << area_element << "\n";
-        std::cout << "correct_value: " << area_element_check << std::endl;
+        std::cout << "Failed area_element (sphere)\n";
+        std::cout << "value: " << area_element_spher << "\n";
+        std::cout << "correct_value: " << area_element_check_spher << std::endl;
         failed = true;
     }
+
+
+    // 2. Test cylindrical <-> cartesian coordinate
+
+    // Test if inv_jac is really the inverse of the jacobian
+    Tensor<2, double> jac_cylin = cylindrical_jacobian(x, y, z);
+    Tensor<2, double> inv_jac_cylin = inverse_cylindrical_jacobian(x, y, z);
+    Tensor<2, double> inv_jac_check_cylin = compute_inverse(jac_cylin);
+    failed |= check_tensor(inv_jac_cylin, inv_jac_check_cylin, "inverse_jacobian (cylindrical)");
+
+    // Test tensor transformations
+
+    Tensor<2, double> Mij_cylin;
+    FOR(i, j) { Mij_cylin[i][j] = 0.; }
+    Mij_cylin[0][0] = 1.;
+    Mij_cylin[1][1] = rho2;
+    Mij_cylin[2][2] = 1.;
+
+    // Test cartesian_to_cylindrical_LL
+    Tensor<2, double> Mij_cylin_check;
+    Mij_cylin_check = cartesian_to_cylindrical_LL(Mij_cart, x, y, z);
+    failed |=
+        check_tensor(Mij_cylin_check, Mij_cylin, "cartesian_to_cylindrical_LL");
+
+    // Test cylindrical_to_cartesian_LL
+    Mij_cart_check = cylindrical_to_cartesian_LL(Mij_cylin, x, y, z);
+    failed |=
+        check_tensor(Mij_cart_check, Mij_cart, "cylindrical_to_cartesian_LL");
+
+    // Test cartesian_to_cylindrical_UU
+    Tensor<2, double> Mij_cylin_UU;
+    Tensor<2, double> Mij_cylin_UU_check;
+    Mij_cylin_UU_check =
+        cartesian_to_cylindrical_UU(compute_inverse_sym(Mij_cart), x, y, z);
+    Mij_cylin_UU = compute_inverse_sym(Mij_cylin);
+    failed |= check_tensor(Mij_cylin_UU_check, Mij_cylin_UU,
+                           "cartesian_to_cylindrical_UU");
+
+    // Test cylindrical_to_cartesian_UU
+    Mij_cart_UU_check =
+        cylindrical_to_cartesian_UU(compute_inverse_sym(Mij_cylin), x, y, z);
+    Mij_cart_UU = compute_inverse_sym(Mij_cart);
+    failed |= check_tensor(Mij_cart_UU_check, Mij_cart_UU,
+                           "cylindrical_to_cartesian_UU");
+
+    // Test vector transformations
+    si_cart[0] = x / rho;
+    si_cart[1] = y / rho;
+    si_cart[2] = 0.0;
+
+    Tensor<1, double> si_cylin;
+    si_cylin[0] = 1.0;
+    si_cylin[1] = 0.0;
+    si_cylin[2] = 0.0;
+
+    // Test cartesian_to_cylindrical_U
+    Tensor<1, double> si_cylin_U_check;
+    si_cylin_U_check = cartesian_to_cylindrical_U(si_cart, x, y, z);
+    failed |=
+        check_vector(si_cylin_U_check, si_cylin, "cartesian_to_cylindrical_U");
+
+    // Test cylindrical_to_cartesian_U
+    si_cart_U_check = cylindrical_to_cartesian_U(si_cylin, x, y, z);
+    failed |=
+        check_vector(si_cart_U_check, si_cart, "cylindrical_to_cartesian_U");
+
+    // Test cartesian_to_cylindrical_L
+    Tensor<1, double> si_cylin_L_check;
+    si_cylin_L_check = cartesian_to_cylindrical_L(si_cart, x, y, z);
+    failed |=
+        check_vector(si_cylin_L_check, si_cylin, "cartesian_to_cylindrical_L");
+
+    // Test cylindrical_to_cartesian_L
+    si_cart_L_check = cylindrical_to_cartesian_L(si_cylin, x, y, z);
+    failed |=
+        check_vector(si_cart_L_check, si_cart, "cylindrical_to_cartesian_L");
+
+    // Test area_element_cylinder
+    
+    double area_element_cylin = sqrt(rho2);
+    double area_element_check_cylin = area_element_cylinder(Mij_cylin);
+    if (!almost_equal(area_element_cylin, area_element_check_cylin, ulp))
+    {
+        std::cout << "Failed area_element (cylinder)\n";
+        std::cout << "value: " << area_element_cylin << "\n";
+        std::cout << "correct_value: " << area_element_check_cylin << std::endl;
+        failed = true;
+    }
+    
 
     if (failed)
     {
