@@ -30,7 +30,7 @@ for our coding style and testing policy before filing a pull request.
 GRChombo is licensed under the BSD 3-Clause License. Please see LICENSE for details.
 
 ## Citation
-Please cite out JOSS publication using the following bibtex:
+Please cite our JOSS publication using the following bibtex reference:
 
 ```
 @article{Andrade2021,
