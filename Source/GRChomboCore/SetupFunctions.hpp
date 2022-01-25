@@ -13,6 +13,7 @@
 #include "parstream.H" //Gives us pout()
 
 // Other includes
+#include <algorithm>
 #include <iostream>
 using std::cerr;
 using std::endl;
@@ -183,7 +184,8 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     }
 #ifdef USE_CATALYST
     gr_amr.setup_catalyst(chombo_params.activate_catalyst,
-                          chombo_params.catalyst_script_path);
+                          chombo_params.catalyst_script_path,
+                          chombo_params.catalyst_vars);
 #endif
 }
 

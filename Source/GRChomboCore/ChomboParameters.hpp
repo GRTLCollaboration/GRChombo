@@ -564,6 +564,8 @@ class ChomboParameters
     std::string catalyst_script_path;
     int catalyst_coprocess_level;
     // variables to pass to Catalyst
+    // only restricts vars if num_catalyst_vars > 0, otherwise all requested
+    // are passed
     int num_catalyst_vars;
     std::vector<std::pair<int, VariableType>> catalyst_vars;
 #endif

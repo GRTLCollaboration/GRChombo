@@ -188,4 +188,4 @@ activate_catalyst = true
 catalyst_script_path = catalyst_scripts/volume_raytrace_resample_chi.py
 catalyst_coprocess_level = 1
 num_catalyst_vars = 1
-caralyst_vars = chi
+catalyst_vars = chi

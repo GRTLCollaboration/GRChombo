@@ -46,6 +46,7 @@ class CatalystAdaptor
 
     // full constructor (calls initialise)
     CatalystAdaptor(GRAMR *a_gr_amr_ptr, std::string a_python_script_path,
+                    const std::vector<std::pair<int, VariableType>> &a_vars,
                     int a_verbosity);
 
     // destructor
@@ -53,6 +54,7 @@ class CatalystAdaptor
 
     // Initialisation/Finalisation
     void initialise(GRAMR *m_gr_amr_ptr, std::string a_python_script_path,
+                    const std::vector<std::pair<int, VariableType>> &a_vars,
                     int a_verbosity);
     void finalise();
 
@@ -72,6 +74,8 @@ class CatalystAdaptor
     int m_verbosity;
     bool m_initialised = false;
     GRAMR *m_gr_amr_ptr = nullptr;
+    // variables to pass to Catalyst
+    std::vector<std::pair<int, VariableType>> m_vars;
     std::string m_python_script_path;
 
     vtkCPProcessor *m_proc_ptr = nullptr;

@@ -64,15 +64,16 @@ void GRAMR::fill_multilevel_ghosts(const VariableType a_var_type,
 }
 
 #ifdef USE_CATALYST
-void GRAMR::setup_catalyst(bool a_activate_catalyst,
-                           const std::string &a_python_script_path)
+void GRAMR::setup_catalyst(
+    bool a_activate_catalyst, const std::string &a_python_script_path,
+    const std::vector<std::pair<int, VariableType>> &a_vars)
 {
     m_activate_catalyst = a_activate_catalyst;
     if (m_activate_catalyst)
     {
         pout() << "GRAMR::setup_catalyst" << std::endl;
         m_insitu = new CatalystAdaptor;
-        m_insitu->initialise(this, a_python_script_path, m_verbosity);
+        m_insitu->initialise(this, a_python_script_path, a_vars, m_verbosity);
     }
 }
 #endif

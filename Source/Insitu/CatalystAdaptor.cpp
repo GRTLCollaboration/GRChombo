@@ -10,11 +10,11 @@
 
 CatalystAdaptor::CatalystAdaptor() {}
 
-CatalystAdaptor::CatalystAdaptor(GRAMR *a_gr_amr_ptr,
-                                 std::string a_python_script_path,
-                                 int a_verbosity)
+CatalystAdaptor::CatalystAdaptor(
+    GRAMR *a_gr_amr_ptr, std::string a_python_script_path,
+    const std::vector<std::pair<int, VariableType>> &a_vars, int a_verbosity)
 {
-    initialise(a_gr_amr_ptr, a_python_script_path, a_verbosity);
+    initialise(a_gr_amr_ptr, a_python_script_path, a_vars, a_verbosity);
 }
 
 CatalystAdaptor::~CatalystAdaptor()
@@ -25,9 +25,9 @@ CatalystAdaptor::~CatalystAdaptor()
     }
 }
 
-void CatalystAdaptor::initialise(GRAMR *a_gr_amr_ptr,
-                                 std::string a_python_script_path,
-                                 int a_verbosity)
+void CatalystAdaptor::initialise(
+    GRAMR *a_gr_amr_ptr, std::string a_python_script_path,
+    const std::vector<std::pair<int, VariableType>> &a_vars, int a_verbosity)
 {
     // don't initalise twice
     if (m_initialised)
@@ -42,6 +42,7 @@ void CatalystAdaptor::initialise(GRAMR *a_gr_amr_ptr,
         return;
     }
     m_gr_amr_ptr = a_gr_amr_ptr;
+    m_vars = a_vars;
 
     // Initialise VTK CP Processor
     if (!m_proc_ptr)
@@ -193,12 +194,14 @@ void CatalystAdaptor::build_vtk_grid()
     }
 
     m_vtk_grid_ptr->Audit();
+#if DEBUG
     const double *vtk_grid_bounds = m_vtk_grid_ptr->GetAMRInfo()->GetBounds();
     pout() << "VTK Grid Bounds:"
            << "(" << vtk_grid_bounds[0] << "," << vtk_grid_bounds[2] << ","
            << vtk_grid_bounds[4] << "), (" << vtk_grid_bounds[1] << ","
            << vtk_grid_bounds[3] << "," << vtk_grid_bounds[5] << ")"
            << std::endl;
+#endif
 
     // not sure if this is necessary but it was on the OverlappingAMR example
     m_vtk_grid_ptr->GenerateParentChildInformation();
@@ -223,6 +226,14 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
     {
         requested_evolution_vars[ivar] = a_input_data_desc->IsFieldNeeded(
             UserVariables::variable_names[ivar].c_str(), vtkDataObject::CELL);
+        if (m_vars.size() > 0)
+        {
+            bool pass_var =
+                !(std::find(m_vars.begin(), m_vars.end(),
+                            std::make_pair(ivar, VariableType::evolution)) ==
+                  m_vars.end());
+            requested_evolution_vars[ivar] &= pass_var;
+        }
         if (m_verbosity && requested_evolution_vars[ivar])
             pout() << UserVariables::variable_names[ivar] << " ";
     }
@@ -231,6 +242,14 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
         requested_diagnostic_vars[ivar] = a_input_data_desc->IsFieldNeeded(
             DiagnosticVariables::variable_names[ivar].c_str(),
             vtkDataObject::CELL);
+        if (m_vars.size() > 0)
+        {
+            bool pass_var =
+                !(std::find(m_vars.begin(), m_vars.end(),
+                            std::make_pair(ivar, VariableType::diagnostic)) ==
+                  m_vars.end());
+            requested_diagnostic_vars[ivar] &= pass_var;
+        }
         if (m_verbosity && requested_diagnostic_vars[ivar])
             pout() << DiagnosticVariables::variable_names[ivar] << " ";
     }
