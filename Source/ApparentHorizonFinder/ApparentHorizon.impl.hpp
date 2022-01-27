@@ -1872,7 +1872,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_average_F() const
                   Chombo_MPI::comm);
     MPI_Allreduce(&local_sum, &global_sum, 1, MPI_DOUBLE, MPI_SUM,
                   Chombo_MPI::comm);
-    MPI_Allreduce(&global_sum_sq, &global_sum_sq, 1, MPI_DOUBLE, MPI_SUM,
+    MPI_Allreduce(&local_sum_sq, &global_sum_sq, 1, MPI_DOUBLE, MPI_SUM,
                   Chombo_MPI::comm);
 #endif
 
