@@ -44,27 +44,61 @@ struct PETSc_params
 
     void read_params(GRParmParse &pp)
     {
+        // variables to prevent ParmParse to complain about types (only happens
+        // in some clusters)
+        int tmp_int;
+        float tmp_float;
         if (pp.contains("AH_SNES_absolute_tolerance"))
-            pp.load("AH_SNES_absolute_tolerance", snes_atol);
+        {
+            pp.load("AH_SNES_absolute_tolerance", tmp_float);
+            snes_atol = tmp_float;
+        }
         if (pp.contains("AH_SNES_relative_tolerance"))
-            pp.load("AH_SNES_relative_tolerance", snes_rtol);
+        {
+            pp.load("AH_SNES_relative_tolerance", tmp_float);
+            snes_rtol = tmp_float;
+        }
         if (pp.contains("AH_SNES_step_change_tolerance"))
-            pp.load("AH_SNES_step_change_tolerance", snes_stol);
+        {
+            pp.load("AH_SNES_step_change_tolerance", tmp_float);
+            snes_stol = tmp_float;
+        }
         if (pp.contains("AH_SNES_max_iterations"))
-            pp.load("AH_SNES_max_iterations", snes_maxit);
+        {
+            pp.load("AH_SNES_max_iterations", tmp_int);
+            snes_maxit = tmp_int;
+        }
         if (pp.contains("AH_SNES_max_evaluations"))
-            pp.load("AH_SNES_max_evaluations", snes_maxf);
+        {
+            pp.load("AH_SNES_max_evaluations", tmp_int);
+            snes_maxf = tmp_int;
+        }
         if (pp.contains("AH_SNES_divergence_tolerance"))
-            pp.load("AH_SNES_divergence_tolerance", snes_divtol);
+        {
+            pp.load("AH_SNES_divergence_tolerance", tmp_float);
+            snes_divtol = tmp_float;
+        }
 
         if (pp.contains("AH_KSP_relative_tolerance"))
-            pp.load("AH_KSP_relative_tolerance", ksp_rtol);
+        {
+            pp.load("AH_KSP_relative_tolerance", tmp_float);
+            ksp_rtol = tmp_float;
+        }
         if (pp.contains("AH_KSP_absolute_tolerance"))
-            pp.load("AH_KSP_absolute_tolerance", ksp_abstol);
+        {
+            pp.load("AH_KSP_absolute_tolerance", tmp_float);
+            ksp_abstol = tmp_float;
+        }
         if (pp.contains("AH_KSP_divergence_tolerance"))
-            pp.load("AH_KSP_divergence_tolerance", ksp_dtol);
+        {
+            pp.load("AH_KSP_divergence_tolerance", tmp_float);
+            ksp_dtol = tmp_float;
+        }
         if (pp.contains("AH_KSP_max_evaluations"))
-            pp.load("AH_KSP_max_evaluations", ksp_maxits);
+        {
+            pp.load("AH_KSP_max_evaluations", tmp_int);
+            ksp_maxits = tmp_int;
+        }
     }
 };
 
