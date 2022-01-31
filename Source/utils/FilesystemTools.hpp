@@ -50,6 +50,11 @@ static bool mkdir_recursive(const std::string &path)
         static const std::string delimeter = "/";
         std::size_t found = path.find_first_of(delimeter);
 
+        // Even though this might look like RWX permissions for everyone,
+        // this will be masked by the system user mask (see 'man umask' or
+        // https://man7.org/linux/man-pages/man2/umask.2.html)
+        mode_t permissions = S_IRWXU | S_IRWXG | S_IRWXO;
+
         // NB: this would be very beautiful recursively, but let's not do it
         // because the function involves MPI_Barrier's
         while (success && found != std::string::npos)
@@ -61,14 +66,15 @@ static bool mkdir_recursive(const std::string &path)
             {
                 // success if created or if not created because it already
                 // exists
-                success &=
-                    (mkdir(subpath.c_str(), 0700) == 0 || errno == EEXIST);
+                success &= (mkdir(subpath.c_str(), permissions) == 0 ||
+                            errno == EEXIST);
             }
             found = path.find_first_of(delimeter, found + 1);
         }
         // if path doesn't finish with "/", one more to do
         if (found != path.size() - 1)
-            success &= (mkdir(path.c_str(), 0700) == 0 || errno == EEXIST);
+            success &=
+                (mkdir(path.c_str(), permissions) == 0 || errno == EEXIST);
     }
 
 #ifdef CH_MPI
