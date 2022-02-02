@@ -1,16 +1,14 @@
 #begin  -- dont change this line
 # This is used for the github action that runs the tests
-# Dependencies can be installed with the command:
-# sudo apt-get install csh make gfortran-8 g++-8 cpp-8 libhdf5-dev \
-# libhdf5-openmpi-dev openmpi-bin libblas-dev liblapack-dev \
-# libgetopt-complete-perl ssh
+# To use clang++ with the ubuntu openmpi package, set the environment variable
+# export OMPI_CXX=clang++
 
-DIM           ?= 3
+DIM            = 3
 DEBUG          = TRUE
 PRECISION      = DOUBLE
 OPT            = TRUE
 PROFILE        = FALSE
-CXX            = g++
+CXX            = clang++
 FC             = gfortran
 MPI            = TRUE
 OPENMPCC       = TRUE

@@ -1,4 +1,4 @@
-name: Run GRChombo Tests (GCC)
+name: Run GRChombo Tests (Clang)
 
 on: [push]
 
@@ -8,6 +8,7 @@ jobs:
     env:
       CHOMBO_HOME: ${{ github.workspace }}/Chombo/lib
       OMP_NUM_THREADS: 1
+      OMPI_CXX: clang++
 
     steps:
     - name: Checkout Chombo
@@ -24,17 +25,11 @@ jobs:
     - name: Install Chombo dependencies
       run: |
         sudo apt-get update
-        sudo apt-get -y --no-install-recommends install csh gfortran-10 g++-10 cpp-10 libhdf5-dev libhdf5-openmpi-dev openmpi-bin libblas-dev liblapack-dev libgetopt-complete-perl
-
-    - name: Set Compilers
-      run: |
-        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
-        sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-10 100
-        sudo update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-10 100
+        sudo apt-get -y --no-install-recommends install csh libhdf5-dev libhdf5-openmpi-dev openmpi-bin libblas-dev liblapack-dev libgetopt-complete-perl
 
     - name: Build Chombo
       run: |
-        cp $GITHUB_WORKSPACE/GRChombo/InstallNotes/MakeDefsLocalExamples/ubuntu-gcc.Make.defs.local $CHOMBO_HOME/mk/Make.defs.local
+        cp $GITHUB_WORKSPACE/GRChombo/InstallNotes/MakeDefsLocalExamples/ubuntu-clang.Make.defs.local $CHOMBO_HOME/mk/Make.defs.local
         make -j 4 AMRTimeDependent AMRTools BaseTools BoxTools
       working-directory: ${{ env.CHOMBO_HOME }}
 

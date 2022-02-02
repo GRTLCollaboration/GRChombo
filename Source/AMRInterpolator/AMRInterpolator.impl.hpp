@@ -106,7 +106,7 @@ void AMRInterpolator<InterpAlgo>::limit_num_levels(unsigned int num_levels)
 {
     CH_TIME("AMRInterpolator::limit_num_levels");
 
-    int max_num_levels = const_cast<AMR &>(m_gr_amr).getAMRLevels().size();
+    int max_num_levels = const_cast<GRAMR &>(m_gr_amr).getAMRLevels().size();
     if (num_levels > max_num_levels || num_levels == 0)
     {
         m_num_levels = max_num_levels;
