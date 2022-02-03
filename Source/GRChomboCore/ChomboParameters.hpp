@@ -133,11 +133,23 @@ class ChomboParameters
 
 #ifdef USE_CATALYST
         pp.load("activate_catalyst", activate_catalyst, false);
-        pp.load("catalyst_script_path", catalyst_script_path);
-        pp.load("catalyst_coprocess_level", catalyst_coprocess_level, 0);
-        UserVariables::load_vars_to_vector(pp, "catalyst_vars",
-                                           "num_catalyst_vars", catalyst_vars,
-                                           num_catalyst_vars);
+        if (activate_catalyst)
+        {
+            pp.load("catalyst_scripts_path", catalyst_scripts_path,
+                    std::string());
+            pp.load("num_catalyst_scripts", num_catalyst_scripts, 1);
+            pp.load("catalyst_scripts", catalyst_scripts, num_catalyst_scripts);
+            // prepend the path to each script
+            if (!catalyst_scripts_path.empty() &&
+                catalyst_scripts_path.back() != '/')
+                catalyst_scripts_path += "/";
+            for (auto &script : catalyst_scripts)
+                script = catalyst_scripts_path + script;
+            pp.load("catalyst_coprocess_level", catalyst_coprocess_level, 0);
+            UserVariables::load_vars_to_vector(
+                pp, "catalyst_vars", "num_catalyst_vars", catalyst_vars,
+                num_catalyst_vars);
+        }
 #endif
     }
 
@@ -481,16 +493,19 @@ class ChomboParameters
 #ifdef USE_CATALYST
         if (activate_catalyst)
         {
-            bool catalyst_script_exists =
-                (access(catalyst_script_path.c_str(), R_OK) == 0);
-            check_parameter("catalyst_script_path", catalyst_script_path,
-                            catalyst_script_exists, "file does not exist");
-            bool catalyst_script_valid =
-                (vtkCPPythonPipeline::DetectScriptVersion(
-                     catalyst_script_path.c_str()) != 0);
-            check_parameter("catalyst_script_path", catalyst_script_path,
-                            catalyst_script_valid,
-                            "not a valid ParaView Catalyst script");
+            for (int iscript = 0; iscript < catalyst_scripts.size(); ++iscript)
+            {
+                const std::string &script = catalyst_scripts[iscript];
+                bool script_exists = (access(script.c_str(), R_OK) == 0);
+                const std::string script_parameter_name =
+                    "catalyst_scripts[" + std::to_string(iscript) + "]";
+                check_parameter(script_parameter_name, script, script_exists,
+                                "does not exist");
+                bool script_valid = (vtkCPPythonPipeline::DetectScriptVersion(
+                                         script.c_str()) != 0);
+                check_parameter(script_parameter_name, script, script_valid,
+                                "not a valid ParaView Catalyst script");
+            }
 
             check_parameter("catalyst_coprocess_level",
                             catalyst_coprocess_level,
@@ -561,7 +576,10 @@ class ChomboParameters
 
 #ifdef USE_CATALYST
     bool activate_catalyst;
-    std::string catalyst_script_path;
+    // ignores output_path
+    std::string catalyst_scripts_path;
+    int num_catalyst_scripts;
+    std::vector<std::string> catalyst_scripts;
     int catalyst_coprocess_level;
     // variables to pass to Catalyst
     // only restricts vars if num_catalyst_vars > 0, otherwise all requested

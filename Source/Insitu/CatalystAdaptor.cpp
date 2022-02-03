@@ -11,10 +11,10 @@
 CatalystAdaptor::CatalystAdaptor() {}
 
 CatalystAdaptor::CatalystAdaptor(
-    GRAMR *a_gr_amr_ptr, std::string a_python_script_path,
+    GRAMR *a_gr_amr_ptr, const std::vector<std::string> &a_python_scripts,
     const std::vector<std::pair<int, VariableType>> &a_vars, int a_verbosity)
 {
-    initialise(a_gr_amr_ptr, a_python_script_path, a_vars, a_verbosity);
+    initialise(a_gr_amr_ptr, a_python_scripts, a_vars, a_verbosity);
 }
 
 CatalystAdaptor::~CatalystAdaptor()
@@ -26,7 +26,7 @@ CatalystAdaptor::~CatalystAdaptor()
 }
 
 void CatalystAdaptor::initialise(
-    GRAMR *a_gr_amr_ptr, std::string a_python_script_path,
+    GRAMR *a_gr_amr_ptr, const std::vector<std::string> &a_python_scripts,
     const std::vector<std::pair<int, VariableType>> &a_vars, int a_verbosity)
 {
     // don't initalise twice
@@ -56,17 +56,21 @@ void CatalystAdaptor::initialise(
     }
 
     // Create Python script pipeline and add it to the VTK CP Processor
-    if (auto pipeline = vtkCPPythonScriptPipeline::CreateAndInitializePipeline(
-            a_python_script_path.c_str()))
+    for (const std::string &script : a_python_scripts)
     {
-        m_proc_ptr->AddPipeline(pipeline);
-    }
-    else
-    {
-        std::string pipeline_fail_warning =
-            "Failed to set up pipeline for script:";
-        pipeline_fail_warning += a_python_script_path;
-        MayDay::Warning(pipeline_fail_warning.c_str());
+        if (auto pipeline =
+                vtkCPPythonScriptPipeline::CreateAndInitializePipeline(
+                    script.c_str()))
+        {
+            m_proc_ptr->AddPipeline(pipeline);
+        }
+        else
+        {
+            std::string pipeline_fail_warning =
+                "Failed to set up pipeline for script: ";
+            pipeline_fail_warning += script;
+            MayDay::Warning(pipeline_fail_warning.c_str());
+        }
     }
 
     m_verbosity = a_verbosity;
