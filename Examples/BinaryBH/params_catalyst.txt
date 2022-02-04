@@ -185,6 +185,8 @@ modes = 2 0 # l m for spherical harmonics
 # ParaView Catalyst parameters
 
 activate_catalyst = true
+catalyst_verbosity = 2
+# catalyst_pout_prefix = catalyst_pout
 # path to directory containing catalyst scripts
 catalyst_scripts_path = catalyst_scripts
 num_catalyst_scripts = 1

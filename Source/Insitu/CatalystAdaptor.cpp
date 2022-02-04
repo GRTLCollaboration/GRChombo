@@ -223,7 +223,7 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
 
     if (m_verbosity)
     {
-        pout() << "CatalystAdaptor Requested variables:\n";
+        pout() << "CatalystAdaptor Requested variables: ";
     }
 
     for (int ivar = 0; ivar < NUM_VARS; ++ivar)

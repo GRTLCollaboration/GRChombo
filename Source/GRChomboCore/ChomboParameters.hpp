@@ -135,6 +135,9 @@ class ChomboParameters
         pp.load("activate_catalyst", activate_catalyst, false);
         if (activate_catalyst)
         {
+            pp.load("catalyst_verbosity", catalyst_verbosity, verbosity);
+            pp.load("catalyst_pout_prefix", catalyst_pout_prefix,
+                    std::string("catalyst_pout"));
             pp.load("catalyst_scripts_path", catalyst_scripts_path,
                     std::string());
             pp.load("num_catalyst_scripts", num_catalyst_scripts, 1);
@@ -576,6 +579,10 @@ class ChomboParameters
 
 #ifdef USE_CATALYST
     bool activate_catalyst;
+    int catalyst_verbosity;
+    // prefix of filename for Catalyst log output (appended by .<rank>)
+    // file will be in pout_path
+    std::string catalyst_pout_prefix;
     // ignores output_path
     std::string catalyst_scripts_path;
     int num_catalyst_scripts;

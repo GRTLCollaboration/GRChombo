@@ -83,10 +83,10 @@ class GRAMR : public AMR
         const int a_max_level = std::numeric_limits<int>::max()) const;
 
 #ifdef USE_CATALYST
-    void
-    setup_catalyst(bool a_activate_catalyst,
-                   const std::vector<std::string> &a_python_scripts,
-                   const std::vector<std::pair<int, VariableType>> &a_vars);
+    void setup_catalyst(bool a_activate_catalyst,
+                        const std::vector<std::string> &a_python_scripts,
+                        const std::vector<std::pair<int, VariableType>> &a_vars,
+                        int a_verbosity);
 #endif
 
 #ifdef USE_CATALYST

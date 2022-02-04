@@ -30,6 +30,10 @@ using std::endl;
 #include "DebuggingTools.hpp"
 #endif
 
+#ifdef USE_CATALYST
+#include "vtkLogger.h"
+#endif
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -183,9 +187,32 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
 #endif
     }
 #ifdef USE_CATALYST
-    gr_amr.setup_catalyst(chombo_params.activate_catalyst,
-                          chombo_params.catalyst_scripts,
-                          chombo_params.catalyst_vars);
+    // set vtkLogger internal messages to only appear at verbosity 2
+    vtkLogger::SetInternalVerbosityLevel(vtkLogger::VERBOSITY_3);
+#ifdef CH_MPI
+    vtkLogger::SetStderrVerbosity(vtkLogger::VERBOSITY_ERROR);
+    std::string catalyst_log_file = chombo_params.pout_path +
+                                    chombo_params.catalyst_pout_prefix +
+                                    std::string(".") + std::to_string(procID());
+    vtkLogger::FileMode vtk_logger_file_mode = vtkLogger::TRUNCATE;
+    // if we're writing to the normal pout file we don't want the vtkLogger to
+    // delete the file at this point
+    if (chombo_params.catalyst_pout_prefix == chombo_params.pout_prefix)
+    {
+        vtk_logger_file_mode = vtkLogger::APPEND;
+    }
+    vtkLogger::LogToFile(
+        catalyst_log_file.c_str(), vtk_logger_file_mode,
+        static_cast<vtkLogger::Verbosity>(chombo_params.catalyst_verbosity));
+    // Only write VTK stderr messages if there is an error
+#else
+    vtkLogger::SetStderrVerbosity(
+        static_cast<vtkLogger::Verbosity>(chombo_params.verbosity));
+#endif
+    vtkLogger::Init();
+    gr_amr.setup_catalyst(
+        chombo_params.activate_catalyst, chombo_params.catalyst_scripts,
+        chombo_params.catalyst_vars, chombo_params.catalyst_verbosity);
 #endif
 }
 
