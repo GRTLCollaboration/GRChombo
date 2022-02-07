@@ -203,7 +203,7 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     }
     vtkLogger::LogToFile(
         catalyst_log_file.c_str(), vtk_logger_file_mode,
-        static_cast<vtkLogger::Verbosity>(chombo_params.catalyst_verbosity));
+        vtkLogger::ConvertToVerbosity(chombo_params.catalyst_verbosity));
     // Only write VTK stderr messages if there is an error
 #else
     vtkLogger::SetStderrVerbosity(
