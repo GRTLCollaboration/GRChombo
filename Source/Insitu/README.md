@@ -90,6 +90,9 @@ to compile your example without Catalyst if you wish. For example
 <code that depends on Catalyst>
 #endif
 ```
+If you need to compute diagnostic quantities for visualization, you can override
+the virtual function `GRAMRLevel::preCatalystCoProcess()` which is called before
+Catalyst CoProcessing.
 
 
 ## Building a GRChombo example with ParaView Catalyst
@@ -119,7 +122,7 @@ Finally `make` the `insitu` target e.g.
 make insitu -j 4
 ```
 An executable binary with a filename containing '`_Insitu`' will be created. 
-Note that if the `PARAVIEW_DIR` command is set, you can also use `make` the 
+Note that if the `PARAVIEW_DIR` command is set, you can also `make` the 
 usual `all` target to link with ParaView Catalyst but the executable filename
 will be the conventional one (i.e. without '`_Insitu`').
 
