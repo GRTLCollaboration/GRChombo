@@ -9,18 +9,20 @@
 // assign an enum to each variable
 enum
 {
-    c_chi,  // the conformal factor of the metric, not evolved
-    c_rho,  // the energy density of the SF
-    c_rhoJ, // the energy density of the SF
-    c_Edot, // the energy density of the SF
-    c_Jdot, // the energy density of the SF
+    c_chi,
+    c_rho,
+    c_Source,
+    c_xMom,
+    c_Mdot, // Momentum flux
+    c_Edot, // Energy flux
+
     NUM_DIAGNOSTIC_VARS
 };
 
 namespace DiagnosticVariables
 {
 static const std::array<std::string, NUM_DIAGNOSTIC_VARS> variable_names = {
-    "chi", "rho", "rhoJ", "Edot", "Jdot"};
+    "chi", "rho", "Source", "xMom", "Mdot", "Edot"};
 }
 
 #endif /* DIAGNOSTICVARIABLES_HPP */

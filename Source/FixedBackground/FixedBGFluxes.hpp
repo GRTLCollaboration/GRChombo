@@ -18,10 +18,9 @@
 #include "VarsTools.hpp"
 #include "simd.hpp"
 
-//! Calculates the flux of energy out of a spherical shell of constant coordinate R
-//! with type matter_t and writes it to the grid
-template <class matter_t, class background_t>
-class FixedBGFluxes
+//! Calculates the flux of energy out of a spherical shell of constant
+//! coordinate R with type matter_t and writes it to the grid
+template <class matter_t, class background_t> class FixedBGFluxes
 {
     // Use the variable definition in the matter class
     template <class data_t>
@@ -39,9 +38,9 @@ class FixedBGFluxes
     const std::array<double, CH_SPACEDIM> m_center;
 
   public:
-    FixedBGFluxes(
-        const matter_t a_matter, const background_t a_background,
-        const double a_dx, const std::array<double, CH_SPACEDIM> a_center)
+    FixedBGFluxes(const matter_t a_matter, const background_t a_background,
+                  const double a_dx,
+                  const std::array<double, CH_SPACEDIM> a_center)
         : m_matter(a_matter), m_deriv(a_dx), m_dx(a_dx),
           m_background(a_background), m_center(a_center)
     {
@@ -78,14 +77,16 @@ class FixedBGFluxes
         FOR2(i, j) { mod_N2 += gamma_UU[i][j] * Ni_L[i] * Ni_L[j]; }
         FOR1(i) { Ni_L[i] = Ni_L[i] / sqrt(mod_N2); }
 
-        // the area element of the spherical surface element 
+        // the area element of the spherical surface element
         // dS = detSigma dtheta dphi
         data_t rho2 =
             simd_max(coords.x * coords.x + coords.y * coords.y, 1e-12);
         data_t r2sintheta = sqrt(rho2) * R;
-        const Tensor<2, data_t> spherical_gamma = CoordinateTransformations::cartesian_to_spherical_LL(metric_vars.gamma, coords.x, coords.y, coords.z);
-        data_t det_Sigma = CoordinateTransformations::area_element_sphere(
-            spherical_gamma);
+        const Tensor<2, data_t> spherical_gamma =
+            CoordinateTransformations::cartesian_to_spherical_LL(
+                metric_vars.gamma, coords.x, coords.y, coords.z);
+        data_t det_Sigma =
+            CoordinateTransformations::area_element_sphere(spherical_gamma);
 
         // dxdphi to convert tensor components to spherical polar
         Tensor<1, data_t> dxdphi;

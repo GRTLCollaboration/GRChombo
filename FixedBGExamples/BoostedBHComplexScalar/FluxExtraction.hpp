@@ -7,11 +7,11 @@
 #define FLUXEXTRACTION_HPP_
 
 #include "SphericalExtraction.hpp"
-//!  The class allows extraction of the values of the Flux components on
-//!  spherical shells at specified radii, and integration over those shells
+//!  The class allows extraction of the values of the force components on
+//!  spheroidal shells at specified radii, and integration over those shells
 /*!
-   The class allows the user to extract data from the grid for the Flux
-   components over spherical shells at specified radii. The values may then be
+   The class allows the user to extract data from the grid for the force
+   components over spheroidal shells at specified radii. The values may then be
    written to an output file, or integrated across the surfaces.
 */
 class FluxExtraction : public SphericalExtraction
@@ -24,8 +24,8 @@ class FluxExtraction : public SphericalExtraction
         : SphericalExtraction(a_params, a_dt, a_time, a_first_step,
                               a_restart_time)
     {
+        add_var(c_Mdot, VariableType::diagnostic);
         add_var(c_Edot, VariableType::diagnostic);
-        add_var(c_Jdot, VariableType::diagnostic);
     }
 
     //! The old constructor which assumes it is called in specificPostTimeStep
@@ -40,8 +40,9 @@ class FluxExtraction : public SphericalExtraction
     // the references of the vars as used in the integrator
     enum M_VARS
     {
+        m_Mdot,
         m_Edot,
-        m_Jdot
+        NUM_COMPS
     };
 
     //! Execute the query
@@ -53,25 +54,25 @@ class FluxExtraction : public SphericalExtraction
         // this would write out the values at every point on the sphere
         if (m_params.write_extraction)
         {
-            write_extraction("Flux4ExtractionOut_");
+            write_extraction("FluxExtractionOut_");
         }
 
-        // Setup to integrate Edot and Jdot
-        std::vector<std::vector<double>> Flux_integrals(2);
-        add_var_integrand(m_Edot, Flux_integrals[m_Edot],
+        // Setup to integrate fluxes
+        std::vector<std::vector<double>> force_integrals(NUM_COMPS);
+        add_var_integrand(m_Mdot, force_integrals[m_Mdot],
                           IntegrationMethod::simpson);
-        add_var_integrand(m_Jdot, Flux_integrals[m_Jdot],
+        add_var_integrand(m_Edot, force_integrals[m_Edot],
                           IntegrationMethod::simpson);
 
         // do the integration over the surface
         integrate();
 
         // write the integrals
-        std::vector<std::string> labels(2);
-        labels[m_Edot] = "Edot";
-        labels[m_Jdot] = "Jdot";
-        std::string filename = "Flux_integrals";
-        write_integrals(filename, Flux_integrals, labels);
+        std::vector<std::string> labels(NUM_COMPS);
+        labels[m_Mdot] = "Mom Flux";
+        labels[m_Edot] = "E Flux";
+        std::string filename = "FluxIntegrals";
+        write_integrals(filename, force_integrals, labels);
     }
 };
 
