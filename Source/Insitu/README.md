@@ -190,6 +190,8 @@ visualization processing which are described below:
  * `catalyst_scripts`: Filenames of Catalyst scripts
  * `catalyst_coprocess_level`: This is the level for which the Catalyst
  coprocess routine is called at the end of each timestep.
+ * `abort_on_catalyst_error = true/false`: If set to `true`, the code will abort
+ if there is an error in Catalyst. The default is `false`.
  
 Note that scripts generated with versions of ParaView v5.8 or earlier provide 
 information to the pipeline about the specific variables they require. Since 

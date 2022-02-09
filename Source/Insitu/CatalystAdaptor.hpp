@@ -48,7 +48,7 @@ class CatalystAdaptor
     CatalystAdaptor(GRAMR *a_gr_amr_ptr,
                     const std::vector<std::string> &a_python_scripts,
                     const std::vector<std::pair<int, VariableType>> &a_vars,
-                    int a_verbosity);
+                    bool a_abort_on_catalyst_error, int a_verbosity);
 
     // destructor
     ~CatalystAdaptor();
@@ -57,7 +57,7 @@ class CatalystAdaptor
     void initialise(GRAMR *m_gr_amr_ptr,
                     const std::vector<std::string> &a_python_scripts,
                     const std::vector<std::pair<int, VariableType>> &a_vars,
-                    int a_verbosity);
+                    bool a_abort_on_catalyst_error, int a_verbosity);
     void finalise();
 
     // do Catalyst processing
@@ -75,6 +75,7 @@ class CatalystAdaptor
 
     int m_verbosity;
     bool m_initialised = false;
+    bool m_abort_on_catalyst_error = false;
     GRAMR *m_gr_amr_ptr = nullptr;
     // variables to pass to Catalyst
     std::vector<std::pair<int, VariableType>> m_vars;

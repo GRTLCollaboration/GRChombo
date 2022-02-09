@@ -195,3 +195,4 @@ catalyst_scripts = volume_raytrace_resample_chi.py
 catalyst_coprocess_level = 1
 num_catalyst_vars = 1
 catalyst_vars = chi
+abort_on_catalyst_error = true

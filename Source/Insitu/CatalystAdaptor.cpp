@@ -12,9 +12,11 @@ CatalystAdaptor::CatalystAdaptor() {}
 
 CatalystAdaptor::CatalystAdaptor(
     GRAMR *a_gr_amr_ptr, const std::vector<std::string> &a_python_scripts,
-    const std::vector<std::pair<int, VariableType>> &a_vars, int a_verbosity)
+    const std::vector<std::pair<int, VariableType>> &a_vars,
+    bool a_abort_on_catalyst_error, int a_verbosity)
 {
-    initialise(a_gr_amr_ptr, a_python_scripts, a_vars, a_verbosity);
+    initialise(a_gr_amr_ptr, a_python_scripts, a_vars,
+               a_abort_on_catalyst_error, a_verbosity);
 }
 
 CatalystAdaptor::~CatalystAdaptor()
@@ -27,7 +29,8 @@ CatalystAdaptor::~CatalystAdaptor()
 
 void CatalystAdaptor::initialise(
     GRAMR *a_gr_amr_ptr, const std::vector<std::string> &a_python_scripts,
-    const std::vector<std::pair<int, VariableType>> &a_vars, int a_verbosity)
+    const std::vector<std::pair<int, VariableType>> &a_vars,
+    bool a_abort_on_catalyst_error, int a_verbosity)
 {
     // don't initalise twice
     if (m_initialised)
@@ -43,12 +46,22 @@ void CatalystAdaptor::initialise(
     }
     m_gr_amr_ptr = a_gr_amr_ptr;
     m_vars = a_vars;
+    m_abort_on_catalyst_error = a_abort_on_catalyst_error;
 
     // Initialise VTK CP Processor
     if (!m_proc_ptr)
     {
         m_proc_ptr = vtkCPProcessor::New();
-        m_proc_ptr->Initialize();
+        int m_proc_ptr_intialization_success = m_proc_ptr->Initialize();
+        if (!m_proc_ptr_intialization_success)
+        {
+            std::string error_msg = "Failed to initialize vtkCPProcessor in "
+                                    "CatalystAdaptor::initialise";
+            if (m_abort_on_catalyst_error)
+                MayDay::Error(error_msg.c_str());
+            else
+                MayDay::Warning(error_msg.c_str());
+        }
     }
     else
     {
@@ -62,14 +75,27 @@ void CatalystAdaptor::initialise(
                 vtkCPPythonScriptPipeline::CreateAndInitializePipeline(
                     script.c_str()))
         {
-            m_proc_ptr->AddPipeline(pipeline);
+            int add_pipeline_success = m_proc_ptr->AddPipeline(pipeline);
+            if (!add_pipeline_success)
+            {
+                std::string add_pipeline_fail_msg =
+                    "Failed to add pipeline for script: ";
+                add_pipeline_fail_msg += script;
+                if (m_abort_on_catalyst_error)
+                    MayDay::Error(add_pipeline_fail_msg.c_str());
+                else
+                    MayDay::Warning(add_pipeline_fail_msg.c_str());
+            }
         }
         else
         {
-            std::string pipeline_fail_warning =
+            std::string pipeline_fail_msg =
                 "Failed to set up pipeline for script: ";
-            pipeline_fail_warning += script;
-            MayDay::Warning(pipeline_fail_warning.c_str());
+            pipeline_fail_msg += script;
+            if (m_abort_on_catalyst_error)
+                MayDay::Error(pipeline_fail_msg.c_str());
+            else
+                MayDay::Warning(pipeline_fail_msg.c_str());
         }
     }
 
@@ -378,7 +404,14 @@ void CatalystAdaptor::coprocess(double a_time, unsigned int a_timestep)
         // vtkNew<vtkOverlappingAMR> stripped_vtk_grid;
         // vtkAMRUtilities::StripGhostLayers(m_vtk_grid_ptr, stripped_vtk_grid);
         input_data_description->SetGrid(m_vtk_grid_ptr);
-        m_proc_ptr->CoProcess(data_description);
+        int coprocess_success = m_proc_ptr->CoProcess(data_description);
+        if (!coprocess_success)
+        {
+            if (m_abort_on_catalyst_error)
+                MayDay::Error("Error in Catalyst CoProcess");
+            else
+                MayDay::Warning("Error in Catalyst CoProcess");
+        }
     }
 }
 

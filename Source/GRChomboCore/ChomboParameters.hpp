@@ -152,6 +152,7 @@ class ChomboParameters
             UserVariables::load_vars_to_vector(
                 pp, "catalyst_vars", "num_catalyst_vars", catalyst_vars,
                 num_catalyst_vars);
+            pp.load("abort_on_catalyst_error", abort_on_catalyst_error, false);
         }
 #endif
     }
@@ -593,6 +594,7 @@ class ChomboParameters
     // are passed
     int num_catalyst_vars;
     std::vector<std::pair<int, VariableType>> catalyst_vars;
+    bool abort_on_catalyst_error;
 #endif
 
   protected:
