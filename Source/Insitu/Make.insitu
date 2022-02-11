@@ -26,8 +26,10 @@ ifeq ($(USE_CATALYST),TRUE)
   XTRALDFLAGS += -rdynamic $(shell $(GRCHOMBO_SOURCE)/Insitu/cache.sh $(PARAVIEW_CONFIG_EXEC) --ldflags $(PARAVIEW_COMPONENT_FLAGS) $(VTK_COMPONENT_FLAGS))
 endif
 
+ifdef PARAVIEW_DIR
 insitu: all-test
-  ifndef PARAVIEW_DIR
-    $(error Must set PARAVIEW_DIR to build insitu executable)
-  endif
 	$(ECHO)mv $(_app_configs) $(ebase)_Insitu.$(config).ex
+else
+insitu:
+	@echo "Set PARAVIEW_DIR environment variable to build insitu target.";
+endif
