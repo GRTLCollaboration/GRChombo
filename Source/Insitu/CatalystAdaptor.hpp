@@ -73,6 +73,10 @@ class CatalystAdaptor
     vtkDoubleArray *fab_to_vtk_array(FArrayBox &a_fab, int a_var,
                                      const std::string &a_name);
 
+    // if a_success = false, either aborts or prints a warning depending on
+    // m_abort_on_catalyst_error
+    void catalyst_error_or_warning(bool a_success, std::string a_msg);
+
     int m_verbosity;
     bool m_initialised = false;
     bool m_abort_on_catalyst_error = false;
