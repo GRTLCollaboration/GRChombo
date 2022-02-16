@@ -20,7 +20,6 @@ src_dirs := $(GRCHOMBO_SOURCE)/utils \
             $(GRCHOMBO_SOURCE)/AMRInterpolator
 
 XTRA_VTK_COMPONENT_FLAGS = -v ImagingCore -v ImagingSources -v IOImage
-XTRA_PARAVIEW_COMPONENT_FLAGS = -c RemotingCore
 
 include $(GRCHOMBO_SOURCE)/Insitu/Make.insitu
 

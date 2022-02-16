@@ -37,7 +37,16 @@
 #include <vtkImageDifference.h>
 #include <vtkNew.h>
 #include <vtkPNGReader.h>
+// ParaView version checking doesn't seem to be very stable between versions
+#ifdef __has_include
+#if __has_include(<vtkPVVersion.h>)
+#include <vtkPVVersion.h>
+#define PARAVIEW_VERSION_KNOWN
+#elif __has_include(<vtkPVConfig.h>)
 #include <vtkPVConfig.h>
+#define PARAVIEW_VERSION_KNOWN
+#endif
+#endif
 #endif
 
 // Chombo namespace
@@ -47,11 +56,13 @@
 int runInsituTest(int argc, char *argv[])
 {
     int status = 0;
+#ifdef PARAVIEW_VERSION_KNOWN
     // We use a Catalyst v2.0 script that only works with ParaView 5.9 or higher
     if (10000 * PARAVIEW_VERSION_MAJOR + 100 * PARAVIEW_VERSION_MINOR +
             PARAVIEW_VERSION_PATCH <
         50900)
         return -2;
+#endif
 
     // Load the parameter file and construct the SimulationParameter class
     // To add more parameters edit the SimulationParameters file.
