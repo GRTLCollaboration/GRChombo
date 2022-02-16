@@ -37,7 +37,7 @@
 #include <vtkImageDifference.h>
 #include <vtkNew.h>
 #include <vtkPNGReader.h>
-#include <vtkPVVersion.h>
+#include <vtkPVConfig.h>
 #endif
 
 // Chombo namespace
@@ -48,9 +48,9 @@ int runInsituTest(int argc, char *argv[])
 {
     int status = 0;
     // We use a Catalyst v2.0 script that only works with ParaView 5.9 or higher
-    if (PARAVIEW_VERSION_CHECK(PARAVIEW_VERSION_MAJOR, PARAVIEW_VERSION_MINOR,
-                               PARAVIEW_VERSION_PATCH) <
-        PARAVIEW_VERSION_CHECK(5, 9, 0))
+    if (10000 * PARAVIEW_VERSION_MAJOR + 100 * PARAVIEW_VERSION_MINOR +
+            PARAVIEW_VERSION_PATCH <
+        50900)
         return -2;
 
     // Load the parameter file and construct the SimulationParameter class
@@ -75,8 +75,8 @@ int runInsituTest(int argc, char *argv[])
 
     MultiLevelTaskPtr<> call_task(task);
     call_task.execute(gr_amr);
-    // gr_amr.run(sim_params.stop_time, sim_params.max_steps);
-    // gr_amr.conclude();
+    gr_amr.run(sim_params.stop_time, sim_params.max_steps);
+    gr_amr.conclude();
 
     // read the newly generated PNG and the expected PNG
     vtkNew<vtkPNGReader> generated_png_reader;
@@ -90,7 +90,7 @@ int runInsituTest(int argc, char *argv[])
     image_difference->SetImageConnection(valid_png_reader->GetOutputPort());
     image_difference->Update();
 
-    double error = image_difference->GetError();
+    double error = image_difference->GetThresholdedError();
 
     pout() << "error           = " << error << "\n";
     pout() << "error_threshold = " << sim_params.error_threshold << std::endl;

@@ -9,8 +9,8 @@ stop_time = 0
 num_points = 30
 
 #num_ghosts = 3
-max_level = 1
-regrid_interval = 1 1
+max_level = 0
+regrid_interval = 1
 
 #boundaries and periodicity of grid
 #Periodic directions - 0 = false, 1 = true
@@ -32,7 +32,7 @@ catalyst_verbosity = 0
 num_catalyst_scripts = 1
 # list of Catalyst scripts
 catalyst_scripts = slice_A.py
-catalyst_coprocess_level = 1
+catalyst_coprocess_level = 0
 # num_catalyst_vars = 1
 # catalyst_vars = A
 abort_on_catalyst_error = true
