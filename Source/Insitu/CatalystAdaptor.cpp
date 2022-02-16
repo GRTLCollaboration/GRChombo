@@ -283,8 +283,11 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
         // to Catalyst
         GRLevelData &evolution_level_data = const_cast<GRLevelData &>(
             level->getLevelData(VariableType::evolution));
-        GRLevelData &diagnostic_level_data = const_cast<GRLevelData &>(
-            level->getLevelData(VariableType::diagnostic));
+        GRLevelData &diagnostic_level_data =
+            (NUM_DIAGNOSTIC_VARS > 0)
+                ? const_cast<GRLevelData &>(
+                      level->getLevelData(VariableType::diagnostic))
+                : evolution_level_data;
 
         const DisjointBoxLayout &level_box_layout =
             evolution_level_data.disjointBoxLayout();
@@ -302,7 +305,9 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
                 // hopefully this promotion works
                 DataIndex dind(lit());
                 FArrayBox &evolution_fab = evolution_level_data[dind];
-                FArrayBox &diagnostic_fab = diagnostic_level_data[dind];
+                FArrayBox &diagnostic_fab = (NUM_DIAGNOSTIC_VARS > 0)
+                                                ? diagnostic_level_data[dind]
+                                                : evolution_level_data[dind];
 
 #if DEBUG
                 vtkAMRBox vtk_box = m_vtk_grid_ptr->GetAMRBox(ilevel, ibox);
