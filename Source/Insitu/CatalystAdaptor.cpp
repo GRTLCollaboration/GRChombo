@@ -12,10 +12,11 @@ CatalystAdaptor::CatalystAdaptor() {}
 
 CatalystAdaptor::CatalystAdaptor(
     GRAMR *a_gr_amr_ptr, const std::vector<std::string> &a_python_scripts,
+    const std::string &a_output_path,
     const std::vector<std::pair<int, VariableType>> &a_vars,
     bool a_abort_on_catalyst_error, int a_verbosity)
 {
-    initialise(a_gr_amr_ptr, a_python_scripts, a_vars,
+    initialise(a_gr_amr_ptr, a_python_scripts, a_output_path, a_vars,
                a_abort_on_catalyst_error, a_verbosity);
 }
 
@@ -29,6 +30,7 @@ CatalystAdaptor::~CatalystAdaptor()
 
 void CatalystAdaptor::initialise(
     GRAMR *a_gr_amr_ptr, const std::vector<std::string> &a_python_scripts,
+    const std::string &a_output_path,
     const std::vector<std::pair<int, VariableType>> &a_vars,
     bool a_abort_on_catalyst_error, int a_verbosity)
 {
@@ -52,10 +54,19 @@ void CatalystAdaptor::initialise(
     if (!m_proc_ptr)
     {
         m_proc_ptr = vtkCPProcessor::New();
-        int m_proc_ptr_intialization_success = m_proc_ptr->Initialize();
+        int m_proc_ptr_initialization_success;
+        if (a_output_path.empty())
+        {
+            m_proc_ptr_initialization_success = m_proc_ptr->Initialize();
+        }
+        else
+        {
+            m_proc_ptr_initialization_success =
+                m_proc_ptr->Initialize(a_output_path.c_str());
+        }
         std::string error_msg = "Failed to initialize vtkCPProcessor in "
                                 "CatalystAdaptor::initialise";
-        catalyst_error_or_warning(m_proc_ptr_intialization_success, error_msg);
+        catalyst_error_or_warning(m_proc_ptr_initialization_success, error_msg);
     }
     else
     {

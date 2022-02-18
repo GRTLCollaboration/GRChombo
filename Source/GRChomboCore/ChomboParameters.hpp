@@ -146,8 +146,17 @@ class ChomboParameters
             if (!catalyst_scripts_path.empty() &&
                 catalyst_scripts_path.back() != '/')
                 catalyst_scripts_path += "/";
+            // make each catalyst_script a full path so that Catalyst doesn't
+            // look in its working directory (set to output_path)
+            char cwd[4096];
+            getcwd(cwd, 4096);
+            std::string current_working_directory = cwd;
+            current_working_directory += "/";
             for (auto &script : catalyst_scripts)
-                script = catalyst_scripts_path + script;
+            {
+                script =
+                    current_working_directory + catalyst_scripts_path + script;
+            }
             pp.load("catalyst_coprocess_level", catalyst_coprocess_level, 0);
             UserVariables::load_vars_to_vector(
                 pp, "catalyst_vars", "num_catalyst_vars", catalyst_vars,

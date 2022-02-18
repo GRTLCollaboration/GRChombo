@@ -6,6 +6,8 @@ chk_prefix = TestChk_
 plot_prefix = TestPlt_
 stop_time = 0
 
+output_path = some_path
+
 num_points = 30
 
 #num_ghosts = 3

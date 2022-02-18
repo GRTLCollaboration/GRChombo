@@ -18,6 +18,10 @@ class SimulationParameters : public ChomboParameters
         pp.load("error_threshold", error_threshold, 0.15);
         pp.load("valid_png_file", valid_png_file);
         pp.load("generated_png_file", generated_png_file);
+        if (!output_path.empty())
+        {
+            generated_png_file = output_path + generated_png_file;
+        }
     }
 
     double error_threshold;

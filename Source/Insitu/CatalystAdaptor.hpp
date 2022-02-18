@@ -47,6 +47,7 @@ class CatalystAdaptor
     // full constructor (calls initialise)
     CatalystAdaptor(GRAMR *a_gr_amr_ptr,
                     const std::vector<std::string> &a_python_scripts,
+                    const std::string &a_output_path,
                     const std::vector<std::pair<int, VariableType>> &a_vars,
                     bool a_abort_on_catalyst_error, int a_verbosity);
 
@@ -56,6 +57,7 @@ class CatalystAdaptor
     // Initialisation/Finalisation
     void initialise(GRAMR *m_gr_amr_ptr,
                     const std::vector<std::string> &a_python_scripts,
+                    const std::string &a_output_path,
                     const std::vector<std::pair<int, VariableType>> &a_vars,
                     bool a_abort_on_catalyst_error, int a_verbosity);
     void finalise();

@@ -85,6 +85,7 @@ class GRAMR : public AMR
 #ifdef USE_CATALYST
     void setup_catalyst(bool a_activate_catalyst,
                         const std::vector<std::string> &a_python_scripts,
+                        const std::string &a_output_path,
                         const std::vector<std::pair<int, VariableType>> &a_vars,
                         bool a_abort_on_catalyst_error, int a_verbosity);
 #endif
