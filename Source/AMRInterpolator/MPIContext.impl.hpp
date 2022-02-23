@@ -68,7 +68,7 @@ inline void MPIContext::asyncExchangeQuery(void *sendbuf, void *recvbuf,
     MPI_Request req;
     m_mpi_requests.push_back(req);
 
-#if MPI_VERSION >= 3
+#if MPI_VERSION >= 3 && !defined(OPEN_MPI)
     MPI_Ialltoallv(sendbuf, m_query.countsPtr(), m_query.displsPtr(), type,
                    recvbuf, m_answer.countsPtr(), m_answer.displsPtr(), type,
                    Chombo_MPI::comm, &m_mpi_requests.back());
@@ -86,7 +86,7 @@ inline void MPIContext::asyncExchangeAnswer(void *sendbuf, void *recvbuf,
     MPI_Request req;
     m_mpi_requests.push_back(req);
 
-#if MPI_VERSION >= 3
+#if MPI_VERSION >= 3 && !defined(OPEN_MPI)
     MPI_Ialltoallv(sendbuf, m_answer.countsPtr(), m_answer.displsPtr(), type,
                    recvbuf, m_query.countsPtr(), m_query.displsPtr(), type,
                    Chombo_MPI::comm, &m_mpi_requests.back());
@@ -102,7 +102,7 @@ inline void MPIContext::asyncEnd()
     CH_assert(m_async_active);
     m_async_active = false;
 
-#if MPI_VERSION >= 3
+#if MPI_VERSION >= 3 && !defined(OPEN_MPI)
     MPI_Waitall(m_mpi_requests.size(), &m_mpi_requests[0], MPI_STATUSES_IGNORE);
 #endif
 
