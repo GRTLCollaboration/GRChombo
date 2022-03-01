@@ -251,7 +251,7 @@ void AHFinder<SurfaceGeometry, AHFunction>::solve(double a_dt, double a_time,
         }
     }
 
-    delete ah_solved;
+    delete[] ah_solved;
 }
 
 template <class SurfaceGeometry, class AHFunction>
