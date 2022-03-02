@@ -23,7 +23,7 @@ class NanCheck
   public:
     NanCheck(const std::string a_error_info = "NanCheck",
              const double a_max_abs = 1e20)
-        : m_dx(-1), m_center{}, m_error_info(a_error_info), m_max_abs(a_max_abs)
+        : NanCheck(-1, {0.}, a_error_info, a_max_abs)
     {
     }
 

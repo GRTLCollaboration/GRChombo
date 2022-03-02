@@ -420,7 +420,7 @@ void SurfaceExtraction<SurfaceGeometry>::write_extraction(
 #if CH_SPACEDIM == 3
                     extraction_file.write_data_line(data, {u, v});
 #elif CH_SPACEDIM == 2
-                    extraction_file.write_data_line(data, {u});
+                    extraction_file.write_data_line(data, u);
 #endif
                 }
             }
