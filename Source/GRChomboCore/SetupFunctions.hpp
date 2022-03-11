@@ -214,7 +214,7 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
         chombo_params.activate_catalyst, chombo_params.catalyst_scripts,
         chombo_params.output_path, chombo_params.catalyst_vars,
         chombo_params.abort_on_catalyst_error,
-        chombo_params.catalyst_verbosity);
+        chombo_params.catalyst_remove_ghosts, chombo_params.catalyst_verbosity);
 #endif
 }
 

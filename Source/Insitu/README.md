@@ -193,6 +193,9 @@ visualization processing which are described below:
  `catalyst_scripts_path` directory.
  * `catalyst_coprocess_level`: This is the level for which the Catalyst
  coprocess routine is called at the end of each timestep.
+ * `catalyst_remove_ghosts = true/false`: If set to `true`, Chombo data will be
+ copied to new VTK arrays without ghosts rather than passing the Chombo data 
+ pointers directly (for debugging).
  * `abort_on_catalyst_error = true/false`: If set to `true`, the code will abort
  if there is an error in Catalyst. The default is `false`.
  

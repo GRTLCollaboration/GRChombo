@@ -87,7 +87,8 @@ class GRAMR : public AMR
                         const std::vector<std::string> &a_python_scripts,
                         const std::string &a_output_path,
                         const std::vector<std::pair<int, VariableType>> &a_vars,
-                        bool a_abort_on_catalyst_error, int a_verbosity);
+                        bool a_abort_on_catalyst_error, bool a_remove_ghosts,
+                        int a_verbosity);
 #endif
 
 #ifdef USE_CATALYST

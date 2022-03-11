@@ -162,6 +162,7 @@ class ChomboParameters
                 pp, "catalyst_vars", "num_catalyst_vars", catalyst_vars,
                 num_catalyst_vars);
             pp.load("abort_on_catalyst_error", abort_on_catalyst_error, false);
+            pp.load("catalyst_remove_ghosts", catalyst_remove_ghosts, false);
         }
 #endif
     }
@@ -604,6 +605,7 @@ class ChomboParameters
     int num_catalyst_vars;
     std::vector<std::pair<int, VariableType>> catalyst_vars;
     bool abort_on_catalyst_error;
+    bool catalyst_remove_ghosts;
 #endif
 
   protected:

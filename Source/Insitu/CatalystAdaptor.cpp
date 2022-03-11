@@ -14,10 +14,10 @@ CatalystAdaptor::CatalystAdaptor(
     GRAMR *a_gr_amr_ptr, const std::vector<std::string> &a_python_scripts,
     const std::string &a_output_path,
     const std::vector<std::pair<int, VariableType>> &a_vars,
-    bool a_abort_on_catalyst_error, int a_verbosity)
+    bool a_abort_on_catalyst_error, bool a_remove_ghosts, int a_verbosity)
 {
     initialise(a_gr_amr_ptr, a_python_scripts, a_output_path, a_vars,
-               a_abort_on_catalyst_error, a_verbosity);
+               a_abort_on_catalyst_error, a_remove_ghosts, a_verbosity);
 }
 
 CatalystAdaptor::~CatalystAdaptor()
@@ -32,7 +32,7 @@ void CatalystAdaptor::initialise(
     GRAMR *a_gr_amr_ptr, const std::vector<std::string> &a_python_scripts,
     const std::string &a_output_path,
     const std::vector<std::pair<int, VariableType>> &a_vars,
-    bool a_abort_on_catalyst_error, int a_verbosity)
+    bool a_abort_on_catalyst_error, bool a_remove_ghosts, int a_verbosity)
 {
     // don't initalise twice
     if (m_initialised)
@@ -49,6 +49,7 @@ void CatalystAdaptor::initialise(
     m_gr_amr_ptr = a_gr_amr_ptr;
     m_vars = a_vars;
     m_abort_on_catalyst_error = a_abort_on_catalyst_error;
+    m_remove_ghosts = a_remove_ghosts;
 
     // Initialise VTK CP Processor
     if (!m_proc_ptr)
@@ -148,7 +149,7 @@ void CatalystAdaptor::build_vtk_grid()
         gramrlevels[0]->getLevelData().ghostVect();
     const double coarsest_dx = gramrlevels[0]->get_dx();
     RealVect ghosted_origin_global_vect = coarsest_ghost_vect;
-    ghosted_origin_global_vect *= -coarsest_dx;
+    ghosted_origin_global_vect *= (!m_remove_ghosts) ? -coarsest_dx : 0;
     m_vtk_grid_ptr->SetOrigin(ghosted_origin_global_vect.dataPtr());
 
     // now add all the boxes
@@ -174,8 +175,12 @@ void CatalystAdaptor::build_vtk_grid()
             const IntVect &big_end = box.bigEnd();
 
             // now grow the box to make the ghosted box
+            // if remove_ghosts == false
             Box ghosted_box = box;
-            ghosted_box.grow(level_data.ghostVect());
+            if (!m_remove_ghosts)
+            {
+                ghosted_box.grow(level_data.ghostVect());
+            }
             const IntVect &small_ghosted_end = ghosted_box.smallEnd();
             const IntVect &big_ghosted_end = ghosted_box.bigEnd();
 
@@ -319,6 +324,7 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
                 FArrayBox &diagnostic_fab = (NUM_DIAGNOSTIC_VARS > 0)
                                                 ? diagnostic_level_data[dind]
                                                 : evolution_level_data[dind];
+                const Box &unghosted_box = level_box_layout[dind];
 
 #if DEBUG
                 vtkAMRBox vtk_box = m_vtk_grid_ptr->GetAMRBox(ilevel, ibox);
@@ -366,9 +372,19 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
                 {
                     if (requested_evolution_vars[ivar])
                     {
-                        vtkDoubleArray *vtk_double_arr = fab_to_vtk_array(
-                            evolution_fab, ivar,
-                            UserVariables::variable_names[ivar]);
+                        vtkDoubleArray *vtk_double_arr;
+                        if (!m_remove_ghosts)
+                        {
+                            vtk_double_arr = fab_to_vtk_array(
+                                evolution_fab, ivar,
+                                UserVariables::variable_names[ivar]);
+                        }
+                        else
+                        {
+                            vtk_double_arr = fab_to_vtk_array_without_ghosts(
+                                evolution_fab, unghosted_box, ivar,
+                                UserVariables::variable_names[ivar]);
+                        }
                         vtk_uniform_grid_ptr->GetCellData()->AddArray(
                             vtk_double_arr);
                     }
@@ -377,9 +393,19 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
                 {
                     if (requested_diagnostic_vars[ivar])
                     {
-                        vtkDoubleArray *vtk_double_arr = fab_to_vtk_array(
-                            diagnostic_fab, ivar,
-                            DiagnosticVariables::variable_names[ivar]);
+                        vtkDoubleArray *vtk_double_arr;
+                        if (!m_remove_ghosts)
+                        {
+                            vtk_double_arr = fab_to_vtk_array(
+                                diagnostic_fab, ivar,
+                                DiagnosticVariables::variable_names[ivar]);
+                        }
+                        else
+                        {
+                            vtk_double_arr = fab_to_vtk_array_without_ghosts(
+                                diagnostic_fab, unghosted_box, ivar,
+                                DiagnosticVariables::variable_names[ivar]);
+                        }
                         vtk_uniform_grid_ptr->GetCellData()->AddArray(
                             vtk_double_arr);
                     }
@@ -418,12 +444,40 @@ vtkDoubleArray *CatalystAdaptor::fab_to_vtk_array(FArrayBox &a_fab, int a_var,
 {
     vtkDoubleArray *out = vtkDoubleArray::New();
     vtkIdType num_cells = a_fab.size().product();
-    out->SetNumberOfTuples(num_cells);
     out->SetName(a_name.c_str());
     // this prevents Catalyst from deallocating the Chombo
     // data pointers
     int save_data = 1;
     out->SetArray(a_fab.dataPtr(a_var), num_cells, save_data);
+    return out;
+}
+
+vtkDoubleArray *CatalystAdaptor::fab_to_vtk_array_without_ghosts(
+    FArrayBox &a_fab, const Box &a_unghosted_box, int a_var,
+    const std::string &a_name)
+{
+    vtkDoubleArray *out = vtkDoubleArray::New();
+    vtkIdType num_cells = a_unghosted_box.volume();
+    // the following allocates memory in the VTK Array
+    out->SetNumberOfTuples(num_cells);
+    out->SetName(a_name.c_str());
+
+    const IntVect &small_end = a_unghosted_box.smallEnd();
+    const IntVect &big_end = a_unghosted_box.bigEnd();
+
+    vtkIdType vtk_idx = 0;
+    for (int iz = small_end[2]; iz <= big_end[2]; ++iz)
+    {
+        for (int iy = small_end[1]; iy <= big_end[1]; ++iy)
+        {
+            for (int ix = small_end[0]; ix <= big_end[0]; ++ix)
+            {
+                out->SetValue(vtk_idx, a_fab(IntVect(ix, iy, iz), a_var));
+                ++vtk_idx;
+            }
+        }
+    }
+
     return out;
 }
 

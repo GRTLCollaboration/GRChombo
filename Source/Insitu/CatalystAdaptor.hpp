@@ -49,7 +49,8 @@ class CatalystAdaptor
                     const std::vector<std::string> &a_python_scripts,
                     const std::string &a_output_path,
                     const std::vector<std::pair<int, VariableType>> &a_vars,
-                    bool a_abort_on_catalyst_error, int a_verbosity);
+                    bool a_abort_on_catalyst_error, bool a_remove_ghosts,
+                    int a_verbosity);
 
     // destructor
     ~CatalystAdaptor();
@@ -59,7 +60,8 @@ class CatalystAdaptor
                     const std::vector<std::string> &a_python_scripts,
                     const std::string &a_output_path,
                     const std::vector<std::pair<int, VariableType>> &a_vars,
-                    bool a_abort_on_catalyst_error, int a_verbosity);
+                    bool a_abort_on_catalyst_error, bool a_remove_ghosts,
+                    int a_verbosity);
     void finalise();
 
     // do Catalyst processing
@@ -75,6 +77,10 @@ class CatalystAdaptor
     vtkDoubleArray *fab_to_vtk_array(FArrayBox &a_fab, int a_var,
                                      const std::string &a_name);
 
+    vtkDoubleArray *fab_to_vtk_array_without_ghosts(FArrayBox &a_fab,
+                                                    const Box &a_box, int a_var,
+                                                    const std::string &a_name);
+
     // if a_success = false, either aborts or prints a warning depending on
     // m_abort_on_catalyst_error
     void catalyst_error_or_warning(bool a_success, std::string a_msg);
@@ -82,6 +88,7 @@ class CatalystAdaptor
     int m_verbosity;
     bool m_initialised = false;
     bool m_abort_on_catalyst_error = false;
+    bool m_remove_ghosts = false;
     GRAMR *m_gr_amr_ptr = nullptr;
     // variables to pass to Catalyst
     std::vector<std::pair<int, VariableType>> m_vars;
