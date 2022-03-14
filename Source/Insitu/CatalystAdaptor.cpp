@@ -171,12 +171,18 @@ void CatalystAdaptor::build_vtk_grid()
         {
             // first get the box without ghosts
             Box box = level_box_layout[lit];
-            const IntVect &small_end = box.smallEnd();
-            const IntVect &big_end = box.bigEnd();
+            // const IntVect &small_end = box.smallEnd();
+            // const IntVect &big_end = box.bigEnd();
 
-            // now grow the box to make the ghosted box
-            // if remove_ghosts == false
+            // now grow the box to make the ghosted box (no change if
+            // m_remove_ghosts == true)
             Box ghosted_box = box;
+            // VTK counts the big end differently to Chombo so modify the Chombo
+            // box so VTK gets what it needs
+            for (int idir = 0; idir < SpaceDim; ++idir)
+            {
+                ghosted_box.growHi(idir, 1);
+            }
             if (!m_remove_ghosts)
             {
                 ghosted_box.grow(level_data.ghostVect());
@@ -206,9 +212,9 @@ void CatalystAdaptor::build_vtk_grid()
                 vtk_uniform_grid_ptr->SetOrigin(origin_global);
                 vtk_uniform_grid_ptr->SetSpacing(dx_arr);
                 vtk_uniform_grid_ptr->SetExtent(
-                    small_ghosted_end[0], big_ghosted_end[0] + 1,
-                    small_ghosted_end[1], big_ghosted_end[1] + 1,
-                    small_ghosted_end[2], big_ghosted_end[2] + 1);
+                    small_ghosted_end[0], big_ghosted_end[0],
+                    small_ghosted_end[1], big_ghosted_end[1],
+                    small_ghosted_end[2], big_ghosted_end[2]);
                 // add the ghost cell information
                 // int no_ghost[6] = {small_end[0], big_end[0] + 1,
                 //    small_end[1], big_end[1] + 1,
