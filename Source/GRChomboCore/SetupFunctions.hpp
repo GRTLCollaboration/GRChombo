@@ -32,6 +32,7 @@ using std::endl;
 
 #ifdef USE_CATALYST
 #include "vtkLogger.h"
+#include "vtkVersion.h"
 #endif
 
 #ifdef _OPENMP
@@ -187,8 +188,10 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
 #endif
     }
 #ifdef USE_CATALYST
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 0, 20201030)
     // set vtkLogger internal messages to only appear at verbosity 2
     vtkLogger::SetInternalVerbosityLevel(vtkLogger::VERBOSITY_3);
+#endif
 #ifdef CH_MPI
     vtkLogger::SetStderrVerbosity(vtkLogger::VERBOSITY_ERROR);
     std::string catalyst_log_file = chombo_params.pout_path +

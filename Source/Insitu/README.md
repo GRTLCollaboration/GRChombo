@@ -58,6 +58,7 @@ This in-situ adaptor has been tested with the following versions of ParaView:
 
 | Tested ParaView versions |
 | --- |
+| 5.8.1 |
 | 5.9.1 |
 | 5.10.0 |
 

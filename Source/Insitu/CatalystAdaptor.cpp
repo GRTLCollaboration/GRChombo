@@ -77,24 +77,18 @@ void CatalystAdaptor::initialise(
     // Create Python script pipeline and add it to the VTK CP Processor
     for (const std::string &script : a_python_scripts)
     {
-        if (auto pipeline =
-                vtkCPPythonScriptPipeline::CreateAndInitializePipeline(
-                    script.c_str()))
-        {
-            int add_pipeline_success = m_proc_ptr->AddPipeline(pipeline);
-            std::string add_pipeline_fail_msg =
-                "Failed to add pipeline for script: ";
-            add_pipeline_fail_msg += script;
-            catalyst_error_or_warning(add_pipeline_success,
-                                      add_pipeline_fail_msg);
-        }
-        else
-        {
-            std::string pipeline_fail_msg =
-                "Failed to set up pipeline for script: ";
-            pipeline_fail_msg += script;
-            catalyst_error_or_warning(false, pipeline_fail_msg);
-        }
+        vtkNew<vtkCPPythonScriptPipeline> pipeline;
+        int pipeline_init_success = pipeline->Initialize(script.c_str());
+        std::string pipeline_init_fail_msg =
+            "Failed to initialize pipelone for script: ";
+        pipeline_init_fail_msg += script;
+        catalyst_error_or_warning(pipeline_init_success,
+                                  pipeline_init_fail_msg);
+        int add_pipeline_success = m_proc_ptr->AddPipeline(pipeline);
+        std::string add_pipeline_fail_msg =
+            "Failed to add pipeline for script: ";
+        add_pipeline_fail_msg += script;
+        catalyst_error_or_warning(add_pipeline_success, add_pipeline_fail_msg);
     }
 
     m_verbosity = a_verbosity;

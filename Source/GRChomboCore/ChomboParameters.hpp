@@ -515,10 +515,6 @@ class ChomboParameters
                     "catalyst_scripts[" + std::to_string(iscript) + "]";
                 check_parameter(script_parameter_name, script, script_exists,
                                 "does not exist");
-                bool script_valid = (vtkCPPythonPipeline::DetectScriptVersion(
-                                         script.c_str()) != 0);
-                check_parameter(script_parameter_name, script, script_valid,
-                                "not a valid ParaView Catalyst script");
             }
 
             check_parameter("catalyst_coprocess_level",

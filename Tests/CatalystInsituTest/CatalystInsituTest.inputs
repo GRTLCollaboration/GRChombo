@@ -6,8 +6,6 @@ chk_prefix = TestChk_
 plot_prefix = TestPlt_
 stop_time = 0
 
-output_path = some_path
-
 num_points = 30
 
 #num_ghosts = 3
@@ -27,13 +25,13 @@ lo_boundary = 0 0 0
 # ParaView Catalyst parameters
 
 activate_catalyst = true
-catalyst_verbosity = 0
+catalyst_verbosity = 10
 # catalyst_pout_prefix = catalyst_pout
 # path to directory containing catalyst scripts
 # catalyst_scripts_path = catalyst_scripts
 num_catalyst_scripts = 1
 # list of Catalyst scripts
-catalyst_scripts = slice_A.py
+catalyst_scripts = slice_A_v1.py # slice_A_v2.py
 catalyst_coprocess_level = 0
 # num_catalyst_vars = 1
 # catalyst_vars = A
