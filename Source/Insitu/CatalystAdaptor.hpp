@@ -74,11 +74,14 @@ class CatalystAdaptor
     // send variables to catalyst
     void add_vars(vtkCPInputDataDescription *a_input_data_desc);
 
+    // directly passes the FAB pointer to the VTK array
     vtkDoubleArray *fab_to_vtk_array(FArrayBox &a_fab, int a_var,
                                      const std::string &a_name);
 
+    // copies the data in the FAB to the VTK array without the ghosts
     vtkDoubleArray *fab_to_vtk_array_without_ghosts(FArrayBox &a_fab,
-                                                    const Box &a_box, int a_var,
+                                                    const Box &a_unghosted_box,
+                                                    int a_var,
                                                     const std::string &a_name);
 
     // if a_success = false, either aborts or prints a warning depending on

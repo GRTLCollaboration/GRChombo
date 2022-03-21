@@ -32,6 +32,7 @@ using std::endl;
 
 #ifdef USE_CATALYST
 #include "vtkLogger.h"
+#include "vtkSMPTools.h"
 #include "vtkVersion.h"
 #endif
 
@@ -94,6 +95,32 @@ void mainSetup(int argc, char *argv[])
         cerr << " usage " << argv[0] << " <input_file_name> " << endl;
         exit(0);
     }
+
+#ifdef USE_CATALYST
+    // Use the VTK_SMP_MAX_THREADS environment variable to set the maximum
+    // number of SMP threads if it exists
+    if (!std::getenv("VTK_SMP_MAX_THREADS"))
+    {
+        // otherwise set it to the same as the number of OpenMP threads
+#ifdef _OPENMP
+        int num_threads = omp_get_max_threads();
+#else
+        int num_threads = 1;
+#endif
+        vtkSMPTools::Initialize(num_threads);
+    }
+    else
+    {
+        // VTK will automatically check the VTK_SMP_MAX_THREADS environment
+        // variable
+        vtkSMPTools::Initialize();
+    }
+    if (rank == 0)
+    {
+        std::cout << " catalyst threads = "
+                  << vtkSMPTools::GetEstimatedNumberOfThreads() << std::endl;
+    }
+#endif
 }
 
 void mainFinalize()
