@@ -5,6 +5,7 @@
 
 #include "CatalystAdaptor.hpp"
 #include "GRAMRLevel.hpp"
+#include "ParaviewVersion.hpp"
 
 #ifdef USE_CATALYST
 
@@ -77,8 +78,14 @@ void CatalystAdaptor::initialise(
     // Create Python script pipeline and add it to the VTK CP Processor
     for (const std::string &script : a_python_scripts)
     {
+#if PARAVIEW_VERSION_HERE >= PARAVIEW_VERSION_TEST(5, 9, 0)
+        auto pipeline =
+            vtkCPPythonPipeline::CreateAndInitializePipeline(script.c_str());
+        bool pipeline_init_success = (pipeline != nullptr);
+#else
         vtkNew<vtkCPPythonScriptPipeline> pipeline;
         int pipeline_init_success = pipeline->Initialize(script.c_str());
+#endif
         std::string pipeline_init_fail_msg =
             "Failed to initialize pipelone for script: ";
         pipeline_init_fail_msg += script;
