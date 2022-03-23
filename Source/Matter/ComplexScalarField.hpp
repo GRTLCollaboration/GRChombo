@@ -22,7 +22,7 @@
      matter type specific elements for the RHS update and the evaluation
      of the constraints. This includes the Energy Momentum Tensor, and
      the matter evolution terms. In this case, a scalar field,
-     the matter elements are phi_Re and phi_Im, and (minus) their conjugate 
+     the matter elements are phi_Re and phi_Im, and (minus) their conjugate
      momenta, Pi_Re and Pi_Im.
      It is templated over a potential function potential_t which the
      user must specify in a class, although a default is provided which
@@ -37,8 +37,12 @@ template <class potential_t = DefaultPotential> class ComplexScalarField
     potential_t my_potential;
 
   public:
-    //!  Constructor of class ComplexScalarField, inputs are the matter parameters.
-    ComplexScalarField(const potential_t a_potential) : my_potential(a_potential) {}
+    //!  Constructor of class ComplexScalarField, inputs are the matter
+    //!  parameters.
+    ComplexScalarField(const potential_t a_potential)
+        : my_potential(a_potential)
+    {
+    }
 
     //! Structure containing the rhs variables for the matter fields
     template <class data_t> struct Vars
@@ -66,7 +70,7 @@ template <class potential_t = DefaultPotential> class ComplexScalarField
     {
         data_t phi_Re;
         data_t phi_Im;
-      
+
         /// Defines the mapping between members of Vars and Chombo grid
         ///  variables (enum in User_Variables)
         template <typename mapping_function_t>
@@ -74,7 +78,6 @@ template <class potential_t = DefaultPotential> class ComplexScalarField
         {
             VarsTools::define_enum_mapping(mapping_function, c_phi_Re, phi_Re);
             VarsTools::define_enum_mapping(mapping_function, c_phi_Im, phi_Im);
-	    
         }
     };
 

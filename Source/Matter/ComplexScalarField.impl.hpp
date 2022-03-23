@@ -53,15 +53,13 @@ void ComplexScalarField<potential_t>::emtensor_excl_potential(
               gamma_UU[i][j] * d1.phi_Im[i] * d1.phi_Im[j];
     }
 
-
     // Calculate components of EM Tensor
     // S_ij = T_ij
     FOR(i, j)
     {
-        out.Sij[i][j] =
-            -0.5 * vars.h[i][j] * Vt / vars.chi +
-	    d1.phi_Re[i] * d1.phi_Re[j] +
-            d1.phi_Im[i] * d1.phi_Im[j];
+        out.Sij[i][j] = -0.5 * vars.h[i][j] * Vt / vars.chi +
+                        d1.phi_Re[i] * d1.phi_Re[j] +
+                        d1.phi_Im[i] * d1.phi_Im[j];
     }
 
     // S = Tr_S_ij
@@ -70,7 +68,7 @@ void ComplexScalarField<potential_t>::emtensor_excl_potential(
     // S_i (note lower index) = - n^a T_ai
     FOR(i)
     {
-      out.Si[i] = -d1.phi_Re[i] * vars.Pi_Re - d1.phi_Im[i] * vars.Pi_Im;
+        out.Si[i] = -d1.phi_Re[i] * vars.Pi_Re - d1.phi_Im[i] * vars.Pi_Im;
     }
 
     // rho = n^a n^b T_ab
@@ -101,7 +99,7 @@ void ComplexScalarField<potential_t>::add_matter_rhs(
     data_t dVdphi_Im = 0.0;
     my_potential.compute_potential(V_of_phi, dVdphi_Re, dVdphi_Im, vars);
 
-    // adjust RHS for the potential term  
+    // adjust RHS for the potential term
     total_rhs.Pi_Re += -vars.lapse * dVdphi_Re;
     total_rhs.Pi_Im += -vars.lapse * dVdphi_Im;
 }
@@ -123,28 +121,27 @@ void ComplexScalarField<potential_t>::matter_rhs_excl_potential(
 
     // evolution equations for scalar field and (minus) its conjugate momentum
     rhs.phi_Re = vars.lapse * vars.Pi_Re + advec.phi_Re;
-    rhs.Pi_Re =
-        vars.lapse * vars.K * vars.Pi_Re + advec.Pi_Re;
+    rhs.Pi_Re = vars.lapse * vars.K * vars.Pi_Re + advec.Pi_Re;
     rhs.phi_Im = vars.lapse * vars.Pi_Im + advec.phi_Im;
-    rhs.Pi_Im =
-        vars.lapse * vars.K * vars.Pi_Im + advec.Pi_Im;
-
+    rhs.Pi_Im = vars.lapse * vars.K * vars.Pi_Im + advec.Pi_Im;
 
     FOR(i, j)
     {
         // includes non conformal parts of chris not included in chris_ULL
-        rhs.Pi_Re += h_UU[i][j] * (-0.5 * d1.chi[j] * vars.lapse * d1.phi_Re[i] +
-                                vars.chi * vars.lapse * d2.phi_Re[i][j] +
-                                vars.chi * d1.lapse[i] * d1.phi_Re[j]);
-	rhs.Pi_Im += h_UU[i][j] * (-0.5 * d1.chi[j] * vars.lapse * d1.phi_Im[i] +
-                                vars.chi * vars.lapse * d2.phi_Im[i][j] +
-                                vars.chi * d1.lapse[i] * d1.phi_Im[j]);
+        rhs.Pi_Re +=
+            h_UU[i][j] * (-0.5 * d1.chi[j] * vars.lapse * d1.phi_Re[i] +
+                          vars.chi * vars.lapse * d2.phi_Re[i][j] +
+                          vars.chi * d1.lapse[i] * d1.phi_Re[j]);
+        rhs.Pi_Im +=
+            h_UU[i][j] * (-0.5 * d1.chi[j] * vars.lapse * d1.phi_Im[i] +
+                          vars.chi * vars.lapse * d2.phi_Im[i][j] +
+                          vars.chi * d1.lapse[i] * d1.phi_Im[j]);
         FOR(k)
         {
-            rhs.Pi_Re += -vars.chi * vars.lapse * h_UU[i][j] * chris.ULL[k][i][j] *
-                      d1.phi_Re[k];
-	    rhs.Pi_Im += -vars.chi * vars.lapse * h_UU[i][j] * chris.ULL[k][i][j] *
-                      d1.phi_Im[k];
+            rhs.Pi_Re += -vars.chi * vars.lapse * h_UU[i][j] *
+                         chris.ULL[k][i][j] * d1.phi_Re[k];
+            rhs.Pi_Im += -vars.chi * vars.lapse * h_UU[i][j] *
+                         chris.ULL[k][i][j] * d1.phi_Im[k];
         }
     }
 }
