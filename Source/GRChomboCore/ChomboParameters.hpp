@@ -191,6 +191,10 @@ class ChomboParameters
 #endif
 #ifdef CH_USE_HDF5
             hdf5_path = output_path + hdf5_path;
+            // assume restart_file is an absolute path if it starts with '/'
+            // otherwise assume it is relative to hdf5_path
+            if (restart_from_checkpoint && restart_file.front() != '/')
+                restart_file = hdf5_path + restart_file;
 #endif
         }
 
@@ -385,7 +389,7 @@ class ChomboParameters
         if (restart_from_checkpoint)
         {
             bool restart_file_exists =
-                (access((hdf5_path + restart_file).c_str(), R_OK) == 0);
+                (access((restart_file).c_str(), R_OK) == 0);
             check_parameter("restart_file", restart_file, restart_file_exists,
                             "file cannot be opened for reading");
         }
