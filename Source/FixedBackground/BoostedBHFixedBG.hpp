@@ -235,11 +235,13 @@ class BoostedBHFixedBG
 
         // compare this to horizon in isotropic coords
         const double r_horizon = 0.5 * M;
-	bool do_I_excise = false;
+        bool do_I_excise = false;
 
         if (sqrt(r2) / r_horizon < 0.5)
-	  {do_I_excise = true;}
-	return do_I_excise;
+        {
+            do_I_excise = true;
+        }
+        return do_I_excise;
     }
 };
 

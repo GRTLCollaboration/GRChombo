@@ -86,7 +86,7 @@ void ScalarFieldLevel::specificPostTimeStep()
         BoxLoops::loop(make_compute_pack(LinMomenta, AngMomenta, Energies),
                        m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
 
-        // excise within horizon, no simd
+        // excise within/outside specified radii, no simd
         BoxLoops::loop(
             ExcisionDiagnostics<ScalarFieldWithPotential, BoostedBHFixedBG>(
                 m_dx, m_p.center, boosted_bh, m_p.inner_r, m_p.outer_r),
