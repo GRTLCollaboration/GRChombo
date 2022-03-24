@@ -24,14 +24,14 @@
 #include "AssignFixedBGtoBSSNVars.hpp"
 #include "BoostedBHFixedBG.hpp"
 //#include "BoostedKerrSchildFixedBG.hpp"
+#include "ComplexPotential.hpp"
+#include "ComplexScalarField.hpp"
 #include "Constraints.hpp"
 #include "ExcisionTest.hpp"
-#include "FixedBGEvolution.hpp"
 #include "FixedBGComplexScalarField.hpp"
+#include "FixedBGEvolution.hpp"
 #include "GammaCalculator.hpp"
 #include "MatterCCZ4.hpp"
-#include "ComplexPotential.hpp"
-#include "ScalarField.hpp"
 #include "UserVariables.hpp"
 
 int main()
@@ -109,18 +109,20 @@ int main()
         ccz4_params.kappa3 = 0.0;
         ccz4_params.lapse_coeff = 0.0; // no evolution lapse or shift
         ccz4_params.shift_Gamma_coeff = 0.0;
-        //ComplexPotential::params_t potential_params;
+        // ComplexPotential::params_t potential_params;
         const double scalar_mass = 0.1;
-	ComplexPotential potential(scalar_mass);
-        ScalarField<ComplexPotential> scalar_field(potential);
+        ComplexPotential potential(scalar_mass);
+        ComplexScalarField<ComplexPotential> scalar_field(potential);
         BoxLoops::loop(
-            MatterCCZ4<ScalarField<ComplexPotential>>(scalar_field, ccz4_params, dx,
-                                               sigma, CCZ4::USE_BSSN, G_Newton),
+            MatterCCZ4<ComplexScalarField<ComplexPotential>>(
+                scalar_field, ccz4_params, dx, sigma, CCZ4::USE_BSSN, G_Newton),
             fixedbg_fab, rhs_fab); // disable_simd());
 
         // Calculate the Matter RHS using the analytic derivatives
-        FixedBGComplexScalarField<ComplexPotential> fixed_scalar_field(potential);
-        FixedBGEvolution<FixedBGComplexScalarField<ComplexPotential>, BoostedBHFixedBG>
+        FixedBGComplexScalarField<ComplexPotential> fixed_scalar_field(
+            potential);
+        FixedBGEvolution<FixedBGComplexScalarField<ComplexPotential>,
+                         BoostedBHFixedBG>
             my_evolution(fixed_scalar_field, boosted_bh, sigma, dx,
                          center_vector);
         BoxLoops::loop(make_compute_pack(my_evolution), fixedbg_fab,
@@ -132,8 +134,8 @@ int main()
         // Excise the centre within the horizon where there are always large
         // values
         BoxLoops::loop(
-            ExcisionTest<FixedBGComplexScalarField<ComplexPotential>, BoostedBHFixedBG>(
-                dx, center_vector, boosted_bh),
+            ExcisionTest<FixedBGComplexScalarField<ComplexPotential>,
+                         BoostedBHFixedBG>(dx, center_vector, boosted_bh),
             rhs_fab, rhs_fab, disable_simd());
 
         // Output slice of data on lowest res, useful for debugging
