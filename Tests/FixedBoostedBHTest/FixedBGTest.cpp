@@ -27,10 +27,10 @@
 #include "Constraints.hpp"
 #include "ExcisionTest.hpp"
 #include "FixedBGEvolution.hpp"
-#include "FixedBGScalarField.hpp"
+#include "FixedBGComplexScalarField.hpp"
 #include "GammaCalculator.hpp"
 #include "MatterCCZ4.hpp"
-#include "Potential.hpp"
+#include "ComplexPotential.hpp"
 #include "ScalarField.hpp"
 #include "UserVariables.hpp"
 
@@ -109,20 +109,18 @@ int main()
         ccz4_params.kappa3 = 0.0;
         ccz4_params.lapse_coeff = 0.0; // no evolution lapse or shift
         ccz4_params.shift_Gamma_coeff = 0.0;
-        Potential::params_t potential_params;
-        potential_params.scalar_mass = 0.1;
-        Potential potential(potential_params);
-        ScalarField<Potential> scalar_field(potential);
+        //ComplexPotential::params_t potential_params;
+        const double scalar_mass = 0.1;
+	ComplexPotential potential(scalar_mass);
+        ScalarField<ComplexPotential> scalar_field(potential);
         BoxLoops::loop(
-            MatterCCZ4<ScalarField<Potential>>(scalar_field, ccz4_params, dx,
+            MatterCCZ4<ScalarField<ComplexPotential>>(scalar_field, ccz4_params, dx,
                                                sigma, CCZ4::USE_BSSN, G_Newton),
             fixedbg_fab, rhs_fab); // disable_simd());
 
         // Calculate the Matter RHS using the analytic derivatives
-        FixedBGScalarField<Potential> fixed_scalar_field(potential);
-        FixedBGEvolution<FixedBGScalarField<Potential>, BoostedBHFixedBG>
-            // FixedBGEvolution<FixedBGScalarField<Potential>,
-            // BoostedKerrSchildFixedBG>
+        FixedBGComplexScalarField<ComplexPotential> fixed_scalar_field(potential);
+        FixedBGEvolution<FixedBGComplexScalarField<ComplexPotential>, BoostedBHFixedBG>
             my_evolution(fixed_scalar_field, boosted_bh, sigma, dx,
                          center_vector);
         BoxLoops::loop(make_compute_pack(my_evolution), fixedbg_fab,
@@ -134,9 +132,7 @@ int main()
         // Excise the centre within the horizon where there are always large
         // values
         BoxLoops::loop(
-            ExcisionTest<FixedBGScalarField<Potential>, BoostedBHFixedBG>(
-                // ExcisionTest<FixedBGScalarField<Potential>,
-                // BoostedKerrSchildFixedBG>(
+            ExcisionTest<FixedBGComplexScalarField<ComplexPotential>, BoostedBHFixedBG>(
                 dx, center_vector, boosted_bh),
             rhs_fab, rhs_fab, disable_simd());
 
@@ -197,7 +193,7 @@ int main()
         // compare the rhs for the scalar field using the calculated derivs
         // versus the finite difference case - this tests the expressions
         // for d1_lapse and d1_gamma etc
-        for (int i = c_phi; i <= c_Pi; ++i)
+        for (int i = c_phi_Re; i <= c_Pi_Im; ++i)
         {
             // first check for large non zero values outside horizon
             double max_err = rhs_fab.norm(max_norm, i, num_comps);

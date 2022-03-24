@@ -25,9 +25,6 @@ class SimulationParameters : public FixedBGSimulationParametersBase
 
     void readParams(GRParmParse &pp)
     {
-        // for regridding
-        pp.load("regrid_length", regrid_length, L);
-
         // BH data
         pp.load("bh_mass", bg_params.mass);
         pp.load("bh_velocity", bg_params.velocity);

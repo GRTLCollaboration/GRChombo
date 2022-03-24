@@ -38,8 +38,9 @@ template <class matter_t, class background_t> class ExcisionTest
 
     void compute(Cell<double> current_cell) const
     {
-        double horizon_distance = m_background.excise(current_cell);
-        if ((horizon_distance < 1.0) || (horizon_distance < m_dx))
+        const Coordinates<double> coords(current_cell, m_dx, m_center);
+        bool do_I_excise = m_background.excise(coords);
+        if (do_I_excise)
         {
             // the matter rhs vars within the excision zone
             // recalculate them - for now set to zero
