@@ -13,7 +13,6 @@
 #include "Tensor.hpp"
 #include "UserVariables.hpp" //This files needs NUM_VARS - total number of components
 #include "VarsTools.hpp"
-#include "simd.hpp"
 
 //! Does excision for fixed BG BH solutions
 //! Note that it is does not using simd so one must set disable_simd()
@@ -42,9 +41,11 @@ template <class matter_t, class background_t> class ExcisionDiagnostics
         const Coordinates<double> coords(current_cell, m_dx, m_center);
         if (coords.get_radius() < m_inner_r || coords.get_radius() > m_outer_r)
         {
-            current_cell.store_vars(0.0, c_Source);
-            current_cell.store_vars(0.0, c_xMom);
-            current_cell.store_vars(0.0, c_rho);
+            current_cell.store_vars(0.0, c_rhoLinMom);
+            current_cell.store_vars(0.0, c_rhoAngMom);
+            current_cell.store_vars(0.0, c_rhoEnergy);
+            current_cell.store_vars(0.0, c_sourceLinMom);
+            current_cell.store_vars(0.0, c_sourceAngMom);
         }
     }
 };

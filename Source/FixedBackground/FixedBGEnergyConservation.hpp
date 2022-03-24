@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef FIXEDBGMOMANDSOURCE_HPP_
-#define FIXEDBGMOMANDSOURCE_HPP_
+#ifndef FIXEDBGENERGYCONSERVATION_HPP_
+#define FIXEDBGENERGYCONSERVATION_HPP_
 
 #include "ADMFixedBGVars.hpp"
 #include "CCZ4Geometry.hpp"
@@ -20,7 +20,7 @@
 
 //! Calculates the momentum flux S_i with type matter_t and writes it to the
 //! grid
-template <class matter_t, class background_t> class FixedBGMomAndSource
+template <class matter_t, class background_t> class FixedBGEnergyConservation
 {
     // Use the variable definition in the matter class
     template <class data_t>
@@ -38,8 +38,9 @@ template <class matter_t, class background_t> class FixedBGMomAndSource
     const std::array<double, CH_SPACEDIM> m_center; //!< The grid center
 
   public:
-    FixedBGMomAndSource(matter_t a_matter, background_t a_background,
-                        double a_dx, std::array<double, CH_SPACEDIM> a_center)
+    FixedBGEnergyConservation(matter_t a_matter, background_t a_background,
+                              double a_dx,
+                              std::array<double, CH_SPACEDIM> a_center)
         : m_matter(a_matter), m_deriv(a_dx), m_dx(a_dx),
           m_background(a_background), m_center(a_center)
     {
@@ -66,27 +67,59 @@ template <class matter_t, class background_t> class FixedBGMomAndSource
         const emtensor_t<data_t> emtensor = m_matter.compute_emtensor(
             vars, metric_vars, d1, gamma_UU, chris_phys.ULL);
         const data_t det_gamma = compute_determinant_sym(metric_vars.gamma);
+        Tensor<2, data_t> spherical_gamma = cartesian_to_spherical_LL(
+            metric_vars.gamma, coords.x, coords.y, coords.z);
+        data_t dArea = area_element_sphere(spherical_gamma);
+        const data_t R = coords.get_radius();
+        data_t rho2 =
+            simd_max(coords.x * coords.x + coords.y * coords.y, 1e-12);
+        data_t r2sintheta = sqrt(rho2) * R;
 
-        data_t xMom = -emtensor.Si[0] * sqrt(det_gamma);
+        // the unit vector in the radial direction
+        Tensor<1, data_t> si_L;
+        si_L[0] = coords.x / R;
+        si_L[1] = coords.y / R;
+        si_L[2] = coords.z / R;
 
-        data_t Source = -emtensor.rho * metric_vars.d1_lapse[0];
+        // Normalise
+        data_t si_norm = 0.0;
+        FOR2(i, j) { si_norm += gamma_UU[i][j] * si_L[i] * si_L[j]; }
+
+        FOR1(i) { si_L[i] = si_L[i] / sqrt(si_norm); }
+
+        data_t rhoEnergy = emtensor.rho * metric_vars.lapse;
+        data_t fluxEnergy = 0.0;
+        data_t sourceEnergy = 0.0;
+
+        FOR1(i) { rhoEnergy += -emtensor.Si[i] * metric_vars.shift[i]; }
+        rhoEnergy *= sqrt(det_gamma);
 
         FOR1(i)
         {
-            Source += emtensor.Si[i] * metric_vars.d1_shift[i][0];
-            FOR2(j, k)
+            fluxEnergy += metric_vars.lapse * si_L[i] * emtensor.rho *
+                          metric_vars.shift[i];
+            FOR1(j)
             {
-                Source += metric_vars.lapse * gamma_UU[i][k] *
-                          emtensor.Sij[k][j] * chris_phys.ULL[j][i][0];
+                fluxEnergy +=
+                    -si_L[i] * emtensor.Si[j] *
+                    (metric_vars.shift[i] * metric_vars.shift[j] +
+                     metric_vars.lapse * metric_vars.lapse * gamma_UU[i][j]);
+                FOR1(k)
+                {
+                    fluxEnergy += si_L[i] * metric_vars.lapse * gamma_UU[i][j] *
+                                  metric_vars.shift[k] * emtensor.Sij[j][k];
+                }
             }
         }
 
-        Source = Source * sqrt(det_gamma);
+        // dArea is the integration surface element; Divide by r2sintheta,
+        // as that's accounted for in the SprericalExtraction
+        fluxEnergy *= dArea / r2sintheta;
 
-        current_cell.store_vars(emtensor.rho, c_rho);
-        current_cell.store_vars(Source, c_Source);
-        current_cell.store_vars(xMom, c_xMom);
+        current_cell.store_vars(rhoEnergy, c_rhoEnergy);
+        current_cell.store_vars(fluxEnergy, c_fluxEnergy);
+        current_cell.store_vars(sourceEnergy, c_sourceEnergy);
     }
 };
 
-#endif /* FIXEDBGMOMANDSOURCE_HPP_ */
+#endif /* FIXEDBGENERGYCONSERVATION_HPP_ */

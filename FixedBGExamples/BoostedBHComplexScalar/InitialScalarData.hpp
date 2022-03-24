@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef SCALARCONSTANT_HPP_
-#define SCALARCONSTANT_HPP_
+#ifndef INITIALSCALARDATA_HPP_
+#define INITIALSCALARDATA_HPP_
 
 #include "ADMFixedBGVars.hpp"
 #include "BoostedBHFixedBG.hpp"
@@ -18,7 +18,7 @@
 
 //! Class which creates a constant scalar field given params for initial
 //! matter config
-class ScalarConstant
+class InitialScalarData
 {
     template <class data_t> using MetricVars = ADMFixedBGVars::Vars<data_t>;
 
@@ -33,10 +33,10 @@ class ScalarConstant
 
   public:
     //! The constructor for the class
-    ScalarConstant(const double a_amplitude, const double a_mu,
-                   const std::array<double, CH_SPACEDIM> a_center,
-                   const BoostedBHFixedBG::params_t a_bg_params,
-                   const double a_dx)
+    InitialScalarData(const double a_amplitude, const double a_mu,
+                      const std::array<double, CH_SPACEDIM> a_center,
+                      const BoostedBHFixedBG::params_t a_bg_params,
+                      const double a_dx)
         : m_amplitude(a_amplitude), m_mu(a_mu), m_center(a_center),
           m_bg_params(a_bg_params), m_dx(a_dx)
     {
@@ -47,6 +47,7 @@ class ScalarConstant
     {
 
         FixedBGComplexScalarField<>::Vars<data_t> vars;
+        VarsTools::assign(vars, 0.);
 
         Coordinates<data_t> coords(current_cell, m_dx, m_center);
 
@@ -59,10 +60,10 @@ class ScalarConstant
         vars.phi_Re = m_amplitude;
         vars.phi_Im = 0;
         vars.Pi_Re = 0;
-        vars.Pi_Im = m_amplitude * m_mu; // metric_vars.lapse;
+        vars.Pi_Im = m_amplitude * m_mu;
 
         current_cell.store_vars(vars);
     }
 };
 
-#endif /* SCALARCONSTANT_HPP_ */
+#endif /* INITIALSCALARDATA_HPP_ */

@@ -216,11 +216,10 @@ class BoostedBHFixedBG
   public:
     // used to decide when to excise - ie when within the horizon of the BH
     // note that this is not templated over data_t
-    double excise(const Cell<double> &current_cell) const
+    bool excise(const Coordinates<double> &coords) const
     {
         // black hole params - mass M and boost v
         // "boost" is the gamma factor for the boost
-        const Coordinates<double> coords(current_cell, m_dx, m_params.center);
         const double M = m_params.mass;
         const double boost =
             pow(1.0 - m_params.velocity * m_params.velocity, -0.5);
@@ -236,8 +235,11 @@ class BoostedBHFixedBG
 
         // compare this to horizon in isotropic coords
         const double r_horizon = 0.5 * M;
+	bool do_I_excise = false;
 
-        return sqrt(r2) / r_horizon;
+        if (sqrt(r2) / r_horizon < 0.5)
+	  {do_I_excise = true;}
+	return do_I_excise;
     }
 };
 

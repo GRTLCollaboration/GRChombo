@@ -23,11 +23,12 @@
 #include "ComplexPotential.hpp"
 #include "ExcisionDiagnostics.hpp"
 #include "ExcisionEvolution.hpp"
+#include "FixedBGAngMomConservation.hpp"
 #include "FixedBGComplexScalarField.hpp"
-#include "FixedBGEnergyAndMomFlux.hpp"
-#include "FixedBGMomAndSource.hpp"
+#include "FixedBGEnergyConservation.hpp"
+#include "FixedBGLinMomConservation.hpp"
 #include "FluxExtraction.hpp"
-#include "ScalarConstant.hpp"
+#include "InitialScalarData.hpp"
 
 // Things to do at each advance step, after the RK4 is calculated
 void ScalarFieldLevel::specificAdvance()
@@ -49,8 +50,8 @@ void ScalarFieldLevel::initialData()
     // constraints etc, then initial conditions for scalar field
     SetValue set_zero(0.0);
     BoostedBHFixedBG boosted_bh(m_p.bg_params, m_dx);
-    ScalarConstant initial_sf(m_p.scalar_amplitude, m_p.scalar_mass, m_p.center,
-                              m_p.bg_params, m_dx);
+    InitialScalarData initial_sf(m_p.scalar_amplitude, m_p.scalar_mass,
+                                 m_p.center, m_p.bg_params, m_dx);
     auto compute_pack = make_compute_pack(set_zero, boosted_bh);
 
     BoxLoops::loop(compute_pack, m_state_diagnostics, m_state_diagnostics,
@@ -76,12 +77,14 @@ void ScalarFieldLevel::specificPostTimeStep()
         ComplexPotential potential(m_p.scalar_mass);
         ScalarFieldWithPotential scalar_field(potential);
         BoostedBHFixedBG boosted_bh(m_p.bg_params, m_dx);
-        FixedBGMomAndSource<ScalarFieldWithPotential, BoostedBHFixedBG>
-            densities(scalar_field, boosted_bh, m_dx, m_p.center);
-        FixedBGEnergyAndMomFlux<ScalarFieldWithPotential, BoostedBHFixedBG>
-            fluxes(scalar_field, boosted_bh, m_dx, m_p.center);
-        BoxLoops::loop(make_compute_pack(densities, fluxes), m_state_new,
-                       m_state_diagnostics, SKIP_GHOST_CELLS);
+        FixedBGLinMomConservation<ScalarFieldWithPotential, BoostedBHFixedBG>
+            LinMomenta(scalar_field, boosted_bh, m_dx, m_p.center);
+        FixedBGAngMomConservation<ScalarFieldWithPotential, BoostedBHFixedBG>
+            AngMomenta(scalar_field, boosted_bh, m_dx, m_p.center);
+        FixedBGEnergyConservation<ScalarFieldWithPotential, BoostedBHFixedBG>
+            Energies(scalar_field, boosted_bh, m_dx, m_p.center);
+        BoxLoops::loop(make_compute_pack(LinMomenta, AngMomenta, Energies),
+                       m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
 
         // excise within horizon, no simd
         BoxLoops::loop(
@@ -97,9 +100,11 @@ void ScalarFieldLevel::specificPostTimeStep()
         bool first_step = (m_time == m_dt);
         // integrate the densities and write to a file
         AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
-        double Source_sum = amr_reductions.sum(c_Source);
-        double xMom_sum = amr_reductions.sum(c_xMom);
-        double rho_sum = amr_reductions.sum(c_rho);
+        double rhoLinMom_sum = amr_reductions.sum(c_rhoLinMom);
+        double rhoAngMom_sum = amr_reductions.sum(c_rhoAngMom);
+        double rhoEnergy_sum = amr_reductions.sum(c_rhoEnergy);
+        double sourceLinMom_sum = amr_reductions.sum(c_sourceLinMom);
+        double sourceAngMom_sum = amr_reductions.sum(c_sourceAngMom);
 
         SmallDataIO integral_file("SourceXMomRhoInts", m_dt, m_time,
                                   m_restart_time, SmallDataIO::APPEND,
@@ -107,12 +112,16 @@ void ScalarFieldLevel::specificPostTimeStep()
         // remove any duplicate data if this is post restart
         integral_file.remove_duplicate_time_data();
 
-        std::vector<double> data_for_writing = {Source_sum, xMom_sum, rho_sum};
+        std::vector<double> data_for_writing = {rhoLinMom_sum, rhoAngMom_sum,
+                                                rhoEnergy_sum, sourceLinMom_sum,
+                                                sourceAngMom_sum};
 
         // write data
         if (first_step)
         {
-            integral_file.write_header_line({"Source", "x-Mom", "rho"});
+            integral_file.write_header_line(
+                {"Lin. Mom. density", "Ang. Mom. density", "Energy density.",
+                 "Lin. Mom. source", "Ang. Mom. source"});
         }
         integral_file.write_time_data_line(data_for_writing);
 
@@ -120,7 +129,7 @@ void ScalarFieldLevel::specificPostTimeStep()
         bool fill_ghosts = false;
         m_gr_amr.m_interpolator->refresh(fill_ghosts);
         m_gr_amr.fill_multilevel_ghosts(VariableType::diagnostic,
-                                        Interval(c_Mdot, c_Edot));
+                                        Interval(c_fluxLinMom, c_fluxEnergy));
         FluxExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
                                      m_restart_time);
         my_extraction.execute_query(m_gr_amr.m_interpolator);
