@@ -50,7 +50,8 @@ template <class background_t> class AssignFixedBGtoBSSNVars
         data_t r = coords.get_radius();
         current_cell.store_vars(0.1 * sin(coords.x) * exp(-r) * coords.z,
                                 c_phi_Re);
-        current_cell.store_vars(0.1 * cos(coords.y) * exp(-r) * coords.z, c_Pi_Re);
+        current_cell.store_vars(0.1 * cos(coords.y) * exp(-r) * coords.z,
+                                c_Pi_Re);
         current_cell.store_vars(bssn_vars);
     }
 
