@@ -49,6 +49,8 @@ void CatalystAdaptor::initialise(
     }
     m_gr_amr_ptr = a_gr_amr_ptr;
     m_vars = a_vars;
+    m_requested_evolution_vars.fill(false);
+    m_requested_diagnostic_vars.fill(false);
     m_abort_on_catalyst_error = a_abort_on_catalyst_error;
     m_remove_ghosts = a_remove_ghosts;
 
@@ -251,20 +253,13 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
 {
     if (m_verbosity)
     {
-        pout() << "CatalystAdaptor::add_vars" << std::endl;
-    }
-
-    std::array<bool, NUM_VARS> requested_evolution_vars;
-    std::array<bool, NUM_DIAGNOSTIC_VARS> requested_diagnostic_vars;
-
-    if (m_verbosity)
-    {
-        pout() << "CatalystAdaptor Requested variables: ";
+        pout() << "CatalystAdaptor::add_vars" << std::endl
+               << "CatalystAdaptor Requested variables: ";
     }
 
     for (int ivar = 0; ivar < NUM_VARS; ++ivar)
     {
-        requested_evolution_vars[ivar] = a_input_data_desc->IsFieldNeeded(
+        m_requested_evolution_vars[ivar] = a_input_data_desc->IsFieldNeeded(
             UserVariables::variable_names[ivar].c_str(), vtkDataObject::CELL);
         if (m_vars.size() > 0)
         {
@@ -272,14 +267,14 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
                 !(std::find(m_vars.begin(), m_vars.end(),
                             std::make_pair(ivar, VariableType::evolution)) ==
                   m_vars.end());
-            requested_evolution_vars[ivar] &= pass_var;
+            m_requested_evolution_vars[ivar] &= pass_var;
         }
-        if (m_verbosity && requested_evolution_vars[ivar])
+        if (m_verbosity && m_requested_evolution_vars[ivar])
             pout() << UserVariables::variable_names[ivar] << " ";
     }
     for (int ivar = 0; ivar < NUM_DIAGNOSTIC_VARS; ++ivar)
     {
-        requested_diagnostic_vars[ivar] = a_input_data_desc->IsFieldNeeded(
+        m_requested_diagnostic_vars[ivar] = a_input_data_desc->IsFieldNeeded(
             DiagnosticVariables::variable_names[ivar].c_str(),
             vtkDataObject::CELL);
         if (m_vars.size() > 0)
@@ -288,9 +283,9 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
                 !(std::find(m_vars.begin(), m_vars.end(),
                             std::make_pair(ivar, VariableType::diagnostic)) ==
                   m_vars.end());
-            requested_diagnostic_vars[ivar] &= pass_var;
+            m_requested_diagnostic_vars[ivar] &= pass_var;
         }
-        if (m_verbosity && requested_diagnostic_vars[ivar])
+        if (m_verbosity && m_requested_diagnostic_vars[ivar])
             pout() << DiagnosticVariables::variable_names[ivar] << " ";
     }
     if (m_verbosity)
@@ -377,7 +372,7 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
 
                 for (int ivar = 0; ivar < NUM_VARS; ++ivar)
                 {
-                    if (requested_evolution_vars[ivar])
+                    if (m_requested_evolution_vars[ivar])
                     {
                         vtkDoubleArray *vtk_double_arr;
                         if (!m_remove_ghosts)
@@ -398,7 +393,7 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
                 }
                 for (int ivar = 0; ivar < NUM_DIAGNOSTIC_VARS; ++ivar)
                 {
-                    if (requested_diagnostic_vars[ivar])
+                    if (m_requested_diagnostic_vars[ivar])
                     {
                         vtkDoubleArray *vtk_double_arr;
                         if (!m_remove_ghosts)
@@ -444,6 +439,18 @@ void CatalystAdaptor::coprocess(double a_time, unsigned int a_timestep)
         catalyst_error_or_warning(coprocess_success,
                                   "Error in Catalyst CoProcess");
     }
+}
+
+const std::array<bool, NUM_VARS> &
+CatalystAdaptor::get_requested_evolution_vars()
+{
+    return m_requested_evolution_vars;
+}
+
+const std::array<bool, NUM_DIAGNOSTIC_VARS> &
+CatalystAdaptor::get_requested_diagnostic_vars()
+{
+    return m_requested_diagnostic_vars;
 }
 
 vtkDoubleArray *CatalystAdaptor::fab_to_vtk_array(FArrayBox &a_fab, int a_var,

@@ -138,10 +138,19 @@ void BinaryBHLevel::specificPostTimeStep()
                         // called during setup at t=0 from Main
     // bool first_step = (m_time == m_dt); // if not called in Main
 
-    if (m_p.activate_extraction == 1)
+    if (m_p.activate_extraction
+#ifdef USE_CATALYST
+        || m_p.activate_catalyst
+#endif
+    )
     {
         int min_level = m_p.extraction_params.min_extraction_level();
         bool calculate_weyl = at_level_timestep_multiple(min_level);
+#ifdef USE_CATALYST
+        calculate_weyl |=
+            (m_p.activate_catalyst &&
+             at_level_timestep_multiple(m_p.catalyst_coprocess_level));
+#endif
         if (calculate_weyl)
         {
             // Populate the Weyl Scalar values on the grid

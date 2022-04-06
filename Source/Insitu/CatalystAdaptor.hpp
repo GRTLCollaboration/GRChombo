@@ -67,6 +67,11 @@ class CatalystAdaptor
     // do Catalyst processing
     void coprocess(double a_time, unsigned int a_timestep);
 
+    // returns the variables that were last requested/sent to Catalyst
+    const std::array<bool, NUM_VARS> &get_requested_evolution_vars();
+    const std::array<bool, NUM_DIAGNOSTIC_VARS> &
+    get_requested_diagnostic_vars();
+
   private:
     // update the AMR grid (no grid data)
     void build_vtk_grid();
@@ -93,8 +98,13 @@ class CatalystAdaptor
     bool m_abort_on_catalyst_error = false;
     bool m_remove_ghosts = false;
     GRAMR *m_gr_amr_ptr = nullptr;
-    // variables to pass to Catalyst
+
+    // variables to pass to Catalyst set by GRChombo parameter
     std::vector<std::pair<int, VariableType>> m_vars;
+
+    // variables actually passed to Catalyst on last CoProcess
+    std::array<bool, NUM_VARS> m_requested_evolution_vars;
+    std::array<bool, NUM_DIAGNOSTIC_VARS> m_requested_diagnostic_vars;
 
     vtkCPProcessor *m_proc_ptr = nullptr;
     vtkOverlappingAMR *m_vtk_grid_ptr = nullptr;
