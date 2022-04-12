@@ -7,12 +7,12 @@
 #define SIMULATIONPARAMETERS_HPP_
 
 // General includes
-#include "GRParmParse.hpp"
 #include "FixedBGSimulationParametersBase.hpp"
+#include "GRParmParse.hpp"
 
 // Problem specific includes:
-#include "InitialScalarData.hpp"
 #include "BoostedBHFixedBG.hpp"
+#include "InitialScalarData.hpp"
 
 class SimulationParameters : public FixedBGSimulationParametersBase
 {
@@ -30,7 +30,7 @@ class SimulationParameters : public FixedBGSimulationParametersBase
         pp.load("scalar_amplitude", initial_params.amplitude, 0.1);
         pp.load("scalar_mass", initial_params.mass, 0.1);
 
-	// BH data
+        // BH data
         pp.load("bh_mass", bg_params.mass, 1.0);
         pp.load("bh_velocity", bg_params.velocity);
         pp.load("bh_center", bg_params.center, center);
@@ -43,8 +43,7 @@ class SimulationParameters : public FixedBGSimulationParametersBase
     void check_params()
     {
         warn_parameter("scalar_mass", initial_params.mass,
-                       initial_params.mass <
-                           0.2 / coarsest_dx / dt_multiplier,
+                       initial_params.mass < 0.2 / coarsest_dx / dt_multiplier,
                        "oscillations of scalar field do not appear to be "
                        "resolved on coarsest level");
         warn_parameter("bh_mass", bg_params.mass, bg_params.mass >= 0.0,
@@ -59,7 +58,7 @@ class SimulationParameters : public FixedBGSimulationParametersBase
                 "should be within the computational domain");
         }
     }
-  
+
     // Problem specific parameters
     double inner_r, outer_r;
     InitialScalarData::params_t initial_params;

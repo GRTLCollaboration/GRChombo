@@ -23,7 +23,6 @@
 #include "ComplexPotential.hpp"
 #include "ExcisionDiagnostics.hpp"
 #include "ExcisionEvolution.hpp"
-#include "FixedBGAngMomConservation.hpp"
 #include "FixedBGComplexScalarField.hpp"
 #include "FixedBGEnergyConservation.hpp"
 #include "FixedBGLinMomConservation.hpp"
@@ -78,12 +77,10 @@ void ScalarFieldLevel::specificPostTimeStep()
         BoostedBHFixedBG boosted_bh(m_p.bg_params, m_dx);
         FixedBGLinMomConservation<ScalarFieldWithPotential, BoostedBHFixedBG>
             LinMomenta(scalar_field, boosted_bh, m_dx, m_p.center);
-        FixedBGAngMomConservation<ScalarFieldWithPotential, BoostedBHFixedBG>
-            AngMomenta(scalar_field, boosted_bh, m_dx, m_p.center);
         FixedBGEnergyConservation<ScalarFieldWithPotential, BoostedBHFixedBG>
             Energies(scalar_field, boosted_bh, m_dx, m_p.center);
-        BoxLoops::loop(make_compute_pack(LinMomenta, AngMomenta, Energies),
-                       m_state_new, m_state_diagnostics, SKIP_GHOST_CELLS);
+        BoxLoops::loop(make_compute_pack(LinMomenta, Energies), m_state_new,
+                       m_state_diagnostics, SKIP_GHOST_CELLS);
 
         // excise within/outside specified radii, no simd
         BoxLoops::loop(
@@ -100,10 +97,8 @@ void ScalarFieldLevel::specificPostTimeStep()
         // integrate the densities and write to a file
         AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
         double rhoLinMom_sum = amr_reductions.sum(c_rhoLinMom);
-        double rhoAngMom_sum = amr_reductions.sum(c_rhoAngMom);
         double rhoEnergy_sum = amr_reductions.sum(c_rhoEnergy);
         double sourceLinMom_sum = amr_reductions.sum(c_sourceLinMom);
-        double sourceAngMom_sum = amr_reductions.sum(c_sourceAngMom);
 
         SmallDataIO integral_file("SourceXMomRhoInts", m_dt, m_time,
                                   m_restart_time, SmallDataIO::APPEND,
@@ -111,16 +106,14 @@ void ScalarFieldLevel::specificPostTimeStep()
         // remove any duplicate data if this is post restart
         integral_file.remove_duplicate_time_data();
 
-        std::vector<double> data_for_writing = {rhoLinMom_sum, rhoAngMom_sum,
-                                                rhoEnergy_sum, sourceLinMom_sum,
-                                                sourceAngMom_sum};
+        std::vector<double> data_for_writing = {rhoLinMom_sum, rhoEnergy_sum,
+                                                sourceLinMom_sum};
 
         // write data
         if (first_step)
         {
             integral_file.write_header_line(
-                {"Lin. Mom. density", "Ang. Mom. density", "Energy density.",
-                 "Lin. Mom. source", "Ang. Mom. source"});
+                {"Lin. Mom. density", "Energy density.", "Lin. Mom. source"});
         }
         integral_file.write_time_data_line(data_for_writing);
 

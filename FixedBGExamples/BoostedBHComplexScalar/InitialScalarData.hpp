@@ -18,12 +18,12 @@ class InitialScalarData
   public:
     struct params_t
     {
-      double mass;
-      double amplitude;
+        double mass;
+        double amplitude;
     };
 
-  //! The constructor for the class
-  InitialScalarData(params_t a_params) : m_params(a_params) {}
+    //! The constructor for the class
+    InitialScalarData(params_t a_params) : m_params(a_params) {}
 
     //! Function to compute the value of all the initial vars on the grid
     template <class data_t> void compute(Cell<data_t> current_cell) const

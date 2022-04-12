@@ -26,8 +26,6 @@ namespace UserVariables
 static const std::array<std::string, NUM_VARS> variable_names = {
     "phi_Re", "phi_Im", "Pi_Re", "Pi_Im"};
 
-// static const std::array<std::string, NUM_VARS> variable_names =
-// ArrayTools::concatenate(ccz4_variable_names, user_variable_names);
 } // namespace UserVariables
 
 #include "UserVariables.inc.hpp"

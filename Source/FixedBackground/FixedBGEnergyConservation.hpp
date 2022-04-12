@@ -118,7 +118,6 @@ template <class matter_t, class background_t> class FixedBGEnergyConservation
 
         current_cell.store_vars(rhoEnergy, c_rhoEnergy);
         current_cell.store_vars(fluxEnergy, c_fluxEnergy);
-        current_cell.store_vars(sourceEnergy, c_sourceEnergy);
     }
 };
 

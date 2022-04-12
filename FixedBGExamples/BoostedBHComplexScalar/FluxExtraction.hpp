@@ -25,7 +25,6 @@ class FluxExtraction : public SphericalExtraction
                               a_restart_time)
     {
         add_var(c_fluxLinMom, VariableType::diagnostic);
-        add_var(c_fluxAngMom, VariableType::diagnostic);
         add_var(c_fluxEnergy, VariableType::diagnostic);
     }
 
@@ -42,7 +41,6 @@ class FluxExtraction : public SphericalExtraction
     enum M_VARS
     {
         m_fluxLinMom,
-        m_fluxAngMom,
         m_fluxEnergy,
         NUM_EXTRACTION_COMPS
     };
@@ -63,8 +61,6 @@ class FluxExtraction : public SphericalExtraction
         std::vector<std::vector<double>> force_integrals(NUM_EXTRACTION_COMPS);
         add_var_integrand(m_fluxLinMom, force_integrals[m_fluxLinMom],
                           IntegrationMethod::simpson);
-        add_var_integrand(m_fluxAngMom, force_integrals[m_fluxAngMom],
-                          IntegrationMethod::simpson);
         add_var_integrand(m_fluxEnergy, force_integrals[m_fluxEnergy],
                           IntegrationMethod::simpson);
 
@@ -74,7 +70,6 @@ class FluxExtraction : public SphericalExtraction
         // write the integrals
         std::vector<std::string> labels(NUM_EXTRACTION_COMPS);
         labels[m_fluxLinMom] = "Lin. Mom. Flux";
-        labels[m_fluxAngMom] = "Ang. Mom. Flux";
         labels[m_fluxEnergy] = "Energy Flux";
         std::string filename = "FluxIntegrals";
         write_integrals(filename, force_integrals, labels);

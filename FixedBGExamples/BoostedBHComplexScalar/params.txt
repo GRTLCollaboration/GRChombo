@@ -1,89 +1,51 @@
-#Params for runtime inputs
+# See the wiki page for an explanation of the params!
+# https://github.com/GRChombo/GRChombo/wiki/Guide-to-parameters
+
+#################################################
+# Filesystem parameters
 
 verbosity = 0
-chk_prefix = /cosma6/data/dp174/dc-tray2/FixedBGRComplex/mu005/v03_chk_
-plot_prefix = /cosma6/data/dp174/dc-tray2/FixedBGRComplex/mu005/v03_plt_
-#restart_file = 
 
-# Set up grid spacings and regrid params
-# NB - the N values need to be multiples of block_factor
-N1 = 128
-N2 = 64
-N3 = 64
+# location / naming of output files
+# output_path = "" # Main path for all files. Must exist!
+chk_prefix = BoostedBH_
+plot_prefix = BoostedBHp_
+# restart_file = BoostedBH_000000.3d.hdf5
 
-# Length of longest box side, dx_coarsest = L/N(max)
-# NB if non cubic, this determines dx for all sides
-L = 4096
-
-# Regridding
-tag_buffer_size = 0
-#regrid_length = 2048
-
-# Level data
-# Maximum number of times you can regrid above coarsest level
-max_level = 9 # There are (max_level+1) grids, so min is zero
-# Frequency of regridding at each level
-# Need one for each level, ie max_level+1 items
-# Generally you do not need to regrid frequently on every level
-regrid_interval = 0 0 0 0 0 0 0 0 0 0 0 0 0
-
-# Max box size
-max_grid_size = 16
-# Min box size
-block_factor = 16
-tag_buffer_size = 0
-
-#boundaries and periodicity of grid
-#Periodic directions - 0 = false, 1 = true
-isPeriodic = 0 0 0
-
-# if not periodic, then specify the boundary type
-# 0 = static, 1 = sommerfeld, 2 = reflective, 3 = extrapolating
-# 4 = mixed, 5 = fudge
-# (see BoundaryConditions.hpp for details)
-hi_boundary = 3 3 3
-lo_boundary = 3 2 2
-#center = 2048.0 0.0 0.0
-
-# if reflective boundaries selected, must select 
-# parity values (in order given by UserVariables.hpp)
-# 0 = even
-# 1,2,3 = odd x, y, z
-# 4,5,6 = odd xy, yz, xz
-vars_parity            = 0 0 0 0   #phi and Pi
-vars_parity_diagnostic = 0 0 0 0 0 0 #chi and rho Source xMom Mdot Edot
-
-# specify non zero asympotitic vars
-num_nonzero_asymptotic_vars = 0
-nonzero_asymptotic_vars = chi
-nonzero_asymptotic_values = 1.0
-
-# if mixed boundaries selected, must specify which are extrapolating
-# (the rest are assumed to be all sommerfeld)
-#num_extrapolating_vars = 2
-#extrapolating_vars = phi Pi
-extrapolation_order = 0
-
-# Set up time steps
-# dt will be dx*dt_multiplier on each grid level
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 100
+# set to 0 to turn off plot files (except at t=0 and t=stop_time)
+# set to -1 to never ever print plotfiles
 plot_interval = 10
 num_plot_vars = 3
-plot_vars = phi_Re rho Source
-dt_multiplier = 0.1
-stop_time = 5000.0
+plot_vars = phi_Re rhoLinMom sourceLinMom
 
-# coefficient for KO numerical dissipation
-sigma = 0.5
+# subpaths - specific directories for hdf5, pout, extraction data
+# (these are created at runtime)
+hdf5_subpath = "hdf5"
+pout_subpath = "pout"
+data_subpath = "data"
 
-# SF Initial data
+# change the name of output files
+# pout_prefix = "pout"
+print_progress_only_to_rank_0 = 1
+
+# ignore_checkpoint_name_mismatch = 0
+# write_plot_ghosts = 0
+
+#################################################
+# Initial Data parameters
+
+# Scalar field Initial data
 scalar_mass = 0.05
 scalar_amplitude = 0.1
 
 # Boosted BH initial data, boost in x direction
 bh_mass = 1.0
-bh_velocity = 0.3
+bh_velocity = 0.3 # in unit of c (i.e. 0<v<1)
+
+################################################
+# Diagnostic extraction parameters
 
 # For volume integrals
 inner_r = 3.0
@@ -99,3 +61,89 @@ extraction_radii = 3.0 1000.0
 
 num_points_phi = 36
 num_points_theta = 24
+
+#################################################
+# Grid parameters
+
+# 'N' is the number of subdivisions in each direction of a cubic box
+# 'L' is the length of the longest side of the box, dx_coarsest = L/N
+# NB - If you use reflective BC and want to specify the subdivisions and side
+# of the box were there are no symmetries, specify 'N_full' and 'L_full' instead
+# NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full',
+# 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
+# NB - the N values need to be multiples of the block_factor
+N1 = 128
+N2 = 64
+N3 = 64
+
+L_full = 4096
+
+# Maximum number of times you can regrid above coarsest level
+max_level = 7 # There are (max_level+1) grids, so min is zero
+
+# Frequency of regridding at each level and thresholds on the tagging
+# Need one for each level except the top one, ie max_level items
+# Generally you do not need to regrid frequently on every level
+# in this example turn off regridding on all levels
+# Level Regridding: 0   1   2   3   4   5   6
+regrid_interval   = 0   0   0   0   0   0   0
+# regrid_threshold  = 0.5
+
+# Max and min box sizes
+max_box_size = 16
+min_box_size = 16
+
+tag_buffer_size = 0 # this example uses a fixed grid
+
+# center = 1024.0 0.0 0.0 # defaults to center of the grid
+
+#################################################
+# Boundary Conditions parameters
+
+#Periodic directions - 0 = false, 1 = true
+isPeriodic = 0 0 0
+# if not periodic, then specify the boundary type
+# 0 = static, 1 = sommerfeld, 2 = reflective
+# 3 = extrapolating, 4 = mixed
+# (see BoundaryConditions.hpp for details)
+hi_boundary = 3 3 3
+lo_boundary = 3 2 2
+
+# if reflective boundaries selected, must set
+# parity of all vars (in order given by UserVariables.hpp)
+# 0 = even
+# 1,2,3 = odd x, y, z
+# 4,5,6 = odd xy, yz, xz
+# 7     = odd xyz
+vars_parity            = 0 0 0 0   #phi and Pi (Re and Im)
+vars_parity_diagnostic = 0 0 0     #chi, rhoLinMom and rhoEnergy
+		         0 0 0     #fluxLinMom, fluxEnergy and sourceLinMom
+			 
+# if sommerfeld boundaries selected, must select
+# non zero asymptotic values
+num_nonzero_asymptotic_vars = 0
+nonzero_asymptotic_vars = chi
+nonzero_asymptotic_values = 1.0
+
+# if you are using extrapolating BC:
+extrapolation_order = 0
+
+# if mixed boundaries selected, must specify which are extrapolating
+# (the rest are assumed to be all sommerfeld)
+#num_extrapolating_vars = 2
+#extrapolating_vars = phi Pi
+
+#################################################
+# Evolution parameters
+
+# dt will be dx*dt_multiplier on each grid level
+dt_multiplier = 0.1
+stop_time = 500.0
+# max_steps = 4
+
+nan_check = 1
+
+# coefficient for KO numerical dissipation
+sigma = 0.5
+
+#################################################

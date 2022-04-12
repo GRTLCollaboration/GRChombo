@@ -11,13 +11,15 @@
 class ComplexPotential
 {
   protected:
-  //    const double m_mu;
-    const InitialScalarData::params_t m_initial_params; 
+    //    const double m_mu;
+    const InitialScalarData::params_t m_initial_params;
 
   public:
     //! The constructor
     ComplexPotential(const InitialScalarData::params_t a_initial_params)
-           : m_initial_params(a_initial_params) {}
+        : m_initial_params(a_initial_params)
+    {
+    }
 
     //! Set the potential function for the scalar field here
     template <class data_t, template <typename> class vars_t>
