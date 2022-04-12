@@ -50,8 +50,7 @@ void ScalarFieldLevel::initialData()
     // constraints etc, then initial conditions for scalar field
     SetValue set_zero(0.0);
     BoostedBHFixedBG boosted_bh(m_p.bg_params, m_dx);
-    InitialScalarData initial_sf(m_p.scalar_amplitude, m_p.scalar_mass,
-                                 m_p.center, m_p.bg_params, m_dx);
+    InitialScalarData initial_sf(m_p.initial_params);
     auto compute_pack = make_compute_pack(set_zero, boosted_bh);
 
     BoxLoops::loop(compute_pack, m_state_diagnostics, m_state_diagnostics,
@@ -74,7 +73,7 @@ void ScalarFieldLevel::specificPostTimeStep()
     if (calculate_quantities)
     {
         fillAllGhosts();
-        ComplexPotential potential(m_p.scalar_mass);
+        ComplexPotential potential(m_p.initial_params);
         ScalarFieldWithPotential scalar_field(potential);
         BoostedBHFixedBG boosted_bh(m_p.bg_params, m_dx);
         FixedBGLinMomConservation<ScalarFieldWithPotential, BoostedBHFixedBG>
@@ -146,7 +145,7 @@ void ScalarFieldLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     // Calculate right hand side with matter_t = ScalarField
     // and background_t = BoostedBH
     // RHS for non evolution vars is zero, to prevent undefined values
-    ComplexPotential potential(m_p.scalar_mass);
+    ComplexPotential potential(m_p.initial_params);
     ScalarFieldWithPotential scalar_field(potential);
     BoostedBHFixedBG boosted_bh(m_p.bg_params, m_dx);
     FixedBGEvolution<ScalarFieldWithPotential, BoostedBHFixedBG> my_evolution(
