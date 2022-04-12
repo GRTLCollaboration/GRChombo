@@ -20,11 +20,11 @@ class SimulationParameters : public FixedBGSimulationParametersBase
     SimulationParameters(GRParmParse &pp) : FixedBGSimulationParametersBase(pp)
     {
         // read the problem specific params
-        readParams(pp);
+        read_params(pp);
         check_params();
     }
 
-    void readParams(GRParmParse &pp)
+    void read_params(GRParmParse &pp)
     {
         // Initial SF
         pp.load("scalar_amplitude", initial_params.amplitude, 0.1);
@@ -64,7 +64,6 @@ class SimulationParameters : public FixedBGSimulationParametersBase
     InitialScalarData::params_t initial_params;
     // Collection of parameters necessary for the sims
     BoostedBHFixedBG::params_t bg_params;
-    SphericalExtraction::params_t extraction_params;
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */
