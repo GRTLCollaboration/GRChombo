@@ -7,6 +7,8 @@ on:
 
 jobs:
   doxygen:
+    name: Build Doxygen documentation
+    if: github.repository == 'grchombo/grchombo'
     runs-on: ubuntu-latest
 
     steps:
