@@ -11,11 +11,13 @@
 class ComplexPotential
 {
   protected:
-    const double m_mu;
+  //    const double m_mu;
+    const InitialScalarData::params_t m_initial_params; 
 
   public:
     //! The constructor
-    ComplexPotential(const double a_mu) : m_mu(a_mu) {}
+    ComplexPotential(const InitialScalarData::params_t a_initial_params)
+           : m_initial_params(a_initial_params) {}
 
     //! Set the potential function for the scalar field here
     template <class data_t, template <typename> class vars_t>
@@ -24,13 +26,14 @@ class ComplexPotential
     {
         // The potential value at phi
         // 1/2 m^2 phi^2
-        V_of_phi = 0.5 * m_mu * m_mu * vars.phi_Re * vars.phi_Re +
-                   0.5 * m_mu * m_mu * vars.phi_Im * vars.phi_Im;
+        const double mu = m_initial_params.mass;
+        V_of_phi = 0.5 * mu * mu * vars.phi_Re * vars.phi_Re +
+                   0.5 * mu * mu * vars.phi_Im * vars.phi_Im;
 
         // The potential gradient at phi wrt the real and im field
         // m^2 phi
-        dVdphi_re = m_mu * m_mu * vars.phi_Re;
-        dVdphi_im = m_mu * m_mu * vars.phi_Im;
+        dVdphi_re = mu * mu * vars.phi_Re;
+        dVdphi_im = mu * mu * vars.phi_Im;
     }
 };
 
