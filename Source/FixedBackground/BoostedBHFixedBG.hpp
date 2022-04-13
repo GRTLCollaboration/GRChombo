@@ -22,6 +22,7 @@
 // Addisional shift to fix coordinates to the BH
 // x' = \tilde x + v \tilde t, t' = \tilde t
 // BH appears fixed, but we're in the rest frame of the SF!
+// See https://arxiv.org/pdf/2106.08280.pdf for detail
 
 class BoostedBHFixedBG
 {

@@ -91,44 +91,48 @@ void ScalarFieldLevel::specificPostTimeStep()
     }
 
     // write out the integral after each coarse timestep
-    if (m_level == 0)
+    if (m_p.activate_extraction == 1)
     {
-        bool first_step = (m_time == m_dt);
-        // integrate the densities and write to a file
-        AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
-        double rhoLinMom_sum = amr_reductions.sum(c_rhoLinMom);
-        double rhoEnergy_sum = amr_reductions.sum(c_rhoEnergy);
-        double sourceLinMom_sum = amr_reductions.sum(c_sourceLinMom);
-
-        SmallDataIO integral_file("SourceXMomRhoInts", m_dt, m_time,
-                                  m_restart_time, SmallDataIO::APPEND,
-                                  first_step);
-        // remove any duplicate data if this is post restart
-        integral_file.remove_duplicate_time_data();
-
-        std::vector<double> data_for_writing = {rhoLinMom_sum, rhoEnergy_sum,
-                                                sourceLinMom_sum};
-
-        // write data
-        if (first_step)
+        if (m_level == 0)
         {
-            integral_file.write_header_line(
-                {"Lin. Mom. density", "Energy density.", "Lin. Mom. source"});
-        }
-        integral_file.write_time_data_line(data_for_writing);
+            bool first_step = (m_time == m_dt);
+            // integrate the densities and write to a file
+            AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
+            double rhoLinMom_sum = amr_reductions.sum(c_rhoLinMom);
+            double rhoEnergy_sum = amr_reductions.sum(c_rhoEnergy);
+            double sourceLinMom_sum = amr_reductions.sum(c_sourceLinMom);
 
-        // Now refresh the interpolator and do the interpolation
-        bool fill_ghosts = false;
-        m_gr_amr.m_interpolator->refresh(fill_ghosts);
-        m_gr_amr.fill_multilevel_ghosts(VariableType::diagnostic,
-                                        Interval(c_fluxLinMom, c_fluxEnergy));
-        FluxExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
-                                     m_restart_time);
-        my_extraction.execute_query(m_gr_amr.m_interpolator);
+            SmallDataIO integral_file("SourceXMomRhoInts", m_dt, m_time,
+                                      m_restart_time, SmallDataIO::APPEND,
+                                      first_step);
+            // remove any duplicate data if this is post restart
+            integral_file.remove_duplicate_time_data();
+
+            std::vector<double> data_for_writing = {
+                rhoLinMom_sum, rhoEnergy_sum, sourceLinMom_sum};
+
+            // write data
+            if (first_step)
+            {
+                integral_file.write_header_line({"Lin. Mom. density",
+                                                 "Energy density.",
+                                                 "Lin. Mom. source"});
+            }
+            integral_file.write_time_data_line(data_for_writing);
+
+            // Now refresh the interpolator and do the interpolation
+            bool fill_ghosts = false;
+            m_gr_amr.m_interpolator->refresh(fill_ghosts);
+            m_gr_amr.fill_multilevel_ghosts(
+                VariableType::diagnostic, Interval(c_fluxLinMom, c_fluxEnergy));
+            FluxExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
+                                         m_restart_time);
+            my_extraction.execute_query(m_gr_amr.m_interpolator);
+        }
     }
 }
 
-// Things to do before a plot level - need to calculate the Stress
+// Things to do before a plot level
 void ScalarFieldLevel::prePlotLevel() {}
 
 // Things to do in RHS update, at each RK4 step

@@ -26,12 +26,13 @@
 //#include "BoostedKerrSchildFixedBG.hpp"
 #include "ComplexPotential.hpp"
 #include "ComplexScalarField.hpp"
-#include "Constraints.hpp"
 #include "ExcisionTest.hpp"
 #include "FixedBGComplexScalarField.hpp"
 #include "FixedBGEvolution.hpp"
 #include "GammaCalculator.hpp"
-#include "MatterCCZ4.hpp"
+#include "NewConstraints.hpp"
+//#include "MatterCCZ4.hpp"
+#include "MatterCCZ4RHS.hpp"
 #include "UserVariables.hpp"
 
 int main()
@@ -81,7 +82,7 @@ int main()
         BoostedBHFixedBG::params_t bg_params;
         //        BoostedKerrSchildFixedBG::params_t bg_params;
         bg_params.mass = 1.0;
-        bg_params.velocity = 0.9;
+        bg_params.velocity = 0.5;
         bg_params.center = center_vector;
         BoostedBHFixedBG boosted_bh(bg_params, dx);
         // BoostedKerrSchildFixedBG boosted_bh(bg_params, dx);
@@ -98,7 +99,9 @@ int main()
 
         // Get the Ham and Mom constraints using these values and finite diffs
         // Put them in the rhs (although they aren't rhs)
-        BoxLoops::loop(Constraints(dx), fixedbg_fab, rhs_fab);
+        //        BoxLoops::loop(Constraints(dx), fixedbg_fab, rhs_fab);
+        BoxLoops::loop(Constraints(dx, c_Ham, Interval(c_Mom1, c_Mom3)),
+                       fixedbg_fab, rhs_fab, box);
 
         // Calculate the RHS using finite differences for the derivs
         const double G_Newton = 0.0; // ignore backreaction
@@ -113,10 +116,16 @@ int main()
         const double scalar_mass = 0.1;
         ComplexPotential potential(scalar_mass);
         ComplexScalarField<ComplexPotential> scalar_field(potential);
+        //        BoxLoops::loop(
+        //            MatterCCZ4<ComplexScalarField<ComplexPotential>>(
+        //                scalar_field, ccz4_params, dx, sigma, CCZ4::USE_BSSN,
+        //                G_Newton),
+        //            fixedbg_fab, rhs_fab); // disable_simd());
+
         BoxLoops::loop(
-            MatterCCZ4<ComplexScalarField<ComplexPotential>>(
+            MatterCCZ4RHS<ComplexScalarField<ComplexPotential>>(
                 scalar_field, ccz4_params, dx, sigma, CCZ4::USE_BSSN, G_Newton),
-            fixedbg_fab, rhs_fab); // disable_simd());
+            fixedbg_fab, rhs_fab);
 
         // Calculate the Matter RHS using the analytic derivatives
         FixedBGComplexScalarField<ComplexPotential> fixed_scalar_field(
