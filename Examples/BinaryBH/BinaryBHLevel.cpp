@@ -72,8 +72,8 @@ void BinaryBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     if (m_p.max_spatial_derivative_order == 4)
     {
         // enforce continuous prescription for sigma as per arXiv:2104.06978
-        const int ratio = pow(2, 5*(m_level - m_p.max_level));
-        const double sigma = m_p.sigma * double(ratio); 
+        const int ratio = pow(2, 5 * (m_level - m_p.max_level));
+        const double sigma = m_p.sigma * double(ratio);
         BoxLoops::loop(CCZ4RHS<MovingPunctureGauge, FourthOrderDerivatives>(
                            m_p.ccz4_params, m_dx, sigma, m_p.formulation),
                        a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
@@ -81,8 +81,8 @@ void BinaryBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     else if (m_p.max_spatial_derivative_order == 6)
     {
         // enforce continuous prescription for sigma as per arXiv:2104.06978
-        const int ratio = pow(2, 7*(m_level - m_p.max_level));
-        const double sigma = m_p.sigma * double(ratio); 
+        const int ratio = pow(2, 7 * (m_level - m_p.max_level));
+        const double sigma = m_p.sigma * double(ratio);
         BoxLoops::loop(CCZ4RHS<MovingPunctureGauge, SixthOrderDerivatives>(
                            m_p.ccz4_params, m_dx, sigma, m_p.formulation),
                        a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
