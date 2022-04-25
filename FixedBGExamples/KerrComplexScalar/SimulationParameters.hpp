@@ -7,11 +7,11 @@
 #define SIMULATIONPARAMETERS_HPP_
 
 // General includes
-#include "ChomboParameters.hpp"
 #include "FixedBGSimulationParametersBase.hpp"
 #include "GRParmParse.hpp"
+
 // Problem specific includes:
-#include "ComplexScalarPotential.hpp"
+#include "InitialScalarData.hpp"
 #include "KerrSchildFixedBG.hpp"
 
 class SimulationParameters : public FixedBGSimulationParametersBase
@@ -20,34 +20,51 @@ class SimulationParameters : public FixedBGSimulationParametersBase
     SimulationParameters(GRParmParse &pp) : FixedBGSimulationParametersBase(pp)
     {
         // read the problem specific params
-        readParams(pp);
+        read_params(pp);
+        check_params();
     }
 
-    void readParams(GRParmParse &pp)
+    void read_params(GRParmParse &pp)
     {
-        // for regridding
-        pp.load("regrid_length", regrid_length, L);
-        pp.load("integral_filename", integral_filename);
+
+        // Initial SF data
+        pp.load("scalar_amplitude", initial_params.amplitude, 0.1);
+        pp.load("scalar_mass", initial_params.mass, 0.1);
 
         // Initial and Kerr data
         pp.load("bh_mass", bg_params.mass, 1.0);
-        //        pp.load("bh_velocity", bg_params.velocity, 0.0);
         pp.load("bh_spin", bg_params.spin, 0.0);
         pp.load("bh_center", bg_params.center, center);
-        pp.load("field_amplitude_re", field_amplitude_re);
-        pp.load("field_amplitude_im", field_amplitude_im);
-        pp.load("scalar_mass", potential_params.scalar_mass);
-        pp.load("inner_r", inner_r, 1.0);
-        pp.load("outer_r", outer_r, 0.75 * L);
+
+        // Volume extraction radii
+        pp.load("inner_r", inner_r, 5.0);
+        pp.load("outer_r", outer_r, 100.0 / initial_params.mass);
+    }
+
+    void check_params()
+    {
+        warn_parameter("scalar_mass", initial_params.mass,
+                       initial_params.mass < 0.2 / coarsest_dx / dt_multiplier,
+                       "oscillations of scalar field do not appear to be "
+                       "resolved on coarsest level");
+        warn_parameter("bh_mass", bg_params.mass, bg_params.mass >= 0.0,
+                       "should be >= 0.0");
+        FOR(idir)
+        {
+            std::string name = "bh_center[" + std::to_string(idir) + "]";
+            warn_parameter(
+                name, bg_params.center[idir],
+                (bg_params.center[idir] >= 0) &&
+                    (bg_params.center[idir] <= (ivN[idir] + 1) * coarsest_dx),
+                "should be within the computational domain");
+        }
     }
 
     // Problem specific parameters
-    double field_amplitude_re, field_amplitude_im, regrid_length;
     double inner_r, outer_r;
-    std::string integral_filename;
+    InitialScalarData::params_t initial_params;
     // Collection of parameters necessary for the sims
     KerrSchildFixedBG::params_t bg_params;
-    ComplexScalarPotential::params_t potential_params;
 };
 
 #endif /* SIMULATIONPARAMETERS_HPP_ */

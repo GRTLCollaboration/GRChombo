@@ -13,7 +13,6 @@
 #include "Tensor.hpp"
 #include "UserVariables.hpp" //This files needs NUM_VARS - total number of components
 #include "VarsTools.hpp"
-#include "simd.hpp"
 
 //! Does excision for fixed BG BH solutions
 //! Note that it is does not using simd so one must set disable_simd()

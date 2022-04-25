@@ -48,7 +48,7 @@ void ScalarFieldLevel::initialData()
     // First set everything to zero ... we don't want undefined values in
     // constraints etc, then initial conditions for scalar field
     SetValue set_zero(0.0);
-    BoostedBHFixedBG boosted_bh(m_p.bg_params, m_dx);
+    BoostedBHFixedBG boosted_bh(m_p.bg_params, m_dx); // just claculates chi
     InitialScalarData initial_sf(m_p.initial_params);
     auto compute_pack = make_compute_pack(set_zero, boosted_bh);
 
@@ -163,5 +163,5 @@ void ScalarFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
                                                const FArrayBox &current_state)
 {
     BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L, m_p.center),
-                   current_state, tagging_criterion, disable_simd());
+                   current_state, tagging_criterion);
 }

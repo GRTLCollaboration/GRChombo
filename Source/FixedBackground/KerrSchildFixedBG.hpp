@@ -246,7 +246,7 @@ class KerrSchildFixedBG
   public:
     // used to decide when to excise - ie when within the horizon of the BH
     // note that this is not templated over data_t
-    double excise(const Cell<double> &current_cell) const
+    double excise(const Coordinates<double> &coords) const
     {
         // black hole params - mass M and spin a
         const double M = m_params.mass;
@@ -254,7 +254,8 @@ class KerrSchildFixedBG
         const double a2 = a * a;
 
         // work out where we are on the grid
-        const Coordinates<double> coords(current_cell, m_dx, m_params.center);
+        //        const Coordinates<double> coords(current_cell, m_dx,
+        //        m_params.center);
         const double x = coords.x;
         const double y = coords.y;
         const double z = coords.z;
@@ -267,8 +268,14 @@ class KerrSchildFixedBG
         const double inner_horizon =
             (x * x + y * y) / (2.0 * M * r_minus) + z * z / r_minus / r_minus;
 
+        bool do_I_excise = false;
+
         // value less than 1 indicates we are within the horizon
-        return sqrt(outer_horizon);
+        if (outer_horizon < 1.0)
+        {
+            do_I_excise = true;
+        }
+        return do_I_excise;
     }
 };
 

@@ -40,11 +40,11 @@ template <class matter_t, class background_t> class ExcisionDiagnostics
     void compute(const Cell<double> current_cell) const
     {
         const Coordinates<double> coords(current_cell, m_dx, m_center);
-        double horizon_distance = m_background.excise(current_cell);
         if (coords.get_radius() < m_inner_r || coords.get_radius() > m_outer_r)
         {
-            current_cell.store_vars(0.0, c_rho);
-            current_cell.store_vars(0.0, c_rhoJ);
+            current_cell.store_vars(0.0, c_rhoEnergy);
+            current_cell.store_vars(0.0, c_rhoAngMom);
+            current_cell.store_vars(0.0, c_sourceAngMom);
         } // else do nothing
     }
 };
