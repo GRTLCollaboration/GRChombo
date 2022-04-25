@@ -56,7 +56,7 @@ template <class matter_t, class background_t> class FixedBGEnergyConservation
         Coordinates<data_t> coords(current_cell, m_dx, m_center);
 
         MetricVars<data_t> metric_vars;
-        m_background.compute_metric_background(metric_vars, current_cell);
+        m_background.compute_metric_background(metric_vars, coords);
 
         using namespace TensorAlgebra;
         using namespace CoordinateTransformations;

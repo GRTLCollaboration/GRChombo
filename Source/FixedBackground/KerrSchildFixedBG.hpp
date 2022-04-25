@@ -17,6 +17,8 @@
 
 //! Class which computes the initial conditions for a Kerr Schild BH
 //! https://arxiv.org/pdf/gr-qc/9805023.pdf
+//! https://arxiv.org/pdf/2011.07870.pdf
+
 class KerrSchildFixedBG
 {
   public:
@@ -52,7 +54,7 @@ class KerrSchildFixedBG
         // get position and set vars
         const Coordinates<data_t> coords(current_cell, m_dx, m_params.center);
         Vars<data_t> metric_vars;
-        compute_metric_background(metric_vars, current_cell);
+        compute_metric_background(metric_vars, coords);
 
         // calculate and save chi
         data_t chi = TensorAlgebra::compute_determinant_sym(metric_vars.gamma);
@@ -63,10 +65,8 @@ class KerrSchildFixedBG
     // Kerr Schild solution
     template <class data_t, template <typename> class vars_t>
     void compute_metric_background(vars_t<data_t> &vars,
-                                   const Cell<data_t> &current_cell) const
+                                   const Coordinates<data_t> &coords) const
     {
-        const Coordinates<data_t> coords(current_cell, m_dx, m_params.center);
-
         // black hole params - mass M and spin a
         const double M = m_params.mass;
         const double a = m_params.spin;

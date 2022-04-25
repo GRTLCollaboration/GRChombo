@@ -49,7 +49,7 @@ class SimulationParameters : public FixedBGSimulationParametersBase
                        "resolved on coarsest level");
         warn_parameter("bh_mass", bg_params.mass, bg_params.mass >= 0.0,
                        "should be >= 0.0");
-	check_parameter("bh_spin", bg_params.spin,
+        check_parameter("bh_spin", bg_params.spin,
                         std::abs(bg_params.spin) <= bg_params.mass,
                         "must satisfy |a| <= M = " +
                             std::to_string(bg_params.mass));

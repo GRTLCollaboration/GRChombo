@@ -9,6 +9,7 @@
 #include "ADMFixedBGVars.hpp"
 #include "CCZ4Geometry.hpp"
 #include "Cell.hpp"
+#include "Coordinates.hpp"
 #include "FourthOrderDerivatives.hpp"
 #include "Tensor.hpp"
 #include "TensorAlgebra.hpp"
@@ -52,10 +53,10 @@ template <class matter_t, class background_t> class FixedBGEvolution
     {
         // copy matter data from chombo gridpoint into local variable
         const auto matter_vars = current_cell.template load_vars<MatterVars>();
-
+        const Coordinates<data_t> coords(current_cell, m_dx, m_center);
         // compute the other non grid vars
         MetricVars<data_t> metric_vars;
-        m_background.compute_metric_background(metric_vars, current_cell);
+        m_background.compute_metric_background(metric_vars, coords);
 
         // compute derivs for matter grid vars
         const auto d1 = m_deriv.template diff1<MatterVars>(current_cell);

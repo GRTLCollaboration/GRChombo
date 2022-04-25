@@ -58,7 +58,7 @@ class BoostedBHFixedBG
         // get position and set vars
 
         Vars<data_t> metric_vars;
-        compute_metric_background(metric_vars, current_cell);
+        compute_metric_background(metric_vars, coords);
 
         // calculate and save chi
         data_t chi = TensorAlgebra::compute_determinant_sym(metric_vars.gamma);
@@ -70,11 +70,8 @@ class BoostedBHFixedBG
     /// Schwarzschild boosted solution as above
     template <class data_t, template <typename> class vars_t>
     void compute_metric_background(vars_t<data_t> &vars,
-                                   const Cell<data_t> &current_cell) const
+                                   const Coordinates<data_t> &coords) const
     {
-        // where am i?
-        const Coordinates<data_t> coords(current_cell, m_dx, m_params.center);
-
         // black hole params - mass M and boost v
         // "boost" is the gamma factor for the boost
         const double M = m_params.mass;
