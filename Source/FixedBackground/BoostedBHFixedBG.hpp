@@ -56,7 +56,7 @@ class BoostedBHFixedBG
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {
         // get position and set vars
-
+        const Coordinates<data_t> coords(current_cell, m_dx, m_params.center);
         Vars<data_t> metric_vars;
         compute_metric_background(metric_vars, coords);
 

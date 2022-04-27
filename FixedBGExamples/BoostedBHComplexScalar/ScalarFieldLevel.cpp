@@ -75,11 +75,11 @@ void ScalarFieldLevel::specificPostTimeStep()
         ComplexPotential potential(m_p.initial_params);
         ScalarFieldWithPotential scalar_field(potential);
         BoostedBHFixedBG boosted_bh(m_p.bg_params, m_dx);
-        FixedBGLinMomConservation<ScalarFieldWithPotential, BoostedBHFixedBG>
-            LinMomenta(scalar_field, boosted_bh, m_dx, m_p.center);
         FixedBGEnergyConservation<ScalarFieldWithPotential, BoostedBHFixedBG>
             Energies(scalar_field, boosted_bh, m_dx, m_p.center);
-        BoxLoops::loop(make_compute_pack(LinMomenta, Energies), m_state_new,
+        FixedBGLinMomConservation<ScalarFieldWithPotential, BoostedBHFixedBG>
+            LinMomenta(scalar_field, boosted_bh, m_dx, m_p.center);
+        BoxLoops::loop(make_compute_pack(Energies, LinMomenta), m_state_new,
                        m_state_diagnostics, SKIP_GHOST_CELLS);
 
         // excise within/outside specified radii, no simd
@@ -98,11 +98,11 @@ void ScalarFieldLevel::specificPostTimeStep()
             bool first_step = (m_time == m_dt);
             // integrate the densities and write to a file
             AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
-            double rhoLinMom_sum = amr_reductions.sum(c_rhoLinMom);
             double rhoEnergy_sum = amr_reductions.sum(c_rhoEnergy);
+            double rhoLinMom_sum = amr_reductions.sum(c_rhoLinMom);
             double sourceLinMom_sum = amr_reductions.sum(c_sourceLinMom);
 
-            SmallDataIO integral_file("SourceXMomRhoInts", m_dt, m_time,
+            SmallDataIO integral_file("EnMomSourceIntegrals", m_dt, m_time,
                                       m_restart_time, SmallDataIO::APPEND,
                                       first_step);
             // remove any duplicate data if this is post restart
@@ -114,8 +114,8 @@ void ScalarFieldLevel::specificPostTimeStep()
             // write data
             if (first_step)
             {
-                integral_file.write_header_line({"Lin. Mom. density",
-                                                 "Energy density.",
+                integral_file.write_header_line({"Energy density.",
+                                                 "Lin. Mom. density",
                                                  "Lin. Mom. source"});
             }
             integral_file.write_time_data_line(data_for_writing);
