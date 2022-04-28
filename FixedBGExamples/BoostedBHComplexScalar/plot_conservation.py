@@ -19,20 +19,27 @@ dt = timedata[1] - timedata[0]
 E = EMS[:,1][1:]*4.
 M = EMS[:,2][1:]*4.
 S = EMS[:,3][1:]*4.
+E0 = E-E[0]
 M0 = M-M[0]
+FEi = F[:,1]
+FEo = F[:,3]
 FMi = F[:,2]
 FMo = F[:,4]
 
+FEo_dt = np.zeros_like(timedata)
+FEi_dt = np.zeros_like(timedata)
 FMo_dt = np.zeros_like(timedata)
 FMi_dt = np.zeros_like(timedata)
 S_dt = np.zeros_like(timedata)
 for i, t in enumerate(timedata) :
     if (i > 0) :
+        FEo_dt[i] += FEo_dt[i-1] + FEo[i] * dt
+        FEi_dt[i] += FEi_dt[i-1] + FEi[i] * dt
         FMo_dt[i] += FMo_dt[i-1] + FMo[i] * dt
         FMi_dt[i] += FMi_dt[i-1] + FMi[i] * dt
         S_dt[i] += S_dt[i-1]+ S[i] * dt
 
-plt.plot(timedata,-M0,color=cm.Reds(8./10.,1.),
+plt.plot(timedata,M0,color=cm.Reds(8./10.,1.),
          label='$\mathcal{Q}_x$ - $\mathcal{Q}_x(t=0)$')
 plt.plot(timedata,FMo_dt,color=cm.Blues(7./10.,1),ls='--',
          label=r'$\int \mathcal{F}_{x,{\rm out}}$  dt')
@@ -40,11 +47,24 @@ plt.plot(timedata,FMi_dt,color='grey',ls='--',
          label=r'$\int \mathcal{F}_{x, {\rm in}}$  dt')
 plt.plot(timedata,S_dt,color=cm.Greens(7./10.,1),ls='-.',
          label='$\int \mathcal{S}_x$  dt')
-plt.plot(timedata,FMo_dt - FMi_dt - S_dt,'k:',lw=2.,
-         label=r'$\int (\mathcal{F}_{x,{\rm out}} - \mathcal{F}_{x,{\rm in}} - \mathcal{S}_x)$ dt')
-
+plt.plot(timedata,-FMo_dt + FMi_dt + S_dt,'k:',lw=2.,
+         label=r'$\int (\mathcal{F}_{x,{\rm in}} - \mathcal{F}_{x,{\rm out}} + \mathcal{S}_x)$ dt')
 plt.xlim(0,2000)
 plt.legend(ncol=2,fontsize=14, bbox_to_anchor=(0., 0.95, 1., 0.102), loc='lower left')
 plt.xlabel(r'$t/M$', fontsize=14)
-plt.savefig('plots/balance_integrals.pdf',dpi=256, bbox_inches='tight',pad_inches = 0.1)
+plt.savefig('plots/momentum_conservation.pdf',dpi=256, bbox_inches='tight',pad_inches = 0.1)
+plt.close()
+
+plt.plot(timedata,E0,color=cm.Reds(8./10.,1.),
+         label='$\mathcal{Q}_{E,x}$ - $\mathcal{Q}_{E,x}(t=0)$')
+plt.plot(timedata,FEo_dt,color=cm.Blues(7./10.,1),ls='--',
+         label=r'$\int \mathcal{F}_{E,x,{\rm out}}$  dt')
+plt.plot(timedata,FEi_dt,color='grey',ls='--',
+         label=r'$\int \mathcal{F}_{E,x, {\rm in}}$  dt')
+plt.plot(timedata,-FEo_dt + FEi_dt,'k:',lw=2.,
+         label=r'$\int (\mathcal{F}_{E,x,{\rm in}} - \mathcal{F}_{E,x,{\rm out}}$ dt')
+plt.xlim(0,2000)
+plt.legend(ncol=2,fontsize=14, bbox_to_anchor=(0., 0.95, 1., 0.102), loc='lower left')
+plt.xlabel(r'$t/M$', fontsize=14)
+plt.savefig('plots/energy_conservation.pdf',dpi=256, bbox_inches='tight',pad_inches = 0.1)
 plt.close()

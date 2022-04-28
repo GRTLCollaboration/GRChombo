@@ -96,18 +96,19 @@ template <class matter_t, class background_t> class FixedBGEnergyConservation
 
         FOR1(i)
         {
-            fluxEnergy += metric_vars.lapse * si_L[i] * emtensor.rho *
+            fluxEnergy += -metric_vars.lapse * si_L[i] * emtensor.rho *
                           metric_vars.shift[i];
             FOR1(j)
             {
                 fluxEnergy +=
-                    -si_L[i] * emtensor.Si[j] *
+                    si_L[i] * emtensor.Si[j] *
                     (metric_vars.shift[i] * metric_vars.shift[j] +
                      metric_vars.lapse * metric_vars.lapse * gamma_UU[i][j]);
                 FOR1(k)
                 {
-                    fluxEnergy += si_L[i] * metric_vars.lapse * gamma_UU[i][j] *
-                                  metric_vars.shift[k] * emtensor.Sij[j][k];
+                    fluxEnergy += -si_L[i] * metric_vars.lapse *
+                                  gamma_UU[i][j] * metric_vars.shift[k] *
+                                  emtensor.Sij[j][k];
                 }
             }
         }

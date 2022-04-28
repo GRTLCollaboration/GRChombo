@@ -109,7 +109,7 @@ void ScalarFieldLevel::specificPostTimeStep()
             integral_file.remove_duplicate_time_data();
 
             std::vector<double> data_for_writing = {
-                rhoLinMom_sum, rhoEnergy_sum, sourceLinMom_sum};
+                rhoEnergy_sum, rhoLinMom_sum, sourceLinMom_sum};
 
             // write data
             if (first_step)
@@ -124,7 +124,7 @@ void ScalarFieldLevel::specificPostTimeStep()
             bool fill_ghosts = false;
             m_gr_amr.m_interpolator->refresh(fill_ghosts);
             m_gr_amr.fill_multilevel_ghosts(
-                VariableType::diagnostic, Interval(c_fluxLinMom, c_fluxEnergy));
+                VariableType::diagnostic, Interval(c_fluxEnergy, c_fluxLinMom));
             FluxExtraction my_extraction(m_p.extraction_params, m_dt, m_time,
                                          m_restart_time);
             my_extraction.execute_query(m_gr_amr.m_interpolator);
