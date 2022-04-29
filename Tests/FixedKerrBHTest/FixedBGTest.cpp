@@ -22,16 +22,16 @@
 
 // Problem specific for tests
 #include "AssignFixedBGtoBSSNVars.hpp"
-#include "BoostedBHFixedBG.hpp"
-#include "ComplexPotential.hpp"
-#include "ComplexScalarField.hpp"
 #include "ExcisionTest.hpp"
-#include "FixedBGComplexScalarField.hpp"
 #include "FixedBGEvolution.hpp"
+#include "FixedBGScalarField.hpp"
 #include "GammaCalculator.hpp"
+#include "KerrSchildFixedBG.hpp"
 #include "MatterCCZ4.hpp"
 #include "MatterCCZ4RHS.hpp"
 #include "NewConstraints.hpp"
+#include "ScalarField.hpp"
+#include "ScalarPotential.hpp"
 #include "UserVariables.hpp"
 
 int main()
@@ -78,15 +78,13 @@ int main()
                                                                center};
 
         // Test the fixed BG - first assign the fixed bg vars to the BSSN vars
-        BoostedBHFixedBG::params_t bg_params;
-        //        BoostedKerrSchildFixedBG::params_t bg_params;
+        KerrSchildFixedBG::params_t bg_params;
         bg_params.mass = 1.0;
-        bg_params.velocity = 0.5;
+        bg_params.spin = 0.0;
         bg_params.center = center_vector;
-        BoostedBHFixedBG boosted_bh(bg_params, dx);
-        // BoostedKerrSchildFixedBG boosted_bh(bg_params, dx);
-        BoxLoops::loop(AssignFixedBGtoBSSNVars<BoostedBHFixedBG>(boosted_bh, dx,
-                                                                 center_vector),
+        KerrSchildFixedBG kerr_bh(bg_params, dx);
+        BoxLoops::loop(AssignFixedBGtoBSSNVars<KerrSchildFixedBG>(
+                           kerr_bh, dx, center_vector),
                        fixedbg_fab, fixedbg_fab);
         // used temp single ghosted box to avoid nans at boundaries in Gamma^i
         BoxLoops::loop(GammaCalculator(dx), fixedbg_fab, deriv_fixedbg_fab);
@@ -108,21 +106,18 @@ int main()
         ccz4_params.shift_Gamma_coeff = 0.0;
 
         const double scalar_mass = 0.1;
-        ComplexPotential potential(scalar_mass);
-        ComplexScalarField<ComplexPotential> scalar_field(potential);
+        ScalarPotential potential(scalar_mass);
+        ScalarField<ScalarPotential> scalar_field(potential);
 
         BoxLoops::loop(
-            MatterCCZ4RHS<ComplexScalarField<ComplexPotential>>(
+            MatterCCZ4RHS<ScalarField<ScalarPotential>>(
                 scalar_field, ccz4_params, dx, sigma, CCZ4::USE_BSSN, G_Newton),
             fixedbg_fab, rhs_fab);
 
         // Calculate the Matter RHS using the analytic derivatives
-        FixedBGComplexScalarField<ComplexPotential> fixed_scalar_field(
-            potential);
-        FixedBGEvolution<FixedBGComplexScalarField<ComplexPotential>,
-                         BoostedBHFixedBG>
-            my_evolution(fixed_scalar_field, boosted_bh, sigma, dx,
-                         center_vector);
+        FixedBGScalarField<ScalarPotential> fixed_scalar_field(potential);
+        FixedBGEvolution<FixedBGScalarField<ScalarPotential>, KerrSchildFixedBG>
+            my_evolution(fixed_scalar_field, kerr_bh, sigma, dx, center_vector);
         BoxLoops::loop(make_compute_pack(my_evolution), fixedbg_fab,
                        fixedbg_rhs_fab);
 
@@ -132,8 +127,8 @@ int main()
         // Excise the centre within the horizon where there are always large
         // values
         BoxLoops::loop(
-            ExcisionTest<FixedBGComplexScalarField<ComplexPotential>,
-                         BoostedBHFixedBG>(dx, center_vector, boosted_bh),
+            ExcisionTest<FixedBGScalarField<ScalarPotential>,
+                         KerrSchildFixedBG>(dx, center_vector, kerr_bh),
             rhs_fab, rhs_fab, disable_simd());
 
         // Output slice of data on lowest res, useful for debugging
@@ -193,7 +188,7 @@ int main()
         // compare the rhs for the scalar field using the calculated derivs
         // versus the finite difference case - this tests the expressions
         // for d1_lapse and d1_gamma etc
-        for (int i = c_phi_Re; i <= c_Pi_Im; ++i)
+        for (int i = c_phi; i <= c_Pi; ++i)
         {
             // first check for large non zero values outside horizon
             double max_err = rhs_fab.norm(max_norm, i, num_comps);
