@@ -15,7 +15,7 @@ class ScalarPotential
 
   public:
     //! The constructor
-    ScalarPotential(const double a_mu) : m_mu(a_mu){} {}
+    ScalarPotential(const double a_mu) : m_mu(a_mu) {}
 
     //! Set the potential function for the scalar field here
     template <class data_t, template <typename> class vars_t>

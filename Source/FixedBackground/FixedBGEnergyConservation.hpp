@@ -67,9 +67,9 @@ template <class matter_t, class background_t> class FixedBGEnergyConservation
         const emtensor_t<data_t> emtensor = m_matter.compute_emtensor(
             vars, metric_vars, d1, gamma_UU, chris_phys.ULL);
         const data_t det_gamma = compute_determinant_sym(metric_vars.gamma);
-        Tensor<2, data_t> spherical_gamma = cartesian_to_spherical_LL(
-            metric_vars.gamma, coords.x, coords.y, coords.z);
-        data_t dArea = area_element_sphere(spherical_gamma);
+        // Tensor<2, data_t> spherical_gamma = cartesian_to_spherical_LL(
+        //    metric_vars.gamma, coords.x, coords.y, coords.z);
+        // data_t dArea = area_element_sphere(spherical_gamma);
         const data_t R = coords.get_radius();
         data_t rho2 =
             simd_max(coords.x * coords.x + coords.y * coords.y, 1e-12);
@@ -82,10 +82,10 @@ template <class matter_t, class background_t> class FixedBGEnergyConservation
         si_L[2] = coords.z / R;
 
         // Normalise
-        data_t si_norm = 0.0;
-        FOR2(i, j) { si_norm += gamma_UU[i][j] * si_L[i] * si_L[j]; }
+        //        data_t si_norm = 0.0;
+        // FOR2(i, j) { si_norm += gamma_UU[i][j] * si_L[i] * si_L[j]; }
 
-        FOR1(i) { si_L[i] = si_L[i] / sqrt(si_norm); }
+        // FOR1(i) { si_L[i] = si_L[i] / sqrt(si_norm); }
 
         data_t rhoEnergy = emtensor.rho * metric_vars.lapse;
         data_t fluxEnergy = 0.0;
@@ -94,28 +94,40 @@ template <class matter_t, class background_t> class FixedBGEnergyConservation
         FOR1(i) { rhoEnergy += -emtensor.Si[i] * metric_vars.shift[i]; }
         rhoEnergy *= sqrt(det_gamma);
 
+        //        FOR1(i)
+        //{
+        //    fluxEnergy += -metric_vars.lapse * si_L[i] * emtensor.rho *
+        //                  metric_vars.shift[i];
+        //    FOR1(j)
+        //    {
+        //        fluxEnergy +=
+        //            si_L[i] * emtensor.Si[j] *
+        //            (metric_vars.shift[i] * metric_vars.shift[j] +
+        //             metric_vars.lapse * metric_vars.lapse * gamma_UU[i][j]);
+        //        FOR1(k)
+        //        {
+        //            fluxEnergy += -si_L[i] * metric_vars.lapse *
+        //                          gamma_UU[i][j] * metric_vars.shift[k] *
+        //                          emtensor.Sij[j][k];
+        //        }
+        //    }
+        //}
+
         FOR1(i)
         {
-            fluxEnergy += -metric_vars.lapse * si_L[i] * emtensor.rho *
-                          metric_vars.shift[i];
+            fluxEnergy += -si_L[i] * metric_vars.shift[i] * emtensor.rho;
+
             FOR1(j)
             {
-                fluxEnergy +=
-                    si_L[i] * emtensor.Si[j] *
-                    (metric_vars.shift[i] * metric_vars.shift[j] +
-                     metric_vars.lapse * metric_vars.lapse * gamma_UU[i][j]);
-                FOR1(k)
-                {
-                    fluxEnergy += -si_L[i] * metric_vars.lapse *
-                                  gamma_UU[i][j] * metric_vars.shift[k] *
-                                  emtensor.Sij[j][k];
-                }
+                fluxEnergy += metric_vars.lapse * si_L[i] * emtensor.Si[j] *
+                              gamma_UU[i][j];
             }
         }
+        fluxEnergy *= det_gamma;
 
         // dArea is the integration surface element; Divide by r2sintheta,
         // as that's accounted for in the SprericalExtraction
-        fluxEnergy *= dArea / r2sintheta;
+        // fluxEnergy *= dArea / r2sintheta;
 
         current_cell.store_vars(rhoEnergy, c_rhoEnergy);
         current_cell.store_vars(fluxEnergy, c_fluxEnergy);
