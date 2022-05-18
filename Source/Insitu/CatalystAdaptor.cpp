@@ -174,22 +174,23 @@ void CatalystAdaptor::build_vtk_grid()
         {
             // first get the box without ghosts
             Box box = level_box_layout[lit];
-            // const IntVect &small_end = box.smallEnd();
-            // const IntVect &big_end = box.bigEnd();
-
-            // now grow the box to make the ghosted box (no change if
-            // m_remove_ghosts == true)
-            Box ghosted_box = box;
             // VTK counts the big end differently to Chombo so modify the Chombo
             // box so VTK gets what it needs
             for (int idir = 0; idir < SpaceDim; ++idir)
             {
-                ghosted_box.growHi(idir, 1);
+                box.growHi(idir, 1);
             }
-            if (!m_remove_ghosts)
-            {
-                ghosted_box.grow(level_data.ghostVect());
-            }
+            const IntVect &small_end = box.smallEnd();
+            const IntVect &big_end = box.bigEnd();
+
+            // now grow the box to make the ghosted box (no change if
+            // m_remove_ghosts == true)
+            Box ghosted_box = box;
+
+            // ghost_vect takes into account m_remove_ghosts
+            const IntVect &ghost_vect =
+                (m_remove_ghosts) ? IntVect::Zero : level_data.ghostVect();
+            ghosted_box.grow(ghost_vect);
             const IntVect &small_ghosted_end = ghosted_box.smallEnd();
             const IntVect &big_ghosted_end = ghosted_box.bigEnd();
 
@@ -219,16 +220,13 @@ void CatalystAdaptor::build_vtk_grid()
                     small_ghosted_end[1], big_ghosted_end[1],
                     small_ghosted_end[2], big_ghosted_end[2]);
                 // add the ghost cell information
-                // int no_ghost[6] = {small_end[0], big_end[0] + 1,
-                //    small_end[1], big_end[1] + 1,
-                //    small_end[2], big_end[2] + 1};
-                // bool cell_data = true;
-                // vtk_uniform_grid_ptr->GenerateGhostArray(no_ghost,
-                // cell_data);
+                int no_ghost[6] = {small_end[0], big_end[0],   small_end[1],
+                                   big_end[1],   small_end[2], big_end[2]};
+                bool cell_data = true;
+                vtk_uniform_grid_ptr->GenerateGhostArray(no_ghost, cell_data);
 
-                // vtk_uniform_grid_ptr->Initialize(
-                // &vtk_amr_box, origin_global, dx_arr,
-                // level_data.ghostVect().dataPtr());
+                // vtk_uniform_grid_ptr->Initialize(&vtk_amr_box, origin_global,
+                //  dx_arr, ghost_vect.dataPtr());
 
                 m_vtk_grid_ptr->SetDataSet(ilevel, ibox, vtk_uniform_grid_ptr);
             }

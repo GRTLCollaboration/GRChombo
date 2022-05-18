@@ -12,6 +12,9 @@ num_points = 30
 max_level = 0
 regrid_interval = 1
 
+max_box_size = 8
+min_box_size = 4
+
 #boundaries and periodicity of grid
 #Periodic directions - 0 = false, 1 = true
 isPeriodic = 0 0 0
