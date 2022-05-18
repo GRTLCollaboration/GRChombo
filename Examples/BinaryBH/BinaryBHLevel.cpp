@@ -144,7 +144,9 @@ void BinaryBHLevel::specificPostTimeStep()
 #endif
     )
     {
-        int min_level = m_p.extraction_params.min_extraction_level();
+        int min_level = (m_p.activate_extraction)
+                            ? m_p.extraction_params.min_extraction_level()
+                            : -1;
         bool calculate_weyl = at_level_timestep_multiple(min_level);
 #ifdef USE_CATALYST
         calculate_weyl |=
