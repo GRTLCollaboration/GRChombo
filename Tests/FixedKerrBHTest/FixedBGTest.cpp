@@ -98,7 +98,7 @@ int main()
         // Calculate the RHS using finite differences for the derivs
         const double G_Newton = 0.0; // ignore backreaction
         const double sigma = 0.0;    // no kreiss oliger
-        CCZ4::params_t ccz4_params;
+        CCZ4RHS<>::params_t ccz4_params;
         ccz4_params.kappa1 = 0.0;
         ccz4_params.kappa2 = 0.0;
         ccz4_params.kappa3 = 0.0;
@@ -109,10 +109,10 @@ int main()
         ScalarPotential potential(scalar_mass);
         ScalarField<ScalarPotential> scalar_field(potential);
 
-        BoxLoops::loop(
-            MatterCCZ4RHS<ScalarField<ScalarPotential>>(
-                scalar_field, ccz4_params, dx, sigma, CCZ4::USE_BSSN, G_Newton),
-            fixedbg_fab, rhs_fab);
+        BoxLoops::loop(MatterCCZ4RHS<ScalarField<ScalarPotential>>(
+                           scalar_field, ccz4_params, dx, sigma,
+                           CCZ4RHS<>::USE_BSSN, G_Newton),
+                       fixedbg_fab, rhs_fab);
 
         // Calculate the Matter RHS using the analytic derivatives
         FixedBGScalarField<ScalarPotential> fixed_scalar_field(potential);

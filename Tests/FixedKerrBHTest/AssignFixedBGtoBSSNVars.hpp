@@ -33,7 +33,7 @@ template <class background_t> class AssignFixedBGtoBSSNVars
 
         // assign values to the BSSN vars
         using namespace TensorAlgebra;
-        CCZ4::Vars<data_t> bssn_vars;
+        CCZ4RHS<>::Vars<data_t> bssn_vars;
         bssn_vars.K = adm_vars.K;
         bssn_vars.lapse = adm_vars.lapse;
         FOR1(i) { bssn_vars.shift[i] = adm_vars.shift[i]; }

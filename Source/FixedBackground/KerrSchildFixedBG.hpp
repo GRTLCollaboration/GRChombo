@@ -174,8 +174,7 @@ class KerrSchildFixedBG
                        Tensor<1, data_t> &dltdx, const data_t &H,
                        const Coordinates<data_t> &coords) const
     {
-        // black hole params - mass M and boost v
-        const double M = m_params.mass;
+        // black hole params - spin a
         const double a = m_params.spin;
         const double a2 = a * a;
 
