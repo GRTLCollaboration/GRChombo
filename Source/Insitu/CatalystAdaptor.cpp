@@ -217,20 +217,21 @@ void CatalystAdaptor::build_vtk_grid()
             {
                 vtkNew<vtkUniformGrid> vtk_uniform_grid_ptr;
 
-                vtk_uniform_grid_ptr->SetOrigin(origin_global);
-                vtk_uniform_grid_ptr->SetSpacing(dx_arr);
-                vtk_uniform_grid_ptr->SetExtent(
-                    small_ghosted_end[0], big_ghosted_end[0],
-                    small_ghosted_end[1], big_ghosted_end[1],
-                    small_ghosted_end[2], big_ghosted_end[2]);
-                // add the ghost cell information
-                int no_ghost[6] = {small_end[0], big_end[0],   small_end[1],
-                                   big_end[1],   small_end[2], big_end[2]};
-                bool cell_data = true;
-                vtk_uniform_grid_ptr->GenerateGhostArray(no_ghost, cell_data);
+                // vtk_uniform_grid_ptr->SetOrigin(origin_global);
+                // vtk_uniform_grid_ptr->SetSpacing(dx_arr);
+                // vtk_uniform_grid_ptr->SetExtent(
+                //     small_ghosted_end[0], big_ghosted_end[0],
+                //     small_ghosted_end[1], big_ghosted_end[1],
+                //     small_ghosted_end[2], big_ghosted_end[2]);
+                // // add the ghost cell information
+                // int no_ghost[6] = {small_end[0], big_end[0],   small_end[1],
+                //                    big_end[1],   small_end[2], big_end[2]};
+                // bool cell_data = true;
+                // vtk_uniform_grid_ptr->GenerateGhostArray(no_ghost,
+                // cell_data);
 
-                // vtk_uniform_grid_ptr->Initialize(&vtk_amr_box, origin_global,
-                //  dx_arr, ghost_vect.dataPtr());
+                vtk_uniform_grid_ptr->Initialize(&vtk_amr_box, origin, dx_arr,
+                                                 ghost_vect.dataPtr());
 
                 m_vtk_grid_ptr->SetDataSet(ilevel, ibox, vtk_uniform_grid_ptr);
             }
