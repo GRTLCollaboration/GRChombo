@@ -8,7 +8,6 @@
 #endif
 
 // General Chombo includes
-//#include "BoxIterator.H"
 #include "BoxLoops.hpp"
 #include "Cell.hpp"
 #include "ComputePack.hpp"
@@ -41,8 +40,8 @@ int main()
 #endif
 
     int failed = 0;
-    const bool debug_plots_on = false; // true; // false;
-    const int num_resolutions = 2;
+    const bool debug_plots_on = false; // true;
+    const int num_resolutions = 0;
 
     // setup a vector of norms for checking convergence
     std::array<std::array<double, NUM_VARS>, num_resolutions> error_norms;
@@ -79,12 +78,10 @@ int main()
 
         // Test the fixed BG - first assign the fixed bg vars to the BSSN vars
         BoostedBHFixedBG::params_t bg_params;
-        //        BoostedKerrSchildFixedBG::params_t bg_params;
         bg_params.mass = 1.0;
         bg_params.velocity = 0.5;
         bg_params.center = center_vector;
         BoostedBHFixedBG boosted_bh(bg_params, dx);
-        // BoostedKerrSchildFixedBG boosted_bh(bg_params, dx);
         BoxLoops::loop(AssignFixedBGtoBSSNVars<BoostedBHFixedBG>(boosted_bh, dx,
                                                                  center_vector),
                        fixedbg_fab, fixedbg_fab);
@@ -100,7 +97,7 @@ int main()
         // Calculate the RHS using finite differences for the derivs
         const double G_Newton = 0.0; // ignore backreaction
         const double sigma = 0.0;    // no kreiss oliger
-        CCZ4::params_t ccz4_params;
+        CCZ4RHS<>::params_t ccz4_params;
         ccz4_params.kappa1 = 0.0;
         ccz4_params.kappa2 = 0.0;
         ccz4_params.kappa3 = 0.0;
@@ -111,10 +108,10 @@ int main()
         ComplexPotential potential(scalar_mass);
         ComplexScalarField<ComplexPotential> scalar_field(potential);
 
-        BoxLoops::loop(
-            MatterCCZ4RHS<ComplexScalarField<ComplexPotential>>(
-                scalar_field, ccz4_params, dx, sigma, CCZ4::USE_BSSN, G_Newton),
-            fixedbg_fab, rhs_fab);
+        BoxLoops::loop(MatterCCZ4RHS<ComplexScalarField<ComplexPotential>>(
+                           scalar_field, ccz4_params, dx, sigma,
+                           CCZ4RHS<>::USE_BSSN, G_Newton),
+                       fixedbg_fab, rhs_fab);
 
         // Calculate the Matter RHS using the analytic derivatives
         FixedBGComplexScalarField<ComplexPotential> fixed_scalar_field(

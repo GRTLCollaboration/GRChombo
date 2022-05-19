@@ -42,7 +42,7 @@ int main()
 
     int failed = 0;
     const bool debug_plots_on = false; // true; // false;
-    const int num_resolutions = 2;
+    const int num_resolutions = 0;
 
     // setup a vector of norms for checking convergence
     std::array<std::array<double, NUM_VARS>, num_resolutions> error_norms;
