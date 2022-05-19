@@ -15,10 +15,12 @@ CatalystAdaptor::CatalystAdaptor(
     GRAMR *a_gr_amr_ptr, const std::vector<std::string> &a_python_scripts,
     const std::string &a_output_path,
     const std::vector<std::pair<int, VariableType>> &a_vars,
-    bool a_abort_on_catalyst_error, bool a_remove_ghosts, int a_verbosity)
+    bool a_abort_on_catalyst_error, bool a_remove_ghosts, bool a_write_files,
+    int a_verbosity)
 {
     initialise(a_gr_amr_ptr, a_python_scripts, a_output_path, a_vars,
-               a_abort_on_catalyst_error, a_remove_ghosts, a_verbosity);
+               a_abort_on_catalyst_error, a_remove_ghosts, a_write_files,
+               a_verbosity);
 }
 
 CatalystAdaptor::~CatalystAdaptor()
@@ -33,7 +35,8 @@ void CatalystAdaptor::initialise(
     GRAMR *a_gr_amr_ptr, const std::vector<std::string> &a_python_scripts,
     const std::string &a_output_path,
     const std::vector<std::pair<int, VariableType>> &a_vars,
-    bool a_abort_on_catalyst_error, bool a_remove_ghosts, int a_verbosity)
+    bool a_abort_on_catalyst_error, bool a_remove_ghosts, bool a_write_files,
+    int a_verbosity)
 {
     // don't initalise twice
     if (m_initialised)
@@ -53,6 +56,7 @@ void CatalystAdaptor::initialise(
     m_requested_diagnostic_vars.fill(false);
     m_abort_on_catalyst_error = a_abort_on_catalyst_error;
     m_remove_ghosts = a_remove_ghosts;
+    m_write_files = a_write_files;
 
     // Initialise VTK CP Processor
     if (!m_proc_ptr)
@@ -415,6 +419,23 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
     }
 }
 
+void CatalystAdaptor::write_vtk_grid(unsigned int a_timestep)
+{
+    vtkNew<vtkXMLPUniformGridAMRWriter> file_writer;
+
+    // make filename
+    char timestep_cstr[7];
+    std::sprintf(timestep_cstr, "%06d.", a_timestep);
+    std::string filename = m_base_file_name;
+    filename += timestep_cstr;
+    filename += file_writer->GetDefaultFileExtension();
+
+    // set data and write
+    file_writer->SetInputData(m_vtk_grid_ptr);
+    file_writer->SetFileName(filename.c_str());
+    file_writer->Write();
+}
+
 void CatalystAdaptor::coprocess(double a_time, unsigned int a_timestep)
 {
     pout() << "CatalystAdaptor::coprocess at time " << a_time << " and step "
@@ -430,6 +451,11 @@ void CatalystAdaptor::coprocess(double a_time, unsigned int a_timestep)
         auto input_data_description =
             data_description->GetInputDescriptionByName("input");
         add_vars(input_data_description);
+
+        if (m_write_files)
+        {
+            write_vtk_grid(a_timestep);
+        }
         // vtkNew<vtkOverlappingAMR> stripped_vtk_grid;
         // vtkAMRUtilities::StripGhostLayers(m_vtk_grid_ptr, stripped_vtk_grid);
         input_data_description->SetGrid(m_vtk_grid_ptr);

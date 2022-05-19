@@ -68,7 +68,8 @@ void GRAMR::setup_catalyst(
     bool a_activate_catalyst, const std::vector<std::string> &a_python_scripts,
     const std::string &a_output_path,
     const std::vector<std::pair<int, VariableType>> &a_vars,
-    bool a_abort_on_catalyst_error, bool a_remove_ghosts, int a_verbosity)
+    bool a_abort_on_catalyst_error, bool a_remove_ghosts, bool a_write_files,
+    int a_verbosity)
 {
     m_activate_catalyst = a_activate_catalyst;
     if (m_activate_catalyst)
@@ -77,7 +78,7 @@ void GRAMR::setup_catalyst(
         m_insitu = new CatalystAdaptor;
         m_insitu->initialise(this, a_python_scripts, a_output_path, a_vars,
                              a_abort_on_catalyst_error, a_remove_ghosts,
-                             a_verbosity);
+                             a_write_files, a_verbosity);
     }
 }
 #endif

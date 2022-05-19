@@ -30,6 +30,7 @@
 #include <vtkNew.h>
 #include <vtkOverlappingAMR.h>
 #include <vtkUniformGrid.h>
+#include <vtkXMLPUniformGridAMRWriter.h>
 
 // Chombo namespace
 #include "UsingNamespace.H"
@@ -50,7 +51,7 @@ class CatalystAdaptor
                     const std::string &a_output_path,
                     const std::vector<std::pair<int, VariableType>> &a_vars,
                     bool a_abort_on_catalyst_error, bool a_remove_ghosts,
-                    int a_verbosity);
+                    bool a_write_files, int a_verbosity);
 
     // destructor
     ~CatalystAdaptor();
@@ -61,7 +62,7 @@ class CatalystAdaptor
                     const std::string &a_output_path,
                     const std::vector<std::pair<int, VariableType>> &a_vars,
                     bool a_abort_on_catalyst_error, bool a_remove_ghosts,
-                    int a_verbosity);
+                    bool a_write_files, int a_verbosity);
     void finalise();
 
     // do Catalyst processing
@@ -78,6 +79,9 @@ class CatalystAdaptor
 
     // send variables to catalyst
     void add_vars(vtkCPInputDataDescription *a_input_data_desc);
+
+    // write VTK grid to a file
+    void write_vtk_grid(unsigned int a_timestep);
 
     // directly passes the FAB pointer to the VTK array
     vtkDoubleArray *fab_to_vtk_array(FArrayBox &a_fab, int a_var,
@@ -98,6 +102,10 @@ class CatalystAdaptor
     bool m_abort_on_catalyst_error = false;
     bool m_remove_ghosts = false;
     GRAMR *m_gr_amr_ptr = nullptr;
+
+    // file writing parameters
+    bool m_write_files = false;
+    std::string m_base_file_name = "Catalyst_VTK_grid_";
 
     // variables to pass to Catalyst set by GRChombo parameter
     std::vector<std::pair<int, VariableType>> m_vars;

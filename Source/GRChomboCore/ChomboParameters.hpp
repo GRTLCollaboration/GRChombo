@@ -163,6 +163,7 @@ class ChomboParameters
                 num_catalyst_vars);
             pp.load("abort_on_catalyst_error", abort_on_catalyst_error, false);
             pp.load("catalyst_remove_ghosts", catalyst_remove_ghosts, false);
+            pp.load("catalyst_write_files", catalyst_write_files, false);
         }
 #endif
     }
@@ -602,6 +603,8 @@ class ChomboParameters
     std::vector<std::pair<int, VariableType>> catalyst_vars;
     bool abort_on_catalyst_error;
     bool catalyst_remove_ghosts;
+    // write VTK XML files from data passed to Catalyst
+    bool catalyst_write_files;
 #endif
 
   protected:
