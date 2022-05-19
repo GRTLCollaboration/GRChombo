@@ -82,7 +82,6 @@ class BoostedBHFixedBG
 
         // work out where we are on the grid including effect of boost
         // on x direction (length contraction)
-        const data_t x = coords.x;
         const data_t x_p = coords.x * boost;
         const double y = coords.y;
         const double z = coords.z;
@@ -189,11 +188,8 @@ class BoostedBHFixedBG
         const data_t r2 = x_p * x_p + x[1] * x[1] + x[2] * x[2];
         const data_t r = sqrt(r2);
 
-        // find the H, A, B metric quantities
+        // find H
         const data_t H = 0.5 * M / r;
-        const data_t sqrtA = (1.0 - H) / (1.0 + H);
-        const data_t A = sqrtA * sqrtA;
-        const data_t B = pow(1.0 + H, 4.0);
 
         using namespace TensorAlgebra;
         // derivatives of r wrt actual grid coords
