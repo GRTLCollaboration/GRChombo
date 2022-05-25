@@ -11,16 +11,9 @@
 
 CatalystAdaptor::CatalystAdaptor() {}
 
-CatalystAdaptor::CatalystAdaptor(
-    GRAMR *a_gr_amr_ptr, const std::vector<std::string> &a_python_scripts,
-    const std::string &a_output_path,
-    const std::vector<std::pair<int, VariableType>> &a_vars,
-    bool a_abort_on_catalyst_error, bool a_remove_ghosts, bool a_write_files,
-    int a_verbosity)
+CatalystAdaptor::CatalystAdaptor(GRAMR *a_gr_amr_ptr, const params_t &a_params)
 {
-    initialise(a_gr_amr_ptr, a_python_scripts, a_output_path, a_vars,
-               a_abort_on_catalyst_error, a_remove_ghosts, a_write_files,
-               a_verbosity);
+    initialise(a_gr_amr_ptr, a_params);
 }
 
 CatalystAdaptor::~CatalystAdaptor()
@@ -31,12 +24,7 @@ CatalystAdaptor::~CatalystAdaptor()
     }
 }
 
-void CatalystAdaptor::initialise(
-    GRAMR *a_gr_amr_ptr, const std::vector<std::string> &a_python_scripts,
-    const std::string &a_output_path,
-    const std::vector<std::pair<int, VariableType>> &a_vars,
-    bool a_abort_on_catalyst_error, bool a_remove_ghosts, bool a_write_files,
-    int a_verbosity)
+void CatalystAdaptor::initialise(GRAMR *a_gr_amr_ptr, const params_t &a_params)
 {
     // don't initalise twice
     if (m_initialised)
@@ -51,26 +39,23 @@ void CatalystAdaptor::initialise(
         return;
     }
     m_gr_amr_ptr = a_gr_amr_ptr;
-    m_vars = a_vars;
+    m_p = a_params;
     m_requested_evolution_vars.fill(false);
     m_requested_diagnostic_vars.fill(false);
-    m_abort_on_catalyst_error = a_abort_on_catalyst_error;
-    m_remove_ghosts = a_remove_ghosts;
-    m_write_files = a_write_files;
 
     // Initialise VTK CP Processor
     if (!m_proc_ptr)
     {
         m_proc_ptr = vtkCPProcessor::New();
         int m_proc_ptr_initialization_success;
-        if (a_output_path.empty())
+        if (m_p.output_path.empty())
         {
             m_proc_ptr_initialization_success = m_proc_ptr->Initialize();
         }
         else
         {
             m_proc_ptr_initialization_success =
-                m_proc_ptr->Initialize(a_output_path.c_str());
+                m_proc_ptr->Initialize(m_p.output_path.c_str());
         }
         std::string error_msg = "Failed to initialize vtkCPProcessor in "
                                 "CatalystAdaptor::initialise";
@@ -82,7 +67,7 @@ void CatalystAdaptor::initialise(
     }
 
     // Create Python script pipeline and add it to the VTK CP Processor
-    for (const std::string &script : a_python_scripts)
+    for (const std::string &script : m_p.python_scripts)
     {
 #if PARAVIEW_VERSION_HERE >= PARAVIEW_VERSION_TEST(5, 9, 0)
         auto pipeline =
@@ -104,8 +89,6 @@ void CatalystAdaptor::initialise(
         catalyst_error_or_warning(add_pipeline_success, add_pipeline_fail_msg);
     }
 
-    m_verbosity = a_verbosity;
-
     m_initialised = true;
 }
 
@@ -126,7 +109,7 @@ void CatalystAdaptor::finalise()
 
 void CatalystAdaptor::build_vtk_grid()
 {
-    if (m_verbosity)
+    if (m_p.verbosity)
     {
         pout() << "CatalystAdaptor::build_vtk_grid" << std::endl;
     }
@@ -156,7 +139,7 @@ void CatalystAdaptor::build_vtk_grid()
         gramrlevels[0]->getLevelData().ghostVect();
     const double coarsest_dx = gramrlevels[0]->get_dx();
     RealVect ghosted_origin_global_vect = coarsest_ghost_vect;
-    ghosted_origin_global_vect *= (!m_remove_ghosts) ? -coarsest_dx : 0;
+    ghosted_origin_global_vect *= (!m_p.remove_ghosts) ? -coarsest_dx : 0;
     m_vtk_grid_ptr->SetOrigin(ghosted_origin_global_vect.dataPtr());
 
     // now add all the boxes
@@ -193,7 +176,7 @@ void CatalystAdaptor::build_vtk_grid()
 
             // ghost_vect takes into account m_remove_ghosts
             const IntVect &ghost_vect =
-                (m_remove_ghosts) ? IntVect::Zero : level_data.ghostVect();
+                (m_p.remove_ghosts) ? IntVect::Zero : level_data.ghostVect();
             ghosted_box.grow(ghost_vect);
             const IntVect &small_ghosted_end = ghosted_box.smallEnd();
             const IntVect &big_ghosted_end = ghosted_box.bigEnd();
@@ -254,7 +237,7 @@ void CatalystAdaptor::build_vtk_grid()
 
 void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
 {
-    if (m_verbosity)
+    if (m_p.verbosity)
     {
         pout() << "CatalystAdaptor::add_vars" << std::endl
                << "CatalystAdaptor Requested variables: ";
@@ -264,15 +247,15 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
     {
         m_requested_evolution_vars[ivar] = a_input_data_desc->IsFieldNeeded(
             UserVariables::variable_names[ivar].c_str(), vtkDataObject::CELL);
-        if (m_vars.size() > 0)
+        if (m_p.vars.size() > 0)
         {
             bool pass_var =
-                !(std::find(m_vars.begin(), m_vars.end(),
+                !(std::find(m_p.vars.begin(), m_p.vars.end(),
                             std::make_pair(ivar, VariableType::evolution)) ==
-                  m_vars.end());
+                  m_p.vars.end());
             m_requested_evolution_vars[ivar] &= pass_var;
         }
-        if (m_verbosity && m_requested_evolution_vars[ivar])
+        if (m_p.verbosity && m_requested_evolution_vars[ivar])
             pout() << UserVariables::variable_names[ivar] << " ";
     }
     for (int ivar = 0; ivar < NUM_DIAGNOSTIC_VARS; ++ivar)
@@ -280,18 +263,18 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
         m_requested_diagnostic_vars[ivar] = a_input_data_desc->IsFieldNeeded(
             DiagnosticVariables::variable_names[ivar].c_str(),
             vtkDataObject::CELL);
-        if (m_vars.size() > 0)
+        if (m_p.vars.size() > 0)
         {
             bool pass_var =
-                !(std::find(m_vars.begin(), m_vars.end(),
+                !(std::find(m_p.vars.begin(), m_p.vars.end(),
                             std::make_pair(ivar, VariableType::diagnostic)) ==
-                  m_vars.end());
+                  m_p.vars.end());
             m_requested_diagnostic_vars[ivar] &= pass_var;
         }
-        if (m_verbosity && m_requested_diagnostic_vars[ivar])
+        if (m_p.verbosity && m_requested_diagnostic_vars[ivar])
             pout() << DiagnosticVariables::variable_names[ivar] << " ";
     }
-    if (m_verbosity)
+    if (m_p.verbosity)
         pout() << std::endl;
 
     vtkAMRInformation *amr_info = m_vtk_grid_ptr->GetAMRInfo();
@@ -378,7 +361,7 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
                     if (m_requested_evolution_vars[ivar])
                     {
                         vtkDoubleArray *vtk_double_arr;
-                        if (!m_remove_ghosts)
+                        if (!m_p.remove_ghosts)
                         {
                             vtk_double_arr = fab_to_vtk_array(
                                 evolution_fab, ivar,
@@ -399,7 +382,7 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
                     if (m_requested_diagnostic_vars[ivar])
                     {
                         vtkDoubleArray *vtk_double_arr;
-                        if (!m_remove_ghosts)
+                        if (!m_p.remove_ghosts)
                         {
                             vtk_double_arr = fab_to_vtk_array(
                                 diagnostic_fab, ivar,
@@ -427,7 +410,7 @@ void CatalystAdaptor::write_vtk_grid(unsigned int a_timestep)
     // make filename
     char timestep_cstr[7];
     std::sprintf(timestep_cstr, "%06d.", a_timestep);
-    std::string filename = m_base_file_name;
+    std::string filename = m_p.base_file_name;
     filename += timestep_cstr;
     filename += file_writer->GetDefaultFileExtension();
 
@@ -453,7 +436,7 @@ void CatalystAdaptor::coprocess(double a_time, unsigned int a_timestep)
             data_description->GetInputDescriptionByName("input");
         add_vars(input_data_description);
 
-        if (m_write_files)
+        if (m_p.write_files)
         {
             write_vtk_grid(a_timestep);
         }
@@ -526,7 +509,7 @@ void CatalystAdaptor::catalyst_error_or_warning(bool a_success,
     if (a_success)
         return;
 
-    if (m_abort_on_catalyst_error)
+    if (m_p.abort_on_error)
         MayDay::Error(a_msg.c_str());
     else
         MayDay::Warning(a_msg.c_str());

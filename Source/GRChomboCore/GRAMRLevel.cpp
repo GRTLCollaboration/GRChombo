@@ -194,7 +194,7 @@ void GRAMRLevel::postTimeStep()
 void GRAMRLevel::preCatalystCoProcess()
 {
     // If we're not passing ghosts to Catalyst, there's no point in filling them
-    if (m_p.catalyst_remove_ghosts)
+    if (m_p.catalyst_params.remove_ghosts)
         return;
 
     if (std::abs(m_time - m_restart_time) < m_gr_amr.timeEps())
@@ -243,7 +243,7 @@ void GRAMRLevel::preCatalystCoProcess()
 
 void GRAMRLevel::catalystCoProcess()
 {
-    if (m_p.activate_catalyst)
+    if (m_p.catalyst_activate)
     {
         if (at_level_timestep_multiple(m_p.catalyst_coprocess_level))
         {

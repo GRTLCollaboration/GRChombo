@@ -12,10 +12,11 @@
 #include <string>
 
 // Chombo includes
+#include "Box.H"
+#include "FArrayBox.H"
 #include "MayDay.H"
 
 // GRChombo includes
-#include "GRAMR.hpp"
 #include "UserVariables.hpp"
 
 // ParaView/VTK/Catalyst includes
@@ -42,27 +43,35 @@ class GRAMR;
 class CatalystAdaptor
 {
   public:
+    struct params_t
+    {
+        int verbosity;
+        bool abort_on_error = false;
+        bool remove_ghosts = false;
+
+        // Pipeline parameters
+        std::vector<std::string> python_scripts;
+        std::string output_path;
+
+        // VTK file writing parameters
+        bool write_files = false;
+        std::string base_file_name = "Catalyst_VTK_grid_";
+
+        // variables to pass to Catalyst set by GRChombo parameter
+        std::vector<std::pair<int, VariableType>> vars;
+    };
+
     // empty constructor (doesn't call initialise)
     CatalystAdaptor();
 
     // full constructor (calls initialise)
-    CatalystAdaptor(GRAMR *a_gr_amr_ptr,
-                    const std::vector<std::string> &a_python_scripts,
-                    const std::string &a_output_path,
-                    const std::vector<std::pair<int, VariableType>> &a_vars,
-                    bool a_abort_on_catalyst_error, bool a_remove_ghosts,
-                    bool a_write_files, int a_verbosity);
+    CatalystAdaptor(GRAMR *a_gr_amr_ptr, const params_t &a_params);
 
     // destructor
     ~CatalystAdaptor();
 
     // Initialisation/Finalisation
-    void initialise(GRAMR *m_gr_amr_ptr,
-                    const std::vector<std::string> &a_python_scripts,
-                    const std::string &a_output_path,
-                    const std::vector<std::pair<int, VariableType>> &a_vars,
-                    bool a_abort_on_catalyst_error, bool a_remove_ghosts,
-                    bool a_write_files, int a_verbosity);
+    void initialise(GRAMR *m_gr_amr_ptr, const params_t &a_params);
     void finalise();
 
     // do Catalyst processing
@@ -97,18 +106,10 @@ class CatalystAdaptor
     // m_abort_on_catalyst_error
     void catalyst_error_or_warning(bool a_success, std::string a_msg);
 
-    int m_verbosity;
-    bool m_initialised = false;
-    bool m_abort_on_catalyst_error = false;
-    bool m_remove_ghosts = false;
     GRAMR *m_gr_amr_ptr = nullptr;
+    bool m_initialised = false;
 
-    // file writing parameters
-    bool m_write_files = false;
-    std::string m_base_file_name = "Catalyst_VTK_grid_";
-
-    // variables to pass to Catalyst set by GRChombo parameter
-    std::vector<std::pair<int, VariableType>> m_vars;
+    params_t m_p;
 
     // variables actually passed to Catalyst on last CoProcess
     std::array<bool, NUM_VARS> m_requested_evolution_vars;

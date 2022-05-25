@@ -233,19 +233,15 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     }
     vtkLogger::LogToFile(
         catalyst_log_file.c_str(), vtk_logger_file_mode,
-        vtkLogger::ConvertToVerbosity(chombo_params.catalyst_verbosity));
+        vtkLogger::ConvertToVerbosity(chombo_params.catalyst_params.verbosity));
     // Only write VTK stderr messages if there is an error
 #else
     vtkLogger::SetStderrVerbosity(
         static_cast<vtkLogger::Verbosity>(chombo_params.verbosity));
 #endif
     vtkLogger::Init();
-    gr_amr.setup_catalyst(
-        chombo_params.activate_catalyst, chombo_params.catalyst_scripts,
-        chombo_params.output_path, chombo_params.catalyst_vars,
-        chombo_params.abort_on_catalyst_error,
-        chombo_params.catalyst_remove_ghosts,
-        chombo_params.catalyst_write_files, chombo_params.catalyst_verbosity);
+    gr_amr.setup_catalyst(chombo_params.catalyst_activate,
+                          chombo_params.catalyst_params);
 #endif
 }
 

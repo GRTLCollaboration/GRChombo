@@ -132,38 +132,54 @@ class ChomboParameters
                 false);
 
 #ifdef USE_CATALYST
-        pp.load("activate_catalyst", activate_catalyst, false);
-        if (activate_catalyst)
+        pp.load("catalyst_activate", catalyst_activate, false);
+        if (catalyst_activate)
         {
-            pp.load("catalyst_verbosity", catalyst_verbosity, verbosity);
+            pp.load("catalyst_verbosity", catalyst_params.verbosity, verbosity);
             pp.load("catalyst_pout_prefix", catalyst_pout_prefix,
                     std::string("catalyst_pout"));
             pp.load("catalyst_scripts_path", catalyst_scripts_path,
                     std::string());
-            pp.load("num_catalyst_scripts", num_catalyst_scripts, 1);
-            pp.load("catalyst_scripts", catalyst_scripts, num_catalyst_scripts);
-            // prepend the path to each script
+            pp.load("catalyst_num_scripts", catalyst_num_scripts, 1);
+            pp.load("catalyst_scripts", catalyst_params.python_scripts,
+                    catalyst_num_scripts);
+
+            // this is what the Catalyst working directory will be set to
+            // so extracts end up in the output_path
+            catalyst_params.output_path = output_path;
+
+            // prepend the PWD path to each script
             if (!catalyst_scripts_path.empty() &&
                 catalyst_scripts_path.back() != '/')
                 catalyst_scripts_path += "/";
-            // make each catalyst_script a full path so that Catalyst doesn't
-            // look in its working directory (set to output_path)
-            char cwd[4096];
-            getcwd(cwd, 4096);
-            std::string current_working_directory = cwd;
-            current_working_directory += "/";
-            for (auto &script : catalyst_scripts)
+            // make each catalyst_script a full path (if not already) so that
+            // Catalyst doesn't look in its working directory (set to
+            // output_path)
+            std::string prepend_directory = "";
+            if (catalyst_scripts_path.front() != '/') // not a full path
             {
-                script =
-                    current_working_directory + catalyst_scripts_path + script;
+                char cwd[4096];
+                getcwd(cwd, 4096);
+                prepend_directory = cwd;
+                prepend_directory += "/";
             }
+            for (auto &script : catalyst_params.python_scripts)
+            {
+                if (script.front() != '/') // not a full path
+                {
+                    script = prepend_directory + catalyst_scripts_path + script;
+                }
+            }
+
             pp.load("catalyst_coprocess_level", catalyst_coprocess_level, 0);
             UserVariables::load_vars_to_vector(
-                pp, "catalyst_vars", "num_catalyst_vars", catalyst_vars,
-                num_catalyst_vars);
-            pp.load("abort_on_catalyst_error", abort_on_catalyst_error, false);
-            pp.load("catalyst_remove_ghosts", catalyst_remove_ghosts, false);
-            pp.load("catalyst_write_files", catalyst_write_files, false);
+                pp, "catalyst_vars", "catalyst_num_vars", catalyst_params.vars,
+                catalyst_num_vars);
+            pp.load("catalyst_abort_on_error", catalyst_params.abort_on_error,
+                    false);
+            pp.load("catalyst_remove_ghosts", catalyst_params.remove_ghosts,
+                    false);
+            pp.load("catalyst_write_files", catalyst_params.write_files, false);
         }
 #endif
     }
@@ -506,11 +522,13 @@ class ChomboParameters
         }
 
 #ifdef USE_CATALYST
-        if (activate_catalyst)
+        if (catalyst_activate)
         {
-            for (int iscript = 0; iscript < catalyst_scripts.size(); ++iscript)
+            for (int iscript = 0;
+                 iscript < catalyst_params.python_scripts.size(); ++iscript)
             {
-                const std::string &script = catalyst_scripts[iscript];
+                const std::string &script =
+                    catalyst_params.python_scripts[iscript];
                 bool script_exists = (access(script.c_str(), R_OK) == 0);
                 const std::string script_parameter_name =
                     "catalyst_scripts[" + std::to_string(iscript) + "]";
@@ -586,25 +604,20 @@ class ChomboParameters
     bool print_progress_only_to_rank_0;
 
 #ifdef USE_CATALYST
-    bool activate_catalyst;
-    int catalyst_verbosity;
+    bool catalyst_activate;
     // prefix of filename for Catalyst log output (appended by .<rank>)
     // file will be in pout_path
     std::string catalyst_pout_prefix;
     // ignores output_path
     std::string catalyst_scripts_path;
-    int num_catalyst_scripts;
-    std::vector<std::string> catalyst_scripts;
+    int catalyst_num_scripts;
     int catalyst_coprocess_level;
     // variables to pass to Catalyst
     // only restricts vars if num_catalyst_vars > 0, otherwise all requested
     // are passed
-    int num_catalyst_vars;
-    std::vector<std::pair<int, VariableType>> catalyst_vars;
-    bool abort_on_catalyst_error;
-    bool catalyst_remove_ghosts;
-    // write VTK XML files from data passed to Catalyst
-    bool catalyst_write_files;
+    int catalyst_num_vars;
+
+    CatalystAdaptor::params_t catalyst_params;
 #endif
 
   protected:

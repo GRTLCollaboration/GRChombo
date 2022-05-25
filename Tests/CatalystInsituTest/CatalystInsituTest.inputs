@@ -27,18 +27,18 @@ lo_boundary = 0 0 0
 #################################################
 # ParaView Catalyst parameters
 
-activate_catalyst = true
+catalyst_activate = true
 catalyst_verbosity = 10
 # catalyst_pout_prefix = catalyst_pout
 # path to directory containing catalyst scripts
 # catalyst_scripts_path = catalyst_scripts
-num_catalyst_scripts = 1
+catalyst_num_scripts = 1
 # list of Catalyst scripts
 catalyst_scripts = slice_A_v1.py # slice_A_v2.py
 catalyst_coprocess_level = 0
-# num_catalyst_vars = 1
+# catalyst_num_vars = 1
 # catalyst_vars = A
-abort_on_catalyst_error = true
+catalyst_abort_on_error = true
 
 # Test parameters
 error_threshold = 0.15 # arbitrary threshold but this is what VTK tests use

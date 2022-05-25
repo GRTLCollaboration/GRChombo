@@ -38,9 +38,6 @@ class GRAMRLevel;
 // Forward declaration for AMRInterpolator
 template <typename InterpAlgo> class AMRInterpolator;
 
-// Forward declaration for CatalystAdaptor
-class CatalystAdaptor;
-
 class GRAMR : public AMR
 {
   private:
@@ -83,16 +80,12 @@ class GRAMR : public AMR
         const int a_max_level = std::numeric_limits<int>::max()) const;
 
 #ifdef USE_CATALYST
-    void setup_catalyst(bool a_activate_catalyst,
-                        const std::vector<std::string> &a_python_scripts,
-                        const std::string &a_output_path,
-                        const std::vector<std::pair<int, VariableType>> &a_vars,
-                        bool a_abort_on_catalyst_error, bool a_remove_ghosts,
-                        bool a_write_files, int a_verbosity);
+    void setup_catalyst(bool a_catalyst_activate,
+                        const CatalystAdaptor::params_t &a_catalyst_params);
 #endif
 
 #ifdef USE_CATALYST
-    bool m_activate_catalyst = false;
+    bool m_catalyst_activate = false;
     CatalystAdaptor *m_insitu;
 #endif
 };

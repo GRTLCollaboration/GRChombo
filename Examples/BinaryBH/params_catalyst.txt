@@ -184,15 +184,15 @@ modes = 2 0 # l m for spherical harmonics
 #################################################
 # ParaView Catalyst parameters
 
-activate_catalyst = true
+catalyst_activate = true
 catalyst_verbosity = 2
 # catalyst_pout_prefix = catalyst_pout
 # path to directory containing catalyst scripts
 catalyst_scripts_path = catalyst_scripts
-num_catalyst_scripts = 1
+catalyst_num_scripts = 1
 # list of Catalyst scripts
 catalyst_scripts = volume_raytrace_resample_chi.py
 catalyst_coprocess_level = 1
-num_catalyst_vars = 1
+catalyst_num_vars = 1
 catalyst_vars = chi
-abort_on_catalyst_error = true
+catalyst_abort_on_error = true

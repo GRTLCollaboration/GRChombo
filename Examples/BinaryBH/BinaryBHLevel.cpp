@@ -140,7 +140,7 @@ void BinaryBHLevel::specificPostTimeStep()
 
     if (m_p.activate_extraction
 #ifdef USE_CATALYST
-        || m_p.activate_catalyst
+        || m_p.catalyst_activate
 #endif
     )
     {
@@ -150,7 +150,7 @@ void BinaryBHLevel::specificPostTimeStep()
         bool calculate_weyl = at_level_timestep_multiple(min_level);
 #ifdef USE_CATALYST
         calculate_weyl |=
-            (m_p.activate_catalyst &&
+            (m_p.catalyst_activate &&
              at_level_timestep_multiple(m_p.catalyst_coprocess_level));
 #endif
         if (calculate_weyl)
