@@ -19,6 +19,7 @@
 // General includes:
 #include <algorithm>
 #include <cmath>
+#include <unistd.h>
 
 #include "GRAMR.hpp"
 
@@ -55,6 +56,12 @@ int runInsituTest(int argc, char *argv[])
     GRParmParse pp(0, argv + argc, NULL, in_file);
     SimulationParameters sim_params(pp);
 
+    // Get the modified time of the generated PNG now to check it's changed by
+    // Catalyst
+    struct stat generated_png_file_stat_before;
+    stat(sim_params.generated_png_file.c_str(),
+         &generated_png_file_stat_before);
+
     GRAMR gr_amr;
     DefaultLevelFactory<InsituTestLevel> insitu_test_level_factory(gr_amr,
                                                                    sim_params);
@@ -71,6 +78,13 @@ int runInsituTest(int argc, char *argv[])
     call_task.execute(gr_amr);
     gr_amr.run(sim_params.stop_time, sim_params.max_steps);
     gr_amr.conclude();
+
+    // Check that the generated PNG was modified after time_before
+    struct stat generated_png_file_stat_after;
+    stat(sim_params.generated_png_file.c_str(), &generated_png_file_stat_after);
+    if (generated_png_file_stat_before.st_mtim.tv_nsec >=
+        generated_png_file_stat_after.st_mtim.tv_nsec)
+        return 2;
 
     // read the newly generated PNG and the expected PNG
     vtkNew<vtkPNGReader> generated_png_reader;
@@ -115,6 +129,11 @@ int main(int argc, char *argv[])
     else if (status == -2)
     {
         pout() << "Catalyst Insitu test skipped (ParaView version < 5.9)."
+               << std::endl;
+    }
+    else if (status == 2)
+    {
+        pout() << "Catalyst Insitu test failed (extracted PNG not modified)."
                << std::endl;
     }
     else
