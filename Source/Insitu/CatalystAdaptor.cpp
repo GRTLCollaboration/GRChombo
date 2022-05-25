@@ -410,7 +410,7 @@ void CatalystAdaptor::write_vtk_grid(unsigned int a_timestep)
     // make filename
     char timestep_cstr[7];
     std::sprintf(timestep_cstr, "%06d.", a_timestep);
-    std::string filename = m_p.base_file_name;
+    std::string filename = m_p.vtk_file_prefix;
     filename += timestep_cstr;
     filename += file_writer->GetDefaultFileExtension();
 
@@ -436,7 +436,7 @@ void CatalystAdaptor::coprocess(double a_time, unsigned int a_timestep)
             data_description->GetInputDescriptionByName("input");
         add_vars(input_data_description);
 
-        if (m_p.write_files)
+        if (m_p.write_vtk_files)
         {
             write_vtk_grid(a_timestep);
         }

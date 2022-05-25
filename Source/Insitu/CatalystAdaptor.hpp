@@ -54,8 +54,8 @@ class CatalystAdaptor
         std::string output_path;
 
         // VTK file writing parameters
-        bool write_files = false;
-        std::string base_file_name = "Catalyst_VTK_grid_";
+        bool write_vtk_files = false;
+        std::string vtk_file_prefix = "Catalyst_VTK_grid_";
 
         // variables to pass to Catalyst set by GRChombo parameter
         std::vector<std::pair<int, VariableType>> vars;

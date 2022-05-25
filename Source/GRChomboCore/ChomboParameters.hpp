@@ -179,7 +179,10 @@ class ChomboParameters
                     false);
             pp.load("catalyst_remove_ghosts", catalyst_params.remove_ghosts,
                     false);
-            pp.load("catalyst_write_files", catalyst_params.write_files, false);
+            pp.load("catalyst_write_vtk_files", catalyst_params.write_vtk_files,
+                    false);
+            pp.load("catlyst_vtk_file_prefix", catalyst_params.vtk_file_prefix,
+                    std::string("Catalyst_VTK_"));
         }
 #endif
     }
