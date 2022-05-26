@@ -80,3 +80,11 @@ jobs:
     - name: Run Catalyst Insitu test
       run: make run
       working-directory: ${{ github.workspace }}/GRChombo/Tests/CatalystInsituTest
+      
+    - name: Upload output files if test failed
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: CatalystInsituTest-pouts
+        path: ${{ github.workspace }}/GRChombo/Tests/CatalystInsituTest/pout.*
+        if-no-files-found: warn

@@ -19,6 +19,7 @@
 // General includes:
 #include <algorithm>
 #include <cmath>
+#include <ctime>
 #include <unistd.h>
 
 #include "GRAMR.hpp"
@@ -44,6 +45,16 @@
 #include "UsingNamespace.H"
 
 #ifdef USE_CATALYST
+
+// A simple function to compare two timespecs
+bool operator<=(const timespec &lhs, const timespec &rhs)
+{
+    if (lhs.tv_sec == rhs.tv_sec)
+        return lhs.tv_nsec <= rhs.tv_nsec;
+    else
+        return lhs.tv_sec <= rhs.tv_sec;
+}
+
 int runInsituTest(int argc, char *argv[])
 {
     int status = 0;
@@ -82,9 +93,16 @@ int runInsituTest(int argc, char *argv[])
     // Check that the generated PNG was modified after time_before
     struct stat generated_png_file_stat_after;
     stat(sim_params.generated_png_file.c_str(), &generated_png_file_stat_after);
-    if (generated_png_file_stat_before.st_mtim.tv_nsec >=
-        generated_png_file_stat_after.st_mtim.tv_nsec)
+
+    if (generated_png_file_stat_after.st_mtim <=
+        generated_png_file_stat_before.st_mtim)
+    {
+        pout() << "Extract modification time before:  "
+               << std::ctime(&generated_png_file_stat_before.st_mtim.tv_sec);
+        pout() << "Extract modification time after: "
+               << std::ctime(&generated_png_file_stat_after.st_mtim.tv_sec);
         return 2;
+    }
 
     // read the newly generated PNG and the expected PNG
     vtkNew<vtkPNGReader> generated_png_reader;
