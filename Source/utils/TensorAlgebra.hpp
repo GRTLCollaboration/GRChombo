@@ -18,6 +18,16 @@ template <class data_t> struct chris_t
     Tensor<1, data_t> contracted; //!< contracted christoffel
 };
 
+//! A structure for the decomposed elements of the Energy Momentum Tensor in
+//! 3+1D
+template <class data_t> struct emtensor_t
+{
+    Tensor<2, data_t> Sij; //!< S_ij = T_ij
+    Tensor<1, data_t> Si;  //!< S_i = T_ia_n^a
+    data_t S;              //!< S = S^i_i
+    data_t rho;            //!< rho = T_ab n^a n^b
+};
+
 namespace TensorAlgebra
 {
 /// Computes determinant of a symmetric 3x3 matrix
@@ -332,6 +342,7 @@ Tensor<3, data_t> compute_phys_chris(const Tensor<1, data_t> &d1_chi,
     }
     return chris_phys;
 }
+
 } // namespace TensorAlgebra
 
 #endif /* TENSORALGEBRA_HPP_ */

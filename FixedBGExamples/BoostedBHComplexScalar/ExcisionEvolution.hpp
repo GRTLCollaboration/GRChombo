@@ -6,7 +6,6 @@
 #ifndef EXCISIONEVOLUTION_HPP_
 #define EXCISIONEVOLUTION_HPP_
 
-#include "CCZ4Geometry.hpp"
 #include "Cell.hpp"
 #include "Coordinates.hpp"
 #include "GRInterval.hpp"

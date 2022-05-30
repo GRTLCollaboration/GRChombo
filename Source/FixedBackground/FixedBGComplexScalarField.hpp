@@ -7,7 +7,6 @@
 #define FIXEDBGCOMPLEXSCALARFIELD_HPP_
 
 #include "ADMFixedBGVars.hpp"
-#include "CCZ4Geometry.hpp"
 #include "DefaultPotential.hpp"
 #include "DimensionDefinitions.hpp"
 #include "FourthOrderDerivatives.hpp"

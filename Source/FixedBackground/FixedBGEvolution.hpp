@@ -7,7 +7,6 @@
 #define FIXEDBGEVOLUTION_HPP_
 
 #include "ADMFixedBGVars.hpp"
-#include "CCZ4Geometry.hpp"
 #include "Cell.hpp"
 #include "Coordinates.hpp"
 #include "FourthOrderDerivatives.hpp"

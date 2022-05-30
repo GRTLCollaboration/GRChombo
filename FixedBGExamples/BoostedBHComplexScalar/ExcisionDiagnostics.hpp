@@ -6,7 +6,6 @@
 #ifndef EXCISIONDIAGNOSTICS_HPP_
 #define EXCISIONDIAGNOSTICS_HPP_
 
-#include "CCZ4Geometry.hpp"
 #include "Cell.hpp"
 #include "Coordinates.hpp"
 #include "GRInterval.hpp"

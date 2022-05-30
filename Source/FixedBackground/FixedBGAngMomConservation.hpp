@@ -7,7 +7,6 @@
 #define FIXEDBGANGMOMCONSERVATION_HPP_
 
 #include "ADMFixedBGVars.hpp"
-#include "CCZ4Geometry.hpp"
 #include "Cell.hpp"
 #include "CoordinateTransformations.hpp"
 #include "Coordinates.hpp"
