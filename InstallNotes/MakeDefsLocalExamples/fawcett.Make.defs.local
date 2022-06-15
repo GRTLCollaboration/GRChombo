@@ -1,0 +1,25 @@
+DIM            ?= 3
+DEBUG          = FALSE
+OPT            = HIGH
+PRECISION      = DOUBLE
+PROFILE        = FALSE
+CXX            = icpx
+FC             = ifort
+MPI            = TRUE
+OPENMPCC       = TRUE
+MPICXX         = mpiicpc -cxx=icpx
+XTRACONFIG     = .ICPX2022.0
+XTRACPPFLAGS   = -DUSE_AHFINDER
+USE_64         = TRUE
+USE_HDF        = TRUE
+HDFINCFLAGS    = -I${HDF5_ROOT}/include
+HDFLIBFLAGS    = -L${HDF5_ROOT}/lib -lhdf5 -lz
+HDFMPIINCFLAGS = -I${HDF5_ROOT}/include
+HDFMPILIBFLAGS = -L${HDF5_ROOT}/lib -lhdf5 -lz
+NAMESPACE      = TRUE
+cxxdbgflags    = -g
+cxxoptflags    = -g -O3 -fp-model=fast -xCOMMON-AVX512
+fdbgflags      = -g
+foptflags      = -g -O3 -fp-model=fast -xCOMMON-AVX512
+syslibflags    = -qmkl=sequential -lpetsc
+RUN            = mpirun -bootstrap ssh -n 2 ./
