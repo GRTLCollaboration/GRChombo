@@ -11,12 +11,12 @@ MPICXX         = mpiicpc
 HDFINCFLAGS    = -I${HDF5_HOME}/include
 HDFLIBFLAGS    = -L${HDF5_HOME}/lib -lhdf5 -lz
 HDFMPIINCFLAGS = -I${HDF5_HOME}/include
-HDFMPILIBFLAGS = -Wl,-rpath,${HDF5_HOME}/lib -L${HDF5_HOME}/lib -lhdf5 -lz
-#HDFMPILIBFLAGS = -L${HDF5_HOME}/lib -lhdf5 -lz
+HDFMPILIBFLAGS = -Wl,-rpath=${HDF5_HOME}/lib -L${HDF5_HOME}/lib -lhdf5 -lz
 NAMESPACE      = TRUE
 cxxdbgflags    = -g
-cxxoptflags    = -g -ipo -O3 -fp-model fast=2 -no-prec-div -march=core-avx2
+cxxoptflags    = -g ${COSMA_8_OPT} -ipo -fp-model fast=2 -no-prec-div
 fdbgflags      = -g
-foptflags      = -g -O3 -fp-model fast=2 -no-prec-div  -march=core-avx2
-syslibflags    = -qmkl=sequential
+foptflags      = -g ${COSMA_8_OPT} -fp-model fast=2 -no-prec-div
+ldoptflags     = -diag-disable=11003 # disable warning about no IPO for Fortran files
+syslibflags    = -qmkl=sequential -Wl,-rpath=${GNUROOT}/lib64
 XTRACONFIG     = .COSMA8.Intel2022
