@@ -6,6 +6,7 @@ if [[ $(hostname) != *"-q-"* ]]; then
 	echo "These modules will only work on an Icelake (Rocky Linux 8) node." 1>&2
 	echo "See https://docs.hpc.cam.ac.uk/hpc/user-guide/connecting.html"
 	echo "Not loading anything..." 1>&2
+	return 1
 fi
 
 # This should already be loaded but load anyway in case modules have been purged
