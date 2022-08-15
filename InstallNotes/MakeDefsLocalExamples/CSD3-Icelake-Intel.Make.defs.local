@@ -14,6 +14,8 @@ FC             = ifort
 MPI            = TRUE
 OPENMPCC       = TRUE
 MPICXX         = mpiicpc
+# Uncomment if using AHFinder
+# XTRACPPFLAGS   = -DUSE_AHFINDER
 XTRACONFIG     = .Icelake.Intel2021.6
 USE_64         = TRUE
 USE_HDF        = TRUE
@@ -29,4 +31,5 @@ cxxoptflags    = -g -ipo -qoverride-limits -no-prec-div -fp-model fast=2 -xICELA
 ldoptflags     = -diag-disable=11003
 fdbgflags      = -g
 foptflags      = -g -no-prec-div -fp-model fast=2 -xICELAKE-SERVER -qopt-zmm-usage=high
-syslibflags    = -qmkl=sequential
+# Uncomment end of next line if using AHFinder
+syslibflags    = -qmkl=sequential #-lpetsc

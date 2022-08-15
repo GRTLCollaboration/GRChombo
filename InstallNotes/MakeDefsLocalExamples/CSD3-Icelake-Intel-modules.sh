@@ -14,3 +14,9 @@ module load rhel8/default-icl # loads Intel compiler and MPI
 
 module load intel-oneapi-mkl/2022.1.0/intel/mngj3ad6
 module load hdf5/1.10.8/intel/intel-oneapi-mpi/h75adcal
+
+# Uncomment if using AHFinder
+#module load petsc/3.17-icl
+
+# Uncomment if using TwoPunctures
+#module load gsl/2.7.1/gcc/cjb5f4ui
