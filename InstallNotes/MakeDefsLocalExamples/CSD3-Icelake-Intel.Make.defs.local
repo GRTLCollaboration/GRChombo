@@ -1,0 +1,35 @@
+# Use this with the following modules
+# intel-oneapi-compilers/2022.1.0/gcc/b6zld2mz (loaded by default with the rhel8/default-icl module
+# intel-oneapi-mpi/2021.6.0/intel/guxuvcpm (loaded by default with the rhel8/default-icl module)
+# intel-oneapi-mkl/2022.1.0/intel/mngj3ad6
+# hdf5/1.10.8/intel/intel-oneapi-mpi/h75adcal
+
+DIM            ?= 3
+DEBUG          = FALSE
+OPT            = HIGH
+PRECISION      = DOUBLE
+PROFILE        = FALSE
+CXX            = icpc
+FC             = ifort
+MPI            = TRUE
+OPENMPCC       = TRUE
+MPICXX         = mpiicpc
+# Uncomment if using AHFinder
+# XTRACPPFLAGS   = -DUSE_AHFINDER
+XTRACONFIG     = .Icelake.Intel2021.6
+USE_64         = TRUE
+USE_HDF        = TRUE
+HDF5_PATH      = `pkg-config --variable=prefix hdf5`
+HDFINCFLAGS    = -I${HDF5_PATH}/include
+HDFLIBFLAGS    = -L${HDF5_PATH}/lib -lhdf5 -lz
+HDFMPIINCFLAGS = -I${HDF5_PATH}/include
+HDFMPILIBFLAGS = -L${HDF5_PATH}/lib -lhdf5 -lz
+NAMESPACE      = TRUE
+USE_MT         = FALSE
+cxxdbgflags    = -g
+cxxoptflags    = -g -ipo -qoverride-limits -no-prec-div -fp-model fast=2 -xICELAKE-SERVER -qopt-zmm-usage=high
+ldoptflags     = -diag-disable=11003
+fdbgflags      = -g
+foptflags      = -g -no-prec-div -fp-model fast=2 -xICELAKE-SERVER -qopt-zmm-usage=high
+# Uncomment end of next line if using AHFinder
+syslibflags    = -qmkl=sequential #-lpetsc
