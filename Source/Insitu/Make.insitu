@@ -20,7 +20,7 @@ ifeq ($(USE_CATALYST),TRUE)
   # These components are correct in v5.9 and v5.10 but may differ in other 
   # versions. The paraview-config command may also change
   PARAVIEW_COMPONENT_FLAGS := -c PythonCatalyst ${XTRA_PARAVIEW_COMPONENT_FLAGS}
-  VTK_COMPONENT_FLAGS := -v CommonDataModel -v PythonUsed -v IOParallelXML ${XTRA_VTK_COMPONENT_FLAGS}
+  VTK_COMPONENT_FLAGS := -v CommonDataModel -v PythonUsed -v ParallelCore -v FiltersAMR -v IOParallelXML ${XTRA_VTK_COMPONENT_FLAGS}
   PARAVIEW_CONFIG_EXEC := $(PARAVIEW_DIR)/bin/paraview-config
   cxxcppflags += $(shell $(GRCHOMBO_SOURCE)/Insitu/cache.sh $(PARAVIEW_CONFIG_EXEC) --cppflags $(PARAVIEW_COMPONENT_FLAGS) $(VTK_COMPONENT_FLAGS))
   XTRALDFLAGS += -rdynamic $(shell $(GRCHOMBO_SOURCE)/Insitu/cache.sh $(PARAVIEW_CONFIG_EXEC) --ldflags $(PARAVIEW_COMPONENT_FLAGS) $(VTK_COMPONENT_FLAGS))

@@ -84,10 +84,11 @@ class CatalystAdaptor
 
   private:
     // update the AMR grid (no grid data)
-    void build_vtk_grid();
+    void build_vtk_grid(vtkOverlappingAMR *a_vtk_grid_ptr);
 
     // send variables to catalyst
-    void add_vars(vtkCPInputDataDescription *a_input_data_desc);
+    void add_vars(vtkCPInputDataDescription *a_input_data_desc,
+                  vtkOverlappingAMR *a_vtk_grid_ptr);
 
     // write VTK grid to a file
     void write_vtk_grid(unsigned int a_timestep);

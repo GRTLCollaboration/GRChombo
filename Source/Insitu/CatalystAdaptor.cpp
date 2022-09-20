@@ -6,6 +6,8 @@
 #include "CatalystAdaptor.hpp"
 #include "GRAMRLevel.hpp"
 #include "ParaviewVersion.hpp"
+#include "vtkMultiProcessController.h"
+#include "vtkParallelAMRUtilities.h"
 
 #ifdef USE_CATALYST
 
@@ -107,16 +109,16 @@ void CatalystAdaptor::finalise()
     m_initialised = false;
 }
 
-void CatalystAdaptor::build_vtk_grid()
+void CatalystAdaptor::build_vtk_grid(vtkOverlappingAMR *a_vtk_grid_ptr)
 {
     if (m_p.verbosity)
     {
         pout() << "CatalystAdaptor::build_vtk_grid" << std::endl;
     }
-    if (m_vtk_grid_ptr != nullptr)
-        m_vtk_grid_ptr->Delete();
+    if (a_vtk_grid_ptr != nullptr)
+        a_vtk_grid_ptr->Delete();
 
-    m_vtk_grid_ptr = vtkOverlappingAMR::New();
+    a_vtk_grid_ptr = vtkOverlappingAMR::New();
 
     const auto gramrlevels = m_gr_amr_ptr->get_gramrlevels();
 
@@ -131,7 +133,7 @@ void CatalystAdaptor::build_vtk_grid()
             level->getLevelData().disjointBoxLayout();
         boxes_per_level[ilevel] = level_box_layout.boxArray().size();
     }
-    m_vtk_grid_ptr->Initialize(num_levels, boxes_per_level);
+    a_vtk_grid_ptr->Initialize(num_levels, boxes_per_level);
 
     // The origin is always at (0, 0, 0) in Chombo
     double origin_global[3] = {0., 0., 0.};
@@ -140,7 +142,7 @@ void CatalystAdaptor::build_vtk_grid()
     const double coarsest_dx = gramrlevels[0]->get_dx();
     RealVect ghosted_origin_global_vect = coarsest_ghost_vect;
     ghosted_origin_global_vect *= (!m_p.remove_ghosts) ? -coarsest_dx : 0;
-    m_vtk_grid_ptr->SetOrigin(ghosted_origin_global_vect.dataPtr());
+    a_vtk_grid_ptr->SetOrigin(ghosted_origin_global_vect.dataPtr());
 
     // now add all the boxes
     for (int ilevel = 0; ilevel < num_levels; ++ilevel)
@@ -150,8 +152,8 @@ void CatalystAdaptor::build_vtk_grid()
         const GRAMRLevel *level = gramrlevels[ilevel];
         const double dx = level->get_dx();
         double dx_arr[3] = {dx, dx, dx};
-        m_vtk_grid_ptr->SetSpacing(ilevel, dx_arr);
-        m_vtk_grid_ptr->SetRefinementRatio(ilevel, level->refRatio());
+        a_vtk_grid_ptr->SetSpacing(ilevel, dx_arr);
+        a_vtk_grid_ptr->SetRefinementRatio(ilevel, level->refRatio());
         const GRLevelData &level_data = level->getLevelData();
         const DisjointBoxLayout &level_box_layout =
             level_data.disjointBoxLayout();
@@ -192,7 +194,7 @@ void CatalystAdaptor::build_vtk_grid()
                                   ghosted_origin_global_vect.dataPtr());
             // vtk_amr_box.Print(pout());
             // pout() << "\n";
-            m_vtk_grid_ptr->SetAMRBox(ilevel, ibox, vtk_amr_box);
+            a_vtk_grid_ptr->SetAMRBox(ilevel, ibox, vtk_amr_box);
 
             bool local_box = (procID() == level_box_layout.procID(lit()));
             // only need to do the following for local boxes
@@ -206,24 +208,23 @@ void CatalystAdaptor::build_vtk_grid()
                 //     small_ghosted_end[0], big_ghosted_end[0],
                 //     small_ghosted_end[1], big_ghosted_end[1],
                 //     small_ghosted_end[2], big_ghosted_end[2]);
-                // // add the ghost cell information
+                // add the ghost cell information
                 // int no_ghost[6] = {small_end[0], big_end[0],   small_end[1],
                 //                    big_end[1],   small_end[2], big_end[2]};
                 // bool cell_data = true;
                 // vtk_uniform_grid_ptr->GenerateGhostArray(no_ghost,
                 // cell_data);
 
-                vtk_uniform_grid_ptr->Initialize(&vtk_amr_box, origin, dx_arr,
-                                                 ghost_vect.dataPtr());
+                vtk_uniform_grid_ptr->Initialize(&vtk_amr_box, origin, dx_arr);
 
-                m_vtk_grid_ptr->SetDataSet(ilevel, ibox, vtk_uniform_grid_ptr);
+                a_vtk_grid_ptr->SetDataSet(ilevel, ibox, vtk_uniform_grid_ptr);
             }
         }
     }
 
-    m_vtk_grid_ptr->Audit();
+    a_vtk_grid_ptr->Audit();
 #if DEBUG
-    const double *vtk_grid_bounds = m_vtk_grid_ptr->GetAMRInfo()->GetBounds();
+    const double *vtk_grid_bounds = a_vtk_grid_ptr->GetAMRInfo()->GetBounds();
     pout() << "VTK Grid Bounds:"
            << "(" << vtk_grid_bounds[0] << "," << vtk_grid_bounds[2] << ","
            << vtk_grid_bounds[4] << "), (" << vtk_grid_bounds[1] << ","
@@ -232,10 +233,11 @@ void CatalystAdaptor::build_vtk_grid()
 #endif
 
     // not sure if this is necessary but it was on the OverlappingAMR example
-    m_vtk_grid_ptr->GenerateParentChildInformation();
+    a_vtk_grid_ptr->GenerateParentChildInformation();
 }
 
-void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
+void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc,
+                               vtkOverlappingAMR *a_vtk_grid_ptr)
 {
     if (m_p.verbosity)
     {
@@ -277,7 +279,7 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
     if (m_p.verbosity)
         pout() << std::endl;
 
-    vtkAMRInformation *amr_info = m_vtk_grid_ptr->GetAMRInfo();
+    vtkAMRInformation *amr_info = a_vtk_grid_ptr->GetAMRInfo();
     auto gramrlevels = m_gr_amr_ptr->get_gramrlevels();
 
     for (int ilevel = 0; ilevel < gramrlevels.size(); ++ilevel)
@@ -304,7 +306,7 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
             if (local_box)
             {
                 vtkUniformGrid *vtk_uniform_grid_ptr =
-                    m_vtk_grid_ptr->GetDataSet(ilevel, ibox);
+                    a_vtk_grid_ptr->GetDataSet(ilevel, ibox);
 
                 // hopefully this promotion works
                 DataIndex dind(lit());
@@ -315,7 +317,7 @@ void CatalystAdaptor::add_vars(vtkCPInputDataDescription *a_input_data_desc)
                 const Box &unghosted_box = level_box_layout[dind];
 
 #if DEBUG
-                vtkAMRBox vtk_box = m_vtk_grid_ptr->GetAMRBox(ilevel, ibox);
+                vtkAMRBox vtk_box = a_vtk_grid_ptr->GetAMRBox(ilevel, ibox);
                 // shift to account for different indexing
                 IntVect vtk_origin_offset =
                     -ipow(2, ilevel) * evolution_level_data.ghostVect();
@@ -431,17 +433,31 @@ void CatalystAdaptor::coprocess(double a_time, unsigned int a_timestep)
 
     if (m_proc_ptr->RequestDataDescription(data_description) != 0)
     {
-        build_vtk_grid();
+
+        vtkNew<vtkOverlappingAMR> vtk_ghosted_amr_grid_ptr;
+        build_vtk_grid(vtk_ghosted_amr_grid_ptr);
         auto input_data_description =
             data_description->GetInputDescriptionByName("input");
-        add_vars(input_data_description);
+        add_vars(input_data_description, vtk_ghosted_amr_grid_ptr);
+
+        if (m_vtk_grid_ptr != nullptr)
+        {
+            m_vtk_grid_ptr->Delete();
+        }
+        m_vtk_grid_ptr = vtkOverlappingAMR::New();
+
+        // strip partially overlapping ghost cells
+        vtkParallelAMRUtilities::StripGhostLayers(
+            vtk_ghosted_amr_grid_ptr, m_vtk_grid_ptr,
+            vtkMultiProcessController::GetGlobalController());
+
+        vtkParallelAMRUtilities::BlankCells(
+            m_vtk_grid_ptr, vtkMultiProcessController::GetGlobalController());
 
         if (m_p.write_vtk_files)
         {
             write_vtk_grid(a_timestep);
         }
-        // vtkNew<vtkOverlappingAMR> stripped_vtk_grid;
-        // vtkAMRUtilities::StripGhostLayers(m_vtk_grid_ptr, stripped_vtk_grid);
         input_data_description->SetGrid(m_vtk_grid_ptr);
         int coprocess_success = m_proc_ptr->CoProcess(data_description);
         catalyst_error_or_warning(coprocess_success,
