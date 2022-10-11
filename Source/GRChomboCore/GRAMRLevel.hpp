@@ -142,9 +142,19 @@ class GRAMRLevel : public AMRLevel, public InterpSource
     /// (Pure) virtual function for the initial data calculation
     virtual void initialData() = 0;
 
-    /// Computes which cells have insufficient resolution and should be tagged
+    /// Virtual function which tags cells for refinement based on just evolution
+    /// variables state
     virtual void computeTaggingCriterion(FArrayBox &tagging_criterion,
-                                         const FArrayBox &current_state) = 0;
+                                         const FArrayBox &current_state)
+    {
+    }
+
+    /// Virtual function which tags cells for refinement based on current
+    /// evolution and diagnostic variables state
+    virtual void
+    computeTaggingCriterion(FArrayBox &tagging_criterion,
+                            const FArrayBox &current_state,
+                            const FArrayBox &current_state_diagnostics);
 
 #ifdef CH_USE_HDF5
     /// Things to do immediately before checkpointing

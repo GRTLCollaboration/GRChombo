@@ -186,6 +186,15 @@ void GRAMRLevel::postTimeStep()
         pout() << "GRAMRLevel::postTimeStep " << m_level << " finished" << endl;
 }
 
+// for examples that don't implement a computeTaggingCriterion with diagnostic
+// variables
+void GRAMRLevel::computeTaggingCriterion(
+    FArrayBox &tagging_criterion, const FArrayBox &current_state,
+    const FArrayBox &current_state_diagnostics)
+{
+    computeTaggingCriterion(tagging_criterion, current_state);
+}
+
 // things to do before tagging cells
 void GRAMRLevel::preTagCells()
 {
@@ -213,10 +222,16 @@ void GRAMRLevel::tagCells(IntVectSet &a_tags)
         DataIndex di = dit0[ibox];
         const Box &b = level_domain[di];
         const FArrayBox &state_fab = m_state_new[di];
+        FArrayBox invalid_box; // no array memory allocated
+        const FArrayBox *diagnostics_fab = &invalid_box;
+        if (NUM_DIAGNOSTIC_VARS > 0)
+        {
+            diagnostics_fab = &m_state_diagnostics[di];
+        }
 
-        // mod gradient
+        // FAB to store value of criterion
         FArrayBox tagging_criterion(b, 1);
-        computeTaggingCriterion(tagging_criterion, state_fab);
+        computeTaggingCriterion(tagging_criterion, state_fab, *diagnostics_fab);
 
         const IntVect &smallEnd = b.smallEnd();
         const IntVect &bigEnd = b.bigEnd();
