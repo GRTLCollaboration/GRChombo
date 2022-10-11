@@ -122,8 +122,9 @@ void ScalarFieldLevel::preTagCells()
     // used here so don't fill any
 }
 
-void ScalarFieldLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
-                                               const FArrayBox &current_state)
+void ScalarFieldLevel::computeTaggingCriterion(
+    FArrayBox &tagging_criterion, const FArrayBox &current_state,
+    const FArrayBox &current_state_diagnostics)
 {
     BoxLoops::loop(
         FixedGridsTaggingCriterion(m_dx, m_level, 2.0 * m_p.L, m_p.center),

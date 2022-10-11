@@ -98,8 +98,9 @@ void BinaryBHLevel::preTagCells()
 }
 
 // specify the cells to tag
-void BinaryBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
-                                            const FArrayBox &current_state)
+void BinaryBHLevel::computeTaggingCriterion(
+    FArrayBox &tagging_criterion, const FArrayBox &current_state,
+    const FArrayBox &current_state_diagnostics)
 {
     if (m_p.track_punctures)
     {
