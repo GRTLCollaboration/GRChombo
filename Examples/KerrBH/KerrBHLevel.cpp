@@ -94,8 +94,9 @@ void KerrBHLevel::preTagCells()
     fillAllGhosts(VariableType::evolution, Interval(c_chi, c_chi));
 }
 
-void KerrBHLevel::computeTaggingCriterion(FArrayBox &tagging_criterion,
-                                          const FArrayBox &current_state)
+void KerrBHLevel::computeTaggingCriterion(
+    FArrayBox &tagging_criterion, const FArrayBox &current_state,
+    const FArrayBox &current_state_diagnostics)
 {
     BoxLoops::loop(ChiTaggingCriterion(m_dx), current_state, tagging_criterion);
 }
