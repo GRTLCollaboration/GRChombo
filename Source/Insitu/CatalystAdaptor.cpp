@@ -115,10 +115,7 @@ void CatalystAdaptor::build_vtk_grid(vtkOverlappingAMR *a_vtk_grid_ptr)
     {
         pout() << "CatalystAdaptor::build_vtk_grid" << std::endl;
     }
-    if (a_vtk_grid_ptr != nullptr)
-        a_vtk_grid_ptr->Delete();
-
-    a_vtk_grid_ptr = vtkOverlappingAMR::New();
+    CH_assert(a_vtk_grid_ptr);
 
     const auto gramrlevels = m_gr_amr_ptr->get_gramrlevels();
 
