@@ -22,8 +22,16 @@ ifeq ($(USE_CATALYST),TRUE)
   PARAVIEW_COMPONENT_FLAGS := -c PythonCatalyst ${XTRA_PARAVIEW_COMPONENT_FLAGS}
   VTK_COMPONENT_FLAGS := -v CommonDataModel -v PythonUsed -v ParallelCore -v FiltersAMR -v IOParallelXML ${XTRA_VTK_COMPONENT_FLAGS}
   PARAVIEW_CONFIG_EXEC := $(PARAVIEW_DIR)/bin/paraview-config
-  cxxcppflags += $(shell $(GRCHOMBO_SOURCE)/Insitu/cache.sh $(PARAVIEW_CONFIG_EXEC) --cppflags $(PARAVIEW_COMPONENT_FLAGS) $(VTK_COMPONENT_FLAGS))
-  XTRALDFLAGS += -rdynamic $(shell $(GRCHOMBO_SOURCE)/Insitu/cache.sh $(PARAVIEW_CONFIG_EXEC) --ldflags $(PARAVIEW_COMPONENT_FLAGS) $(VTK_COMPONENT_FLAGS))
+  CATALYST_CPP_FLAGS := $(shell $(GRCHOMBO_SOURCE)/Insitu/cache.sh $(PARAVIEW_CONFIG_EXEC) --cppflags $(PARAVIEW_COMPONENT_FLAGS) $(VTK_COMPONENT_FLAGS))
+  ifneq ($(.SHELLSTATUS),0)
+    $(error Error in paraview-config script. Is there a new enough version of CMake available?)
+  endif
+  cxxcppflags += $(CATALYST_CPP_FLAGS)
+  CATALYST_LD_FLAGS := $(shell $(GRCHOMBO_SOURCE)/Insitu/cache.sh $(PARAVIEW_CONFIG_EXEC) --ldflags $(PARAVIEW_COMPONENT_FLAGS) $(VTK_COMPONENT_FLAGS))
+  ifneq ($(.SHELLSTATUS),0)
+    $(error Error in paraview-config script. Is there a new enough version of CMake available?)
+  endif
+  XTRALDFLAGS += -rdynamic $(CATALYST_LD_FLAGS)
 endif
 
 ifdef PARAVIEW_DIR

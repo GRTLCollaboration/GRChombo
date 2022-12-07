@@ -6,6 +6,7 @@
 
 # hash all arguments
 KEY="$@"
+EXIT_CODE=0
 
 # hash last modified dates of any files
 for arg in "$@"
@@ -30,9 +31,17 @@ done
 if [ -f $FILE ]
 then
   cat $FILE
+  exit $EXIT_CODE
 else
   # lock file
   touch $FILE_LOCK
   $@ | tee $FILE
+  EXIT_CODE=${PIPESTATUS[0]}
+  # delete cached output if command exited with an error
+  if [ "$EXIT_CODE" != "0" ]
+  then
+    rm $FILE
+  fi
   rm -f $FILE_LOCK
+  exit $EXIT_CODE
 fi
