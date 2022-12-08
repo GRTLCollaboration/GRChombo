@@ -23,13 +23,17 @@ ifeq ($(USE_CATALYST),TRUE)
   VTK_COMPONENT_FLAGS := -v CommonDataModel -v PythonUsed -v ParallelCore -v FiltersAMR -v IOParallelXML ${XTRA_VTK_COMPONENT_FLAGS}
   PARAVIEW_CONFIG_EXEC := $(PARAVIEW_DIR)/bin/paraview-config
   CATALYST_CPP_FLAGS := $(shell $(GRCHOMBO_SOURCE)/Insitu/cache.sh $(PARAVIEW_CONFIG_EXEC) --cppflags $(PARAVIEW_COMPONENT_FLAGS) $(VTK_COMPONENT_FLAGS))
+  ifdef .SHELLSTATUS
   ifneq ($(.SHELLSTATUS),0)
     $(error Error in paraview-config script. Is there a new enough version of CMake available?)
   endif
+  endif
   cxxcppflags += $(CATALYST_CPP_FLAGS)
   CATALYST_LD_FLAGS := $(shell $(GRCHOMBO_SOURCE)/Insitu/cache.sh $(PARAVIEW_CONFIG_EXEC) --ldflags $(PARAVIEW_COMPONENT_FLAGS) $(VTK_COMPONENT_FLAGS))
+  ifdef .SHELLSTATUS
   ifneq ($(.SHELLSTATUS),0)
     $(error Error in paraview-config script. Is there a new enough version of CMake available?)
+  endif
   endif
   XTRALDFLAGS += -rdynamic $(CATALYST_LD_FLAGS)
 endif
