@@ -9,7 +9,6 @@ jobs:
       CHOMBO_HOME: ${{ github.workspace }}/Chombo/lib
       PARAVIEW_SUPERBUILD_DIR: ${{ github.workspace }}/build
       PARAVIEW_DIR: ${{ github.workspace }}/build/install
-      PARAVIEW_VERSION: 5.10.1
       OMP_NUM_THREADS: 1
 
     steps:
@@ -49,29 +48,30 @@ jobs:
         ninja-build libosmesa6 libosmesa6-dev llvm-12-dev
         sudo update-alternatives --install /usr/bin/llvm-config llvm-config /usr/bin/llvm-config-12 12
 
-# There is a problem with the paraview-config script with CMake v3.23 
+# There is a problem with the paraview-config script with CMake v3.23
 # (see https://gitlab.kitware.com/paraview/paraview/-/issues/21361)
     - name: Downgrade CMake
       env:
-        CMAKE_VERSION: 3.22.4
+        CMAKE_VERSION: 3.22.6
       run: |
         wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh
         chmod +x cmake-${CMAKE_VERSION}-linux-x86_64.sh
         sudo ./cmake-${CMAKE_VERSION}-linux-x86_64.sh --prefix=/usr/local --exclude-subdir
 
-
     - name: Download pre-built ParaView
       uses: dsaltares/fetch-gh-release-asset@master
       with:
         repo: "GRChombo/paraview-build"
-        version: "tags/v${{ env.PARAVIEW_VERSION }}"
-        file: "paraview-v${{ env.PARAVIEW_VERSION }}.tar.gz"
+        version: latest
+        regex: true
+        file: "paraview-v.*.tar.gz"
 
     - name: Untar ParaView
       run: |
         mkdir -p $PARAVIEW_DIR
         cd $PARAVIEW_DIR
-        tar -xzvf $GITHUB_WORKSPACE/paraview-v${PARAVIEW_VERSION}.tar.gz
+        ls $GITHUB_WORKSPACE
+        tar -xzvf $GITHUB_WORKSPACE/paraview-v*.tar.gz
 
     - name: Build Catalyst Insitu test
       run: make test -j 4
