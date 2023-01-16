@@ -22,15 +22,15 @@ ParaView Catalyst with a GRChombo example.
 
 You will need a build of ParaView with Catalyst support. Unfortunately, the 
 pre-built binaries available on the ParaView website for various OSs and 
-architecture are not built with Catalyst support at the time of writing 
-(latest version: v5.10.0) so it is necessary to build ParaView from source.
-Given the large number of dependencies, it is probably easiest to use the 
-[superbuild](https://gitlab.kitware.com/paraview/paraview-superbuild/) 
-which downloads and builds all dependencies before building ParaView. When
-configuring the superbuild using CMake, you will want to make sure the following
-options are set
+architecture are not built with Catalyst support so it is necessary to build
+ParaView from source.  Given the large number of dependencies, it is probably
+easiest to use the 
+[superbuild](https://gitlab.kitware.com/paraview/paraview-superbuild/) which
+downloads and builds all dependencies before building ParaView. When configuring
+the superbuild using CMake, you will want to make sure the following options are
+set
 ```cmake
-ENABLE_osmesa = ON # enables rendering without a screen
+ENABLE_osmesa = ON # enables off-screen rendering
 USE_SYSTEM_llvm = ON # a prerequisite for OSMesa above
 USE_SYSTEM_mpi = ON # you will want to use the same MPI as for [GR]Chombo
 PARAVIEW_BUILD_EDITION = CATALYST_RENDERING # This will build without IO
@@ -61,6 +61,8 @@ This in-situ adaptor has been tested with the following versions of ParaView:
 | 5.8.1 |
 | 5.9.1 |
 | 5.10.0 |
+| 5.10.1 |
+| 5.11.0 |
 
 It may work with other versions but these have not been tested.
 
@@ -136,9 +138,17 @@ unset PARAVIEW_DIR
 
 ## Generating ParaView Catalyst scripts
 
-_Note that the procedure to generate Catalyst scripts varies between different
-versions of ParaView. In particular, there are significant differences before
-v5.9. The following instructions apply to v5.9.1 and v5.10.0._
+> **Note** 
+> The procedure to generate Catalyst scripts varies between
+> different versions of ParaView. In particular, there are significant
+> differences before v5.9. The following instructions apply to v5.9 or greater.
+
+First, note that you do not need to use a build of ParaView with Catalyst
+support in order to generate a Catalyst script. For example, you can just use
+the [pre-built binaries from the ParaView
+website](https://www.paraview.org/download/). In fact you probably cannot use
+the same build as you will want a version with the GUI which precludes a version
+with off-screen rendering (which you need for in-situ visualization).
 
 The easiest way to generate a suitable ParaView Catalyst Python script using the
 GUI is to load an HDF5 file that is similar to the configuration that will exist
@@ -148,8 +158,7 @@ initial data of the simulation. Once you have loaded the file into ParaView,
 selecting 'Rename'). This is necessary so that Catalyst can replace the HDF5
 data in the script with that coming from the simulation. 
 
-Next apply filters and adjust the camera view as desired. Note that some filters
-do not currently work in situ (e.g. 'Slice AMR Data').
+Next apply filters and adjust the camera view as desired.
 
 In order to generate a valid Catalyst script, it is then necessary to add an 
 'Extractor' which will, for example, save an image. This can be done using the
@@ -160,9 +169,9 @@ Save Catalyst State. By default, the output directory for Extracts will be
 'dataset'.
 
 Unfortunately, if you have built the `CATALYST_RENDERING` ParaView edition
-as described [above](#prerequisites), since this does not contain any IO 
-libraries, it is necessary to manually edit the generated Catalyst script
-and replace the line
+as described [above](#prerequisites) for running in-situ, since this does not
+contain any IO libraries, it is necessary to manually edit the generated
+Catalyst script and replace the line
 ```python
 input = VisItChomboReader(registrationName='input', FileName=<list of hdf5 files>)
 ```
@@ -190,7 +199,7 @@ visualization processing which are described in the table below.
 | `catalyst_abort_on_error`  | `bool`           | `true`/[`false`] | If `true`, the code will abort if there is an error in Catalyst. |
 | `catalyst_num_vars`*        | `int`            | [`0`],...,`NUM_VARS + NUM_DIAGNOSTIC_VARS` | Number of variables in `catalyst_vars` |
 | `catalyst_vars`*            | `vector<string>` | - | Restrict variables passed to Catalyst to only these ones. No restriction if `catalyst_num_vars == 0`.|
-| `catalyst_write_vtk_files`  | `bool`           | `true`/[`false`] | Controls whether VTK XML files containing the full 3D AMR data passed to Catalyst are written or not. These files can be opened in ParaView |
+| `catalyst_write_vtk_files`  | `bool`           | `true`/[`false`] | Controls whether VTK XML files containing the full 3D AMR data passed to Catalyst are written or not. These files can be opened in ParaView. |
 | `vtk_file_prefix`           | `string`         | [`"Catalyst_VTK_"`] | Filename prefix for VTK XML files. The filenames will be of the form `<vtk_file_prefix>_<6 digit timestep on catalyst_coprocess_level>`. Note there will be multiple files for each timestep: one of type `.vth` and a subdirectory containing `.vti` files for each box. |
 
 *Note that scripts generated with versions of ParaView v5.8 or earlier provide 
