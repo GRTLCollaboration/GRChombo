@@ -138,7 +138,7 @@ unset PARAVIEW_DIR
 
 ## Generating ParaView Catalyst scripts
 
-> **Note** 
+> **Warning** 
 > The procedure to generate Catalyst scripts varies between
 > different versions of ParaView. In particular, there are significant
 > differences before v5.9. The following instructions apply to v5.9 or greater.
@@ -180,6 +180,17 @@ with
 input = AMRGaussianPulseSource(registrationName='input')
 ```
 in order to be able to use it.
+
+> **Note**
+> It is possible to pass information about the GRChombo grid (in particular, the
+> lengths of the domain and the center) to Catalyst pipelines so that they
+> automatically adjust appropriately. These are set as environment variables of
+> the form `GRCHOMBO_PARAM_xxx` in 
+> [ChomboParameters.hpp](../GRChomboCore/ChomboParameters.hpp) and can be 
+> recovered in Catalyst Python scripts using the `os.getenv()` function from the
+> `os` package. See the
+> [slice_chi.py](../../Examples/BinaryBH/catalyst_scripts/slice_chi.py) script
+> as an example.
 
 ## Using the in-situ visualization capabilities
 

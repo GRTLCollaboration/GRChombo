@@ -32,6 +32,7 @@ using std::endl;
 
 #ifdef USE_CATALYST
 #include "vtkLogger.h"
+#include "vtkPythonInterpreter.h"
 #include "vtkSMPTools.h"
 #include "vtkVersion.h"
 #endif
@@ -219,6 +220,8 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     // set vtkLogger internal messages to only appear at verbosity 2
     vtkLogger::SetInternalVerbosityLevel(vtkLogger::VERBOSITY_3);
 #endif
+    // don't redirect Python interpreter output
+    vtkPythonInterpreter::SetRedirectOutput(false);
 #ifdef CH_MPI
     vtkLogger::SetStderrVerbosity(vtkLogger::VERBOSITY_ERROR);
     std::string catalyst_log_file = chombo_params.pout_path +

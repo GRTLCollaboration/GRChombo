@@ -22,6 +22,7 @@
 #include <string>
 
 #ifdef USE_CATALYST
+#include <cstdlib>
 #include <vtkCPPythonPipeline.h>
 #endif
 
@@ -183,6 +184,27 @@ class ChomboParameters
                     false);
             pp.load("catalyst_vtk_file_prefix", catalyst_params.vtk_file_prefix,
                     std::string("Catalyst_VTK_"));
+
+            // export parameters to environment so Catalyst scripts can use
+            // them
+            std::string center_str = "";
+            FOR1(i)
+            {
+                if (i != 0)
+                    center_str += " ";
+                center_str += std::to_string(center[i]);
+            }
+            setenv("GRCHOMBO_PARAM_CENTER", center_str.c_str(), 1);
+
+            // this isn't really a GRChombo parameter but easiest in this form
+            FOR1(i)
+            {
+                std::string length_env_var =
+                    std::string("GRCHOMBO_PARAM_L") + std::to_string(i + 1);
+                double length = static_cast<double>(ivN[i] + 1) * coarsest_dx;
+                std::string length_str = std::to_string(length);
+                setenv(length_env_var.c_str(), length_str.c_str(), 1);
+            }
         }
 #endif
     }
