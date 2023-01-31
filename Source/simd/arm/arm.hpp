@@ -14,11 +14,14 @@
 
 #include "sve.hpp"
 
+#elif defined(__ARM_NEON)
+
+#include "neon.hpp"
+
 #else
 
-#warning "Not using any intrinsics on ARM. If targetting SVE, you might need "\
-         "to enable SVE bits with a compiler flag\n"\
-         "e.g. -msve-vector-bits=... with GCC"
+#warning                                                                       \
+    "Not using any intrinsics on AArch64. If targetting SVE, you might need to enable SVE bits with a compiler flag e.g. -msve-vector-bits=... with GCC"
 
 #endif
 
