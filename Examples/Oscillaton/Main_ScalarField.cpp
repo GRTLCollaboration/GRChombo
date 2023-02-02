@@ -15,6 +15,7 @@
 #include "GRParmParse.hpp"
 #include "SetupFunctions.hpp"
 #include "SimulationParameters.hpp"
+#include "MultiLevelTask.hpp"
 
 // Problem specific includes:
 #include "ScalarFieldLevel.hpp"
@@ -45,6 +46,15 @@ int runGRChombo(int argc, char *argv[])
         sim_params.verbosity);
     gr_amr.set_interpolator(
         &interpolator); // also sets puncture_tracker interpolator
+
+    // Add a scheduler to call specificPostTimeStep on every AMRLevel at t=0
+    auto task = [](GRAMRLevel *level) {
+      if (level->time() == 0.)
+	level->specificPostTimeStep();
+    };
+    // call 'now' really now
+    MultiLevelTaskPtr<> call_task(task);
+    call_task.execute(gr_amr);
 
     // Engage! Run the evolution
     gr_amr.run(sim_params.stop_time, sim_params.max_steps);

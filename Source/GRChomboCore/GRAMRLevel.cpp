@@ -149,11 +149,27 @@ Real GRAMRLevel::advance()
 {
     CH_TIME("GRAMRLevel::advance");
 
-    // if 'print_progress_only_to_rank_0', still print if it's level 0 or
-    // t=restart_time
-    if (!m_p.print_progress_only_to_rank_0 || (procID() == 0) ||
-        m_time == m_restart_time)
-        printProgress("GRAMRLevel::advance");
+    // Work out roughly how fast the evolution is going since restart
+    double speed = (m_time - m_restart_time) / m_gr_amr.get_walltime();
+
+    // Get information on number of boxes on this level (helps with better load
+    // balancing)
+    const DisjointBoxLayout &level_domain = m_state_new.disjointBoxLayout();
+    int nbox = level_domain.dataIterator().size();
+    int total_nbox = level_domain.size();
+    int rank;
+#ifdef CH_MPI
+    MPI_Comm_rank(Chombo_MPI::comm, &rank);
+#else
+    rank = 0;
+#endif
+    if (rank == 0)
+    {
+        pout() << "GRAMRLevel::advance level " << m_level << " at time "
+               << m_time << " (" << speed << " M/hr)"
+               << ". Boxes on this rank: " << nbox << " / " << total_nbox
+               << endl;
+    }
 
     // copy soln to old state to save it
     m_state_new.copyTo(m_state_new.interval(), m_state_old,
@@ -250,11 +266,6 @@ void GRAMRLevel::postTimeStep()
 // things to do before tagging cells using truncation tagging
 void GRAMRLevel::preTagCellsTruncationTagging()
 {
-    if (m_verbosity)
-    {
-        pout() << "GRAMRLevel::preTagCellsTruncationTagging " << m_level
-               << endl;
-    }
     CH_TIME("GRAMRLevel::preTagCellsTruncationTagging");
     if (m_coarser_level_ptr != nullptr)
     {
@@ -280,8 +291,6 @@ void GRAMRLevel::preTagCellsTruncationTagging()
 void GRAMRLevel::preTagCells()
 {
     CH_TIME("GRAMRLevel::preTagCells");
-    if (m_verbosity)
-        pout() << "GRAMRLevel::preTagCells " << m_level << endl;
     if (m_p.use_truncation_error_tagging)
     {
         preTagCellsTruncationTagging();
@@ -405,7 +414,6 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
     m_level_grids = a_new_grids;
 
     mortonOrdering(m_level_grids);
-    const DisjointBoxLayout level_domain = m_grids = loadBalance(a_new_grids);
 
     // save data for later copy, including boundary cells
     m_state_new.copyTo(m_state_new.interval(), m_state_old,
@@ -414,29 +422,12 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
     // Specifically copy boundary cells
     copyBdyGhosts(m_state_new, m_state_old);
 
-    // reshape state with new grids
-    IntVect iv_ghosts = m_num_ghosts * IntVect::Unit;
-    m_state_new.define(level_domain, NUM_VARS, iv_ghosts);
-
-    // maintain interlevel stuff
-    defineExchangeCopier(level_domain);
-    m_coarse_average.define(level_domain, NUM_VARS, m_ref_ratio);
-    m_fine_interp.define(level_domain, NUM_VARS, m_ref_ratio, m_problem_domain);
+    // define new grids, LevelDatas, patchers and interpolators
+    defineNewGrids(a_new_grids);
 
     if (m_coarser_level_ptr != nullptr)
     {
         GRAMRLevel *coarser_gr_amr_level_ptr = gr_cast(m_coarser_level_ptr);
-	m_patcher.define(level_domain, coarser_gr_amr_level_ptr->m_grids,
-                         NUM_VARS, coarser_gr_amr_level_ptr->problemDomain(),
-                         m_ref_ratio, m_num_ghosts);
-        if (NUM_DIAGNOSTIC_VARS > 0)
-	  {
-            m_patcher_diagnostics.define(
-		level_domain, coarser_gr_amr_level_ptr->m_grids,
-		NUM_DIAGNOSTIC_VARS, coarser_gr_amr_level_ptr->problemDomain(),
-		m_ref_ratio, m_num_ghosts);
-	  }
-
         // interpolate from coarser level
         m_fine_interp.interpToFine(m_state_new,
                                    coarser_gr_amr_level_ptr->m_state_new);
@@ -462,18 +453,8 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
     // enforce solution BCs (overwriting any interpolation)
     fillBdyGhosts(m_state_new);
 
-    m_state_old.define(level_domain, NUM_VARS, iv_ghosts);
-    if (NUM_DIAGNOSTIC_VARS > 0)
-      {
-        m_state_diagnostics.define(level_domain, NUM_DIAGNOSTIC_VARS,
-                                   iv_ghosts);
-      }
-
-    // if 'print_progress_only_to_rank_0', print progress only on regrids
-    // (except for rank 0, which kept doing prints)
-    // print here instead of 'postRegrid' to avoid prints in reverse level order
-    if (m_p.print_progress_only_to_rank_0 && (procID() != 0))
-        printProgress("GRAMRLevel::regrid");
+    IntVect iv_ghosts = m_num_ghosts * IntVect::Unit;
+    m_state_old.define(m_grids, NUM_VARS, iv_ghosts);
 }
 
 /// things to do after regridding
@@ -1072,14 +1053,15 @@ double GRAMRLevel::get_dx() const { return m_dx; }
 
 bool GRAMRLevel::at_level_timestep_multiple(int a_level) const
 {
-    double target_dt = m_p.coarsest_dt;
+    const double coarsest_dt = m_p.coarsest_dx * m_p.dt_multiplier;
+    double target_dt = coarsest_dt;
     for (int ilevel = 0; ilevel < a_level; ++ilevel)
     {
         target_dt /= m_p.ref_ratios[ilevel];
     }
     // get difference to nearest multiple of target_dt
     const double time_remainder = remainder(m_time, target_dt);
-    return (abs(time_remainder) < m_gr_amr.timeEps() * m_p.coarsest_dt);
+    return (abs(time_remainder) < m_gr_amr.timeEps() * coarsest_dt);
 }
 
 void GRAMRLevel::fillAllGhosts(const VariableType var_type,
@@ -1183,20 +1165,4 @@ void GRAMRLevel::defineExchangeCopier(const DisjointBoxLayout &a_level_grids)
 
     IntVect iv_ghosts = m_num_ghosts * IntVect::Unit;
     m_exchange_copier.exchangeDefine(m_grown_grids, iv_ghosts);
-}
-
-void GRAMRLevel::printProgress(const std::string &from) const
-{
-    // Work out roughly how fast the evolution is going since restart
-    double speed = (m_time - m_restart_time) / m_gr_amr.get_walltime();
-
-    // Get information on number of boxes on this level (helps with better
-    // load balancing)
-    const DisjointBoxLayout &level_domain = m_state_new.disjointBoxLayout();
-    int nbox = level_domain.dataIterator().size();
-    int total_nbox = level_domain.size();
-
-    pout() << from << " level " << m_level << " at time " << m_time << " ("
-           << speed << " M/hr)"
-           << ". Boxes on this rank: " << nbox << " / " << total_nbox << endl;
 }
