@@ -1,6 +1,9 @@
 # script-version: 2.0
 # Catalyst state generated using paraview version 5.9.1
 
+# This script takes a slice through the center of the domain of constant z, 
+# renders a surface plot of chi and then saves the view to a PNG
+
 # Import this to get environment variables
 import os
 
@@ -60,7 +63,7 @@ SetActiveView(renderView1)
 # setup the data processing pipelines
 # ----------------------------------------------------------------
 
-# create a new 'VisItChomboReader'
+# create source
 input = AMRGaussianPulseSource(registrationName='input')
 input.MeshStatus = ['Mesh']
 input.CellArrayStatus = ['chi']

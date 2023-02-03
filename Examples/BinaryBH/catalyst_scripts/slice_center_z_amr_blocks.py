@@ -1,10 +1,20 @@
 # script-version: 2.0
-# Catalyst state generated using paraview version 5.9.1
+# Catalyst state generated using paraview version 5.11.0
+
+# This script takes a slice through the center of the domain of constant z,
+# renders an outline of the blocks in the domain and saves the result to a PNG
+
+# Import this to get environment variables
+import os
 
 #### import the simple module from the paraview
 from paraview.simple import *
 #### disable automatic camera reset on 'Show'
 paraview.simple._DisableFirstRenderCameraReset()
+
+# Get center from environment
+grchombo_center_str = os.getenv('GRCHOMBO_PARAM_CENTER')
+grchombo_center = [float(dim) for dim in grchombo_center_str.split(' ')]
 
 # ----------------------------------------------------------------
 # setup views used in the visualization
@@ -15,18 +25,19 @@ materialLibrary1 = GetMaterialLibrary()
 
 # Create a new 'Render View'
 renderView1 = CreateView('RenderView')
-renderView1.ViewSize = [885, 774]
+renderView1.ViewSize = [928, 789]
 renderView1.AxesGrid = 'GridAxes3DActor'
-renderView1.CenterAxesVisibility = 1
-renderView1.CenterOfRotation = [32.0, 32.0, 32.0]
+renderView1.CenterOfRotation = grchombo_center
 renderView1.StereoType = 'Crystal Eyes'
-renderView1.CameraPosition = [32.0, 32.0, 190.05252605770363]
-renderView1.CameraFocalPoint = [32.0, 32.0, 32.0]
+renderView1.CameraPosition = [grchombo_center[0], grchombo_center[1], 500.0]
+renderView1.CameraFocalPoint = grchombo_center
 renderView1.CameraFocalDisk = 1.0
-renderView1.CameraParallelScale = 49.49747468305833
+renderView1.CameraParallelScale = 49.50757517794625
 renderView1.BackEnd = 'OSPRay raycaster'
 renderView1.OSPRayMaterialLibrary = materialLibrary1
-renderView1.Background = [0.0, 0.0, 0.0]
+
+# init the 'GridAxes3DActor' selected for 'AxesGrid'
+renderView1.AxesGrid.Visibility = 1
 
 SetActiveView(None)
 
@@ -37,7 +48,7 @@ SetActiveView(None)
 # create new layout object 'Layout #1'
 layout1 = CreateLayout(name='Layout #1')
 layout1.AssignView(0, renderView1)
-layout1.SetSize(885, 774)
+layout1.SetSize(928, 789)
 
 # ----------------------------------------------------------------
 # restore active view
@@ -48,44 +59,52 @@ SetActiveView(renderView1)
 # setup the data processing pipelines
 # ----------------------------------------------------------------
 
-# create a new 'VisItChomboReader'
-input = VisItChomboReader(registrationName='input', FileName=['/home/miren/NR/GRChombo-public/Examples/BinaryBH/hdf5/BinaryBH_000000.3d.hdf5', '/home/miren/NR/GRChombo-public/Examples/BinaryBH/hdf5/BinaryBH_000001.3d.hdf5', '/home/miren/NR/GRChombo-public/Examples/BinaryBH/hdf5/BinaryBH_000003.3d.hdf5'])
+# create source
+input = AMRGaussianPulseSource(registrationName='input')
 input.MeshStatus = ['Mesh']
 input.CellArrayStatus = []
 
-# create a new 'Slice AMR data'
-sliceAMRdata1 = SliceAMRdata(registrationName='SliceAMRdata1', Input=input)
-sliceAMRdata1.Level = 3
-sliceAMRdata1.OffSet = 35.0
-sliceAMRdata1.Normal = 'Z-Normal'
+# create a new 'Slice'
+slice1 = Slice(registrationName='Slice1', Input=input)
+slice1.SliceType = 'Plane'
+slice1.HyperTreeGridSlicer = 'Plane'
+slice1.SliceOffsetValues = [0.0]
+
+# init the 'Plane' selected for 'SliceType'
+slice1.SliceType.Origin = grchombo_center
+slice1.SliceType.Normal = [0.0, 0.0, 1.0]
+
+# init the 'Plane' selected for 'HyperTreeGridSlicer'
+slice1.HyperTreeGridSlicer.Origin = grchombo_center
 
 # ----------------------------------------------------------------
 # setup the visualization in view 'renderView1'
 # ----------------------------------------------------------------
 
-# show data from sliceAMRdata1
-sliceAMRdata1Display = Show(sliceAMRdata1, renderView1, 'AMRRepresentation')
+# show data from slice1
+slice1Display = Show(slice1, renderView1, 'GeometryRepresentation')
 
 # trace defaults for the display properties.
-sliceAMRdata1Display.Representation = 'Outline'
-sliceAMRdata1Display.ColorArrayName = ['POINTS', '']
-sliceAMRdata1Display.SelectTCoordArray = 'None'
-sliceAMRdata1Display.SelectNormalArray = 'None'
-sliceAMRdata1Display.SelectTangentArray = 'None'
-sliceAMRdata1Display.OSPRayScaleFunction = 'PiecewiseFunction'
-sliceAMRdata1Display.SelectOrientationVectors = 'None'
-sliceAMRdata1Display.ScaleFactor = 7.0
-sliceAMRdata1Display.SelectScaleArray = 'None'
-sliceAMRdata1Display.GlyphType = 'Arrow'
-sliceAMRdata1Display.GlyphTableIndexArray = 'None'
-sliceAMRdata1Display.GaussianRadius = 0.35000000000000003
-sliceAMRdata1Display.SetScaleArray = [None, '']
-sliceAMRdata1Display.ScaleTransferFunction = 'PiecewiseFunction'
-sliceAMRdata1Display.OpacityArray = [None, '']
-sliceAMRdata1Display.OpacityTransferFunction = 'PiecewiseFunction'
-sliceAMRdata1Display.DataAxesGrid = 'GridAxesRepresentation'
-sliceAMRdata1Display.PolarAxes = 'PolarAxesRepresentation'
-sliceAMRdata1Display.ScalarOpacityUnitDistance = 2.3023915422888135
+slice1Display.Representation = 'Outline'
+slice1Display.ColorArrayName = [None, '']
+slice1Display.SelectTCoordArray = 'None'
+slice1Display.SelectNormalArray = 'None'
+slice1Display.SelectTangentArray = 'None'
+slice1Display.OSPRayScaleFunction = 'PiecewiseFunction'
+slice1Display.SelectOrientationVectors = 'None'
+slice1Display.ScaleFactor = 7.0
+slice1Display.SelectScaleArray = 'None'
+slice1Display.GlyphType = 'Arrow'
+slice1Display.GlyphTableIndexArray = 'None'
+slice1Display.GaussianRadius = 0.35000000000000003
+slice1Display.SetScaleArray = [None, '']
+slice1Display.ScaleTransferFunction = 'PiecewiseFunction'
+slice1Display.OpacityArray = [None, '']
+slice1Display.OpacityTransferFunction = 'PiecewiseFunction'
+slice1Display.DataAxesGrid = 'GridAxesRepresentation'
+slice1Display.PolarAxes = 'PolarAxesRepresentation'
+slice1Display.SelectInputVectors = [None, '']
+slice1Display.WriteLog = ''
 
 # ----------------------------------------------------------------
 # setup extractors
@@ -94,10 +113,13 @@ sliceAMRdata1Display.ScalarOpacityUnitDistance = 2.3023915422888135
 # create extractor
 pNG1 = CreateExtractor('PNG', renderView1, registrationName='PNG1')
 # trace defaults for the extractor.
+pNG1.Trigger = 'TimeStep'
+
 # init the 'PNG' selected for 'Writer'
-pNG1.Writer.FileName = 'AMRBlocksSlice_%.6ts%cm.png'
-pNG1.Writer.ImageResolution = [885, 774]
+pNG1.Writer.FileName = 'SliceAMRBlocks_{timestep:06d}{camera}.png'
+pNG1.Writer.ImageResolution = [2048, 1536]
 pNG1.Writer.Format = 'PNG'
+pNG1.Writer.ResetDisplay = 1
 
 # ----------------------------------------------------------------
 # restore active source
@@ -109,7 +131,6 @@ SetActiveSource(pNG1)
 from paraview import catalyst
 options = catalyst.Options()
 options.GlobalTrigger = 'TimeStep'
-options.EnableCatalystLive = 1
 options.CatalystLiveTrigger = 'TimeStep'
 
 # ------------------------------------------------------------------------------

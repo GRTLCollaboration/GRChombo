@@ -191,7 +191,7 @@ catalyst_verbosity = 2
 catalyst_scripts_path = catalyst_scripts
 catalyst_num_scripts = 1
 # list of Catalyst scripts
-catalyst_scripts = volume_raytrace_resample_chi.py
+catalyst_scripts = slice_center_z_chi.py
 catalyst_coprocess_level = 1
 catalyst_num_vars = 1
 catalyst_vars = chi
