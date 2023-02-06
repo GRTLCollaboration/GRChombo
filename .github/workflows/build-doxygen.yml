@@ -13,7 +13,7 @@ jobs:
 
     steps:
     - name: Checkout GRChombo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: GRChombo
 
@@ -31,7 +31,7 @@ jobs:
       working-directory: 'GRChombo/Doxygen/html'
 
     - name: Checkout GRChombo.github.io
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: GRChombo/GRChombo.github.io
         path: GRChombo.github.io
@@ -48,7 +48,7 @@ jobs:
         echo "pr_reviewer=${PR_REVIEWER}" >> $GITHUB_ENV
 
     - name: Make pull request in GRChombo.github.io
-      uses: peter-evans/create-pull-request@v3
+      uses: peter-evans/create-pull-request@v4
       with:
         token: ${{ secrets.REPO_GITHUB_TOKEN }}
         path: 'GRChombo.github.io'

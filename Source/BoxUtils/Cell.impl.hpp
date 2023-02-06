@@ -40,9 +40,9 @@ template <class data_t>
 template <template <typename> class vars_t>
 void Cell<data_t>::load_vars(vars_t<data_t> &vars) const
 {
-    vars.enum_mapping([&](const int &ivar, data_t &var) {
-        var = SIMDIFY<data_t>(m_box_pointers.m_in_ptr[ivar])[m_in_index];
-    });
+    vars.enum_mapping(
+        [&](const int &ivar, data_t &var)
+        { var = SIMDIFY<data_t>(m_box_pointers.m_in_ptr[ivar])[m_in_index]; });
 }
 
 template <class data_t>
@@ -86,9 +86,10 @@ template <class data_t>
 template <template <typename> class vars_t>
 void Cell<data_t>::store_vars(vars_t<data_t> &vars) const
 {
-    vars.enum_mapping([&](const int &ivar, data_t &var) {
-        SIMDIFY<data_t>(m_box_pointers.m_out_ptr[ivar])[m_out_index] = var;
-    });
+    vars.enum_mapping(
+        [&](const int &ivar, data_t &var) {
+            SIMDIFY<data_t>(m_box_pointers.m_out_ptr[ivar])[m_out_index] = var;
+        });
 }
 
 #endif /* CELL_IMPL_HPP_ */

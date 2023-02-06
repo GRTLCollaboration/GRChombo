@@ -1,43 +1,48 @@
-name: Run GRChombo Tests (Intel)
+name: Run GRChombo Tests (Intel Classic)
 
 on: [push]
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       CHOMBO_HOME: ${{ github.workspace }}/Chombo/lib
       OMP_NUM_THREADS: 1
 
     steps:
     - name: Checkout Chombo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: GRChombo/Chombo
         path: Chombo
 
     - name: Checkout GRChombo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: GRChombo
 
     - name: Install Chombo dependencies
       run: |
+        # First update package repository mirrors
+        sudo gem install apt-spy2
+        sudo apt-spy2 check
+        sudo apt-spy2 fix --commit
         sudo apt-get update
         sudo apt-get -y --no-install-recommends install csh libgetopt-complete-perl
 
     - name: Install Intel compilers/MPI
       run: |
-        wget https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-        sudo apt-key add GPG-PUB-KEY-INTEL-SW-PRODUCTS-2023.PUB
-        sudo add-apt-repository "deb https://apt.repos.intel.com/oneapi all main"
+        wget -O- https://apt.repos.intel.com/intel-gpg-keys/GPG-PUB-KEY-INTEL-SW-PRODUCTS.PUB \
+        | gpg --dearmor | sudo tee /usr/share/keyrings/oneapi-archive-keyring.gpg > /dev/null
+        echo "deb [signed-by=/usr/share/keyrings/oneapi-archive-keyring.gpg] https://apt.repos.intel.com/oneapi all main" | sudo tee /etc/apt/sources.list.d/oneAPI.list
+        sudo apt-get update
         sudo apt-get -y install intel-oneapi-compiler-dpcpp-cpp-and-cpp-classic intel-oneapi-compiler-fortran intel-oneapi-mkl intel-oneapi-mpi intel-oneapi-mpi-devel intel-oneapi-openmp
       working-directory: /tmp
 
     - name: Build Chombo
       run: |
         source /opt/intel/oneapi/setvars.sh
-        cp $GITHUB_WORKSPACE/GRChombo/InstallNotes/MakeDefsLocalExamples/intel-no-hdf5-minimal.Make.defs.local $CHOMBO_HOME/mk/Make.defs.local
+        cp $GITHUB_WORKSPACE/GRChombo/InstallNotes/MakeDefsLocalExamples/intel-classic-no-hdf5-minimal.Make.defs.local $CHOMBO_HOME/mk/Make.defs.local
         make -j 4 AMRTimeDependent AMRTools BaseTools BoxTools
       working-directory: ${{ env.CHOMBO_HOME }}
 

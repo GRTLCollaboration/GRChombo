@@ -87,7 +87,8 @@ class SphericalExtraction : public SurfaceExtraction<SphericalGeometry>
     {
         auto integrand_re = [center = m_center, &geom = m_geom, es, el, em,
                              &a_function](std::vector<double> &a_data_here,
-                                          double r, double theta, double phi) {
+                                          double r, double theta, double phi)
+        {
             // note that spin_Y_lm requires the coordinates with the center
             // at the origin
             double x = geom.get_grid_coord(0, r, theta, phi) - center[0];
@@ -105,7 +106,8 @@ class SphericalExtraction : public SurfaceExtraction<SphericalGeometry>
 
         auto integrand_im = [center = m_center, &geom = m_geom, es, el, em,
                              &a_function](std::vector<double> &a_data_here,
-                                          double r, double theta, double phi) {
+                                          double r, double theta, double phi)
+        {
             // note that spin_Y_lm requires the coordinates with the center
             // at the origin
             double x = geom.get_grid_coord(0, r, theta, phi) - center[0];

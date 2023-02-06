@@ -93,9 +93,8 @@ int runSphericalExtractionTest(int argc, char *argv[])
 
     // real part is the zeroth componenent and imaginary part is first component
     SphericalExtraction::complex_function_t extracted_harmonic =
-        [](std::vector<double> &data, double, double, double) {
-            return std::make_pair(data[0], data[1]);
-        };
+        [](std::vector<double> &data, double, double, double)
+    { return std::make_pair(data[0], data[1]); };
 
     // add the spherical harmonic mode integrands for each resolution and for
     // the trapezium rule, Simpson's rule and Boole's rule

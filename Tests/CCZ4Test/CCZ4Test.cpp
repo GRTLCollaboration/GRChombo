@@ -5,7 +5,7 @@
 
 #define COVARIANTZ4
 
-//#include <omp.h>
+// #include <omp.h>
 
 // Chombo includes
 #include "FArrayBox.H"

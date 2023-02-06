@@ -233,9 +233,9 @@ void SurfaceExtraction<SurfaceGeometry>::add_var_integrand(
     const bool a_broadcast_integral)
 {
     CH_assert(a_var >= 0 && a_var < m_vars.size());
-    integrand_t var_integrand = [var = a_var](std::vector<double> &data, double,
-                                              double,
-                                              double) { return data[var]; };
+    integrand_t var_integrand =
+        [var = a_var](std::vector<double> &data, double, double, double)
+    { return data[var]; };
     add_integrand(var_integrand, out_integrals, a_method_u, a_method_v,
                   a_broadcast_integral);
 }
