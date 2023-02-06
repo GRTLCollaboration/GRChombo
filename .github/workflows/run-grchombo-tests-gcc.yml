@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       CHOMBO_HOME: ${{ github.workspace }}/Chombo/lib
       OMP_NUM_THREADS: 1
@@ -28,13 +28,13 @@ jobs:
         sudo apt-spy2 check
         sudo apt-spy2 fix --commit
         sudo apt-get update
-        sudo apt-get -y --no-install-recommends install csh gfortran-10 g++-10 cpp-10 libhdf5-dev libhdf5-openmpi-dev openmpi-bin libblas-dev liblapack-dev libgetopt-complete-perl
+        sudo apt-get -y --no-install-recommends install csh libhdf5-dev libhdf5-openmpi-dev openmpi-bin libblas-dev liblapack-dev libgetopt-complete-perl
 
     - name: Set Compilers
       run: |
-        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
-        sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-10 100
-        sudo update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-10 100
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 120
+        sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-12 120
+        sudo update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-12 120
 
     - name: Build Chombo
       run: |
