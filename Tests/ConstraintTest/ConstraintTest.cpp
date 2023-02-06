@@ -6,7 +6,7 @@
 #define COMPARE_WITH_CHF
 #define COVARIANTZ4
 
-//#include <omp.h>
+// #include <omp.h>
 
 // Chombo includes
 #include "BoxIterator.H"
