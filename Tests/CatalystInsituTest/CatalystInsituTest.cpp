@@ -74,7 +74,8 @@ int runInsituTest(int argc, char *argv[])
                                                                    sim_params);
     setupAMRObject(gr_amr, insitu_test_level_factory);
 
-    auto task = [](GRAMRLevel *a_level) {
+    auto task = [](GRAMRLevel *a_level)
+    {
         if (a_level->time() == 0.0)
         {
             a_level->catalystCoProcess();

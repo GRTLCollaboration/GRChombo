@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       CHOMBO_HOME: ${{ github.workspace }}/Chombo/lib
       PARAVIEW_SUPERBUILD_DIR: ${{ github.workspace }}/build
@@ -25,14 +25,18 @@ jobs:
 
     - name: Install Chombo dependencies
       run: |
+        # First update package repository mirrors
+        sudo gem install apt-spy2
+        sudo apt-spy2 check
+        sudo apt-spy2 fix --commit
         sudo apt-get update
-        sudo apt-get -y --no-install-recommends install csh gfortran-10 g++-10 cpp-10 libhdf5-dev libhdf5-openmpi-dev openmpi-bin libblas-dev liblapack-dev libgetopt-complete-perl
+        sudo apt-get -y --no-install-recommends install csh libhdf5-dev libhdf5-openmpi-dev openmpi-bin libblas-dev liblapack-dev libgetopt-complete-perl
 
     - name: Set Compilers
       run: |
-        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
-        sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-10 100
-        sudo update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-10 100
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 120
+        sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-12 120
+        sudo update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-12 120
 
     - name: Build Chombo
       run: |
@@ -45,8 +49,8 @@ jobs:
         sudo apt-get update
         sudo apt-get -y install build-essential libgl1-mesa-dev \
         libxt-dev python3-dev python3-numpy libopenmpi-dev libtbb-dev \
-        ninja-build libosmesa6 libosmesa6-dev llvm-12-dev
-        sudo update-alternatives --install /usr/bin/llvm-config llvm-config /usr/bin/llvm-config-12 12
+        ninja-build libosmesa6 libosmesa6-dev llvm-14-dev
+        sudo update-alternatives --install /usr/bin/llvm-config llvm-config /usr/bin/llvm-config-14 14
 
 # There is a problem with the paraview-config script with CMake v3.23
 # (see https://gitlab.kitware.com/paraview/paraview/-/issues/21361)
