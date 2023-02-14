@@ -220,8 +220,10 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     // set vtkLogger internal messages to only appear at verbosity 2
     vtkLogger::SetInternalVerbosityLevel(vtkLogger::VERBOSITY_3);
 #endif
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 1, 0)
     // don't redirect Python interpreter output
     vtkPythonInterpreter::SetRedirectOutput(false);
+#endif
 #ifdef CH_MPI
     vtkLogger::SetStderrVerbosity(vtkLogger::VERBOSITY_ERROR);
     std::string catalyst_log_file = chombo_params.pout_path +
