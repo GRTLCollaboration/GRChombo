@@ -407,7 +407,7 @@ void CatalystAdaptor::write_vtk_grid(unsigned int a_timestep)
     vtkNew<vtkXMLPUniformGridAMRWriter> file_writer;
 
     // make filename
-    char timestep_cstr[7];
+    char timestep_cstr[100];
     std::sprintf(timestep_cstr, "%06d.", a_timestep);
     std::string filename = m_p.vtk_file_prefix;
     filename += timestep_cstr;
