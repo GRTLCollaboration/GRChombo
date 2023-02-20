@@ -7,10 +7,15 @@ e.g.
 ```bash
 export TWOPUNCTURES_SOURCE=/path/to/TwoPunctures/Source
 ```
-Then, simply build as normal e.g.
+Then, use `make` to build the `all-tp` target using a command such as
 ```bash
-make all -j 4
+make all-tp -j 4
 ```
+The created executable will have the filename
+```
+Main_BinaryBH_TP.<config>.ex
+```
+
 To stop using TwoPunctures, undefine the `TWOPUNCTURES_SOURCE` environment variable:
 ```bash
 unset TWOPUNCTURES_SOURCE
@@ -18,7 +23,7 @@ unset TWOPUNCTURES_SOURCE
 Alternatively, you can avoid defining an environment variable by defining it in
 the make command:
 ```bash
-make all -j 4 TWOPUNCTURES_SOURCE=/path/to/TwoPunctures/Source
+make all-tp -j 4 TWOPUNCTURES_SOURCE=/path/to/TwoPunctures/Source
 ```
 Note that the parameter names for TwoPunctures initial data differ to that of
 the vanilla example: see [params_two_punctures.txt](./params_two_punctures.txt)
