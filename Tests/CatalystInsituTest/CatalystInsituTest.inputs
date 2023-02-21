@@ -1,0 +1,46 @@
+verbosity = 0
+N_full = 32
+L_full = 16
+
+chk_prefix = TestChk_
+plot_prefix = TestPlt_
+stop_time = 0
+
+num_points = 30
+
+#num_ghosts = 3
+max_level = 0
+regrid_interval = 1
+
+max_box_size = 8
+min_box_size = 4
+
+#boundaries and periodicity of grid
+#Periodic directions - 0 = false, 1 = true
+isPeriodic = 0 0 0
+# if not periodic, then specify the boundary type
+# 0 = static, 1 = sommerfeld, 2 = reflective
+# (see BoundaryConditions.hpp for details)
+hi_boundary = 0 0 0
+lo_boundary = 0 0 0
+
+#################################################
+# ParaView Catalyst parameters
+
+catalyst_activate = true
+catalyst_verbosity = 10
+# catalyst_pout_prefix = catalyst_pout
+# path to directory containing catalyst scripts
+# catalyst_scripts_path = catalyst_scripts
+catalyst_num_scripts = 1
+# list of Catalyst scripts
+catalyst_scripts = slice_A_v1.py # slice_A_v2.py
+catalyst_coprocess_level = 0
+# catalyst_num_vars = 1
+# catalyst_vars = A
+catalyst_abort_on_error = true
+
+# Test parameters
+error_threshold = 0.15 # arbitrary threshold but this is what VTK tests use
+valid_png_file = extracts/SliceA_expected.png
+generated_png_file = extracts/SliceA_000000.png

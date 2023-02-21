@@ -8,6 +8,17 @@
 
 GRAMR::GRAMR() : m_interpolator(nullptr) {}
 
+void GRAMR::conclude()
+{
+    AMR::conclude();
+#ifdef USE_CATALYST
+    if (m_catalyst_activate)
+    {
+        m_insitu->finalise();
+    }
+#endif
+}
+
 // Called after AMR object set up
 void GRAMR::set_interpolator(AMRInterpolator<Lagrange<4>> *a_interpolator)
 {
@@ -51,3 +62,17 @@ void GRAMR::fill_multilevel_ghosts(const VariableType a_var_type,
         level.fillAllGhosts(a_var_type, a_comps);
     }
 }
+
+#ifdef USE_CATALYST
+void GRAMR::setup_catalyst(bool a_catalyst_activate,
+                           const CatalystAdaptor::params_t &a_catalyst_params)
+{
+    m_catalyst_activate = a_catalyst_activate;
+    if (m_catalyst_activate)
+    {
+        pout() << "GRAMR::setup_catalyst" << std::endl;
+        m_insitu = new CatalystAdaptor;
+        m_insitu->initialise(this, a_catalyst_params);
+    }
+}
+#endif

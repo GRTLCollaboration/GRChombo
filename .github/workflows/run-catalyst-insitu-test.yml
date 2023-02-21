@@ -1,0 +1,94 @@
+name: Run Catalyst Insitu test
+
+on: [push]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-22.04
+    env:
+      CHOMBO_HOME: ${{ github.workspace }}/Chombo/lib
+      PARAVIEW_SUPERBUILD_DIR: ${{ github.workspace }}/build
+      PARAVIEW_DIR: ${{ github.workspace }}/build/install
+      OMP_NUM_THREADS: 1
+
+    steps:
+    - name: Checkout Chombo
+      uses: actions/checkout@v3
+      with:
+        repository: GRChombo/Chombo
+        path: Chombo
+
+    - name: Checkout GRChombo
+      uses: actions/checkout@v3
+      with:
+        path: GRChombo
+
+    - name: Install Chombo dependencies
+      run: |
+        # First update package repository mirrors
+        sudo gem install apt-spy2
+        sudo apt-spy2 check
+        sudo apt-spy2 fix --commit
+        sudo apt-get update
+        sudo apt-get -y --no-install-recommends install csh libhdf5-dev libhdf5-openmpi-dev openmpi-bin libblas-dev liblapack-dev libgetopt-complete-perl
+
+    - name: Set Compilers
+      run: |
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-12 120
+        sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-12 120
+        sudo update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-12 120
+
+    - name: Build Chombo
+      run: |
+        cp $GITHUB_WORKSPACE/GRChombo/InstallNotes/MakeDefsLocalExamples/ubuntu-gcc.Make.defs.local $CHOMBO_HOME/mk/Make.defs.local
+        make -j 4 AMRTimeDependent AMRTools BaseTools BoxTools
+      working-directory: ${{ env.CHOMBO_HOME }}
+
+    - name: Install ParaView dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install build-essential libgl1-mesa-dev \
+        libxt-dev python3-dev python3-numpy libopenmpi-dev libtbb-dev \
+        ninja-build libosmesa6 libosmesa6-dev llvm-14-dev
+        sudo update-alternatives --install /usr/bin/llvm-config llvm-config /usr/bin/llvm-config-14 14
+
+# There is a problem with the paraview-config script with CMake v3.23
+# (see https://gitlab.kitware.com/paraview/paraview/-/issues/21361)
+    - name: Downgrade CMake
+      env:
+        CMAKE_VERSION: 3.22.6
+      run: |
+        wget https://github.com/Kitware/CMake/releases/download/v${CMAKE_VERSION}/cmake-${CMAKE_VERSION}-linux-x86_64.sh
+        chmod +x cmake-${CMAKE_VERSION}-linux-x86_64.sh
+        sudo ./cmake-${CMAKE_VERSION}-linux-x86_64.sh --prefix=/usr/local --exclude-subdir
+
+    - name: Download pre-built ParaView
+      uses: dsaltares/fetch-gh-release-asset@master
+      with:
+        repo: "GRChombo/paraview-build"
+        version: latest
+        regex: true
+        file: "paraview-v.*.tar.gz"
+
+    - name: Untar ParaView
+      run: |
+        mkdir -p $PARAVIEW_DIR
+        cd $PARAVIEW_DIR
+        ls $GITHUB_WORKSPACE
+        tar -xzvf $GITHUB_WORKSPACE/paraview-v*.tar.gz
+
+    - name: Build Catalyst Insitu test
+      run: make test -j 4
+      working-directory: ${{ github.workspace }}/GRChombo/Tests/CatalystInsituTest
+
+    - name: Run Catalyst Insitu test
+      run: make run
+      working-directory: ${{ github.workspace }}/GRChombo/Tests/CatalystInsituTest
+      
+    - name: Upload output files if test failed
+      if: failure()
+      uses: actions/upload-artifact@v3
+      with:
+        name: CatalystInsituTest-pouts
+        path: ${{ github.workspace }}/GRChombo/Tests/CatalystInsituTest/pout.*
+        if-no-files-found: warn

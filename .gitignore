@@ -25,3 +25,9 @@ time.table.*
 ipo_out.optrpt
 
 Doxygen/html
+
+# ParaView Catalyst
+catalyst_pout.*
+*.png
+*.jpg
+datasets/*

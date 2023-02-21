@@ -18,6 +18,10 @@
 #include <ratio>
 #include <vector>
 
+#ifdef USE_CATALYST
+#include "CatalystAdaptor.hpp"
+#endif
+
 // Chombo namespace
 #include "UsingNamespace.H"
 
@@ -46,6 +50,9 @@ class GRAMR : public AMR
 
     GRAMR();
 
+    // just calls AMR::conclude unless USE_CATALYST == TRUE
+    void conclude();
+
     // defined here due to auto return type
     auto get_walltime()
     {
@@ -71,6 +78,16 @@ class GRAMR : public AMR
         const Interval &a_comps = Interval(0, std::numeric_limits<int>::max()),
         const int a_min_level = 0,
         const int a_max_level = std::numeric_limits<int>::max()) const;
+
+#ifdef USE_CATALYST
+    void setup_catalyst(bool a_catalyst_activate,
+                        const CatalystAdaptor::params_t &a_catalyst_params);
+#endif
+
+#ifdef USE_CATALYST
+    bool m_catalyst_activate = false;
+    CatalystAdaptor *m_insitu;
+#endif
 };
 
 #endif /* GRAMR_HPP_ */

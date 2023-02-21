@@ -1,0 +1,47 @@
+# In order to build with ParaView Catalyst insitu visualisation, include this 
+# makefile before mk/Make.test is included in your example and after src_dirs
+# are set
+
+# Decide whether we want to build with ParaView Catalyst by checking whether 
+# PARAVIEW_DIR environment variable is set
+ifdef PARAVIEW_DIR
+ifneq (,$(wildcard $(PARAVIEW_DIR)/bin/paraview-config))
+  $(info ================== Using ParaView Catalyst ==================)
+  USE_CATALYST := TRUE
+else
+  $(error No paraview-config in \$\(PARAVIEW_DIR\)/bin/. Has ParaView been built with Catalyst?)
+endif
+endif
+
+ifeq ($(USE_CATALYST),TRUE)
+  src_dirs += $(GRCHOMBO_SOURCE)/Insitu
+  # This won't work if these make variables are overwritten in Make.defs.local
+  cxxcppflags += -DUSE_CATALYST
+  # These components are correct in v5.9 and v5.10 but may differ in other 
+  # versions. The paraview-config command may also change
+  PARAVIEW_COMPONENT_FLAGS := -c PythonCatalyst ${XTRA_PARAVIEW_COMPONENT_FLAGS}
+  VTK_COMPONENT_FLAGS := -v CommonDataModel -v PythonUsed -v ParallelCore -v FiltersAMR -v IOParallelXML ${XTRA_VTK_COMPONENT_FLAGS}
+  PARAVIEW_CONFIG_EXEC := $(PARAVIEW_DIR)/bin/paraview-config
+  CATALYST_CPP_FLAGS := $(shell $(GRCHOMBO_SOURCE)/Insitu/cache.sh $(PARAVIEW_CONFIG_EXEC) --cppflags $(PARAVIEW_COMPONENT_FLAGS) $(VTK_COMPONENT_FLAGS))
+  ifdef .SHELLSTATUS
+  ifneq ($(.SHELLSTATUS),0)
+    $(error Error in paraview-config script. Is there a new enough version of CMake available?)
+  endif
+  endif
+  cxxcppflags += $(CATALYST_CPP_FLAGS)
+  CATALYST_LD_FLAGS := $(shell $(GRCHOMBO_SOURCE)/Insitu/cache.sh $(PARAVIEW_CONFIG_EXEC) --ldflags $(PARAVIEW_COMPONENT_FLAGS) $(VTK_COMPONENT_FLAGS))
+  ifdef .SHELLSTATUS
+  ifneq ($(.SHELLSTATUS),0)
+    $(error Error in paraview-config script. Is there a new enough version of CMake available?)
+  endif
+  endif
+  XTRALDFLAGS += -rdynamic $(CATALYST_LD_FLAGS)
+endif
+
+ifdef PARAVIEW_DIR
+insitu: all-test
+	$(ECHO)mv $(_app_configs) $(ebase)_Insitu.$(config).ex
+else
+insitu:
+	@echo "Set PARAVIEW_DIR environment variable to build insitu target.";
+endif

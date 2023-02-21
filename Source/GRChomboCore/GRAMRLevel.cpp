@@ -178,6 +178,10 @@ void GRAMRLevel::postTimeStep()
 
     specificPostTimeStep();
 
+#ifdef USE_CATALYST
+    catalystCoProcess();
+#endif
+
     // enforce solution BCs - this is required after the averaging
     // and postentially after specificPostTimeStep actions
     fillBdyGhosts(m_state_new);
@@ -185,6 +189,84 @@ void GRAMRLevel::postTimeStep()
     if (m_verbosity)
         pout() << "GRAMRLevel::postTimeStep " << m_level << " finished" << endl;
 }
+
+#ifdef USE_CATALYST
+void GRAMRLevel::preCatalystCoProcess()
+{
+    // If we're not passing ghosts to Catalyst, there's no point in filling them
+    if (m_p.catalyst_params.remove_ghosts)
+        return;
+
+    if (std::abs(m_time - m_restart_time) < m_gr_amr.timeEps())
+    {
+        // We don't have any information on the first step so fill all ghosts
+        m_gr_amr.fill_multilevel_ghosts(VariableType::evolution);
+        m_gr_amr.fill_multilevel_ghosts(VariableType::diagnostic);
+    }
+    else
+    {
+        // Now use the last requested variables
+        const auto requested_evolution_vars =
+            m_gr_amr.m_insitu->get_requested_evolution_vars();
+        const auto requested_diagnostic_vars =
+            m_gr_amr.m_insitu->get_requested_diagnostic_vars();
+        int first_requested_evolution_var = 0;
+        int last_requested_evolution_var = NUM_VARS - 1;
+        int first_requested_diagnostic_var = 0;
+        int last_requested_diagnostic_var = NUM_DIAGNOSTIC_VARS - 1;
+
+        while ((!requested_evolution_vars[first_requested_evolution_var]) &&
+               first_requested_evolution_var < NUM_VARS)
+            ++first_requested_evolution_var;
+        while ((!requested_evolution_vars[last_requested_evolution_var]) &&
+               last_requested_evolution_var > -1)
+            --last_requested_evolution_var;
+        while ((!requested_diagnostic_vars[first_requested_diagnostic_var]) &&
+               first_requested_diagnostic_var < NUM_DIAGNOSTIC_VARS)
+            ++first_requested_diagnostic_var;
+        while ((!requested_diagnostic_vars[last_requested_diagnostic_var]) &&
+               last_requested_diagnostic_var > -1)
+            --last_requested_diagnostic_var;
+
+        // For simplicity fill all ghosts in the interval from first to last
+        // for each variable type
+        Interval evolution_vars(first_requested_evolution_var,
+                                last_requested_evolution_var);
+        Interval diagnostic_vars(first_requested_diagnostic_var,
+                                 last_requested_diagnostic_var);
+
+        // These won't do anything if the interval size is <= 0
+        fillAllGhosts(VariableType::evolution, evolution_vars);
+        fillAllGhosts(VariableType::diagnostic, diagnostic_vars);
+    }
+}
+
+void GRAMRLevel::catalystCoProcess()
+{
+    if (m_p.catalyst_activate)
+    {
+        if (at_level_timestep_multiple(m_p.catalyst_coprocess_level))
+        {
+            preCatalystCoProcess();
+        }
+        if (m_level == m_p.catalyst_coprocess_level)
+        {
+            if (m_verbosity)
+            {
+                pout() << "GRAMRLevel::catalystCoProcess" << std::endl;
+            }
+
+            unsigned int level_timestep = std::round(m_time / m_dt);
+            m_gr_amr.m_insitu->coprocess(m_time, level_timestep);
+
+            if (m_verbosity)
+            {
+                pout() << "GRAMRLevel::catalystCoProcess finished" << std::endl;
+            }
+        }
+    }
+}
+#endif
 
 // for examples that don't implement a computeTaggingCriterion with diagnostic
 // variables
@@ -1037,6 +1119,9 @@ void GRAMRLevel::fillAllEvolutionGhosts(const Interval &a_comps)
     if (m_verbosity)
         pout() << "GRAMRLevel::fillAllEvolutionGhosts" << endl;
 
+    if (a_comps.size() <= 0)
+        return;
+
     // If there is a coarser level then interpolate undefined ghost cells
     if (m_coarser_level_ptr != nullptr)
     {
@@ -1052,6 +1137,9 @@ void GRAMRLevel::fillAllDiagnosticsGhosts(const Interval &a_comps)
     CH_TIME("GRAMRLevel::fillAllDiagnosticsGhosts");
     if (m_verbosity)
         pout() << "GRAMRLevel::fillAllDiagnosticsGhosts" << endl;
+
+    if (a_comps.size() <= 0)
+        return;
 
     // If there is a coarser level then interpolate undefined ghost cells
     if (m_coarser_level_ptr != nullptr)

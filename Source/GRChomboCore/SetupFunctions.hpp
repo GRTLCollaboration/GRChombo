@@ -13,6 +13,7 @@
 #include "parstream.H" //Gives us pout()
 
 // Other includes
+#include <algorithm>
 #include <iostream>
 using std::cerr;
 using std::endl;
@@ -27,6 +28,13 @@ using std::endl;
 
 #ifdef EQUATION_DEBUG_MODE
 #include "DebuggingTools.hpp"
+#endif
+
+#ifdef USE_CATALYST
+#include "vtkLogger.h"
+#include "vtkPythonInterpreter.h"
+#include "vtkSMPTools.h"
+#include "vtkVersion.h"
 #endif
 
 #ifdef _OPENMP
@@ -88,6 +96,32 @@ void mainSetup(int argc, char *argv[])
         cerr << " usage " << argv[0] << " <input_file_name> " << endl;
         exit(0);
     }
+
+#ifdef USE_CATALYST
+    // Use the VTK_SMP_MAX_THREADS environment variable to set the maximum
+    // number of SMP threads if it exists
+    if (!std::getenv("VTK_SMP_MAX_THREADS"))
+    {
+        // otherwise set it to the same as the number of OpenMP threads
+#ifdef _OPENMP
+        int num_threads = omp_get_max_threads();
+#else
+        int num_threads = 1;
+#endif
+        vtkSMPTools::Initialize(num_threads);
+    }
+    else
+    {
+        // VTK will automatically check the VTK_SMP_MAX_THREADS environment
+        // variable
+        vtkSMPTools::Initialize();
+    }
+    if (rank == 0)
+    {
+        std::cout << " catalyst threads = "
+                  << vtkSMPTools::GetEstimatedNumberOfThreads() << std::endl;
+    }
+#endif
 }
 
 void mainFinalize()
@@ -181,6 +215,39 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
         MayDay::Error("GRChombo restart only defined with hdf5");
 #endif
     }
+#ifdef USE_CATALYST
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 0, 20201030)
+    // set vtkLogger internal messages to only appear at verbosity 2
+    vtkLogger::SetInternalVerbosityLevel(vtkLogger::VERBOSITY_3);
+#endif
+#if VTK_VERSION_NUMBER >= VTK_VERSION_CHECK(9, 1, 0)
+    // don't redirect Python interpreter output
+    vtkPythonInterpreter::SetRedirectOutput(false);
+#endif
+#ifdef CH_MPI
+    vtkLogger::SetStderrVerbosity(vtkLogger::VERBOSITY_ERROR);
+    std::string catalyst_log_file = chombo_params.pout_path +
+                                    chombo_params.catalyst_pout_prefix +
+                                    std::string(".") + std::to_string(procID());
+    vtkLogger::FileMode vtk_logger_file_mode = vtkLogger::TRUNCATE;
+    // if we're writing to the normal pout file we don't want the vtkLogger to
+    // delete the file at this point
+    if (chombo_params.catalyst_pout_prefix == chombo_params.pout_prefix)
+    {
+        vtk_logger_file_mode = vtkLogger::APPEND;
+    }
+    vtkLogger::LogToFile(
+        catalyst_log_file.c_str(), vtk_logger_file_mode,
+        vtkLogger::ConvertToVerbosity(chombo_params.catalyst_params.verbosity));
+    // Only write VTK stderr messages if there is an error
+#else
+    vtkLogger::SetStderrVerbosity(
+        static_cast<vtkLogger::Verbosity>(chombo_params.verbosity));
+#endif
+    vtkLogger::Init();
+    gr_amr.setup_catalyst(chombo_params.catalyst_activate,
+                          chombo_params.catalyst_params);
+#endif
 }
 
 #endif /* SETUP_FUNCTIONS_HPP_ */
