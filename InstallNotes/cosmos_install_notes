@@ -1,8 +1,0 @@
-Install notes for cosmos/universe/cosmos2 etc at DAMTP, University of Cambridge (SGI Altix UV2000)
-
-1) Use Cosmos.Make.defs.local in this folder as Make.defs.local in CHOMBO_HOME/lib/mk/Make.defs.local
-2) Compile with intel:
-   module load gcc/4.9 (to get the correct intel compiler compatibility)
-   module load icomp/16.0.3
-   module load hdf5
-   (Note: you may need to run "module unload" on already loaded versions)
