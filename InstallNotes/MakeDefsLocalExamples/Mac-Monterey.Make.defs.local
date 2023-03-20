@@ -1,4 +1,4 @@
-# This make defs file is for Mac OS Catalina
+# This make defs file is for Mac OS Monterey§
 # It assumes that you have used homebrew to install
 # the relevant packages as indicated for the commands below
 # You should also have obtained up to date Xcode command line tools
