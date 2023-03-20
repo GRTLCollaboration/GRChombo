@@ -1,3 +1,8 @@
+# This make defs file is for Mac OS Catalina
+# It assumes that you have used homebrew to install
+# the relevant packages as indicated for the commands below
+# You should also have obtained up to date Xcode command line tools
+# using 'xcode-select --install'
 DIM             = 3
 DEBUG           = FALSE
 OPT             = TRUE
