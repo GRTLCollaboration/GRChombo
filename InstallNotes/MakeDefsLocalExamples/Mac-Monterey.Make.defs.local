@@ -1,0 +1,32 @@
+# This make defs file is for Mac OS Monterey
+# It assumes that you have used homebrew to install
+# the relevant packages as indicated for the commands below
+# You should also have obtained up to date Xcode command line tools
+# using 'xcode-select --install'
+DIM             = 3
+DEBUG           = FALSE
+OPT             = TRUE
+PRECISION       = DOUBLE
+USE_64          = TRUE
+# brew install gcc
+CXX             = g++-12
+FC              = gfortran-12
+# brew install libomp
+OPENMPCC        = TRUE
+# brew install open-mpi
+MPI             = TRUE
+MPI_CXXFLAGS    = `mpicxx --showme:compile`
+MPI_LINKFLAGS   = `mpicxx --showme:link`
+MPICXX          = g++-12 ${MPI_CXXFLAGS}
+USE_HDF         = TRUE
+# brew install hdf5
+HDF5_DIR        = `brew --cellar hdf5`/`brew ls --versions hdf5 | head -n 1 | cut -d ' ' -f2`
+HDFINCFLAGS     = -I${HDF5_DIR}/include
+HDFLIBFLAGS     = -L${HDF5_DIR}/lib -lhdf5 -lz
+# brew install hdf5-mpi
+HDF5_MPI_DIR    = `brew --cellar hdf5-mpi`/`brew ls --versions hdf5-mpi | head -n 1 | cut -d ' ' -f2`
+HDFMPIINCFLAGS  = -I${HDF5_MPI_DIR}/include
+HDFMPILIBFLAGS  = -L${HDF5_MPI_DIR}/lib -lhdf5 -lz
+cxxoptflags     = -march=native -O3
+foptflags       = -march=native -O3
+syslibflags     = ${MPI_LINKFLAGS} -lblas -llapack -framework Accelerate
