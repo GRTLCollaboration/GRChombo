@@ -7,7 +7,7 @@
 verbosity = 0
 
 # location / naming of output files
-# output_path = "" # Main path for all files. Must exist!
+output_path = "~/rds/hpc-work" # Main path for all files. Must exist!
 chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
 # restart_file = ScalarField_000000.3d.hdf5
@@ -41,7 +41,7 @@ print_progress_only_to_rank_0 = 1
 # Here we decouple the evolution so the scalar evolved on the
 # metric background without backreaction (this avoids the need
 # to solve the constaints)
-G_Newton = 0.0
+G_Newton = 1.0
 
 # Scalar field initial data
 scalar_amplitude = 0.1
@@ -49,7 +49,7 @@ scalar_width = 5.0
 scalar_mass = 0.2
 
 # Kerr BH data
-kerr_mass = 1.0
+kerr_mass = 0.0
 kerr_spin = 0.0
 
 #################################################
