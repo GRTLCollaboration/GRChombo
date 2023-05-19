@@ -29,7 +29,7 @@
 #include "ScalarField.hpp"
 #include "SetValue.hpp"
 
-// Things to do at each advance step, after the RK4 is calculated
+// Things to do at each advance step, after the RK4 is calculated 
 void ScalarFieldLevel::specificAdvance()
 {
     // Enforce trace free A_ij and positive chi and alpha
@@ -53,11 +53,20 @@ void ScalarFieldLevel::initialData()
 
     // First set everything to zero then initial conditions for scalar field -
     // here a Kerr BH and a scalar field profile
-    BoxLoops::loop(
-        make_compute_pack(SetValue(0.), KerrBH(m_p.kerr_params, m_dx),
+    if (init_kerr == 1.0) {
+        BoxLoops::loop(
+            make_compute_pack(SetValue(0.), KerrBH(m_p.kerr_params, m_dx),
+                            InitialScalarData(m_p.initial_params, m_dx)),
+            m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
+    }
+
+    else {
+        BoxLoops::loop(
+        make_compute_pack(SetValue(0.),
                           InitialScalarData(m_p.initial_params, m_dx)),
         m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
-
+    }
+    
     fillAllGhosts();
     BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
                    EXCLUDE_GHOST_CELLS);

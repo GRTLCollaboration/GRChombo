@@ -23,7 +23,7 @@ class Potential
     //! The constructor
     Potential(params_t a_params) : m_params(a_params) {}
 
-    //! Set the potential function for the scalar field here
+    //! Set the potential function for the scalar field here 
     template <class data_t, template <typename> class vars_t>
     void compute_potential(data_t &V_of_phi, data_t &dVdphi,
                            const vars_t<data_t> &vars) const

@@ -25,7 +25,7 @@ class SimulationParameters : public SimulationParametersBase
         check_params();
     }
 
-    void read_params(GRParmParse &pp)
+    void read_params(GRParmParse &pp) 
     {
         // Initial scalar field data
         initial_params.center =
@@ -37,6 +37,7 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("scalar_mass", potential_params.scalar_mass, 0.1);
 
         // Initial Kerr data
+        pp.load("init_kerr", init_kerr, 1.0); 
         pp.load("kerr_mass", kerr_params.mass, 1.0);
         pp.load("kerr_spin", kerr_params.spin, 0.0);
         pp.load("kerr_center", kerr_params.center, center);

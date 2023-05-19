@@ -49,6 +49,7 @@ scalar_width = 5.0
 scalar_mass = 0.2
 
 # Kerr BH data
+init_kerr = 1.0 
 kerr_mass = 0.0
 kerr_spin = 0.0
 
