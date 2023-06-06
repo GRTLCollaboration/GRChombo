@@ -23,9 +23,8 @@ std::vector<GRAMRLevel *> GRAMR::get_gramrlevels()
     std::vector<GRAMRLevel *> out(m_amrlevels.size());
     std::transform(m_amrlevels.stdVector().cbegin(),
                    m_amrlevels.stdVector().cend(), out.begin(),
-                   [](AMRLevel *amrlevel_ptr) {
-                       return GRAMRLevel::gr_cast(amrlevel_ptr);
-                   });
+                   [](AMRLevel *amrlevel_ptr)
+                   { return GRAMRLevel::gr_cast(amrlevel_ptr); });
     return out;
 }
 
@@ -35,9 +34,8 @@ std::vector<const GRAMRLevel *> GRAMR::get_gramrlevels() const
     std::vector<const GRAMRLevel *> out(m_amrlevels.size());
     std::transform(m_amrlevels.constStdVector().cbegin(),
                    m_amrlevels.constStdVector().cend(), out.begin(),
-                   [](const AMRLevel *amrlevel_ptr) {
-                       return GRAMRLevel::gr_cast(amrlevel_ptr);
-                   });
+                   [](const AMRLevel *amrlevel_ptr)
+                   { return GRAMRLevel::gr_cast(amrlevel_ptr); });
 
     return out;
 }

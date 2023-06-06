@@ -42,10 +42,10 @@ class KerrBHLevel : public GRAMRLevel
     /// Things to do before tagging cells (i.e. filling ghosts)
     virtual void preTagCells() override;
 
-    virtual void
-    computeTaggingCriterion(FArrayBox &tagging_criterion,
-                            const FArrayBox &current_state) override;
-
+    virtual void computeTaggingCriterion(
+        FArrayBox &tagging_criterion, const FArrayBox &current_state, 
+	const FArrayBox &current_state_diagnostics) override;
+     
     virtual void specificPostTimeStep() override;
 };
 

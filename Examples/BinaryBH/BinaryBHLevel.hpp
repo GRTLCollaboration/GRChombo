@@ -42,9 +42,9 @@ class BinaryBHLevel : public GRAMRLevel
     virtual void preTagCells() override;
 
     /// Identify and tag the cells that need higher resolution
-    virtual void
-    computeTaggingCriterion(FArrayBox &tagging_criterion,
-                            const FArrayBox &current_state) override;
+    virtual void computeTaggingCriterion(
+        FArrayBox &tagging_criterion, const FArrayBox &current_state,
+        const FArrayBox &current_state_diagnostics) override;
 
     // to do post each time step on every level
     virtual void specificPostTimeStep() override;

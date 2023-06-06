@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   build-and-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       CHOMBO_HOME: ${{ github.workspace }}/Chombo/lib
       OMP_NUM_THREADS: 1
@@ -12,20 +12,31 @@ jobs:
 
     steps:
     - name: Checkout Chombo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         repository: GRChombo/Chombo
         path: Chombo
 
     - name: Checkout GRChombo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
       with:
         path: GRChombo
 
-    - name: Install Chombo dependencies
+    - name: Update package manager database
+      id: update-database
+      continue-on-error: true
+      run: sudo apt-get update
+
+      # This is quite slow so only do this if the previous command fails
+    - name: Update package repository mirrors if necessary
+      if: steps.update-database.outcome == 'failure'
       run: |
+        sudo gem install apt-spy2
+        sudo apt-spy2 fix --commit --launchpad --country=US
         sudo apt-get update
-        sudo apt-get -y --no-install-recommends install csh libhdf5-dev libhdf5-openmpi-dev openmpi-bin libblas-dev liblapack-dev libgetopt-complete-perl
+
+    - name: Install Chombo dependencies
+      run: sudo apt-get -y --no-install-recommends install csh libhdf5-dev libhdf5-openmpi-dev openmpi-bin libblas-dev liblapack-dev libgetopt-complete-perl
 
     - name: Build Chombo
       run: |

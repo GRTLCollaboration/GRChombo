@@ -3,7 +3,7 @@
 # To use clang++ with the ubuntu openmpi package, set the environment variable
 # export OMPI_CXX=clang++
 
-DIM            = 3
+DIM           ?= 3
 DEBUG          = TRUE
 PRECISION      = DOUBLE
 OPT            = TRUE

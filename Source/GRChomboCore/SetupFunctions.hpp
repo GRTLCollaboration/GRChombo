@@ -173,8 +173,7 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     else
     {
 #ifdef CH_USE_HDF5
-        HDF5Handle handle(chombo_params.hdf5_path + chombo_params.restart_file,
-                          HDF5Handle::OPEN_RDONLY);
+        HDF5Handle handle(chombo_params.restart_file, HDF5Handle::OPEN_RDONLY);
         // read from checkpoint file
         gr_amr.setupForRestart(handle);
         handle.close();
