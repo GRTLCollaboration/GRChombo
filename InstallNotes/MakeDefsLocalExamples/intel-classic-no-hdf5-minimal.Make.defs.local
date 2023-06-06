@@ -2,7 +2,7 @@
 # This is used for the github action that builds and runs the tests
 # with the Intel C++ Classic compiler and MPI implementation
 
-DIM            = 3
+DIM           ?= 3
 DEBUG          = TRUE
 PRECISION      = DOUBLE
 OPT            = TRUE
