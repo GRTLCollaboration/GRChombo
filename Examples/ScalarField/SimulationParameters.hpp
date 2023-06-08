@@ -35,9 +35,9 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("scalar_amplitude", initial_params.amplitude, 0.1);
         pp.load("scalar_width", initial_params.width, 1.0);
         pp.load("scalar_mass", potential_params.scalar_mass, 0.1);
+        pp.load("scalar_mass", initial_params.mass, 1e-6);
 
         // Initial Kerr data
-        pp.load("init_kerr", init_kerr, 1.0); 
         pp.load("kerr_mass", kerr_params.mass, 1.0);
         pp.load("kerr_spin", kerr_params.spin, 0.0);
         pp.load("kerr_center", kerr_params.center, center);
@@ -72,6 +72,7 @@ class SimulationParameters : public SimulationParametersBase
 
     // Initial data for matter and potential and BH
     double G_Newton;
+    double m_pl;
     InitialScalarData::params_t initial_params;
     Potential::params_t potential_params;
     KerrBH::params_t kerr_params;

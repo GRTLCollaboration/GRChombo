@@ -4,10 +4,10 @@
 #################################################
 # Filesystem parameters
 
-verbosity = 0
+verbosity = 1
 
 # location / naming of output files
-output_path = "~/rds/hpc-work" # Main path for all files. Must exist!
+output_path = "/home/eaf49/rds/hpc-work" # Main path for all files. Must exist!
 chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
 # restart_file = ScalarField_000000.3d.hdf5
@@ -44,12 +44,11 @@ print_progress_only_to_rank_0 = 1
 G_Newton = 1.0
 
 # Scalar field initial data
-scalar_amplitude = 0.1
-scalar_width = 5.0
-scalar_mass = 0.2
+scalar_amplitude = 1.0
+# scalar_width = 5.0
+scalar_mass = 1e-6
 
 # Kerr BH data
-init_kerr = 1.0 
 kerr_mass = 0.0
 kerr_spin = 0.0
 
@@ -67,7 +66,7 @@ N_full = 128
 L_full = 256
 
 # Maximum number of times you can regrid above coarsest level
-max_level = 6 # There are (max_level+1) grids, so min is zero
+max_level = 0 # There are (max_level+1) grids, so min is zero (does changing this turn off AMR?)
 
 # Frequency of regridding at each level and thresholds on the tagging
 # Need one for each level except the top one, ie max_level items
@@ -94,13 +93,13 @@ tag_buffer_size = 0 # this example uses a fixed grid
 # Boundary Conditions parameters
 
 #Periodic directions - 0 = false, 1 = true
-isPeriodic = 0 0 0
+isPeriodic = 1 1 1
 # if not periodic, then specify the boundary type
 # 0 = static, 1 = sommerfeld, 2 = reflective
 # 3 = extrapolating, 4 = mixed
 # (see BoundaryConditions.hpp for details)
-hi_boundary = 4 4 4
-lo_boundary = 2 2 2
+# hi_boundary = 4 4 4
+# lo_boundary = 2 2 2
 
 # if reflective boundaries selected, must set
 # parity of all vars (in order given by UserVariables.hpp)

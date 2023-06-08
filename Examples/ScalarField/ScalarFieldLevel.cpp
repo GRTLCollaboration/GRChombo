@@ -52,20 +52,11 @@ void ScalarFieldLevel::initialData()
         pout() << "ScalarFieldLevel::initialData " << m_level << endl;
 
     // First set everything to zero then initial conditions for scalar field -
-    // here a Kerr BH and a scalar field profile
-    if (init_kerr == 1.0) {
-        BoxLoops::loop(
-            make_compute_pack(SetValue(0.), KerrBH(m_p.kerr_params, m_dx),
-                            InitialScalarData(m_p.initial_params, m_dx)),
-            m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
-    }
 
-    else {
-        BoxLoops::loop(
-        make_compute_pack(SetValue(0.),
-                          InitialScalarData(m_p.initial_params, m_dx)),
-        m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
-    }
+    BoxLoops::loop(
+    make_compute_pack(SetValue(0.),
+                        InitialScalarData(m_p.initial_params, m_dx)),
+    m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
     
     fillAllGhosts();
     BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,

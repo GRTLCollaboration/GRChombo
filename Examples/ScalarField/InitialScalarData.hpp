@@ -14,6 +14,7 @@
 #include "UserVariables.hpp" //This files needs NUM_VARS - total no. components
 #include "VarsTools.hpp"
 #include "simd.hpp"
+#include "Potential.hpp"
 
 //! Class which sets the initial scalar field matter config
 class InitialScalarData
@@ -27,6 +28,7 @@ class InitialScalarData
         std::array<double, CH_SPACEDIM>
             center;   //!< Centre of perturbation in initial SF bubble
         double width; //!< Width of bump in initial SF bubble
+        double mass;
     };
 
     //! The constructor
@@ -40,16 +42,54 @@ class InitialScalarData
     {
         // where am i?
         Coordinates<data_t> coords(current_cell, m_dx, m_params.center);
-        data_t rr = coords.get_radius();
-        data_t rr2 = rr * rr;
 
-        // calculate the field value
-        data_t phi = m_params.amplitude *
-                     (1.0 + 0.01 * rr2 * exp(-pow(rr / m_params.width, 2.0)));
+        //Get a radius
+        //data_t rr = coords.get_radius();
+        //data_t rr2 = rr * rr;
 
-        // store the vars
+        // calculate and store the scalar field value
+        const data_t phi = m_params.amplitude;// *
+                        //(1.0 + 0.01 * rr2 * exp(-pow(rr / m_params.width, 2.0)));
+        data_t phidot = -0.001;
+
         current_cell.store_vars(phi, c_phi);
         current_cell.store_vars(0.0, c_Pi);
+
+        //Planck's constant, set to change the units of the scalar field
+        double m_pl = 1.220890e19; // (GeV)
+        data_t V;
+        data_t dV;
+
+        //calculate and store gauge variables
+        data_t lapse = 1.0;
+        data_t shift[3] = {0.0, 0.0, 0.0};
+
+        current_cell.store_vars(lapse, c_lapse);
+        current_cell.store_vars(shift[0], c_shift1);
+        current_cell.store_vars(shift[1], c_shift2);
+        current_cell.store_vars(shift[2], c_shift3);
+
+        //calculate and store scalar metric variables
+        data_t chi = 1.0;
+        data_t K = -3.0*sqrt((8*M_PI/3/m_pl)*(0.5*phidot*phidot + 0.5*pow(m_params.mass * phi, 2.0))); //This needs grad energy with perturbations...
+
+        current_cell.store_vars(chi, c_chi);
+        current_cell.store_vars(K, c_K);
+
+        //store tensor metric variables
+        current_cell.store_vars(1.0, c_h11);
+        current_cell.store_vars(0.0, c_h12);
+        current_cell.store_vars(0.0, c_h13);
+        current_cell.store_vars(1.0, c_h22);
+        current_cell.store_vars(0.0, c_h23);
+        current_cell.store_vars(1.0, c_h33);
+
+        current_cell.store_vars(0.0, c_A11);
+        current_cell.store_vars(0.0, c_A12);
+        current_cell.store_vars(0.0, c_A13);
+        current_cell.store_vars(0.0, c_A22);
+        current_cell.store_vars(0.0, c_A23);
+        current_cell.store_vars(0.0, c_A33);
     }
 
   protected:

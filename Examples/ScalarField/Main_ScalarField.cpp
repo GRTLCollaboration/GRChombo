@@ -52,6 +52,8 @@ int main(int argc, char *argv[])
 {
     mainSetup(argc, argv);
 
+    std::cout << "GRChombo setup complete. Starting main program..." << endl;
+
     int status = runGRChombo(argc, argv);
 
     if (status == 0)
