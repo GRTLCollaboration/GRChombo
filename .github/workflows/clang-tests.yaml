@@ -1,4 +1,4 @@
-name: Clang
+name: Clang Tests
 
 on: [push]
 
@@ -17,15 +17,11 @@ jobs:
             opt: 'FALSE'
           - debug: 'FALSE'
             opt: 'TRUE'
-    name: All Tests, Clang ${{ matrix.clang-version }}, DIM = ${{ matrix.dim }}, MPI = ${{ matrix.mpi }}, OPT = ${{ matrix.opt }}
+    name: Clang ${{ matrix.clang-version }}, DIM = ${{ matrix.dim }}, MPI = ${{ matrix.mpi }}, OPT = ${{ matrix.opt }}
     env:
       CHOMBO_HOME: ${{ github.workspace }}/Chombo/lib
       OMP_NUM_THREADS: 1
       OMPI_CXX: clang++
-      # DIM: ${{ matrix.dim }}
-      # MPI: ${{ matrix.mpi }}
-      # OPT: ${{ matrix.opt }}
-      # DEBUG: ${{ matrix.debug }}
       BUILD_ARGS: DIM=${{ matrix.dim }} MPI=${{ matrix.mpi}} OPT=${{ matrix.opt }} DEBUG=${{ matrix.debug }}
 
     steps:
