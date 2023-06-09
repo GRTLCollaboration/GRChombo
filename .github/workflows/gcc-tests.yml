@@ -1,4 +1,4 @@
-name: Clang Tests
+name: GCC Tests
 
 on: [push]
 
@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         # see available versions here: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#preinstalled-software
-        clang-version: [12, 13, 14]
+        gcc-version: [9, 10, 11, 12]
         dim: [2, 3]
         mpi: ['FALSE', 'TRUE']
         opt: ['FALSE', 'TRUE']
@@ -16,12 +16,10 @@ jobs:
           - debug: 'TRUE'
             opt: 'FALSE'
           - debug: 'FALSE'
-            opt: 'TRUE'
-    name: Clang ${{ matrix.clang-version }}, DIM = ${{ matrix.dim }}, MPI = ${{ matrix.mpi }}, OPT = ${{ matrix.opt }}
+    name: GCC ${{ matrix.gcc-version }}, DIM = ${{ matrix.dim }}, MPI = ${{ matrix.mpi }}, OPT = ${{ matrix.opt }}
     env:
       CHOMBO_HOME: ${{ github.workspace }}/Chombo/lib
       OMP_NUM_THREADS: 1
-      OMPI_CXX: clang++
       BUILD_ARGS: DIM=${{ matrix.dim }} MPI=${{ matrix.mpi}} OPT=${{ matrix.opt }} DEBUG=${{ matrix.debug }}
 
     steps:
@@ -49,11 +47,6 @@ jobs:
         sudo apt-spy2 fix --commit --launchpad --country=US
         sudo apt-get update
 
-    - name: Set compiler
-      run: |
-        sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-${{ matrix.clang-version }} 200
-        clang++ --version
-
     - name: Install common dependencies
       run: sudo apt-get -y --no-install-recommends install csh libhdf5-dev libblas-dev liblapack-dev libgetopt-complete-perl
 
@@ -61,9 +54,15 @@ jobs:
       if: matrix.mpi == 'TRUE'
       run: sudo apt-get -y --no-install-recommends install libhdf5-openmpi-dev openmpi-bin 
 
+    - name: Set Compilers
+      run: |
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-${{ matrix.gcc-version }} 200
+        sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-${{ matrix.gcc-version }} 200
+        sudo update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-${{ matrix.gcc-version }} 200
+
     - name: Build Chombo
       run: |
-        cp $GITHUB_WORKSPACE/GRChombo/InstallNotes/MakeDefsLocalExamples/ubuntu-clang.Make.defs.local $CHOMBO_HOME/mk/Make.defs.local
+        cp $GITHUB_WORKSPACE/GRChombo/InstallNotes/MakeDefsLocalExamples/ubuntu-gcc.Make.defs.local $CHOMBO_HOME/mk/Make.defs.local
         if [[ "${{ matrix.mpi }}" == "FALSE" ]]; then
           sed -i '/HDFMPI/d' $CHOMBO_HOME/mk/Make.defs.local
         fi
@@ -88,7 +87,7 @@ jobs:
       run: make test -j 4 $BUILD_ARGS
       # Only 2D test is apparent horizon finder test
       working-directory: ${{ github.workspace }}/GRChombo/Tests/ApparentHorizonFinderTest2D
-    
+
     - name: Run GRChombo Tests (2D)
       if: matrix.DIM == 2
       run: make run -j 2 $BUILD_ARGS
