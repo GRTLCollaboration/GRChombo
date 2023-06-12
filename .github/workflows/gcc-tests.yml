@@ -12,6 +12,11 @@ jobs:
         dim: [2, 3]
         mpi: ['FALSE', 'TRUE']
         opt: ['FALSE', 'TRUE']
+        exclude:
+          # No point running 2D test without MPI as the only test is the
+          # Apparent Horizon one which needs MPI
+          - dim: 2
+            mpi: 'FALSE' 
         include:
           - debug: 'TRUE'
             opt: 'FALSE'
