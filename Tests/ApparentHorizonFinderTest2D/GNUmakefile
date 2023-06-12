@@ -8,7 +8,6 @@
 #
 
 DIM = 2
-cxxcppflags := ${cxxcppflags} -DGR_SPACEDIM=2
 
 GRCHOMBO_SOURCE = ../../Source
 

@@ -19,6 +19,9 @@ The purpose of this test is to test:
 recompile again for 2D when compiling this example)
 */
 
+// This test is valid for the below value of GR_SPACEDIM
+#define GR_SPACEDIM 2
+
 // General includes:
 #include <iostream>
 
