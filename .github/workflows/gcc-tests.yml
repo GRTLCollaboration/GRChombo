@@ -16,6 +16,7 @@ jobs:
           - debug: 'TRUE'
             opt: 'FALSE'
           - debug: 'FALSE'
+            opt: 'TRUE'
     name: GCC ${{ matrix.gcc-version }}, DIM = ${{ matrix.dim }}, MPI = ${{ matrix.mpi }}, OPT = ${{ matrix.opt }}
     env:
       CHOMBO_HOME: ${{ github.workspace }}/Chombo/lib
@@ -52,7 +53,7 @@ jobs:
 
     - name: Install MPI dependencies
       if: matrix.mpi == 'TRUE'
-      run: sudo apt-get -y --no-install-recommends install libhdf5-openmpi-dev openmpi-bin 
+      run: sudo apt-get -y --no-install-recommends install libhdf5-openmpi-dev petsc-dev openmpi-bin 
 
     - name: Set Compilers
       run: |
@@ -62,10 +63,12 @@ jobs:
 
     - name: Build Chombo
       run: |
-        cp $GITHUB_WORKSPACE/GRChombo/InstallNotes/MakeDefsLocalExamples/ubuntu-gcc.Make.defs.local $CHOMBO_HOME/mk/Make.defs.local
-        if [[ "${{ matrix.mpi }}" == "FALSE" ]]; then
-          sed -i '/HDFMPI/d' $CHOMBO_HOME/mk/Make.defs.local
+        if [[ "${{ matrix.mpi }}" == "TRUE" ]]; then
+          MAKE_DEFS_FILE=$GITHUB_WORKSPACE/GRChombo/InstallNotes/MakeDefsLocalExamples/ubuntu-gcc.Make.defs.local
+        else
+          MAKE_DEFS_FILE=$GITHUB_WORKSPACE/GRChombo/InstallNotes/MakeDefsLocalExamples/ubuntu-gcc-nompi.Make.defs.local
         fi
+        cp $MAKE_DEFS_FILE $CHOMBO_HOME/mk/Make.defs.local
         make -j 4 AMRTimeDependent AMRTools BaseTools BoxTools $BUILD_ARGS
       working-directory: ${{ env.CHOMBO_HOME }}
 
