@@ -102,14 +102,24 @@ int runApparentHorizonTest3D(int argc, char *argv[])
 
 int main(int argc, char *argv[])
 {
+#ifdef USE_AHFINDER
     mainSetup(argc, argv);
 
     int status = runApparentHorizonTest3D(argc, argv);
+
+#else
+    int status = -1;
+#endif
 
     if (status == 0)
     {
         std::cout << "ApparentHorizon3D test passed." << endl;
         pout() << "ApparentHorizon3D test passed." << endl;
+    }
+    else if (status == -1)
+    {
+        pout() << "ApparentHorizon3D test skipped (USE_AHFINDER undefined)."
+               << std::endl;
     }
     else
     {
@@ -118,7 +128,9 @@ int main(int argc, char *argv[])
         pout() << "ApparentHorizon3D test FAILED with return code " << status
                << endl;
     }
-
+#ifdef USE_AHFINDER
     mainFinalize();
-    return status;
+#endif
+    return std::max(status, 0);
+
 }
