@@ -23,7 +23,9 @@ template <class data_t> void KerrBH::compute(Cell<data_t> current_cell) const
     const Tensor<1, double> spin_dir = {m_params.spin_direction[0],
                                         m_params.spin_direction[1],
                                         m_params.spin_direction[2]};
-    Tensor<2, double> R = rotation_matrix(z_dir, spin_dir);
+
+    // define the rotation matrix needed to transform standard Cartesian (x,y,z) coordinates into the coordinates of the spin direction
+    Tensor<2, double> R = rotation_matrix(spin_dir, z_dir);
 
     // set up vars for the metric and extrinsic curvature, shift and lapse in
     // spherical coords

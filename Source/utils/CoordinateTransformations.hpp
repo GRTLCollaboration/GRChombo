@@ -245,13 +245,13 @@ Tensor<2, data_t, 3> rotation_matrix(const Tensor<1, data_t, 3> &axis,
     // https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
     Tensor<2, data_t, 3> R;
     R[0][0] = axis[0] * axis[0] * one_minus_cos + cos_angle;
-    R[0][1] = axis[1] * axis[0] * one_minus_cos + axis[2] * sine;
-    R[0][2] = axis[2] * axis[0] * one_minus_cos - axis[1] * sine;
-    R[1][0] = axis[0] * axis[1] * one_minus_cos - axis[2] * sine;
+    R[0][1] = axis[1] * axis[0] * one_minus_cos - axis[2] * sine;
+    R[0][2] = axis[2] * axis[0] * one_minus_cos + axis[1] * sine;
+    R[1][0] = axis[0] * axis[1] * one_minus_cos + axis[2] * sine;
     R[1][1] = axis[1] * axis[1] * one_minus_cos + cos_angle;
-    R[1][2] = axis[2] * axis[1] * one_minus_cos + axis[0] * sine;
-    R[2][0] = axis[0] * axis[2] * one_minus_cos + axis[1] * sine;
-    R[2][1] = axis[1] * axis[2] * one_minus_cos - axis[0] * sine;
+    R[1][2] = axis[2] * axis[1] * one_minus_cos - axis[0] * sine;
+    R[2][0] = axis[0] * axis[2] * one_minus_cos - axis[1] * sine;
+    R[2][1] = axis[1] * axis[2] * one_minus_cos + axis[0] * sine;
     R[2][2] = axis[2] * axis[2] * one_minus_cos + cos_angle;
 
     return R;
@@ -273,12 +273,12 @@ Tensor<2, data_t, 3> rotation_matrix(const Tensor<1, data_t, 3> &origin,
         std::abs(axis[2]) < eps)
         return rotation_matrix({0., 0., 0.}, 1.);
 
-    data_t norm =
+    data_t norm_inv = 1.0 / 
         sqrt(axis[0] * axis[0] + axis[1] * axis[1] + axis[2] * axis[2]);
 
-    axis[0] /= norm;
-    axis[1] /= norm;
-    axis[2] /= norm;
+    axis[0] *= norm_inv;
+    axis[1] *= norm_inv;
+    axis[2] *= norm_inv;
 
     // Calculate angle of rotation
     data_t norm_origin = sqrt(origin[0] * origin[0] + origin[1] * origin[1] +
