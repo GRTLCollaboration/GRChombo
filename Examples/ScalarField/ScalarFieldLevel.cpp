@@ -29,6 +29,9 @@
 #include "ScalarField.hpp"
 #include "SetValue.hpp"
 
+//For printing out mean diagnostics
+#include "AMRReductions.hpp"
+
 // Things to do at each advance step, after the RK4 is calculated 
 void ScalarFieldLevel::specificAdvance()
 {
@@ -129,4 +132,24 @@ void ScalarFieldLevel::computeTaggingCriterion(
     BoxLoops::loop(
         FixedGridsTaggingCriterion(m_dx, m_level, 2.0 * m_p.L, m_p.center),
         current_state, tagging_criterion);
+}
+
+void ScalarFieldLevel::specificPostTimeStep()
+{
+    if (m_p.max_level == 0) 
+    {
+        CH_TIME("ScalarFieldLevel::specificPostTimeStep");
+        
+        bool first_step = (m_time == 0.);
+
+        AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
+        double sfbar = amr_reductions.sum(c_phi);
+
+        SmallDataIO means_file(m_p.data_path + "means_file", m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step);
+
+        if(first_step) {
+            means_file.write_header_line({"Scalar field mean"});
+        }
+        means_file.write_time_data_line({sfbar});
+    }
 }

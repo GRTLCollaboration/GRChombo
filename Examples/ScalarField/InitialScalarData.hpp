@@ -43,17 +43,15 @@ class InitialScalarData
         // where am i?
         Coordinates<data_t> coords(current_cell, m_dx, m_params.center);
 
-        //Get a radius
-        //data_t rr = coords.get_radius();
-        //data_t rr2 = rr * rr;
-
         // calculate and store the scalar field value
         const data_t phi = m_params.amplitude;// *
                         //(1.0 + 0.01 * rr2 * exp(-pow(rr / m_params.width, 2.0)));
-        data_t phidot = -0.001;
+        const data_t phidot = -0.001;
 
         current_cell.store_vars(phi, c_phi);
         current_cell.store_vars(0.0, c_Pi);
+
+        //set_flrw_metric(current_cell,)
 
         //Planck's constant, set to change the units of the scalar field
         double m_pl = 1.220890e19; // (GeV)

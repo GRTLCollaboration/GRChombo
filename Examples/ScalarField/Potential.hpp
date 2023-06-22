@@ -7,6 +7,7 @@
 #define POTENTIAL_HPP_
 
 #include "simd.hpp"
+#include "CalcMeans.hpp"
 
 class Potential
 {

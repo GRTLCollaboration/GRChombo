@@ -52,6 +52,9 @@ class ScalarFieldLevel : public GRAMRLevel
     /// Things to do before tagging cells (i.e. filling ghosts)
     virtual void preTagCells() override;
 
+    /// Print out mean values
+    virtual void specificPostTimeStep() override;
+
     //! Tell Chombo how to tag cells for regridding
     virtual void computeTaggingCriterion(
         FArrayBox &tagging_criterion, const FArrayBox &current_state,
