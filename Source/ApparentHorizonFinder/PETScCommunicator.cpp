@@ -27,6 +27,7 @@ void PETScCommunicator::set_num_ranks(int a_num_ranks)
 
         int rank;
         if (procID() == 0) // declared in Chombo's SPMD.H
+            std::cout << "Using PETSc with " << a_num_ranks << " ranks"
                       << std::endl;
 
         MPI_Group MPI_GROUP_WORLD;
