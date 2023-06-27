@@ -88,7 +88,7 @@ int AHFinder<SurfaceGeometry, AHFunction>::add_ah_merger(
     std::array<double, CH_SPACEDIM> origin_merger;
     bool do_solve = solve_merger(ah1, ah2, initial_guess_merger, origin_merger);
 
-    // assume same coordiante system between merging horizons
+    // assume same coordinate system between merging horizons
     SurfaceGeometry coord_system =
         m_apparent_horizons[ah1]->get_ah_interp().get_coord_system();
     coord_system.set_origin(origin_merger);

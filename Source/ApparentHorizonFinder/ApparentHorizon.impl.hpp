@@ -1735,12 +1735,8 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_center()
                 {
                     double coord_i =
                         solver.m_interp.get_coord_system().get_grid_coord(
-                            i, solver.m_F[idx], solver.m_u[idx]
-#if CH_SPACEDIM == 3
-                            ,
-                            solver.m_v[idx]
-#endif
-                        );
+                            i, D_DECL(solver.m_F[idx], solver.m_u[idx],
+                            solver.m_v[idx]));
 
                     // temp[i] += point[i]; // old method
                     if (coord_i > max_temp[i])

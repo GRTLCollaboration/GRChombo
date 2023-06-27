@@ -22,14 +22,11 @@ void PETScCommunicator::set_num_ranks(int a_num_ranks)
     if (a_num_ranks > 0) // otherwise use the whole Chombo communicator
     {
         // don't make more ranks than there are processes
-        int size;
-        MPI_Comm_size(Chombo_MPI::comm, &size);
+        int size = numProc(); // declared in Chombo's SPMD.H
         a_num_ranks = std::min(a_num_ranks, size);
 
         int rank;
-        MPI_Comm_rank(Chombo_MPI::comm, &rank);
-        if (rank == 0)
-            std::cout << "Using PETSc with " << a_num_ranks << " ranks"
+        if (procID() == 0) // declared in Chombo's SPMD.H
                       << std::endl;
 
         MPI_Group MPI_GROUP_WORLD;

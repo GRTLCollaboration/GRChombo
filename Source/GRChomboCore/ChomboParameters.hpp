@@ -195,7 +195,7 @@ class ChomboParameters
         if (output_path != "./" && !output_path.empty())
         {
             data_path = output_path + data_path;
-#ifdef CH_MPIzzzzz
+#ifdef CH_MPI
             pout_path = output_path + pout_path;
 #endif
 #ifdef CH_USE_HDF5

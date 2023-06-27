@@ -63,11 +63,9 @@ template <class SurfaceGeometry, class AHFunction> class AHInterpolation_t
             &extra_vars); //!< refresh AMRInterpolator 'm_interpolator'
 
     //! returns whether any pointis outside of grid (==> diverging)
-    bool set_coordinates(const std::vector<double> &f,
-                         const std::vector<double> &u,
-#if CH_SPACEDIM == 3
-                         const std::vector<double> &v,
-#endif
+    bool set_coordinates(D_DECL(const std::vector<double> &f,
+                                const std::vector<double> &u,
+                                const std::vector<double> &v),
                          double add_epsilon = 0.);
     const AHGeometryData get_geometry_data(int idx) const;
     const Tensor<1, double> get_cartesian_coords(int idx) const;
@@ -79,12 +77,7 @@ template <class SurfaceGeometry, class AHFunction> class AHInterpolation_t
     //! it forces him to stay on the grid, causing non-convergence
     bool is_in_grid(double &x, double &y
 #if CH_SPACEDIM == 3
-                    ,
-                    double &z
-#endif
-    );
-
-    //! triplet of functions to be used together in blocks of code that require
+    bool is_in_grid(D_DECL(double &x, double &y, double &z));
     //! PETSc AND AMRInterpolator to interpolate
     //! 'keep_interpolating_if_inactive' returns 'true' immediately for PETSc
     //! ranks for non-PETSc ranks, it loops in a sequence of 'interpolate()'

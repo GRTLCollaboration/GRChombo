@@ -110,13 +110,8 @@ void AHInterpolation_t<SurfaceGeometry, AHFunction>::set_origin(
 }
 
 template <class SurfaceGeometry, class AHFunction>
-bool AHInterpolation_t<SurfaceGeometry, AHFunction>::is_in_grid(double &x,
-                                                                double &y
-#if CH_SPACEDIM == 3
-                                                                ,
-                                                                double &z
-#endif
-)
+bool AHInterpolation_t<SurfaceGeometry, AHFunction>::is_in_grid(
+         D_DECL(double &x, double &y ,double &z))
 {
     CH_TIME("AHInterpolation::is_in_grid");
 
@@ -355,13 +350,10 @@ bool AHInterpolation_t<SurfaceGeometry, AHFunction>::set_coordinates(
         m_v[i] = v[i];
 #endif
 
+        m_x[i] = m_coord_system.get_grid_coord(0, D_DECL(m_f[i], m_u[i], m_v[i]));
+        m_y[i] = m_coord_system.get_grid_coord(1, D_DECL(m_f[i], m_u[i], m_v[i]));
 #if CH_SPACEDIM == 3
-        m_x[i] = m_coord_system.get_grid_coord(0, m_f[i], m_u[i], m_v[i]);
-        m_y[i] = m_coord_system.get_grid_coord(1, m_f[i], m_u[i], m_v[i]);
         m_z[i] = m_coord_system.get_grid_coord(2, m_f[i], m_u[i], m_v[i]);
-#elif CH_SPACEDIM == 2
-        m_x[i] = m_coord_system.get_grid_coord(0, m_f[i], m_u[i]);
-        m_y[i] = m_coord_system.get_grid_coord(1, m_f[i], m_u[i]);
 #endif
 
         // don't let PETSc diverge to outside of the grid (this can happen if
@@ -383,12 +375,7 @@ AHInterpolation_t<SurfaceGeometry, AHFunction>::get_geometry_data(int idx) const
 {
     CH_TIME("AHInterpolation::get_geometry_data");
 
-    return m_coord_system.get_geometry_data(m_f[idx], m_u[idx]
-#if CH_SPACEDIM == 3
-                                            ,
-                                            m_v[idx]
-#endif
-    );
+    return m_coord_system.get_geometry_data(D_DECL(m_f[idx], m_u[idx], m_v[idx]));
 }
 
 template <class SurfaceGeometry, class AHFunction>
@@ -398,11 +385,7 @@ AHInterpolation_t<SurfaceGeometry, AHFunction>::get_cartesian_coords(
 {
     return
     {
-        m_x[idx], m_y[idx]
-#if CH_SPACEDIM == 3
-            ,
-            m_z[idx]
-#endif
+        D_DECL(m_x[idx], m_y[idx], m_z[idx])
     };
 }
 

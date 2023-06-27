@@ -283,11 +283,8 @@ struct ExpansionFunction : AHFunctionDefault
         Tensor<1, double> s_L = {0.}; // not normalized, just D_a L
         FOR(a)
         {
-            s_L[a] = geo_data.df[a] - (deriv.duF * geo_data.du[a])
-#if CH_SPACEDIM == 3
-                     - (deriv.dvF * geo_data.dv[a])
-#endif
-                ;
+            s_L[a] = D_TERM(geo_data.df[a], - (deriv.duF * geo_data.du[a]),
+                     - (deriv.dvF * geo_data.dv[a]));
         }
 
         return s_L;
@@ -326,15 +323,13 @@ struct ExpansionFunction : AHFunctionDefault
         Tensor<2, double> ds = {0.};
         FOR(a, b)
         {
-            ds[a][b] = geo_data.ddf[a][b] - (deriv.duF * geo_data.ddu[a][b]) -
-                       (deriv.duduF * geo_data.du[a] * geo_data.du[b])
-#if CH_SPACEDIM == 3
+            ds[a][b] = D_TERM(geo_data.ddf[a][b],
+                       - (deriv.duF * geo_data.ddu[a][b]) -
+                       (deriv.duduF * geo_data.du[a] * geo_data.du[b]),
                        - (deriv.dvF * geo_data.ddv[a][b]) -
                        (deriv.dvdvF * geo_data.dv[a] * geo_data.dv[b]) -
                        (deriv.dudvF * (geo_data.du[a] * geo_data.dv[b] +
-                                       geo_data.du[b] * geo_data.dv[a]))
-#endif
-                ;
+                                       geo_data.du[b] * geo_data.dv[a])));
         }
 
         // calculate Christoffels on this point (u,v,f)

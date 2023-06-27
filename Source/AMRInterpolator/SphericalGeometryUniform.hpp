@@ -24,7 +24,7 @@
 
 //! This SurfaceGeometry template class provides spherical shell geometry
 //! implementation for the SurfaceExtraction class
-//! u = u, v = phi
+//! u = z/r = cos(theta), v = phi
 class SphericalGeometryUniform
 {
   public:
@@ -127,14 +127,7 @@ class SphericalGeometryUniform
     static const IntegrationMethod &
     get_recommended_integration_method_v(int a_num_points_phi)
     {
-        static const IntegrationMethod &simpson = IntegrationMethod::simpson;
-        static const IntegrationMethod &trapezium =
-            IntegrationMethod::trapezium;
-        if (simpson.is_valid(a_num_points_phi, is_v_periodic()))
-            return simpson;
-        MayDay::Warning("Use an even number of 'v' points to use simpson rule. "
-                        "Defaulting to trapezium.");
-        return trapezium;
+        return IntegrationMethod::trapezium;
     }
 
   protected:

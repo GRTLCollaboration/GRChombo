@@ -7,13 +7,11 @@
 #define SPHERICALGEOMETRY_HPP_
 
 // Chombo includes
-#include "AlwaysInline.hpp"
 #include "MayDay.H"
 
 // Other includes
 #include "AlwaysInline.hpp"
 #include "IntegrationMethod.hpp"
-#include "MayDay.H"
 #include <array>
 #include <cmath>
 #include <string>
@@ -129,14 +127,7 @@ class SphericalGeometry
     static const IntegrationMethod &
     get_recommended_integration_method_v(int a_num_points_phi)
     {
-        static const IntegrationMethod &simpson = IntegrationMethod::simpson;
-        static const IntegrationMethod &trapezium =
-            IntegrationMethod::trapezium;
-        if (simpson.is_valid(a_num_points_phi, is_v_periodic()))
-            return simpson;
-        MayDay::Warning("Use an even number of 'v' points to use simpson rule. "
-                        "Defaulting to trapezium.");
-        return trapezium;
+        return IntegrationMethod::trapezium;
     }
 
   protected:

@@ -19,10 +19,9 @@ SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
     : m_geom(a_geom), m_params(a_params), m_dt(a_dt), m_time(a_time),
       m_first_step(a_first_step), m_restart_time(a_restart_time),
       m_num_interp_points((procID() == 0)
-                              ? m_params.num_surfaces * m_params.num_points_u
-#if CH_SPACEDIM == 3
-                                    * m_params.num_points_v
-#endif
+                              ? D_TERM(m_params.num_surfaces, 
+                                       * m_params.num_points_u,
+                                       * m_params.num_points_v)
                               : 0),
       m_du(m_geom.du(m_params.num_points_u)),
       m_dv(m_geom.dv(m_params.num_points_v)), m_done_extraction(false)

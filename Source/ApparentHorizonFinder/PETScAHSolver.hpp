@@ -36,12 +36,7 @@ template <class SurfaceGeometry, class AHFunction> class PETScAHSolver
     //! function to calculate 1st and 2nd derivatives of 'in'
     //! (tipically corresponds to our 'f' function)
     //! in the 'u' and 'v' directions
-    AHDerivData diff(const dmda_arr_t in, int u
-#if CH_SPACEDIM == 3
-                     ,
-                     int v
-#endif
-    );
+    AHDerivData diff(D_DECL(const dmda_arr_t in, int u, int v));
 
     //! interpolate (u,v) 2D grid points at restart if number of points in
     //! either direction changed
@@ -131,12 +126,7 @@ template <class SurfaceGeometry, class AHFunction> class PETScAHSolver
 
   private:
     //! set the default stencils of AHDerivData at position {u,v}
-    void set_stencils(AHDerivData &out, int u
-#if CH_SPACEDIM == 3
-                      ,
-                      int v
-#endif
-    );
+    void set_stencils(D_DECL(AHDerivData &out, int u, int v));
 
     //! private functions used to compute the RHS (the expansion) and it's
     //! jacobian

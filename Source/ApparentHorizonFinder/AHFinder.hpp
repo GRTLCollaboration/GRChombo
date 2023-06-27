@@ -164,7 +164,7 @@ class AHFinder
     std::vector<ApparentHorizon<SurfaceGeometry, AHFunction> *>
         m_apparent_horizons; //!< public in case user wants to solve by himself
 
-}; // namespace AHFinder
+};
 
 #include "AHFinder.impl.hpp"
 
