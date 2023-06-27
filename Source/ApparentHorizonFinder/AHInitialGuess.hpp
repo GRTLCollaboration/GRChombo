@@ -129,7 +129,7 @@ class AHInitialGuessEllipsoid : public AHInitialGuessDefault
 {
   public:
     double D_DECL(m_radius_x, m_radius_y, m_radius_z);
-
+s
     AHInitialGuessEllipsoid() {}
 
     AHInitialGuessEllipsoid(D_DECL(double a_radius_x, double a_radius_y,
@@ -201,3 +201,6 @@ class AHInitialGuessEllipsoid : public AHInitialGuessDefault
         // return get(u); // use ellipsoid
     }
 #endif
+};
+
+#endif /* _AHINITIALGUESS_HPP_ */
