@@ -132,9 +132,6 @@ class AHInitialGuessEllipsoid : public AHInitialGuessDefault
 
     AHInitialGuessEllipsoid() {}
 
-#if CH_SPACEDIM == 3
-    AHInitialGuessEllipsoid(double a_radius_x, double a_radius_y,
-                            double a_radius_z)
     AHInitialGuessEllipsoid(D_DECL(double a_radius_x, double a_radius_y,
                             double a_radius_z))
     {
