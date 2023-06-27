@@ -76,7 +76,6 @@ template <class SurfaceGeometry, class AHFunction> class AHInterpolation_t
     //! when PETSc tried to diverge out of the grid, this doesn't let him do so
     //! it forces him to stay on the grid, causing non-convergence
     bool is_in_grid(double &x, double &y
-#if CH_SPACEDIM == 3
     bool is_in_grid(D_DECL(double &x, double &y, double &z));
     //! PETSc AND AMRInterpolator to interpolate
     //! 'keep_interpolating_if_inactive' returns 'true' immediately for PETSc
