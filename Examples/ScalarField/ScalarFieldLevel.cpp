@@ -142,12 +142,20 @@ void ScalarFieldLevel::specificPostTimeStep()
 
     AMRReductions<VariableType::evolution> amr_reductions(m_gr_amr); //Calls the AMR reductions class
     double vol = amr_reductions.get_domain_volume();                  //Finds the volume you're looping over (should be box volume)
+
     double sfbar = amr_reductions.sum(c_phi);                         //Finds the avg (?) of the phi field (UserVariable)
+    sfbar /= vol;
+
+    double pre_a = amr_reductions.sum(c_chi);
+    pre_a /= vol;
+    
+    double pre_H = amr_reductions.sum(c_K);
+    pre_H /= vol;
 
     SmallDataIO means_file("./means_file", m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step, ".dat"); //Calls the SmallDataIO class
 
     if(first_step) {
-        means_file.write_header_line({"Integration volume","Scalar field mean"}); //Makes a header for the data file
+        means_file.write_header_line({"Integration volume","Scalar field mean","Chi mean","K mean"}); //Makes a header for the data file
     }
-    means_file.write_time_data_line({vol, sfbar});                                //Prints a line of data along with the time step
+    means_file.write_time_data_line({vol, sfbar, pre_a, pre_H});                                //Prints a line of data along with the time step
 }

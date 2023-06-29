@@ -9,9 +9,6 @@
 // assign an enum to each variable
 enum
 {
-    a,
-    H,
-    PhiBar,
     c_Ham,
     c_Mom,
 
@@ -21,9 +18,6 @@ enum
 namespace DiagnosticVariables
 {
 static const std::array<std::string, NUM_DIAGNOSTIC_VARS> variable_names = {
-    "ScaleFactor",
-    "HubbleParam",
-    "PhiBar",
     "Ham",
     "Mom"};
 }

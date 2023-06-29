@@ -14,7 +14,7 @@
 #include "InitialScalarData.hpp"
 #include "KerrBH.hpp"
 #include "Potential.hpp"
-#include "CalcMeans.hpp"
+//#include "CalcMeans.hpp"
 
 class SimulationParameters : public SimulationParametersBase
 {
