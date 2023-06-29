@@ -31,6 +31,7 @@
 
 //For printing out mean diagnostics
 #include "AMRReductions.hpp"
+//#include "CalcMeans.hpp"
 
 // Things to do at each advance step, after the RK4 is calculated 
 void ScalarFieldLevel::specificAdvance()
@@ -75,7 +76,7 @@ void ScalarFieldLevel::prePlotLevel()
     ScalarFieldWithPotential scalar_field(potential);
     BoxLoops::loop(
         MatterConstraints<ScalarFieldWithPotential>(
-            scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom, c_Mom)),
+            scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom, c_Mom), PhiBar),
         m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 }
 #endif
@@ -136,20 +137,17 @@ void ScalarFieldLevel::computeTaggingCriterion(
 
 void ScalarFieldLevel::specificPostTimeStep()
 {
-    if (m_p.max_level == 0) 
-    {
-        CH_TIME("ScalarFieldLevel::specificPostTimeStep");
-        
-        bool first_step = (m_time == 0.);
+    CH_TIME("ScalarFieldLevel::specificPostTimeStep"); //Label for this part of the program in pout
+    bool first_step = (m_time == 0.);                  //Asks if this is the first time calling
 
-        AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
-        double sfbar = amr_reductions.sum(c_phi);
+    AMRReductions<VariableType::evolution> amr_reductions(m_gr_amr); //Calls the AMR reductions class
+    double vol = amr_reductions.get_domain_volume();                  //Finds the volume you're looping over (should be box volume)
+    double sfbar = amr_reductions.sum(c_phi);                         //Finds the avg (?) of the phi field (UserVariable)
 
-        SmallDataIO means_file(m_p.data_path + "means_file", m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step);
+    SmallDataIO means_file("./means_file", m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step, ".dat"); //Calls the SmallDataIO class
 
-        if(first_step) {
-            means_file.write_header_line({"Scalar field mean"});
-        }
-        means_file.write_time_data_line({sfbar});
+    if(first_step) {
+        means_file.write_header_line({"Integration volume","Scalar field mean"}); //Makes a header for the data file
     }
+    means_file.write_time_data_line({vol, sfbar});                                //Prints a line of data along with the time step
 }

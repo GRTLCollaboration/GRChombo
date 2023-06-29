@@ -9,9 +9,9 @@
 // assign an enum to each variable
 enum
 {
-    c_a,
-    c_H,
-    c_PhiBar,
+    a,
+    H,
+    PhiBar,
     c_Ham,
     c_Mom,
 

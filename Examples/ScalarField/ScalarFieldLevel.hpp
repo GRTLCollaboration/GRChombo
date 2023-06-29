@@ -36,6 +36,8 @@ class ScalarFieldLevel : public GRAMRLevel
     //! Initialize data for the field and metric variables
     virtual void initialData();
 
+    //virtual void outputMeans();
+
 #ifdef CH_USE_HDF5
     //! routines to do before outputting plot file
     virtual void prePlotLevel();

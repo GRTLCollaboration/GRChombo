@@ -14,7 +14,7 @@
 #include "InitialScalarData.hpp"
 #include "KerrBH.hpp"
 #include "Potential.hpp"
-//#include "CalcMeans.hpp"
+#include "CalcMeans.hpp"
 
 class SimulationParameters : public SimulationParametersBase
 {
@@ -33,7 +33,7 @@ class SimulationParameters : public SimulationParametersBase
             center; // already read in SimulationParametersBase
         pp.load("G_Newton", G_Newton,
                 0.0); // for now the example neglects backreaction
-        pp.load("max_level", grid_params.max_level, 0);
+        //pp.load("max_level", grid_params.max_level, 0);
         pp.load("scalar_amplitude", initial_params.amplitude, 0.1);
         pp.load("scalar_width", initial_params.width, 1.0);
         pp.load("scalar_mass", potential_params.scalar_mass, 0.1);
@@ -75,7 +75,7 @@ class SimulationParameters : public SimulationParametersBase
     // Initial data for matter and potential and BH
     double G_Newton;
     double m_pl;
-    CalcMeans::params_t grid_params;
+    //CalcMeans::params_t grid_params;
     InitialScalarData::params_t initial_params;
     Potential::params_t potential_params;
     KerrBH::params_t kerr_params;
