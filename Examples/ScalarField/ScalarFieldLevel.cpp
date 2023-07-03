@@ -137,23 +137,31 @@ void ScalarFieldLevel::computeTaggingCriterion(
 
 void ScalarFieldLevel::specificPostTimeStep()
 {
-    CH_TIME("ScalarFieldLevel::specificPostTimeStep"); //Label for this part of the program in pout
-    bool first_step = (m_time == 0.);                  //Asks if this is the first time calling
+    CH_TIME("ScalarFieldLevel::specificPostTimeStep");
+    bool first_step = (m_time == 0.);
 
-    AMRReductions<VariableType::evolution> amr_reductions(m_gr_amr); //Calls the AMR reductions class
-    double vol = amr_reductions.get_domain_volume();                  //Finds the volume you're looping over (should be box volume)
-    double sfbar = amr_reductions.sum(c_phi);                         //Finds the sum of the phi field (UserVariable)
+    AMRReductions<VariableType::evolution> amr_reductions(m_gr_amr);
+
+    //Calculates means
+    double vol = amr_reductions.get_domain_volume();
+    double sfbar = amr_reductions.sum(c_phi);
     sfbar /= vol;
+    double chibar = amr_reductions.sum(c_chi);
+    chibar /= vol;
+    double Kbar = amr_reductions.sum(c_K);
+    Kbar /= vol;
 
-    double a = amr_reductions.sum(c_chi);
-    a /= vol;
-    double H = amr_reductions.sum(c_K);
-    H /= vol;
+    //Calculates variances
+    double sfvar = amr_reductions.sum(c_phi*c_phi)/vol - pow(amr_reductions.sum(c_phi)/vol, 2.);
+    double chivar = amr_reductions.sum(c_chi*c_chi)/vol - pow(amr_reductions.sum(c_chi)/vol, 2.);
+    double Kvar = amr_reductions.sum(c_K*c_K)/vol - pow(amr_reductions.sum(c_K)/vol, 2.);
 
-    SmallDataIO means_file("./means_file", m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step, ".dat"); //Calls the SmallDataIO class
+    SmallDataIO means_file("./means_file", m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step, ".dat");
 
-    if(first_step) {
-        means_file.write_header_line({"Integration volume","Scalar field mean","Scale factor","Hubble parameter"}); //Makes a header for the data file
+    if(first_step) 
+    {
+        means_file.write_header_line({"Integration volume","Scalar field mean","Scalar field variance",
+            "Chi mean","Chi variance","K mean","K variance"});
     }
-    means_file.write_time_data_line({vol, sfbar, sqrt(a), -3*H});                                //Prints a line of data along with the time step
+    means_file.write_time_data_line({vol, sfbar, sfvar, chibar, chivar, Kbar, Kvar});
 }
