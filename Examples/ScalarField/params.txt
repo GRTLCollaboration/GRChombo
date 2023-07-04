@@ -4,7 +4,7 @@
 #################################################
 # Filesystem parameters
 
-verbosity = 1
+verbosity = 0
 
 # location / naming of output files
 output_path = "/home/eaf49/rds/hpc-work" # Main path for all files. Must exist!
