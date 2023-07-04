@@ -44,7 +44,7 @@ print_progress_only_to_rank_0 = 1
 G_Newton = 1.0
 
 # Scalar field initial data
-scalar_amplitude = 1.0
+scalar_amplitude = 10.0
 # scalar_width = 5.0
 scalar_mass = 0.01
 

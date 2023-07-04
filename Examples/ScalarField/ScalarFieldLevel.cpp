@@ -31,7 +31,7 @@
 
 //For printing out mean diagnostics
 #include "AMRReductions.hpp"
-//#include "CalcMeans.hpp"
+#include "MeansVars.hpp"
 
 // Things to do at each advance step, after the RK4 is calculated 
 void ScalarFieldLevel::specificAdvance()
@@ -137,31 +137,30 @@ void ScalarFieldLevel::computeTaggingCriterion(
 
 void ScalarFieldLevel::specificPostTimeStep()
 {
+
     CH_TIME("ScalarFieldLevel::specificPostTimeStep");
+
+    fillAllGhosts();
+
+    BoxLoops::loop(MeansVars(m_dx, m_p.grid_params), m_state_new, m_state_diagnostics, FILL_GHOST_CELLS);
+
     bool first_step = (m_time == 0.);
 
-    AMRReductions<VariableType::evolution> amr_reductions(m_gr_amr);
-
-    //Calculates means
+    AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
     double vol = amr_reductions.get_domain_volume();
-    double sfbar = amr_reductions.sum(c_phi);
-    sfbar /= vol;
-    double chibar = amr_reductions.sum(c_chi);
-    chibar /= vol;
-    double Kbar = amr_reductions.sum(c_K);
-    Kbar /= vol;
+
+    double sfbar = amr_reductions.sum(c_sf)/vol;
+    double chibar = amr_reductions.sum(c_a)/vol;
+    double Kbar = amr_reductions.sum(c_H)/vol;
 
     //Calculates variances
-    double sfvar = amr_reductions.sum(c_phi*c_phi)/vol - pow(amr_reductions.sum(c_phi)/vol, 2.);
-    double chivar = amr_reductions.sum(c_chi*c_chi)/vol - pow(amr_reductions.sum(c_chi)/vol, 2.);
-    double Kvar = amr_reductions.sum(c_K*c_K)/vol - pow(amr_reductions.sum(c_K)/vol, 2.);
+    double sfvar = amr_reductions.sum(c_sf2)/vol - sfbar;
 
     SmallDataIO means_file("./means_file", m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step, ".dat");
 
     if(first_step) 
     {
-        means_file.write_header_line({"Integration volume","Scalar field mean","Scalar field variance",
-            "Chi mean","Chi variance","K mean","K variance"});
+        means_file.write_header_line({"Integration volume","Scalar field mean","Scalar field variance","Chi mean","K mean",});
     }
-    means_file.write_time_data_line({vol, sfbar, sfvar, chibar, chivar, Kbar, Kvar});
+    means_file.write_time_data_line({vol, sfbar, sfvar, chibar, Kbar});
 }
