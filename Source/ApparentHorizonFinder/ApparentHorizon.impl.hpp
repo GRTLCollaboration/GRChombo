@@ -1051,14 +1051,8 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_coords_file(
         else
             var_name = DiagnosticVariables::variable_names[var_enum];
 
-        static std::string xyz[CH_SPACEDIM] = {
-            "x",
-            "y"
-#if CH_SPACEDIM == 3
-            ,
-            "z"
-#endif
-        };
+        static std::array<std::string, CH_SPACEDIM> xyz{
+            D_DECL("x", "y", "z")};
 
         if (der_type == 0)
             components[el++] = var_name;
@@ -1118,11 +1112,9 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_coords_file(
             MayDay::Error("PETSc's rank 0 should be Chombo's rank 0");
 #endif
 
+int local_total = (solver.m_umax - solver.m_umin);
 #if CH_SPACEDIM == 3
-        int local_total =
-            (solver.m_vmax - solver.m_vmin) * (solver.m_umax - solver.m_umin);
-#elif CH_SPACEDIM == 2
-        int local_total = (solver.m_umax - solver.m_umin);
+        local_total *= (solver.m_vmax - solver.m_vmin);
 #endif
 
 #ifdef CH_MPI
@@ -1137,14 +1129,12 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_coords_file(
         {
             for (int u = solver.m_umin; u < solver.m_umax; ++u)
             {
+output[idx * num_components_total] = solver.m_u[idx];
 #if CH_SPACEDIM == 3
-                output[idx * num_components_total] = solver.m_u[idx];
                 output[idx * num_components_total + 1] = solver.m_v[idx];
-                output[idx * num_components_total + 2] = solver.m_F[idx];
-#elif CH_SPACEDIM == 2
-                output[idx * num_components_total] = solver.m_u[idx];
-                output[idx * num_components_total + 1] = solver.m_F[idx];
-#endif
+#endif                
+                output[idx * num_components_total + SpaceDim - 1] 
+                    = solver.m_F[idx]; 
 
                 auto extra = solver.m_interp.get_extra_data(idx);
 
@@ -1303,16 +1293,6 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::check_integration_methods()
     const IntegrationMethod &method_default_v =
         solver.m_interp.get_coord_system().get_recommended_integration_method_v(
             solver.m_num_global_v);
-    if (!valid_v)
-    {
-        std::string warn =
-            "ApparentHorizon: Simpson IntegrationMethod for v is "
-            "not valid with this num_points_v.\n"
-            "Reverting to trapezium rule.";
-        MayDay::Warning(warn.c_str());
-        pout() << warn << std::endl;
-        m_integration_methods[1] = method_default_v;
-    }
 #endif
 }
 
