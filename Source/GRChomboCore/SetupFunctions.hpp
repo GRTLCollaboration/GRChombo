@@ -48,8 +48,35 @@ void setupAMRObject(AMR &gr_amr, AMRLevelFactory &a_factory);
 void mainSetup(int argc, char *argv[])
 {
 #ifdef CH_MPI
+    int mpi_requested_thread_support = MPI_THREAD_SINGLE;
+#ifdef _OPENMP
+    if (omp_get_max_threads() > 1)
+    {
+        // MR: I don't think we need MPI_THREAD_MULTIPLE but it might be safer..
+        mpi_requested_thread_support = MPI_THREAD_SERIALIZED;
+    }
+#endif
+    int mpi_provided_thread_support;
     // Start MPI
-    MPI_Init(&argc, &argv);
+    MPI_Init_thread(&argc, &argv, mpi_requested_thread_support,
+                    &mpi_provided_thread_support);
+    std::string mpi_provided_thread_support_str;
+    switch (mpi_provided_thread_support)
+    {
+    case MPI_THREAD_SINGLE:
+        mpi_provided_thread_support_str = "single";
+        break;
+    case MPI_THREAD_FUNNELED:
+        mpi_provided_thread_support_str = "funneled";
+        break;
+    case MPI_THREAD_SERIALIZED:
+        mpi_provided_thread_support_str = "serialized";
+        break;
+    case MPI_THREAD_MULTIPLE:
+    default:
+        mpi_provided_thread_support_str = "multiple";
+        break;
+    }
 #ifdef CH_AIX
     H5dont_atexit();
 #endif
@@ -77,6 +104,8 @@ void mainSetup(int argc, char *argv[])
         std::cout << " number_procs = " << number_procs << endl;
 #ifdef _OPENMP
         std::cout << " threads = " << omp_get_max_threads() << endl;
+        std::cout << " mpi provided thread support = "
+                  << mpi_provided_thread_support_str << endl;
 #endif
         std::cout << " simd width (doubles) = " << simd_traits<double>::simd_len
                   << endl;
