@@ -74,7 +74,6 @@ template <class data_t> class Coordinates
     /// Coordinates object.
     data_t get_radius() const
     {
-        // Note that this is not currently dimension independent
         data_t r = sqrt(D_TERM(x * x, +y * y, +z * z));
 
         const double minimum_r = 1e-6;
@@ -109,11 +108,9 @@ template <typename data_t>
 ALWAYS_INLINE ostream &operator<<(ostream &os,
                                   const Coordinates<data_t> &in_coords)
 {
-    os << "(x,y,z) = (" << in_coords.x << "," << in_coords.y <<
-#if CH_SPACEDIM == 3
-        "," << in_coords.z <<
-#endif
-        ") r = " << in_coords.get_radius();
+    os << "(x,y,z) = (" 
+       D_TERM(<< in_coords.x, << "," << in_coords.y, << "," << in_coords.z)
+       << ") r = " << in_coords.get_radius();
     return os;
 }
 #endif /* COORDINATES_HPP_ */

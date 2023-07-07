@@ -39,21 +39,10 @@ template <class data_t> struct VarsNoGauge
         define_enum_mapping(mapping_function, c_K, K);
 
         // Symmetric 2-tensors
-#if CH_SPACEDIM == 3
         define_symmetric_enum_mapping(mapping_function,
-                                      GRInterval<c_h11, c_h33>(), h);
+                                      GRInterval<c_h11, D_SELECT(,c_h22, c_h33)>(), h);
         define_symmetric_enum_mapping(mapping_function,
-                                      GRInterval<c_A11, c_A33>(), A);
-#elif CH_SPACEDIM == 2
-        define_symmetric_enum_mapping(mapping_function,
-                                      GRInterval<c_h11, c_h22>(), h);
-        define_symmetric_enum_mapping(mapping_function,
-                                      GRInterval<c_A11, c_A22>(), A);
-#else
-#ifdef CH_SPACEDIM
-#error define_enum_mapping() has not got your dimension combination implemented.
-#endif
-#endif
+                                      GRInterval<c_A11, D_SELECT(,c_A22, c_A33)>(), A);
     }
 };
 
@@ -71,17 +60,9 @@ template <class data_t> struct VarsWithGauge : public VarsNoGauge<data_t>
         using namespace VarsTools; // define_enum_mapping is part of VarsTools
         VarsNoGauge<data_t>::enum_mapping(mapping_function);
         define_enum_mapping(mapping_function, c_lapse, lapse);
-#if CH_SPACEDIM == 3
-        define_enum_mapping(mapping_function, GRInterval<c_shift1, c_shift3>(),
+        define_enum_mapping(mapping_function, 
+                            GRInterval<c_shift1, D_SELECT(, c_shift2, c_shift3)>(),
                             shift);
-#elif CH_SPACEDIM == 2
-        define_enum_mapping(mapping_function, GRInterval<c_shift1, c_shift2>(),
-                            shift);
-#else
-#ifdef CH_SPACEDIM
-#error define_enum_mapping() has not got your dimension combination implemented.
-#endif
-#endif
     }
 };
 
@@ -96,17 +77,9 @@ template <class data_t> struct Diff2VarsNoGauge
     {
         using namespace VarsTools; // define_enum_mapping is part of VarsTools
         define_enum_mapping(mapping_function, c_chi, chi);
-#if CH_SPACEDIM == 3
         define_symmetric_enum_mapping(mapping_function,
-                                      GRInterval<c_h11, c_h33>(), h);
-#elif CH_SPACEDIM == 2
-        define_symmetric_enum_mapping(mapping_function,
-                                      GRInterval<c_h11, c_h22>(), h);
-#else
-#ifdef CH_SPACEDIM
-#error define_enum_mapping() has not got your dimension combination implemented.
-#endif
-#endif
+                                      GRInterval<c_h11, 
+                                                 D_SELECT(, c_h22, c_h33)>(), h);
     }
 };
 
@@ -125,17 +98,9 @@ struct Diff2VarsWithGauge : public Diff2VarsNoGauge<data_t>
         using namespace VarsTools; // define_enum_mapping is part of VarsTools
         Diff2VarsNoGauge<data_t>::enum_mapping(mapping_function);
         define_enum_mapping(mapping_function, c_lapse, lapse);
-#if CH_SPACEDIM == 3
-        define_enum_mapping(mapping_function, GRInterval<c_shift1, c_shift3>(),
+        define_enum_mapping(mapping_function, 
+                            GRInterval<c_shift1, D_SELECT(, c_shift2, c_shift3)>(),
                             shift);
-#elif CH_SPACEDIM == 2
-        define_enum_mapping(mapping_function, GRInterval<c_shift1, c_shift2>(),
-                            shift);
-#else
-#ifdef CH_SPACEDIM
-#error define_enum_mapping() has not got your dimension combination implemented.
-#endif
-#endif
     }
 };
 } // namespace ADMConformalVars

@@ -105,40 +105,40 @@ int runSphericalExtractionTest(int argc, char *argv[])
     spherical_extraction_lo.add_mode_integrand(
         sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
         integral_lo_trapezium, IntegrationMethod::trapezium,
-        IntegrationMethod::simpson, broadcast_integral);
+        IntegrationMethod::trapezium, broadcast_integral);
     spherical_extraction_hi.add_mode_integrand(
         sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
         integral_hi_trapezium, IntegrationMethod::trapezium,
-        IntegrationMethod::simpson, broadcast_integral);
+        IntegrationMethod::trapezium, broadcast_integral);
     std::pair<std::vector<double>, std::vector<double>> integral_lo_simpson,
         integral_hi_simpson;
     spherical_extraction_lo.add_mode_integrand(
         sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
         integral_lo_simpson, IntegrationMethod::simpson,
-        IntegrationMethod::simpson, broadcast_integral);
+        IntegrationMethod::trapezium, broadcast_integral);
     spherical_extraction_hi.add_mode_integrand(
         sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
         integral_hi_simpson, IntegrationMethod::simpson,
-        IntegrationMethod::simpson, broadcast_integral);
+        IntegrationMethod::trapezium, broadcast_integral);
     std::pair<std::vector<double>, std::vector<double>> integral_lo_simpson38,
         integral_hi_simpson38;
     spherical_extraction_lo.add_mode_integrand(
         sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
         integral_lo_simpson38, IntegrationMethod::simpson38,
-        IntegrationMethod::simpson, broadcast_integral);
+        IntegrationMethod::trapezium, broadcast_integral);
     spherical_extraction_hi.add_mode_integrand(
         sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
         integral_hi_simpson38, IntegrationMethod::simpson38,
-        IntegrationMethod::simpson, broadcast_integral);
+        IntegrationMethod::trapezium, broadcast_integral);
     std::pair<std::vector<double>, std::vector<double>> integral_lo_boole,
         integral_hi_boole;
     spherical_extraction_lo.add_mode_integrand(
         sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
-        integral_lo_boole, IntegrationMethod::boole, IntegrationMethod::simpson,
+        integral_lo_boole, IntegrationMethod::boole, IntegrationMethod::trapezium,
         broadcast_integral);
     spherical_extraction_hi.add_mode_integrand(
         sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
-        integral_hi_boole, IntegrationMethod::boole, IntegrationMethod::simpson,
+        integral_hi_boole, IntegrationMethod::boole, IntegrationMethod::trapezium,
         broadcast_integral);
 
     // do the surface integration

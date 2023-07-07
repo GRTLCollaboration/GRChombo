@@ -54,19 +54,15 @@ SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
                 for (int iv = 0; iv < m_params.num_points_v; ++iv)
                 {
                     double v = m_geom.v(iv, m_params.num_points_v);
+#endif
                     FOR(idir)
                     {
-                        int idx = index(isurface, iu, iv);
-                        m_interp_coords[idir][idx] = m_geom.get_grid_coord(
-                            idir, surface_param_value, u, v);
+                        int idx = index(D_DECL(isurface, iu, iv));
+                        m_interp_coords[idir][idx] =
+                            m_geom.get_grid_coord(idir, D_DECL(surface_param_value, 
+                                                               u, v));
                     }
-                }
-#elif CH_SPACEDIM == 2
-                FOR(idir)
-                {
-                    int idx = index(isurface, iu);
-                    m_interp_coords[idir][idx] =
-                        m_geom.get_grid_coord(idir, surface_param_value, u);
+#if CH_SPACEDIM == 3
                 }
 #endif
             }
@@ -276,11 +272,7 @@ void SurfaceExtraction<SurfaceGeometry>::integrate()
                     for (int ivar = 0; ivar < m_vars.size(); ++ivar)
                     {
                         data_here[ivar] =
-#if CH_SPACEDIM == 3
-                            m_interp_data[ivar][index(isurface, iu, iv)];
-#elif CH_SPACEDIM == 2
-                            m_interp_data[ivar][index(isurface, iu)];
-#endif
+                            m_interp_data[ivar][index(D_DECL(isurface, iu, iv))];
                     }
                     for (int iintegral = 0; iintegral < num_integrals;
                          ++iintegral)
@@ -405,23 +397,21 @@ void SurfaceExtraction<SurfaceGeometry>::write_extraction(
                 for (int iv = 0; iv < m_params.num_points_v; ++iv)
                 {
                     double v = m_geom.v(iv, m_params.num_points_v);
-                    int idx = index(isurface, iu, iv);
-#elif CH_SPACEDIM == 2
-                {
-                    int idx = index(isurface, iu);
+
 #endif
+int idx = index(D_DECL(isurface, iu, iv));
                     std::vector<double> data(m_vars.size());
                     for (int ivar = 0; ivar < m_vars.size(); ++ivar)
                     {
                         data[ivar] = m_interp_data[ivar][idx];
                     }
-
-#if CH_SPACEDIM == 3
-                    extraction_file.write_data_line(data, {u, v});
-#elif CH_SPACEDIM == 2
+#if CH_SPACEDIM == 2
                     extraction_file.write_data_line(data, u);
 #endif
+#if CH_SPACEDIM == 3
+                    extraction_file.write_data_line(data, {u, v});
                 }
+#endif
             }
             extraction_file.line_break();
         }

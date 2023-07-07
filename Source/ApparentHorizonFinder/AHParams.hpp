@@ -103,8 +103,8 @@ struct PETSc_params
 };
 
 // prepend with 'AH_' in params file
-template <class AHFunction> struct AHParams_t
-{
+template <class AHFunction> struct AHParams_t 
+{    
     int num_ranks; //!< number of ranks for PETSc sub-communicator (default
                    //!< 0, which is 'all')
 
