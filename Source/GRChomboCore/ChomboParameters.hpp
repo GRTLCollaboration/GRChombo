@@ -475,6 +475,22 @@ class ChomboParameters
         }
     }
 
+    template <typename T>
+    void check_parameter(const std::string &a_name, T a_value,
+                         const bool a_valid,
+                         const std::string &a_invalid_explanation)
+    {
+        if (a_valid)
+            return;
+        else
+        {
+            std::ostringstream error_message_ss;
+            error_message_ss << "Parameter: " << a_name << " = " << a_value
+                             << " is invalid: " << a_invalid_explanation;
+            error(error_message_ss.str());
+        }
+    }
+
     // General parameters
     int verbosity;
     double L;                               // Physical sidelength of the grid
@@ -543,22 +559,6 @@ class ChomboParameters
         if (procID() == 0)
         {
             MayDay::Error(a_error_message.c_str());
-        }
-    }
-
-    template <typename T>
-    void check_parameter(const std::string &a_name, T a_value,
-                         const bool a_valid,
-                         const std::string &a_invalid_explanation)
-    {
-        if (a_valid)
-            return;
-        else
-        {
-            std::ostringstream error_message_ss;
-            error_message_ss << "Parameter: " << a_name << " = " << a_value
-                             << " is invalid: " << a_invalid_explanation;
-            error(error_message_ss.str());
         }
     }
 

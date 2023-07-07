@@ -212,25 +212,34 @@ void AHParams_t<AHFunction>::read_params(GRParmParse &pp,
     MPI_Comm_size(Chombo_MPI::comm, &size);
 #endif
     size = std::min(num_ranks, size);
+
+    ChomboParameters chombo_params(a_p);
+
+    chombo_params.check_parameter("AH_num_points_u", num_points_u, num_points_u > 0, "must be >0");
 #if CH_SPACEDIM == 3
-    CH_assert(this->num_points_u > 0 && this->num_points_v > 0);
-    CH_assert(this->num_points_u / sqrt(size) >= 3); // make sure for size 'u'
-    CH_assert(this->num_points_v / sqrt(size) >= 3); // make sure for size 'v'
+    chombo_params.check_parameter("AH_num_points_v", num_points_v, num_points_v > 0, "must be >0");
+    chombo_params.check_parameter("AH_num_points_u", num_points_u, num_points_u / sqrt(size) >= 3, "(num_points_u/sqrt(size)) must be >0"); // make sure for size 'u'
+    chombo_params.check_parameter("AH_num_points_v", num_points_v, num_points_v / sqrt(size) >= 3, "(num_points_v/sqrt(size)) must be >0"); // make sure for size 'v'
 #elif CH_SPACEDIM == 2
-    CH_assert(this->num_points_u > 0);
-    CH_assert(this->num_points_u / size >= 3); // make sure for size 'u'
+    chombo_params.check_parameter("AH_num_points_u", num_points_u, num_points_u / size >= 3, "(num_points_u/size) must be >0"); // make sure for size 'u'
 #endif
 
     pp.load("AH_solve_interval", solve_interval, 1);
     pp.load("AH_print_interval", print_interval, 1);
+    // sanity checks
+    chombo_params.check_parameter("AH_solve_interval", solve_interval, solve_interval > 0, "must be >0");
+    chombo_params.check_parameter("AH_print_interval", print_interval, print_interval > 0, "must be >0");
     pp.load("AH_track_center", track_center, true);
     pp.load("AH_predict_origin", predict_origin, track_center);
     // can't predict if center is not being tracked
-    CH_assert(!(predict_origin && !track_center));
-
+    if (predict_origin)
+    {
+        chombo_params.check_parameter("AH_track_center", track_center, track_center == 1, "can't predict if center is not being tracked");
+    }
     pp.load("AH_level_to_run", level_to_run, 0);
-    CH_assert(level_to_run <= a_p.max_level &&
-              level_to_run > -(a_p.max_level + 1));
+    chombo_params.check_parameter("AH_level_to_run", level_to_run, level_to_run <= a_p.max_level, "must be <= max_level");
+    chombo_params.check_parameter("AH_level_to_run", level_to_run, level_to_run >= 0, "must be >= 0");
+    chombo_params.check_parameter("AH_level_to_run", level_to_run,  level_to_run > -(a_p.max_level + 1), "must be > -(max_level+1)");
     if (level_to_run < 0) // if negative, count backwards
         level_to_run += a_p.max_level + 1;
 
@@ -244,11 +253,6 @@ void AHParams_t<AHFunction>::read_params(GRParmParse &pp,
     pp.load("AH_verbose", verbose, (int)MIN);
     pp.load("AH_print_geometry_data", print_geometry_data, false);
     pp.load("AH_re_solve_at_restart", re_solve_at_restart, false);
-
-    // sanity checks
-    CH_assert(solve_interval > 0 && print_interval > 0);
-    CH_assert(level_to_run >= 0 && level_to_run <= a_p.max_level);
-
     // load vars to write to coord files
     num_extra_vars = 0;
     extra_contain_diagnostic = 0;

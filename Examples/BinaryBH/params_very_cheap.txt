@@ -1,5 +1,7 @@
 # See the wiki page for an explanation of the params!
 # https://github.com/GRChombo/GRChombo/wiki/Guide-to-parameters
+# and a guide to this specific example at
+# https://github.com/GRChombo/GRChombo/wiki/Running-the-BBH-example
 
 #################################################
 # Filesystem parameters
@@ -65,7 +67,9 @@ L_full = 16
 # Maximum number of times you can regrid above coarsest level
 max_level = 2 # There are (max_level+1) grids, so min is zero
 
-# need max_level entries for regrid interval
+# Frequency of regridding at each level and thresholds on the tagging
+# Need one for each level except the top one, ie max_level items
+# Generally you do not need to regrid frequently on every level
 # Level Regridding: 0   1   2   3   4   5
 regrid_interval =   1   1   1   1   0   0
 regrid_threshold = 0.3
@@ -105,7 +109,7 @@ vars_parity_diagnostic = 0 1 2 3          #Ham and Mom
                          0 7              #Weyl
 
 # if sommerfeld boundaries selected, must select
-# non zero asymptotic values
+# asymptotic values
 num_nonzero_asymptotic_vars = 5
 nonzero_asymptotic_vars = chi h11 h22 h33 lapse
 nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
