@@ -16,19 +16,23 @@ class NanCheck
   protected:
     const std::string m_error_info = "NanCheck";
     const double m_max_abs = 1e20;
-    const double m_dx;
+    const double m_dx = 0.0;
 
   public:
-    NanCheck(const double a_dx = 1.0) : m_dx(a_dx) {}
+    // This allows us to output the physical coords if the dx value is passed
+    NanCheck(const double a_dx) : m_dx(a_dx) {}
 
     /// This constructor takes a string which will be displayed when nans happen
-    NanCheck(const std::string a_error_info, const double a_dx = 1.0)
+    /// as well as the grid spacing
+    NanCheck(const double a_dx, const std::string a_error_info)
         : m_error_info(a_error_info), m_dx(a_dx)
     {
     }
 
-    NanCheck(const std::string a_error_info, const double a_max_abs,
-             const double a_dx = 1.0)
+    // This constructor takes all arguments, note ordering to reduce potential
+    // to confuse dx and max_abs
+    NanCheck(const double a_dx, const std::string a_error_info,
+             const double a_max_abs)
         : m_error_info(a_error_info), m_max_abs(a_max_abs), m_dx(a_dx)
     {
     }
@@ -37,7 +41,7 @@ class NanCheck
     {
         // stop is shared between all threads
         bool stop;
-// guard update to prevent a race
+// guard assignment to prevent a race
 #pragma omp atomic write
         stop = false;
 
@@ -51,11 +55,11 @@ class NanCheck
 #pragma omp atomic write
                 stop = true;
         }
-        if (stop)
-        {
 // This needs to be the master thread, otherwise some schedulers have trouble
 // exiting
 #pragma omp master
+        if (stop)
+        {
             {
                 pout() << m_error_info
                        << "::Values have become nan. The current state is: \n";
@@ -64,9 +68,17 @@ class NanCheck
                     pout() << UserVariables::variable_names[ivar] << ": "
                            << current_cell.load_vars(ivar) << std::endl;
                 }
-                pout() << "Integer coordinates: " << current_cell.get_int_vect()
-                       << std::endl;
-                pout() << "m_dx: " << m_dx << std::endl;
+                IntVect iv = current_cell.get_int_vect();
+                pout() << "Integer coordinates: " << iv << std::endl;
+                if (m_dx != 0.0)
+                {
+                    pout() << "with m_dx: " << m_dx << std::endl;
+                    RealVect position(iv + 0.5 * RealVect::Unit);
+                    position *= m_dx;
+                    pout() << "Physical coords relative to bottom left corner "
+                              "of domain: "
+                           << position << std::endl;
+                }
             }
             MayDay::Error("Values have become nan.");
         }
