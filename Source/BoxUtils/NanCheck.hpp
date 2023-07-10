@@ -21,7 +21,10 @@ class NanCheck
   public:
     NanCheck() {}
 
-    // This allows us to output the physical coords if the dx value is passed
+    /// This constructor takes a string which will be displayed when nans happen
+    NanCheck(const std::string a_error_info) : m_error_info(a_error_info) {}
+
+    /// This allows us to output the physical coords if the dx value is passed
     NanCheck(const double a_dx) : m_dx(a_dx) {}
 
     /// This constructor takes a string which will be displayed when nans happen
