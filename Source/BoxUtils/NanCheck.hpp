@@ -19,6 +19,8 @@ class NanCheck
     const double m_dx = 0.0;
 
   public:
+    NanCheck() {}
+
     // This allows us to output the physical coords if the dx value is passed
     NanCheck(const double a_dx) : m_dx(a_dx) {}
 
