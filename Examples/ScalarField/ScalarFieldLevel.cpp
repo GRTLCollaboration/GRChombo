@@ -146,34 +146,33 @@ void ScalarFieldLevel::specificPostTimeStep()
     }
 
     fillAllGhosts();
-
     Potential potential(m_p.potential_params);
-
-    BoxLoops::loop(MeansVars(m_dx, m_p.grid_params), m_state_new, m_state_diagnostics, FILL_GHOST_CELLS);
-
-    bool first_step = (m_time == 0.);
 
     AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
     double vol = amr_reductions.get_domain_volume();
 
-    double sfbar = amr_reductions.sum(c_sf)/vol;
+    BoxLoops::loop(MeansVars(m_dx, m_p.grid_params), m_state_new, m_state_diagnostics, FILL_GHOST_CELLS);
+
+    //Calculates means
+    double phibar = amr_reductions.sum(c_sf)/vol;
     double chibar = amr_reductions.sum(c_a)/vol;
     double Kbar = amr_reductions.sum(c_H)/vol;
 
-    double potb = 0.5*amr_reductions.sum(c_sf2)/vol;
     double kinb = amr_reductions.sum(c_kin)/vol;
+    double potb = 0.5*amr_reductions.sum(c_sf2)/vol;
 
     double hambar = amr_reductions.sum(c_Ham)/vol;
     double mombar = amr_reductions.sum(c_Mom)/vol;
 
     //Calculates variances
-    double sfvar = 2.0*potb - sfbar*sfbar;
+    double phivar = 2.0*potb - sfbar*sfbar;
 
+    //Prints all that out into the data/ directory
     SmallDataIO means_file(m_p.data_path+"means_file", m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step, ".dat");
 
     if(first_step) 
     {
         means_file.write_header_line({"Scalar field mean","Scalar field variance","Chi mean","K mean","Kinetic energy","Potential energy","Avg Ham constr","Avg Mom constr"});
     }
-    means_file.write_time_data_line({sfbar, sfvar, chibar, Kbar, kinb, potb, hambar, mombar});
+    means_file.write_time_data_line({phibar, phivar, chibar, Kbar, kinb, potb, hambar, mombar});
 }

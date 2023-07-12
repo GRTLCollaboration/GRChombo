@@ -28,7 +28,6 @@ inline
      const auto vars = current_cell.template load_vars<Vars>();
 
      data_t phisq = vars.phi*vars.phi;
-
      data_t kin = 0.5*vars.Pi*vars.Pi;
 
     //store class (Vars) variables as diagnostic variables on the grid
