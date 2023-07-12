@@ -140,6 +140,11 @@ void ScalarFieldLevel::specificPostTimeStep()
 
     CH_TIME("ScalarFieldLevel::specificPostTimeStep");
 
+    if (!FilesystemTools::directory_exists(m_p.data_path)) 
+    {
+        FilesystemTools::mkdir_recursive(m_p.data_path);
+    }
+
     fillAllGhosts();
 
     Potential potential(m_p.potential_params);
@@ -160,8 +165,6 @@ void ScalarFieldLevel::specificPostTimeStep()
 
     double hambar = amr_reductions.sum(c_Ham)/vol;
     double mombar = amr_reductions.sum(c_Mom)/vol;
-
-    cout << m_p.data_path << endl;
 
     //Calculates variances
     double sfvar = 2.0*potb - sfbar*sfbar;
