@@ -14,6 +14,9 @@ enum
     c_H,
     c_sf2,
 
+    c_pot,
+    c_kin,
+
     c_Ham,
     c_Mom,
 

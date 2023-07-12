@@ -7,7 +7,7 @@
 verbosity = 0
 
 # location / naming of output files
-output_path = "/home/eaf49/rds/hpc-work" # Main path for all files. Must exist!
+output_path = "/nfs/st01/hpc-gr-epss/eaf49/test-dump/" # Main path for all files. Must exist!
 chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
 # restart_file = ScalarField_000000.3d.hdf5
@@ -44,13 +44,8 @@ print_progress_only_to_rank_0 = 1
 G_Newton = 1.0
 
 # Scalar field initial data
-scalar_amplitude = 10.0
-# scalar_width = 5.0
-scalar_mass = 0.01
-
-# Kerr BH data
-kerr_mass = 0.0
-kerr_spin = 0.0
+scalar_amplitude = 1.0
+scalar_mass = 1e-6
 
 #################################################
 # Grid parameters
@@ -63,7 +58,7 @@ kerr_spin = 0.0
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
 N_full = 128
-L_full = 256
+L_full = 20
 
 # Maximum number of times you can regrid above coarsest level
 max_level = 0 # There are (max_level+1) grids, so min is zero (does changing this turn off AMR?)
@@ -139,8 +134,8 @@ max_spatial_derivative_order = 4 # can be 4 or 6
 nan_check = 1
 
 # Lapse evolution
-lapse_advec_coeff = 1.0
-lapse_coeff = 2.0
+lapse_advec_coeff = 0.0
+lapse_coeff = -0.3333333333333
 lapse_power = 1.0
 
 # Shift evolution

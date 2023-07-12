@@ -25,6 +25,7 @@ class MeansVars
         struct Vars 
         {
             data_t phi;
+            data_t Pi;
             data_t chi;
             data_t K;
             
