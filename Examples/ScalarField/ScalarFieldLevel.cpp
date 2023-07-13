@@ -145,6 +145,8 @@ void ScalarFieldLevel::specificPostTimeStep()
         FilesystemTools::mkdir_recursive(m_p.data_path);
     }
 
+    bool first_step = (m_time == 0.);
+
     fillAllGhosts();
     Potential potential(m_p.potential_params);
 
@@ -165,7 +167,7 @@ void ScalarFieldLevel::specificPostTimeStep()
     double mombar = amr_reductions.sum(c_Mom)/vol;
 
     //Calculates variances
-    double phivar = 2.0*potb - sfbar*sfbar;
+    double phivar = 2.0*potb - phibar*phibar;
 
     //Prints all that out into the data/ directory
     SmallDataIO means_file(m_p.data_path+"means_file", m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step, ".dat");
