@@ -32,6 +32,7 @@ inline
 
     //store class (Vars) variables as diagnostic variables on the grid
      current_cell.store_vars(vars.phi, c_sf);
+     current_cell.store_vars(vars.Pi, c_sfd);
      current_cell.store_vars(vars.chi, c_a);
      current_cell.store_vars(vars.K, c_H);
      current_cell.store_vars(phisq, c_sf2);
@@ -43,8 +44,8 @@ inline
  void MeansVars::Vars<data_t>::enum_mapping(mapping_function_t mapping_function)
  {
      using namespace VarsTools;
-     define_enum_mapping(mapping_function, c_phi, phi);
-     define_enum_mapping(mapping_function, c_Pi, Pi);
+     define_enum_mapping(mapping_function, c_sf, phi);
+     define_enum_mapping(mapping_function, c_sfd, Pi);
      define_enum_mapping(mapping_function, c_chi, chi);
      define_enum_mapping(mapping_function, c_K, K);
  }

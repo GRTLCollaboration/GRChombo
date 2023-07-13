@@ -10,6 +10,7 @@
 enum
 {
     c_sf,
+    c_sfd,
     c_a,
     c_H,
     c_sf2,
@@ -27,9 +28,12 @@ namespace DiagnosticVariables
 {
 static const std::array<std::string, NUM_DIAGNOSTIC_VARS> variable_names = {
     "Phi",
+    "Pi",
     "ScaleFactor",
     "HubbleFactor",
     "PhiSq",
+    "PotED",
+    "KinED",
     "Ham",
     "Mom"};
 }

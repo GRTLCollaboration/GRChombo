@@ -32,6 +32,7 @@
 //For printing out mean diagnostics
 #include "AMRReductions.hpp"
 #include "MeansVars.hpp"
+#include <cmath>
 
 // Things to do at each advance step, after the RK4 is calculated 
 void ScalarFieldLevel::specificAdvance()
@@ -145,9 +146,11 @@ void ScalarFieldLevel::specificPostTimeStep()
         FilesystemTools::mkdir_recursive(m_p.data_path);
     }
 
+    bool first_step = (m_time == 0.);
     fillAllGhosts();
 
     double mass = m_p.potential_params.scalar_mass;
+    cout << mass << endl;
 
     AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
     double vol = amr_reductions.get_domain_volume();
@@ -156,8 +159,10 @@ void ScalarFieldLevel::specificPostTimeStep()
 
     //Calculates means
     double phibar = amr_reductions.sum(c_sf)/vol;
-    double chibar = amr_reductions.sum(c_a)/vol;
-    double Kbar = amr_reductions.sum(c_H)/vol;
+    double pibar = amr_reductions.sum(c_sfd)/vol;
+
+    double a = pow(amr_reductions.sum(c_a)/vol, -0.5);
+    double H = -amr_reductions.sum(c_H)/vol/3.;
 
     double kinb = amr_reductions.sum(c_kin)/vol;
     double potb = 0.5*mass*mass*amr_reductions.sum(c_sf2)/vol;
@@ -166,16 +171,19 @@ void ScalarFieldLevel::specificPostTimeStep()
     double mombar = amr_reductions.sum(c_Mom)/vol;
 
     //Calculates the slow-roll parameters
+    double epsilon = 3.*kinb/(kinb + potb);
+    double delta = 3. + mass*mass*phibar/H/pibar;
 
     //Calculates variances
-    double phivar = 2.0*potb - phibar*phibar;
+    double phivar = amr_reductions.sum(c_sf2)/vol - phibar*phibar;
 
     //Prints all that out into the data/ directory
     SmallDataIO means_file(m_p.data_path+"means_file", m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step, ".dat");
 
     if(first_step) 
     {
-        means_file.write_header_line({"Scalar field mean","Scalar field variance","Chi mean","K mean","Energy density","Avg Ham constr","Avg Mom constr"});
+        means_file.write_header_line({"Scalar field mean","Scalar field variance","Scale factor","Hubble factor",
+            "First SRP","Second SRP","Kinetic ED","Potential ED","Avg Ham constr","Avg Mom constr"});
     }
-    means_file.write_time_data_line({phibar, phivar, chibar, Kbar, (kinb + potb), hambar, mombar});
+    means_file.write_time_data_line({phibar, phivar, a, H, epsilon, delta, kinb, potb, hambar, mombar});
 }
