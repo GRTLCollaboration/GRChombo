@@ -146,7 +146,8 @@ void ScalarFieldLevel::specificPostTimeStep()
     }
 
     fillAllGhosts();
-    Potential potential(m_p.potential_params);
+
+    double mass = m_p.potential_params.scalar_mass;
 
     AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
     double vol = amr_reductions.get_domain_volume();
@@ -159,20 +160,22 @@ void ScalarFieldLevel::specificPostTimeStep()
     double Kbar = amr_reductions.sum(c_H)/vol;
 
     double kinb = amr_reductions.sum(c_kin)/vol;
-    double potb = 0.5*amr_reductions.sum(c_sf2)/vol;
+    double potb = 0.5*mass*mass*amr_reductions.sum(c_sf2)/vol;
 
     double hambar = amr_reductions.sum(c_Ham)/vol;
     double mombar = amr_reductions.sum(c_Mom)/vol;
 
+    //Calculates the slow-roll parameters
+
     //Calculates variances
-    double phivar = 2.0*potb - sfbar*sfbar;
+    double phivar = 2.0*potb - phibar*phibar;
 
     //Prints all that out into the data/ directory
     SmallDataIO means_file(m_p.data_path+"means_file", m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step, ".dat");
 
     if(first_step) 
     {
-        means_file.write_header_line({"Scalar field mean","Scalar field variance","Chi mean","K mean","Kinetic energy","Potential energy","Avg Ham constr","Avg Mom constr"});
+        means_file.write_header_line({"Scalar field mean","Scalar field variance","Chi mean","K mean","Energy density","Avg Ham constr","Avg Mom constr"});
     }
-    means_file.write_time_data_line({phibar, phivar, chibar, Kbar, kinb, potb, hambar, mombar});
+    means_file.write_time_data_line({phibar, phivar, chibar, Kbar, (kinb + potb), hambar, mombar});
 }
