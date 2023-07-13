@@ -61,11 +61,11 @@ momentumB =  0.0841746  0.000510846 0.0
 # NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full',
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
-N_full = 128
+N_full = 64
 L_full = 512
 
 # Maximum number of times you can regrid above coarsest level
-max_level = 8 # There are (max_level+1) grids, so min is zero
+max_level = 9 # There are (max_level+1) grids, so min is zero
 
 # Frequency of regridding at each level and thresholds on the tagging
 # Need one for each level except the top one, ie max_level items
