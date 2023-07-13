@@ -106,7 +106,7 @@ int runSphericalExtractionUniformTest(int argc, char *argv[])
     SimulationParameters sim_params(pp);
 
     GRAMR gr_amr;
-    DefaultLevelFactory<SphericalExtractionUniformTestLevel>
+    DefaultLevelFactory<SphericalExtractionTestLevel>
         surface_extraction_test_level_fact(gr_amr, sim_params);
     // the initial data for the two variables is the spherical harmonic
     // specified by params
