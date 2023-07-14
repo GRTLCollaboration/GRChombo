@@ -7,7 +7,7 @@
 verbosity = 0
 
 # location / naming of output files
-output_path = "/nfs/st01/hpc-gr-epss/eaf49/" # Main path for all files. Must exist!
+output_path = "/nfs/st01/hpc-gr-epss/eaf49/test-dump/" # Main path for all files. Must exist!
 chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
 # restart_file = ScalarField_000000.3d.hdf5
@@ -136,7 +136,7 @@ nan_check = 1
 # Lapse evolution
 lapse_advec_coeff = 0.0
 lapse_coeff = 0.0 # 0 for cosmic time, -0.3333333333333 for conformal time
-lapse_power = 0.0 # 0 for cosmic time, 1 for conformal time
+lapse_power = 0.0 # any for cosmic time, 1 for conformal time
 
 # Shift evolution
 shift_advec_coeff = 0.0 # Usually no advection for beta
