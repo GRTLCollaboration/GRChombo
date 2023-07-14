@@ -151,6 +151,7 @@ void ScalarFieldLevel::specificPostTimeStep()
     Potential potential(m_p.potential_params);
 
     AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
+    AMRReductions<VariableType::evolution> amr_reductions_evo(m_gr_amr);
     double vol = amr_reductions.get_domain_volume();
 
     BoxLoops::loop(MeansVars(m_dx, m_p.grid_params), m_state_new, m_state_diagnostics, FILL_GHOST_CELLS);
@@ -166,6 +167,8 @@ void ScalarFieldLevel::specificPostTimeStep()
     double hambar = amr_reductions.sum(c_Ham)/vol;
     double mombar = amr_reductions.sum(c_Mom)/vol;
 
+    double lapse = amr_reductions_evo.sum(c_lapse)/vol;
+
     //Calculates variances
     double phivar = 2.0*potb - phibar*phibar;
 
@@ -174,7 +177,7 @@ void ScalarFieldLevel::specificPostTimeStep()
 
     if(first_step) 
     {
-        means_file.write_header_line({"Scalar field mean","Scalar field variance","Chi mean","K mean","Kinetic energy","Potential energy","Avg Ham constr","Avg Mom constr"});
+        means_file.write_header_line({"Scalar field mean","Scalar field variance","Chi mean","K mean","Kinetic energy","Potential energy","Avg Ham constr","Avg Mom constr", "Avg lapse"});
     }
-    means_file.write_time_data_line({phibar, phivar, chibar, Kbar, kinb, potb, hambar, mombar});
+    means_file.write_time_data_line({phibar, phivar, chibar, Kbar, kinb, potb, hambar, mombar, lapse});
 }
