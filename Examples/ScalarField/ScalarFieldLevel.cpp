@@ -161,16 +161,19 @@ void ScalarFieldLevel::specificPostTimeStep()
     double chibar = amr_reductions.sum(c_a)/vol;
     double Kbar = amr_reductions.sum(c_H)/vol;
 
-    double kinb = amr_reductions.sum(c_kin)/vol;
+    double kinb = 0.5*amr_reductions.sum(c_kin)/vol;
     double potb = 0.5*amr_reductions.sum(c_sf2)/vol;
 
     double hambar = amr_reductions.sum(c_Ham)/vol;
     double mombar = amr_reductions.sum(c_Mom)/vol;
 
-    double lapse = amr_reductions_evo.sum(c_lapse)/vol;
+    //Calculates the slow-roll parameters
+    double epsilon = 3.*kinb/(kinb + potb);
+    double delta = 3. + 0.01*0.01*phibar/(2.*kinb)/(-Kbar/3.);
 
     //Calculates variances
     double phivar = 2.0*potb - phibar*phibar;
+    double lapse = amr_reductions_evo.sum(c_lapse)/vol;
 
     //Prints all that out into the data/ directory
     SmallDataIO means_file(m_p.data_path+"means_file", m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step, ".dat");
@@ -179,5 +182,5 @@ void ScalarFieldLevel::specificPostTimeStep()
     {
         means_file.write_header_line({"Scalar field mean","Scalar field variance","Chi mean","K mean","Kinetic energy","Potential energy","Avg Ham constr","Avg Mom constr", "Avg lapse"});
     }
-    means_file.write_time_data_line({phibar, phivar, chibar, Kbar, kinb, potb, hambar, mombar, lapse});
+    means_file.write_time_data_line({phibar, phivar, chibar, Kbar, epsilon, delta, kinb, potb, hambar, mombar, lapse});
 }

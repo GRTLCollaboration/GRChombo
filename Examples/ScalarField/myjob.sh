@@ -9,6 +9,6 @@
 #! Wall clock time required
 #SBATCH --time=03:00:00
 #! Name of job
-#SBATCH -J lapse-print
+#SBATCH -J SRPmain
 
 srun ./Main_ScalarField3d_ch.Linux.64.mpiicpc.ifort.OPTHIGH.MPI.OPENMPCC.ICPX2022.0.ex params.txt
