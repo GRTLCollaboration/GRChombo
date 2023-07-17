@@ -150,7 +150,6 @@ void ScalarFieldLevel::specificPostTimeStep()
     fillAllGhosts();
 
     double mass = m_p.potential_params.scalar_mass;
-    cout << mass << endl;
 
     AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
     AMRReductions<VariableType::evolution> amr_reductions_evo(m_gr_amr);
@@ -165,7 +164,7 @@ void ScalarFieldLevel::specificPostTimeStep()
     double a = pow(amr_reductions.sum(c_a)/vol, -0.5);
     double H = -amr_reductions.sum(c_H)/vol/3.;
 
-    double kinb = amr_reductions.sum(c_kin)/vol;
+    double kinb = 0.5*amr_reductions.sum(c_kin)/vol;
     double potb = 0.5*mass*mass*amr_reductions.sum(c_sf2)/vol;
 
     double hambar = amr_reductions.sum(c_Ham)/vol;
@@ -178,9 +177,6 @@ void ScalarFieldLevel::specificPostTimeStep()
     //Calculates variances
     double phivar = amr_reductions.sum(c_sf2)/vol - phibar*phibar;
     double lapse = amr_reductions_evo.sum(c_lapse)/vol;
-
-    //Calculates variances
-    double phivar = 2.0*potb - phibar*phibar;
 
     //Prints all that out into the data/ directory
     SmallDataIO means_file(m_p.data_path+"means_file", m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step, ".dat");
