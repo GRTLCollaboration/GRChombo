@@ -45,6 +45,7 @@ G_Newton = 1.0
 
 # Scalar field initial data
 scalar_amplitude = 10.0
+scalar_velocity = -0.00162846
 scalar_mass = 0.01
 
 #################################################

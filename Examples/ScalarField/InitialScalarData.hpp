@@ -15,6 +15,7 @@
 #include "VarsTools.hpp"
 #include "simd.hpp"
 #include "Potential.hpp"
+#include <fstream>
 
 //! Class which sets the initial scalar field matter config
 class InitialScalarData
@@ -25,10 +26,12 @@ class InitialScalarData
     struct params_t
     {
         double amplitude; //!< Amplitude of bump in initial SF bubble
+        double velocity;
         std::array<double, CH_SPACEDIM>
             center;   //!< Centre of perturbation in initial SF bubble
         double width; //!< Width of bump in initial SF bubble
         double mass;
+        int N_init;
     };
 
     //! The constructor
@@ -41,11 +44,11 @@ class InitialScalarData
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {
         // where am i?
-        Coordinates<data_t> coords(current_cell, m_dx, m_params.center);
+        Coordinates<data_t> coords(current_cell, m_dx, {0.0, 0.0, 0.0}); //set to the (0,0,0) vertex to help with reading in data files
 
         // calculate and store the scalar field value
         const data_t phi = m_params.amplitude;
-        const data_t phidot = -0.00162846;
+        const data_t phidot = m_params.velocity;
 
         current_cell.store_vars(phi, c_phi);
         current_cell.store_vars(phidot, c_Pi);
@@ -71,13 +74,27 @@ class InitialScalarData
         current_cell.store_vars(chi, c_chi);
         current_cell.store_vars(K, c_K);
 
+        ifstream gws;
+        gws.open("./gw-re.dat", ios::in); //open the file with the waves in it
+
+        double collapse = coords.z + m_params.N_init*(coords.y + m_params.N_init*coords.x); //figure out which row to choose based on flattened coordinates
+
+        array<data_t, 6> h;
+        for(int i=0; i<=collapse; i++)
+        {
+            for(int s=0; s<6; s++)
+            {
+                gws >> h[s]; //choose that row from the data file and save it
+            }
+        }
+
         //store tensor metric variables
-        current_cell.store_vars(1.0, c_h11);
-        current_cell.store_vars(0.0, c_h12);
-        current_cell.store_vars(0.0, c_h13);
-        current_cell.store_vars(1.0, c_h22);
-        current_cell.store_vars(0.0, c_h23);
-        current_cell.store_vars(1.0, c_h33);
+        current_cell.store_vars(h[0], c_h11);
+        current_cell.store_vars(h[1], c_h12);
+        current_cell.store_vars(h[2], c_h13);
+        current_cell.store_vars(h[3], c_h22);
+        current_cell.store_vars(h[4], c_h23);
+        current_cell.store_vars(h[5], c_h33);
 
         current_cell.store_vars(0.0, c_A11);
         current_cell.store_vars(0.0, c_A12);

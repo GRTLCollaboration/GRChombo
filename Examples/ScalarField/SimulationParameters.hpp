@@ -35,10 +35,12 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("G_Newton", G_Newton,
                 0.0); // for now the example neglects backreaction
         //pp.load("max_level", grid_params.max_level, 0);
-        pp.load("scalar_amplitude", initial_params.amplitude, 0.1);
+        pp.load("scalar_amplitude", initial_params.amplitude, 10.0);
+        pp.load("scalar_velocity", initial_params.velocity, -0.001);
         pp.load("scalar_width", initial_params.width, 1.0);
         pp.load("scalar_mass", potential_params.scalar_mass, 0.1);
         pp.load("scalar_mass", initial_params.mass, 1e-6);
+        pp.load("N_full", initial_params.N_init, 0);
 
         // Initial Kerr data
         pp.load("kerr_mass", kerr_params.mass, 1.0);

@@ -61,7 +61,7 @@ void ScalarFieldLevel::initialData()
     BoxLoops::loop(
     make_compute_pack(SetValue(0.),
                         InitialScalarData(m_p.initial_params, m_dx)),
-    m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
+    m_state_new, m_state_new, INCLUDE_GHOST_CELLS,disable_simd());
     
     fillAllGhosts();
     BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
