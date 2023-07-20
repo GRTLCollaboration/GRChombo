@@ -149,7 +149,7 @@ void ScalarFieldLevel::specificPostTimeStep()
     bool first_step = (m_time == 0.);
     fillAllGhosts();
 
-    double mass = m_p.potential_params.scalar_mass;
+    double mass = 0.01;//m_p.potential_params.scalar_mass;
 
     AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
     AMRReductions<VariableType::evolution> amr_reductions_evo(m_gr_amr);
