@@ -148,7 +148,8 @@ void ScalarFieldLevel::specificPostTimeStep()
     bool first_step = (m_time == 0.);
 
     fillAllGhosts();
-    Potential potential(m_p.potential_params);
+    double mass = 0.01;//m_p.potential_params.scalar_mass;
+    //cout << mass << endl;
 
     AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
     AMRReductions<VariableType::evolution> amr_reductions_evo(m_gr_amr);
@@ -162,17 +163,17 @@ void ScalarFieldLevel::specificPostTimeStep()
     double Kbar = amr_reductions.sum(c_H)/vol;
 
     double kinb = 0.5*amr_reductions.sum(c_kin)/vol;
-    double potb = 0.5*amr_reductions.sum(c_sf2)/vol;
+    double potb = 0.5*mass*mass*amr_reductions.sum(c_sf2)/vol;
 
     double hambar = amr_reductions.sum(c_Ham)/vol;
     double mombar = amr_reductions.sum(c_Mom)/vol;
 
     //Calculates the slow-roll parameters
     double epsilon = 3.*kinb/(kinb + potb);
-    double delta = 3. + 0.01*0.01*phibar/(2.*kinb)/(-Kbar/3.);
+    double delta = 3. + mass*mass*phibar/(2.*kinb)/(-Kbar/3.);
 
     //Calculates variances
-    double phivar = 2.0*potb - phibar*phibar;
+    double phivar = amr_reductions.sum(c_sf2)/vol - phibar*phibar;
     double lapse = amr_reductions_evo.sum(c_lapse)/vol;
 
     //Prints all that out into the data/ directory
