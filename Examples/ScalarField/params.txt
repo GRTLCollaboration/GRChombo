@@ -7,7 +7,7 @@
 verbosity = 0
 
 # location / naming of output files
-output_path = "/nfs/st01/hpc-gr-epss/eaf49/" # Main path for all files. Must exist!
+output_path = "/nfs/st01/hpc-gr-epss/eaf49/test-dump/" # Main path for all files. Must exist!
 chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
 # restart_file = ScalarField_000000.3d.hdf5
@@ -42,9 +42,11 @@ print_progress_only_to_rank_0 = 1
 # metric background without backreaction (this avoids the need
 # to solve the constaints)
 G_Newton = 1.0
+m_pl = 1.0
 
 # Scalar field initial data
 scalar_amplitude = 10.0
+scalar_velocity = -0.00162846
 scalar_mass = 0.01
 
 #################################################
