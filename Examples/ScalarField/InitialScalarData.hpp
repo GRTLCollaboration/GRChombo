@@ -89,12 +89,12 @@ class InitialScalarData
         }
 
         //store tensor metric variables
-        current_cell.store_vars(h[0], c_h11);
-        current_cell.store_vars(h[1], c_h12);
-        current_cell.store_vars(h[2], c_h13);
-        current_cell.store_vars(h[3], c_h22);
-        current_cell.store_vars(h[4], c_h23);
-        current_cell.store_vars(h[5], c_h33);
+        current_cell.store_vars(2.*h[0], c_h11);
+        current_cell.store_vars(2.*h[1], c_h12);
+        current_cell.store_vars(2.*h[2], c_h13);
+        current_cell.store_vars(2.*h[3], c_h22);
+        current_cell.store_vars(2.*h[4], c_h23);
+        current_cell.store_vars(2.*h[5], c_h33);
 
         current_cell.store_vars(0.0, c_A11);
         current_cell.store_vars(0.0, c_A12);
