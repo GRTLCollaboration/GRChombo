@@ -44,8 +44,8 @@ inline
  void MeansVars::Vars<data_t>::enum_mapping(mapping_function_t mapping_function)
  {
      using namespace VarsTools;
-     define_enum_mapping(mapping_function, c_sf, phi);
-     define_enum_mapping(mapping_function, c_sfd, Pi);
+     define_enum_mapping(mapping_function, c_phi, phi);
+     define_enum_mapping(mapping_function, c_Pi, Pi);
      define_enum_mapping(mapping_function, c_chi, chi);
      define_enum_mapping(mapping_function, c_K, K);
  }

@@ -161,30 +161,32 @@ void ScalarFieldLevel::specificPostTimeStep()
     double phibar = amr_reductions.sum(c_sf)/vol;
     double pibar = amr_reductions.sum(c_sfd)/vol;
 
-    double a = pow(amr_reductions.sum(c_a)/vol, -0.5);
+    double a = 1./sqrt(amr_reductions.sum(c_a)/vol);
     double H = -amr_reductions.sum(c_H)/vol/3.;
-
-    double kinb = 0.5*amr_reductions.sum(c_kin)/vol;
-    double potb = 0.5*mass*mass*amr_reductions.sum(c_sf2)/vol;
 
     double hambar = amr_reductions.sum(c_Ham)/vol;
     double mombar = amr_reductions.sum(c_Mom)/vol;
 
-    //Calculates the slow-roll parameters
+    //Calculates energy components and the slow-roll parameters
+    double kinb = 0.5*pibar*pibar; //changed
+    double potb = 0.5*mass*mass*phibar*phibar; //changed
+
     double epsilon = 3.*kinb/(kinb + potb);
-    double delta = 3. + mass*mass*phibar/H/pibar;
+    double delta = 3. + mass*mass*phibar/(pibar)/(H);
 
     //Calculates variances
     double phivar = amr_reductions.sum(c_sf2)/vol - phibar*phibar;
+
+    //Calculates gauge quantities
     double lapse = amr_reductions_evo.sum(c_lapse)/vol;
 
     //Prints all that out into the data/ directory
     SmallDataIO means_file(m_p.data_path+"means_file", m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step, ".dat");
 
-    if(first_step) 
+    /*if(first_step) 
     {
         means_file.write_header_line({"Scalar field mean","Scalar field variance","Scale factor","Hubble factor",
             "First SRP","Second SRP","Kinetic ED","Potential ED","Avg Ham constr","Avg Mom constr","Avg lapse"});
-    }
-    means_file.write_time_data_line({phibar, phivar, a, H, epsilon, delta, kinb, potb, hambar, mombar,lapse});
+    }*/
+    means_file.write_time_data_line({phibar, phivar, pibar, a, H, kinb, potb, epsilon, delta, hambar, mombar, lapse});
 }
