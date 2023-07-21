@@ -32,6 +32,7 @@ inline
 
     //store class (Vars) variables as diagnostic variables on the grid
      current_cell.store_vars(vars.phi, c_sf);
+     current_cell.store_vars(vars.Pi, c_sfd);
      current_cell.store_vars(vars.chi, c_a);
      current_cell.store_vars(vars.K, c_H);
      current_cell.store_vars(phisq, c_sf2);
