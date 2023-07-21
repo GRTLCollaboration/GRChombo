@@ -35,15 +35,16 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("G_Newton", G_Newton,
                 0.0); // for now the example neglects backreaction
         //pp.load("max_level", grid_params.max_level, 0);
-        pp.load("scalar_amplitude", initial_params.amplitude, 0.1);
-        pp.load("scalar_width", initial_params.width, 1.0);
-        pp.load("scalar_mass", potential_params.scalar_mass, 0.1);
-        pp.load("scalar_mass", initial_params.mass, 1e-6);
+        pp.load("scalar_amplitude", initial_params.amplitude, 10.);
+        pp.load("scalar_velocity", initial_params.velocty, -0.00162846);
+        pp.load("m_pl", initial_params.m_pl, 1.0);
+        pp.load("scalar_mass", potential_params.scalar_mass, 0.01);
+        pp.load("scalar_mass", initial_params.mass, 0.01);
 
         // Initial Kerr data
-        pp.load("kerr_mass", kerr_params.mass, 1.0);
+        /*pp.load("kerr_mass", kerr_params.mass, 1.0);
         pp.load("kerr_spin", kerr_params.spin, 0.0);
-        pp.load("kerr_center", kerr_params.center, center);
+        pp.load("kerr_center", kerr_params.center, center);*/
     }
 
     void check_params()
@@ -53,10 +54,10 @@ class SimulationParameters : public SimulationParametersBase
                            0.2 / coarsest_dx / dt_multiplier,
                        "oscillations of scalar field do not appear to be "
                        "resolved on coarsest level");
-        warn_parameter("scalar_width", initial_params.width,
+        /*warn_parameter("scalar_width", initial_params.width,
                        initial_params.width < 0.5 * L,
-                       "is greater than half the domain size");
-        warn_parameter("kerr_mass", kerr_params.mass, kerr_params.mass >= 0.0,
+                       "is greater than half the domain size");*/
+        /*warn_parameter("kerr_mass", kerr_params.mass, kerr_params.mass >= 0.0,
                        "should be >= 0.0");
         check_parameter("kerr_spin", kerr_params.spin,
                         std::abs(kerr_params.spin) <= kerr_params.mass,
@@ -70,7 +71,7 @@ class SimulationParameters : public SimulationParametersBase
                 (kerr_params.center[idir] >= 0) &&
                     (kerr_params.center[idir] <= (ivN[idir] + 1) * coarsest_dx),
                 "should be within the computational domain");
-        }
+        }*/
     }
 
     // Initial data for matter and potential and BH
@@ -79,7 +80,7 @@ class SimulationParameters : public SimulationParametersBase
     //CalcMeans::params_t grid_params;
     InitialScalarData::params_t initial_params;
     Potential::params_t potential_params;
-    KerrBH::params_t kerr_params;
+    //KerrBH::params_t kerr_params;
     MeansVars::params_t grid_params;
 };
 
