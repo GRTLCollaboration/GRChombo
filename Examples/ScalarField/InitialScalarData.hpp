@@ -74,17 +74,21 @@ class InitialScalarData
         current_cell.store_vars(chi, c_chi);
         current_cell.store_vars(K, c_K);
 
-        ifstream gws;
-        gws.open("./gw-re.dat", ios::in); //open the file with the waves in it
+        ifstream gw_pos;
+        ifstream gw_vel;
+        gw_pos.open("./gw-re-position.dat", ios::in); //open the file with the waves in it
+        gw_vel.open("./gw-re-velocity.dat", ios::in);
 
         double collapse = coords.z + m_params.N_init*(coords.y + m_params.N_init*coords.x); //figure out which row to choose based on flattened coordinates
 
         array<data_t, 6> h;
+        array<data_t, 6> hdot;
         for(int i=0; i<=collapse; i++)
         {
             for(int s=0; s<6; s++)
             {
-                gws >> h[s]; //choose that row from the data file and save it
+                gw_pos >> h[s]; //choose that row from the data file and save it
+                gw_vel >> hdot[s];
             }
         }
 
@@ -96,12 +100,12 @@ class InitialScalarData
         current_cell.store_vars(2.*h[4], c_h23);
         current_cell.store_vars(2.*h[5], c_h33);
 
-        current_cell.store_vars(0.0, c_A11);
-        current_cell.store_vars(0.0, c_A12);
-        current_cell.store_vars(0.0, c_A13);
-        current_cell.store_vars(0.0, c_A22);
-        current_cell.store_vars(0.0, c_A23);
-        current_cell.store_vars(0.0, c_A33);
+        current_cell.store_vars(-hdot[0], c_A11);
+        current_cell.store_vars(-hdot[1], c_A12);
+        current_cell.store_vars(-hdot[2], c_A13);
+        current_cell.store_vars(-hdot[3], c_A22);
+        current_cell.store_vars(-hdot[4], c_A23);
+        current_cell.store_vars(-hdot[5], c_A33);
     }
 
   protected:
