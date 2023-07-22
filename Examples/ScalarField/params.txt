@@ -7,7 +7,7 @@
 verbosity = 0
 
 # location / naming of output files
-output_path = "/nfs/st01/hpc-gr-epss/eaf49/" # Main path for all files. Must exist!
+output_path = "/nfs/st01/hpc-gr-epss/eaf49/gw-test/" # Main path for all files. Must exist!
 chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
 # restart_file = ScalarField_000000.3d.hdf5
@@ -59,7 +59,7 @@ scalar_mass = 0.01
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
 N_full = 128
-L_full = 20
+L_full = 1
 
 # Maximum number of times you can regrid above coarsest level
 max_level = 0 # There are (max_level+1) grids, so min is zero (does changing this turn off AMR?)
