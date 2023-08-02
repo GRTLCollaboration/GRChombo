@@ -36,6 +36,7 @@ recompile again for 2D when compiling this example)
 #include "ApparentHorizonTest2DLevel.hpp"
 #include "Lagrange.hpp"
 #include "SmallDataIO.hpp"
+#include "SmallDataIOReader.hpp"
 
 #ifdef USE_AHFINDER
 #include "AHFinder.hpp"
@@ -77,13 +78,23 @@ int runApparentHorizonTest2D(int argc, char *argv[])
         status = 3;
     else
     {
-        // get area from file to determine status
-        auto stats = SmallDataIO::read("stats_AH1.dat");
-        if (stats.size() == 0)
-            status = 2;
-        else
+        double area;
+        if (procID() == 0)
         {
-            double area = stats[2][0];
+            SmallDataIOReader file_reader;
+            file_reader.open("stats_AH1.dat");
+            file_reader.determine_file_structure();
+            // get area from file to determine status
+            auto area_col = file_reader.get_column(2);
+            if (area_col.size() == 0)
+                status = 2;
+            else
+                area = area_col[0];
+        }
+        broadcast(status, 0);
+        if (status == 0)
+        {
+            broadcast(area, 0);
 
             // Exact value from Mathematica
             /*
@@ -134,7 +145,7 @@ int main(int argc, char *argv[])
         pout() << "ApparentHorizon2D test FAILED with return code " << status
                << endl;
     }
-#ifdef USE_AHFINDER    
+#ifdef USE_AHFINDER
     mainFinalize();
 #endif
     return std::max(status, 0);

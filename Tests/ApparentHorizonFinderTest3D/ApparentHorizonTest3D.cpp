@@ -32,6 +32,7 @@ using std::endl;
 #include "ApparentHorizonTest3DLevel.hpp"
 #include "Lagrange.hpp"
 #include "SmallDataIO.hpp"
+#include "SmallDataIOReader.hpp"
 
 #ifdef USE_AHFINDER
 #include "AHFinder.hpp"
@@ -69,16 +70,28 @@ int runApparentHorizonTest3D(int argc, char *argv[])
         status = 3;
     else
     {
-
-        // get area from file to determine status
-        auto stats = SmallDataIO::read("stats_AH1.dat");
-        if (stats.size() == 0)
-            status = 2;
-        else
+        double mass, spin, spin_x;
+        if (procID() == 0)
         {
-            double mass = stats[3][0];
-            double spin = stats[5][0];
-            double spin_x = stats[6][0] * mass;
+            SmallDataIOReader file_reader;
+            file_reader.open("stats_AH1.dat");
+            file_reader.determine_file_structure();
+            auto stats = file_reader.get_all_data_columns();
+            if (stats.size() == 0)
+                status = 2;
+            else
+            {
+                mass = stats[2][0];
+                spin = stats[4][0];
+                spin_x = stats[5][0] * mass;
+            }
+        }
+        broadcast(status, 0);
+        if (status == 0)
+        {
+            broadcast(mass, 0);
+            broadcast(spin, 0);
+            broadcast(spin_x, 0);
 
             double error_perc =
                 fabs(1. - mass / sim_params.kerr_params.mass) * 100;
@@ -132,5 +145,4 @@ int main(int argc, char *argv[])
     mainFinalize();
 #endif
     return std::max(status, 0);
-
 }
