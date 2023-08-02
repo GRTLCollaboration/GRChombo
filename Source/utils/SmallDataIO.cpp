@@ -42,13 +42,13 @@ SmallDataIO::SmallDataIO(std::string a_filename_prefix, double a_dt,
       m_coords_width(m_coords_precision + 5),
       m_coords_epsilon(std::pow(10.0, -a_coords_precision))
 {
-#ifdef CH_MPI
-    MPI_Comm_rank(Chombo_MPI::comm, &m_rank);
-#else
-    m_rank = 0;
-#endif
-    if (m_rank == 0)
+    if (procID() == 0)
     {
+        if (m_coords_precision >= m_data_precision)
+        {
+            MayDay::Error("SmallDataIO: m_coords_precision should be smaller "
+                          "than m_data_precision for SmallDataIOReader");
+        }
         std::ios::openmode file_openmode;
         if (m_mode == APPEND)
         {
@@ -116,7 +116,7 @@ SmallDataIO::SmallDataIO(std::string a_filename_prefix,
 //! Destructor (closes file)
 SmallDataIO::~SmallDataIO()
 {
-    if (m_rank == 0)
+    if (procID() == 0)
     {
         m_file.close();
     }
@@ -140,7 +140,7 @@ void SmallDataIO::write_header_line(
     const std::vector<std::string> &a_header_strings,
     const std::vector<std::string> &a_pre_header_strings)
 {
-    if (m_rank == 0)
+    if (procID() == 0)
     {
         // all header lines start with a '#'.
         m_file << "#";
@@ -181,7 +181,7 @@ void SmallDataIO::write_time_data_line(const std::vector<double> &a_data)
 void SmallDataIO::write_data_line(const std::vector<double> &a_data,
                                   const std::vector<double> &a_coords)
 {
-    if (m_rank == 0)
+    if (procID() == 0)
     {
         m_file << std::fixed << std::setprecision(m_coords_precision);
         for (double coord : a_coords)
@@ -199,7 +199,7 @@ void SmallDataIO::write_data_line(const std::vector<double> &a_data,
 
 void SmallDataIO::line_break()
 {
-    if (m_rank == 0)
+    if (procID() == 0)
     {
         m_file << "\n\n";
     }
@@ -207,7 +207,7 @@ void SmallDataIO::line_break()
 
 void SmallDataIO::remove_duplicate_time_data(const bool keep_m_time_data)
 {
-    if (m_rank == 0 && m_restart_time >= 0. && m_mode == APPEND &&
+    if (procID() == 0 && m_restart_time >= 0. && m_mode == APPEND &&
         m_time < m_restart_time + m_dt + m_coords_epsilon)
     {
         // copy lines with time < m_time into a temporary file
@@ -253,7 +253,7 @@ void SmallDataIO::remove_duplicate_time_data(const bool keep_m_time_data)
 void SmallDataIO::get_specific_data_line(std::vector<double> &a_out_data,
                                          const std::vector<double> a_coords)
 {
-    if (m_rank == 0)
+    if (procID() == 0)
     {
         bool line_found = false;
         // first set the current position to the beginning of the file
@@ -354,121 +354,4 @@ double SmallDataIO::get_coords_epsilon() const { return m_coords_epsilon; }
 double SmallDataIO::get_default_coords_epsilon()
 {
     return pow(10.0, -s_default_coords_precision);
-}
-
-std::vector<std::vector<double>> SmallDataIO::read(std::string a_filename,
-                                                   bool verbose)
-{
-    int rank = 0;
-#ifdef CH_MPI
-    MPI_Comm_rank(Chombo_MPI::comm, &rank);
-#endif
-
-    int Nrows = 0, Ncols = 0;
-
-    std::fstream file;
-
-    if (rank == 0)
-    {
-        file.open(a_filename, std::ios::in);
-        if (!file)
-        {
-            if (verbose)
-                pout() << "File '" << a_filename << "' not found." << std::endl;
-        }
-        else
-        {
-            // run through file to get number of rows and cols
-            std::string line, save = "";
-            while (std::getline(file, line))
-            {
-                if (line.substr(0, 2) == "//" || line.substr(0, 1) == "#")
-                    continue;
-                else if (save == "")
-                    save = line;
-                ++Nrows;
-            }
-
-            // run through line and count number of columns
-            std::stringstream str(save);
-
-            std::string x_str;
-            double x;
-            str >> x_str;
-            if (x_str == "nan")
-                x = NAN;
-            else
-                (std::stringstream(x_str) >> x);
-            while (!str.fail())
-            {
-                str >> x_str;
-                if (x_str == "nan")
-                    x = NAN;
-                else
-                    (std::stringstream(x_str) >> x);
-                ++Ncols;
-            }
-        }
-    }
-
-#ifdef CH_MPI
-    MPI_Bcast(&Nrows, 1, MPI_INT, 0, Chombo_MPI::comm);
-    MPI_Bcast(&Ncols, 1, MPI_INT, 0, Chombo_MPI::comm);
-#endif
-
-    if (rank == 0 && Nrows != 0 && verbose)
-        std::cout << "Found " << Ncols << " columns and " << Nrows
-                  << " rows in file '" << a_filename << "'." << std::endl;
-
-    std::vector<std::vector<double>> out(Ncols, std::vector<double>(Nrows));
-
-    if (rank == 0 && Nrows != 0)
-    {
-        file.clear();
-        file.seekg(0, file.beg);
-
-        int j = 0;
-        std::string line;
-        while (std::getline(file, line))
-        {
-            if (line.substr(0, 2) == "//" || line.substr(0, 1) == "#")
-                continue;
-
-            std::stringstream ss(line);
-            std::string x_str;
-            double x;
-            ss >> x_str;
-            if (x_str == "nan")
-                x = NAN;
-            else
-                (std::stringstream(x_str) >> x);
-
-            int i = 0;
-            while (!ss.fail() && i < Ncols)
-            {
-                out[i++][j] = x;
-                ss >> x_str;
-                if (x_str == "nan")
-                    x = NAN;
-                else
-                    (std::stringstream(x_str) >> x);
-            }
-            ++j;
-        }
-
-        file.close();
-    }
-
-#ifdef CH_MPI
-    for (int i = 0; i < Ncols; ++i)
-        MPI_Bcast(&out[i][0], Nrows, MPI_DOUBLE, 0, Chombo_MPI::comm);
-#endif
-
-    /*    if(rank==0)
-            for(int i=0; i<out.size(); ++i)
-                for(int j=0; j<out[i].size(); ++j)
-                    std::cout << "out[" << i << "][" << j << "] = " << out[i][j]
-       << std::endl;*/
-
-    return out;
 }
