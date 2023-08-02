@@ -273,8 +273,8 @@ Tensor<2, data_t, 3> rotation_matrix(const Tensor<1, data_t, 3> &origin,
         std::abs(axis[2]) < eps)
         return rotation_matrix({0., 0., 0.}, 1.);
 
-    data_t norm_inv = 1.0 / 
-        sqrt(axis[0] * axis[0] + axis[1] * axis[1] + axis[2] * axis[2]);
+    data_t norm_inv =
+        1.0 / sqrt(axis[0] * axis[0] + axis[1] * axis[1] + axis[2] * axis[2]);
 
     axis[0] *= norm_inv;
     axis[1] *= norm_inv;

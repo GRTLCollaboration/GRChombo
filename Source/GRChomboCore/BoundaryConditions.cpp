@@ -682,8 +682,8 @@ void BoundaryConditions::fill_extrapolating_cell(
     for (int icomp : extrapolating_comps)
     {
         // current radius
-        double radius = Coordinates<double>::get_radius(iv, m_dx, 
-        {D_DECL(m_center[0], m_center[1], m_center[2])});
+        double radius = Coordinates<double>::get_radius(
+            iv, m_dx, {D_DECL(m_center[0], m_center[1], m_center[2])});
 
         // vector of 2 nearest values and radii within the grid
         std::array<double, 2> value_at_point;
@@ -711,8 +711,9 @@ void BoundaryConditions::fill_extrapolating_cell(
                     }
                 }
                 value_at_point[i] = out_box(iv_tmp, icomp);
-                r_at_point[i] = Coordinates<double>::get_radius(iv_tmp, m_dx,
-                     {D_DECL(m_center[0], m_center[1], m_center[2])});
+                r_at_point[i] = Coordinates<double>::get_radius(
+                    iv_tmp, m_dx,
+                    {D_DECL(m_center[0], m_center[1], m_center[2])});
             }
         }
         else // Lo side
@@ -736,8 +737,9 @@ void BoundaryConditions::fill_extrapolating_cell(
                     }
                 }
                 value_at_point[i] = out_box(iv_tmp, icomp);
-                r_at_point[i] = Coordinates<double>::get_radius(iv_tmp, m_dx,
-                     {D_DECL(m_center[0], m_center[1], m_center[2])});
+                r_at_point[i] = Coordinates<double>::get_radius(
+                    iv_tmp, m_dx,
+                    {D_DECL(m_center[0], m_center[1], m_center[2])});
             }
         }
 

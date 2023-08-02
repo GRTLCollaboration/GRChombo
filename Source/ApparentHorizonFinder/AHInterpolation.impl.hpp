@@ -111,7 +111,7 @@ void AHInterpolation_t<SurfaceGeometry, AHFunction>::set_origin(
 
 template <class SurfaceGeometry, class AHFunction>
 bool AHInterpolation_t<SurfaceGeometry, AHFunction>::is_in_grid(
-         D_DECL(double &x, double &y ,double &z))
+    D_DECL(double &x, double &y, double &z))
 {
     CH_TIME("AHInterpolation::is_in_grid");
 
@@ -350,8 +350,10 @@ bool AHInterpolation_t<SurfaceGeometry, AHFunction>::set_coordinates(
         m_v[i] = v[i];
 #endif
 
-        m_x[i] = m_coord_system.get_grid_coord(0, D_DECL(m_f[i], m_u[i], m_v[i]));
-        m_y[i] = m_coord_system.get_grid_coord(1, D_DECL(m_f[i], m_u[i], m_v[i]));
+        m_x[i] =
+            m_coord_system.get_grid_coord(0, D_DECL(m_f[i], m_u[i], m_v[i]));
+        m_y[i] =
+            m_coord_system.get_grid_coord(1, D_DECL(m_f[i], m_u[i], m_v[i]));
 #if CH_SPACEDIM == 3
         m_z[i] = m_coord_system.get_grid_coord(2, m_f[i], m_u[i], m_v[i]);
 #endif
@@ -375,7 +377,8 @@ AHInterpolation_t<SurfaceGeometry, AHFunction>::get_geometry_data(int idx) const
 {
     CH_TIME("AHInterpolation::get_geometry_data");
 
-    return m_coord_system.get_geometry_data(D_DECL(m_f[idx], m_u[idx], m_v[idx]));
+    return m_coord_system.get_geometry_data(
+        D_DECL(m_f[idx], m_u[idx], m_v[idx]));
 }
 
 template <class SurfaceGeometry, class AHFunction>
@@ -383,10 +386,7 @@ const Tensor<1, double>
 AHInterpolation_t<SurfaceGeometry, AHFunction>::get_cartesian_coords(
     int idx) const
 {
-    return
-    {
-        D_DECL(m_x[idx], m_y[idx], m_z[idx])
-    };
+    return {D_DECL(m_x[idx], m_y[idx], m_z[idx])};
 }
 
 template <class SurfaceGeometry, class AHFunction>

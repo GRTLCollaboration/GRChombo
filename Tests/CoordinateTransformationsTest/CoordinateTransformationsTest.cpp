@@ -194,7 +194,7 @@ int main()
     Tensor<2, double> rotation_mat = rotation_matrix(init_axes, fin_axes);
     Tensor<2, double> rotation_mat_check;
 
-    FOR(i, j) {rotation_mat_check[i][j] = 0.; }
+    FOR(i, j) { rotation_mat_check[i][j] = 0.; }
     rotation_mat_check[0][0] = 0.;
     rotation_mat_check[0][1] = 0.;
     rotation_mat_check[0][2] = 1.;
@@ -205,8 +205,7 @@ int main()
     rotation_mat_check[2][1] = 0.;
     rotation_mat_check[2][2] = 0.;
 
-    failed |= check_tensor(rotation_mat_check, rotation_mat,
-                           "rotation_matrix");
+    failed |= check_tensor(rotation_mat_check, rotation_mat, "rotation_matrix");
 
     if (failed)
     {

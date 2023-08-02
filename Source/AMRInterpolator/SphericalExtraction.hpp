@@ -44,7 +44,7 @@ class ModeExtraction : public SurfaceExtraction<spherical_geometry>
     const int m_num_modes;
     const std::vector<std::pair<int, int>> m_modes;
 
-   using vars_t = std::tuple<int, VariableType, Derivative>;
+    using vars_t = std::tuple<int, VariableType, Derivative>;
 
     ModeExtraction(const spherical_extraction_params_t &a_params, double a_dt,
                    double a_time, bool a_first_step,

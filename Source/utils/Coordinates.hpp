@@ -108,8 +108,8 @@ template <typename data_t>
 ALWAYS_INLINE ostream &operator<<(ostream &os,
                                   const Coordinates<data_t> &in_coords)
 {
-    os << "(x,y,z) = (" 
-       D_TERM(<< in_coords.x, << "," << in_coords.y, << "," << in_coords.z)
+    os << "(x,y,z) = (" D_TERM(<< in_coords.x, << "," << in_coords.y,
+                               << "," << in_coords.z)
        << ") r = " << in_coords.get_radius();
     return os;
 }

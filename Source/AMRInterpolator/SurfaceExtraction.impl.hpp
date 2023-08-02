@@ -18,11 +18,10 @@ SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
     double a_dt, double a_time, bool a_first_step, double a_restart_time)
     : m_geom(a_geom), m_params(a_params), m_dt(a_dt), m_time(a_time),
       m_first_step(a_first_step), m_restart_time(a_restart_time),
-      m_num_interp_points((procID() == 0)
-                              ? D_TERM(m_params.num_surfaces, 
-                                       * m_params.num_points_u,
-                                       * m_params.num_points_v)
-                              : 0),
+      m_num_interp_points((procID() == 0) ? D_TERM(m_params.num_surfaces,
+                                                   *m_params.num_points_u,
+                                                   *m_params.num_points_v)
+                                          : 0),
       m_du(m_geom.du(m_params.num_points_u)),
       m_dv(m_geom.dv(m_params.num_points_v)), m_done_extraction(false)
 {
@@ -58,9 +57,8 @@ SurfaceExtraction<SurfaceGeometry>::SurfaceExtraction(
                     FOR(idir)
                     {
                         int idx = index(D_DECL(isurface, iu, iv));
-                        m_interp_coords[idir][idx] =
-                            m_geom.get_grid_coord(idir, D_DECL(surface_param_value, 
-                                                               u, v));
+                        m_interp_coords[idir][idx] = m_geom.get_grid_coord(
+                            idir, D_DECL(surface_param_value, u, v));
                     }
 #if CH_SPACEDIM == 3
                 }
@@ -272,7 +270,8 @@ void SurfaceExtraction<SurfaceGeometry>::integrate()
                     for (int ivar = 0; ivar < m_vars.size(); ++ivar)
                     {
                         data_here[ivar] =
-                            m_interp_data[ivar][index(D_DECL(isurface, iu, iv))];
+                            m_interp_data[ivar]
+                                         [index(D_DECL(isurface, iu, iv))];
                     }
                     for (int iintegral = 0; iintegral < num_integrals;
                          ++iintegral)
@@ -399,7 +398,7 @@ void SurfaceExtraction<SurfaceGeometry>::write_extraction(
                     double v = m_geom.v(iv, m_params.num_points_v);
 
 #endif
-int idx = index(D_DECL(isurface, iu, iv));
+                    int idx = index(D_DECL(isurface, iu, iv));
                     std::vector<double> data(m_vars.size());
                     for (int ivar = 0; ivar < m_vars.size(); ++ivar)
                     {

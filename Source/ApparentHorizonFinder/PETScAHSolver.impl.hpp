@@ -79,9 +79,9 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::initialise()
 
     DMSetUp(m_dmda);
 
-    DMDAGetInfo(m_dmda, NULL, &m_num_global_u, D_SELECT(, NULL, &m_num_global_v), NULL, NULL,
-                NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-
+    DMDAGetInfo(m_dmda, NULL, &m_num_global_u,
+                D_SELECT(, NULL, &m_num_global_v), NULL, NULL, NULL, NULL, NULL,
+                NULL, NULL, NULL, NULL, NULL);
 
     m_du = m_interp.get_coord_system().du(m_num_global_u);
 
@@ -89,8 +89,8 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::initialise()
     m_dv = m_interp.get_coord_system().dv(m_num_global_v);
 #endif
 
-    DMDAGetCorners(m_dmda, &m_umin, D_SELECT(, NULL, &m_vmin), 
-                   NULL, &m_nu, D_SELECT(, NULL, &m_nv), NULL);
+    DMDAGetCorners(m_dmda, &m_umin, D_SELECT(, NULL, &m_vmin), NULL, &m_nu,
+                   D_SELECT(, NULL, &m_nv), NULL);
 #if CH_SPACEDIM == 3
     m_vmax = m_vmin + m_nv;
 #endif
@@ -518,10 +518,10 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::reset_initial_guess()
             double &f_point = f[u];
             f_point = m_initial_guess->get(u_val);
 #endif
-            double x 
-                = coord_system.get_grid_coord(0, D_DECL(f_point, u_val, v_val));
-            double y 
-                = coord_system.get_grid_coord(1, D_DECL(f_point, u_val, v_val));
+            double x =
+                coord_system.get_grid_coord(0, D_DECL(f_point, u_val, v_val));
+            double y =
+                coord_system.get_grid_coord(1, D_DECL(f_point, u_val, v_val));
             out_of_grid |= m_interp.is_in_grid(D_DECL(x, y, z));
         }
     }
@@ -747,9 +747,8 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::set_stencils(AHDerivData &out,
 }
 
 template <class SurfaceGeometry, class AHFunction>
-AHDerivData
-PETScAHSolver<SurfaceGeometry, AHFunction>::diff(D_DECL(
-                         const dmda_arr_t in, int u, int v))
+AHDerivData PETScAHSolver<SurfaceGeometry, AHFunction>::diff(
+    D_DECL(const dmda_arr_t in, int u, int v))
 {
     CH_TIME("PETScAHSolver::diff");
 
@@ -919,10 +918,9 @@ void PETScAHSolver<SurfaceGeometry, AHFunction>::form_jacobian(Vec F, Mat J)
     dmda_arr_t in;
     DMDAVecGetArray(m_dmda, localF, &in);
 
-    bool out_of_grid = m_interp_plus.set_coordinates(D_DECL(m_F, m_u, m_v),
-                                                     eps);
-    out_of_grid |= m_interp_minus.set_coordinates(D_DECL(m_F, m_u, m_v),
-                                                  -eps);
+    bool out_of_grid =
+        m_interp_plus.set_coordinates(D_DECL(m_F, m_u, m_v), eps);
+    out_of_grid |= m_interp_minus.set_coordinates(D_DECL(m_F, m_u, m_v), -eps);
     // abort if out of grid - reduces the time in divergence dramatically!
     if (out_of_grid)
         SNESSetFunctionDomainError(m_snes);

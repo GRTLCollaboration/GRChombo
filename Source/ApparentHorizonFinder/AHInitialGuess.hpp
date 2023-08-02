@@ -133,23 +133,22 @@ class AHInitialGuessEllipsoid : public AHInitialGuessDefault
     AHInitialGuessEllipsoid() {}
 
     AHInitialGuessEllipsoid(D_DECL(double a_radius_x, double a_radius_y,
-                            double a_radius_z))
+                                   double a_radius_z))
     {
         set_params(D_DECL(a_radius_x, a_radius_y, a_radius_z));
     }
-    
-    void set_params(D_DECL(double a_radius_x, double a_radius_y, double a_radius_z))
+
+    void set_params(D_DECL(double a_radius_x, double a_radius_y,
+                           double a_radius_z))
     {
-        D_TERM(
-        m_radius_x = a_radius_x;,
-        m_radius_y = a_radius_y;,
-        m_radius_z = a_radius_z;)
-        pout() << "Setting Original Guess to ellipsoid=(" 
-               D_TERM(<< m_radius_x, << ", " << m_radius_y, << ", " 
-                      << m_radius_z)
+        D_TERM(m_radius_x = a_radius_x;, m_radius_y = a_radius_y;
+               , m_radius_z = a_radius_z;)
+        pout() << "Setting Original Guess to ellipsoid=(" D_TERM(
+                      << m_radius_x, << ", " << m_radius_y,
+                      << ", " << m_radius_z)
                << ")" << std::endl;
     }
-    
+
 #if CH_SPACEDIM == 3
     ALWAYS_INLINE double get_merger_min_distance() const override
     {
@@ -176,7 +175,7 @@ class AHInitialGuessEllipsoid : public AHInitialGuessDefault
         return get_merger_min_distance(); // use constant
         // return get(u, v); // use ellipsoid
     }
-    
+
 #elif CH_SPACEDIM == 2
     ALWAYS_INLINE double get_merger_min_distance() const override
     {

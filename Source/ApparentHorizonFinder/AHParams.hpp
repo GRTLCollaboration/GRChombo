@@ -103,8 +103,8 @@ struct PETSc_params
 };
 
 // prepend with 'AH_' in params file
-template <class AHFunction> struct AHParams_t 
-{    
+template <class AHFunction> struct AHParams_t
+{
     int num_ranks; //!< number of ranks for PETSc sub-communicator (default
                    //!< 0, which is 'all')
 
@@ -215,31 +215,48 @@ void AHParams_t<AHFunction>::read_params(GRParmParse &pp,
 
     ChomboParameters chombo_params(a_p);
 
-    chombo_params.check_parameter("AH_num_points_u", num_points_u, num_points_u > 0, "must be >0");
+    chombo_params.check_parameter("AH_num_points_u", num_points_u,
+                                  num_points_u > 0, "must be >0");
 #if CH_SPACEDIM == 3
-    chombo_params.check_parameter("AH_num_points_v", num_points_v, num_points_v > 0, "must be >0");
-    chombo_params.check_parameter("AH_num_points_u", num_points_u, num_points_u / sqrt(size) >= 3, "(num_points_u/sqrt(size)) must be >0"); // make sure for size 'u'
-    chombo_params.check_parameter("AH_num_points_v", num_points_v, num_points_v / sqrt(size) >= 3, "(num_points_v/sqrt(size)) must be >0"); // make sure for size 'v'
+    chombo_params.check_parameter("AH_num_points_v", num_points_v,
+                                  num_points_v > 0, "must be >0");
+    chombo_params.check_parameter(
+        "AH_num_points_u", num_points_u, num_points_u / sqrt(size) >= 3,
+        "(num_points_u/sqrt(size)) must be >0"); // make sure for size 'u'
+    chombo_params.check_parameter(
+        "AH_num_points_v", num_points_v, num_points_v / sqrt(size) >= 3,
+        "(num_points_v/sqrt(size)) must be >0"); // make sure for size 'v'
 #elif CH_SPACEDIM == 2
-    chombo_params.check_parameter("AH_num_points_u", num_points_u, num_points_u / size >= 3, "(num_points_u/size) must be >0"); // make sure for size 'u'
+    chombo_params.check_parameter(
+        "AH_num_points_u", num_points_u, num_points_u / size >= 3,
+        "(num_points_u/size) must be >0"); // make sure for size 'u'
 #endif
 
     pp.load("AH_solve_interval", solve_interval, 1);
     pp.load("AH_print_interval", print_interval, 1);
     // sanity checks
-    chombo_params.check_parameter("AH_solve_interval", solve_interval, solve_interval > 0, "must be >0");
-    chombo_params.check_parameter("AH_print_interval", print_interval, print_interval > 0, "must be >0");
+    chombo_params.check_parameter("AH_solve_interval", solve_interval,
+                                  solve_interval > 0, "must be >0");
+    chombo_params.check_parameter("AH_print_interval", print_interval,
+                                  print_interval > 0, "must be >0");
     pp.load("AH_track_center", track_center, true);
     pp.load("AH_predict_origin", predict_origin, track_center);
     // can't predict if center is not being tracked
     if (predict_origin)
     {
-        chombo_params.check_parameter("AH_track_center", track_center, track_center == 1, "can't predict if center is not being tracked");
+        chombo_params.check_parameter(
+            "AH_track_center", track_center, track_center == 1,
+            "can't predict if center is not being tracked");
     }
     pp.load("AH_level_to_run", level_to_run, 0);
-    chombo_params.check_parameter("AH_level_to_run", level_to_run, level_to_run <= a_p.max_level, "must be <= max_level");
-    chombo_params.check_parameter("AH_level_to_run", level_to_run, level_to_run >= 0, "must be >= 0");
-    chombo_params.check_parameter("AH_level_to_run", level_to_run,  level_to_run > -(a_p.max_level + 1), "must be > -(max_level+1)");
+    chombo_params.check_parameter("AH_level_to_run", level_to_run,
+                                  level_to_run <= a_p.max_level,
+                                  "must be <= max_level");
+    chombo_params.check_parameter("AH_level_to_run", level_to_run,
+                                  level_to_run >= 0, "must be >= 0");
+    chombo_params.check_parameter("AH_level_to_run", level_to_run,
+                                  level_to_run > -(a_p.max_level + 1),
+                                  "must be > -(max_level+1)");
     if (level_to_run < 0) // if negative, count backwards
         level_to_run += a_p.max_level + 1;
 

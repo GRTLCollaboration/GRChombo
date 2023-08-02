@@ -134,12 +134,12 @@ int runSphericalExtractionTest(int argc, char *argv[])
         integral_hi_boole;
     spherical_extraction_lo.add_mode_integrand(
         sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
-        integral_lo_boole, IntegrationMethod::boole, IntegrationMethod::trapezium,
-        broadcast_integral);
+        integral_lo_boole, IntegrationMethod::boole,
+        IntegrationMethod::trapezium, broadcast_integral);
     spherical_extraction_hi.add_mode_integrand(
         sim_params.es, sim_params.el, sim_params.em, extracted_harmonic,
-        integral_hi_boole, IntegrationMethod::boole, IntegrationMethod::trapezium,
-        broadcast_integral);
+        integral_hi_boole, IntegrationMethod::boole,
+        IntegrationMethod::trapezium, broadcast_integral);
 
     // do the surface integration
     spherical_extraction_lo.integrate();
