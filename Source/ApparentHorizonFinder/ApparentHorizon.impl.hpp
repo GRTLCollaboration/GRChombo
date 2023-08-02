@@ -13,6 +13,7 @@
 #include "GRAMR.hpp"
 #include "PETScCommunicator.hpp"
 #include "SmallDataIO.hpp"
+#include "SmallDataIOReader.hpp"
 #include "TensorAlgebra.hpp"
 #include "UserVariables.hpp"
 
@@ -20,6 +21,9 @@
 #include "Lagrange.hpp"
 #include "SimpleArrayBox.hpp"
 #include "SimpleInterpSource.hpp"
+
+// Chombo MPI functions
+#include "SPMD.H"
 
 template <class SurfaceGeometry, class AHFunction>
 ApparentHorizon<SurfaceGeometry, AHFunction>::ApparentHorizon(
@@ -678,7 +682,39 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
 
     // get centre from stats file
     std::string file = m_params.stats_path + m_stats + ".dat";
-    auto stats = SmallDataIO::read(file);
+    std::vector<std::vector<double>> stats;
+    int num_stats_columns = 0;
+    if (procID() == 0)
+    {
+        SmallDataIOReader stats_reader;
+        stats_reader.open(file);
+        stats_reader.determine_file_structure();
+        auto stats_file_structure = stats_reader.get_file_structure();
+        bool no_non_comment_lines =
+            (stats_file_structure.num_columns.size() == 0);
+        num_stats_columns =
+            (!no_non_comment_lines) ? stats_file_structure.num_columns[0] : 0;
+        if (!no_non_comment_lines)
+            stats = stats_reader.get_columns(0, num_stats_columns - 1);
+    }
+    broadcast(num_stats_columns, 0);
+    if (procID() != 0)
+    {
+        stats.resize(num_stats_columns);
+    }
+    for (int icol = 0; icol < num_stats_columns; ++icol)
+    {
+        Vector<double> temp_stats_Vect;
+        if (procID() == 0)
+        {
+            temp_stats_Vect = stats[icol];
+        }
+        broadcast(temp_stats_Vect, 0);
+        if (procID() != 0)
+        {
+            stats[icol] = temp_stats_Vect.stdVector();
+        }
+    }
 
     int idx = 0;
     double old_print_dt = 0.;
@@ -969,7 +1005,35 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
             SmallDataIO::get_new_filename(m_params.coords_path + m_coords,
                                           1. /*fake dt*/, coords_file_number);
 
-        auto coords = SmallDataIO::read(coords_filename);
+        std::vector<std::vector<double>> coords;
+        int num_coords_columns;
+        if (procID() == 0)
+        {
+            SmallDataIOReader coords_reader;
+            coords_reader.open(coords_filename);
+            coords_reader.determine_file_structure();
+            auto coords_file_structure = coords_reader.get_file_structure();
+            num_coords_columns = coords_file_structure.num_columns[0];
+            coords = coords_reader.get_columns(0, num_coords_columns - 1);
+        }
+        broadcast(num_coords_columns, 0);
+        if (procID() != 0)
+        {
+            coords.resize(num_coords_columns);
+        }
+        for (int icol = 0; icol < num_coords_columns; ++icol)
+        {
+            Vector<double> temp_coords_Vect;
+            if (procID() == 0)
+            {
+                temp_coords_Vect = coords[icol];
+            }
+            broadcast(temp_coords_Vect, 0);
+            if (procID() != 0)
+            {
+                coords[icol] = temp_coords_Vect.stdVector();
+            }
+        }
 
         if (m_params.verbose > AHParams::NONE)
         {
@@ -1051,8 +1115,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_coords_file(
         else
             var_name = DiagnosticVariables::variable_names[var_enum];
 
-        static std::array<std::string, CH_SPACEDIM> xyz{
-            D_DECL("x", "y", "z")};
+        static std::array<std::string, CH_SPACEDIM> xyz{D_DECL("x", "y", "z")};
 
         if (der_type == 0)
             components[el++] = var_name;
@@ -1112,7 +1175,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::write_coords_file(
             MayDay::Error("PETSc's rank 0 should be Chombo's rank 0");
 #endif
 
-int local_total = (solver.m_umax - solver.m_umin);
+        int local_total = (solver.m_umax - solver.m_umin);
 #if CH_SPACEDIM == 3
         local_total *= (solver.m_vmax - solver.m_vmin);
 #endif
@@ -1129,12 +1192,12 @@ int local_total = (solver.m_umax - solver.m_umin);
         {
             for (int u = solver.m_umin; u < solver.m_umax; ++u)
             {
-output[idx * num_components_total] = solver.m_u[idx];
+                output[idx * num_components_total] = solver.m_u[idx];
 #if CH_SPACEDIM == 3
                 output[idx * num_components_total + 1] = solver.m_v[idx];
-#endif                
-                output[idx * num_components_total + SpaceDim - 1] 
-                    = solver.m_F[idx]; 
+#endif
+                output[idx * num_components_total + SpaceDim - 1] =
+                    solver.m_F[idx];
 
                 auto extra = solver.m_interp.get_extra_data(idx);
 
@@ -1716,7 +1779,7 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_center()
                     double coord_i =
                         solver.m_interp.get_coord_system().get_grid_coord(
                             i, D_DECL(solver.m_F[idx], solver.m_u[idx],
-                            solver.m_v[idx]));
+                                      solver.m_v[idx]));
 
                     // temp[i] += point[i]; // old method
                     if (coord_i > max_temp[i])
@@ -1826,7 +1889,8 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_average_F() const
     if (PETScCommunicator::is_rank_active())
     {
         std::pair<double, double> sums(0., 0.);
-        auto lambda_sum = [](std::pair<double, double> sums, double r) {
+        auto lambda_sum = [](std::pair<double, double> sums, double r)
+        {
             sums.first += r;      // radius
             sums.second += r * r; // radius^2
             return std::move(sums);

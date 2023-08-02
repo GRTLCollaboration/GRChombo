@@ -11,6 +11,9 @@
 #include "IntegrationMethod.hpp"
 #include "PETScAHSolver.hpp"
 
+// Chombo namespace
+#include "UsingNamespace.H"
+
 // Class to manage ApparentHorizon for 2+1D and 3+1D simulations
 // (has only been implemented for 3+1 spacetimes, 3+1 cartoon-reduced to 2+1 and
 // 4+1 cartoon-reduced to 2+1)
