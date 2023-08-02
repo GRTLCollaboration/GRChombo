@@ -4,8 +4,8 @@
  */
 
 #include "SmallDataIOReader.hpp"
+#include "AlwaysAssert.hpp"
 #include <algorithm>
-#include <cassert>
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -90,7 +90,7 @@ void SmallDataIOReader::determine_file_structure()
 {
     abort_if_not_rank_zero();
     // first check file is open
-    assert(m_file.is_open());
+    always_assert(m_file.is_open());
 
     // move file stream position to start of file
     m_file.clear();
@@ -201,16 +201,16 @@ void SmallDataIOReader::determine_file_structure()
 
     m_file_structure.num_blocks = block_counter;
 
-    assert(m_file_structure.num_data_rows.size() ==
-               m_file_structure.num_blocks &&
-           m_file_structure.num_header_rows.size() ==
-               m_file_structure.num_blocks &&
-           m_file_structure.num_coords_columns.size() ==
-               m_file_structure.num_blocks &&
-           m_file_structure.num_data_columns.size() ==
-               m_file_structure.num_blocks &&
-           m_file_structure.num_columns.size() == m_file_structure.num_blocks &&
-           m_file_structure.block_starts.size() == m_file_structure.num_blocks);
+    always_assert(
+        m_file_structure.num_data_rows.size() == m_file_structure.num_blocks &&
+        m_file_structure.num_header_rows.size() ==
+            m_file_structure.num_blocks &&
+        m_file_structure.num_coords_columns.size() ==
+            m_file_structure.num_blocks &&
+        m_file_structure.num_data_columns.size() ==
+            m_file_structure.num_blocks &&
+        m_file_structure.num_columns.size() == m_file_structure.num_blocks &&
+        m_file_structure.block_starts.size() == m_file_structure.num_blocks);
 
     m_structure_defined = true;
 }
@@ -238,11 +238,11 @@ std::vector<SmallDataIOReader::column_t>
 SmallDataIOReader::get_columns(int a_min_column, int a_max_column, int a_block)
 {
     abort_if_not_rank_zero();
-    assert(m_file.is_open());
-    assert(m_structure_defined);
-    assert((0 <= a_min_column) &&
-           (a_max_column < m_file_structure.num_columns[a_block]) &&
-           (a_min_column <= a_max_column));
+    always_assert(m_file.is_open());
+    always_assert(m_structure_defined);
+    always_assert((0 <= a_min_column) &&
+                  (a_max_column < m_file_structure.num_columns[a_block]) &&
+                  (a_min_column <= a_max_column));
     const int num_columns = a_max_column - a_min_column + 1;
     std::vector<column_t> out(num_columns);
     for (auto &column : out)
@@ -302,7 +302,7 @@ std::vector<SmallDataIOReader::column_t>
 SmallDataIOReader::get_all_data_columns(int a_block)
 {
     abort_if_not_rank_zero();
-    assert(m_structure_defined);
+    always_assert(m_structure_defined);
     int min_data_column = m_file_structure.num_coords_columns[a_block];
     int max_data_column =
         min_data_column + m_file_structure.num_data_columns[a_block] - 1;
@@ -322,9 +322,10 @@ std::vector<double>
 SmallDataIOReader::get_data_from_header(int a_header_row_number, int a_block)
 {
     abort_if_not_rank_zero();
-    assert(m_file.is_open());
-    assert(m_structure_defined);
-    assert(a_header_row_number < m_file_structure.num_header_rows[a_block]);
+    always_assert(m_file.is_open());
+    always_assert(m_structure_defined);
+    always_assert(a_header_row_number <
+                  m_file_structure.num_header_rows[a_block]);
 
     // move stream to start of block
     m_file.clear();
@@ -360,9 +361,10 @@ std::vector<std::string>
 SmallDataIOReader::get_header_strings(int a_header_row_number, int a_block)
 {
     abort_if_not_rank_zero();
-    assert(m_file.is_open());
-    assert(m_structure_defined);
-    assert(a_header_row_number < m_file_structure.num_header_rows[a_block]);
+    always_assert(m_file.is_open());
+    always_assert(m_structure_defined);
+    always_assert(a_header_row_number <
+                  m_file_structure.num_header_rows[a_block]);
 
     // move stream to start of block
     m_file.clear();
