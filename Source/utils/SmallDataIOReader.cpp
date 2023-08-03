@@ -268,6 +268,37 @@ SmallDataIOReader::get_file_structure(bool a_broadcast_to_all_ranks)
     return m_file_structure;
 }
 
+bool SmallDataIOReader::contains_data()
+{
+    if (!m_structure_defined)
+    {
+        determine_file_structure();
+    }
+    bool contains_data = false;
+
+    if (procID() == 0)
+    {
+        for (int iblock = 0; iblock < m_file_structure.num_blocks; ++iblock)
+        {
+            contains_data |= (m_file_structure.num_data_rows[iblock] > 0);
+        }
+    }
+#ifdef CH_MPI
+    // I think MPI_CXX_BOOL was added in MPI 3.0
+#if MPI_VERSION >= 3
+    MPI_Bcast(&contains_data, 1, MPI_CXX_BOOL, 0, Chombo_MPI::comm);
+#else
+    int contains_data_int = static_cast<int>(contains_data);
+    MPI_Bcast(&contains_data_int, 1, MPI_INT, 0, Chombo_MPI::comm);
+    if (procID() != 0)
+    {
+        contains_data = static_cast<bool>(contains_data_int);
+    }
+#endif /* MPI_VERSION */
+#endif /* CH_MPI */
+    return contains_data;
+}
+
 // Get an interval of columns (inclusive) from a block
 std::vector<SmallDataIOReader::column_t>
 SmallDataIOReader::get_columns(int a_min_column, int a_max_column, int a_block,

@@ -74,6 +74,9 @@ class SmallDataIOReader
     const file_structure_t &
     get_file_structure(bool a_broadcast_to_all_ranks = true);
 
+    // Returns true if there are some valid non-header rows and false otherwise
+    bool contains_data();
+
     // Get an interval of columns (inclusive) from a block
     std::vector<column_t> get_columns(int a_min_column, int a_max_column,
                                       int a_block = 0,
