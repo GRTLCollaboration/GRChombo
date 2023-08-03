@@ -71,29 +71,35 @@ class SmallDataIOReader
     void set_file_structure(const file_structure_t &a_file_structure);
 
     // File struture getter
-    const file_structure_t &get_file_structure() const;
+    const file_structure_t &
+    get_file_structure(bool a_broadcast_to_all_ranks = true);
 
     // Get an interval of columns (inclusive) from a block
     std::vector<column_t> get_columns(int a_min_column, int a_max_column,
-                                      int a_block = 0);
+                                      int a_block = 0,
+                                      bool a_broadcast_to_all_ranks = true);
 
     // Get all data columns from a block
-    std::vector<column_t> get_all_data_columns(int a_block = 0);
+    std::vector<column_t>
+    get_all_data_columns(int a_block = 0, bool a_broadcast_to_all_ranks = true);
+
+    // Get all columns from a block
+    std::vector<column_t> get_all_columns(int a_block = 0,
+                                          bool a_broadcast_to_all_ranks = true);
 
     // Get a single column from a block
-    column_t get_column(int a_column, int a_block = 0);
-
-    // Get same data column from all blocks
-    std::vector<std::vector<double>>
-    get_data_column_from_all_blocks(int a_data_column);
+    column_t get_column(int a_column, int a_block = 0,
+                        bool a_broadcast_to_all_ranks = true);
 
     // Returns a vector of numeric values from a header row
-    std::vector<double> get_data_from_header(int a_header_row_number,
-                                             int a_block = 0);
+    std::vector<double>
+    get_data_from_header(int a_header_row_number, int a_block = 0,
+                         bool a_broadcast_to_all_ranks = true);
 
     // Returns a vector of strings from a header row
-    std::vector<std::string> get_header_strings(int a_header_row_number,
-                                                int a_block = 0);
+    std::vector<std::string>
+    get_header_strings(int a_header_row_number, int a_block = 0,
+                       bool a_broadcast_to_all_ranks = false);
 };
 
 #endif /* SMALLDATAIOREADER_HPP */
