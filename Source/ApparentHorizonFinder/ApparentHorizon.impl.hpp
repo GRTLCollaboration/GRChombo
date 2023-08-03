@@ -683,42 +683,12 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
     // get centre from stats file
     std::string file = m_params.stats_path + m_stats + ".dat";
     std::vector<std::vector<double>> stats;
-    int num_stats_columns = 0;
-    if (procID() == 0)
-    {
-        SmallDataIOReader stats_reader;
-        stats_reader.open(file);
-        stats_reader.determine_file_structure();
-        auto stats_file_structure = stats_reader.get_file_structure();
-        bool no_non_comment_lines =
-            (stats_file_structure.num_columns.size() == 0);
-        num_stats_columns =
-            (!no_non_comment_lines) ? stats_file_structure.num_columns[0] : 0;
-        if (!no_non_comment_lines)
-            stats = stats_reader.get_columns(0, num_stats_columns - 1);
-    }
-    broadcast(num_stats_columns, 0);
-    if (procID() != 0)
-    {
-        stats.resize(num_stats_columns);
-    }
-    for (int icol = 0; icol < num_stats_columns; ++icol)
-    {
-        Vector<double> temp_stats_Vect;
-        if (procID() == 0)
-        {
-            temp_stats_Vect = stats[icol];
-        }
-        broadcast(temp_stats_Vect, 0);
-        if (procID() != 0)
-        {
-            stats[icol] = temp_stats_Vect.stdVector();
-        }
-    }
+    SmallDataIOReader stats_reader;
+    stats_reader.open(file);
 
     int idx = 0;
     double old_print_dt = 0.;
-    if (stats.size() == 0)
+    if (!stats_reader.contains_data())
     { // case when it never ran the AH or the file doesn't exist
         if (m_params.verbose > AHParams::NONE && current_step != 0)
         {
@@ -733,6 +703,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
     }
     else
     {
+        stats = stats_reader.get_all_columns();
         // look for stats line with time 'current_time', as there may be
         // further output messed up in the file after the last checkpoint was
         // made
@@ -1005,35 +976,9 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
             SmallDataIO::get_new_filename(m_params.coords_path + m_coords,
                                           1. /*fake dt*/, coords_file_number);
 
-        std::vector<std::vector<double>> coords;
-        int num_coords_columns;
-        if (procID() == 0)
-        {
-            SmallDataIOReader coords_reader;
-            coords_reader.open(coords_filename);
-            coords_reader.determine_file_structure();
-            auto coords_file_structure = coords_reader.get_file_structure();
-            num_coords_columns = coords_file_structure.num_columns[0];
-            coords = coords_reader.get_columns(0, num_coords_columns - 1);
-        }
-        broadcast(num_coords_columns, 0);
-        if (procID() != 0)
-        {
-            coords.resize(num_coords_columns);
-        }
-        for (int icol = 0; icol < num_coords_columns; ++icol)
-        {
-            Vector<double> temp_coords_Vect;
-            if (procID() == 0)
-            {
-                temp_coords_Vect = coords[icol];
-            }
-            broadcast(temp_coords_Vect, 0);
-            if (procID() != 0)
-            {
-                coords[icol] = temp_coords_Vect.stdVector();
-            }
-        }
+        SmallDataIOReader coords_reader;
+        coords_reader.open(coords_filename);
+        auto coords = coords_reader.get_all_columns();
 
         if (m_params.verbose > AHParams::NONE)
         {
