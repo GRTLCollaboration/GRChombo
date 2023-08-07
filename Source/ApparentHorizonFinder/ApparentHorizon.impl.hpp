@@ -200,17 +200,9 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::predict_next_origin()
     std::array<double, CH_SPACEDIM> new_center = m_old_centers[0];
     if (m_converged >= 3) // add 2nd derivative
     {
-        FOR(a)
-        {
-            if (!solver.m_interp.get_interpolator()->get_boundary_reflective(
-                    Side::Lo, a) &&
-                !solver.m_interp.get_interpolator()->get_boundary_reflective(
-                    Side::Hi, a))
-            {
-                new_center[a] += (m_old_centers[0][a] + m_old_centers[2][a] -
-                                  2. * m_old_centers[1][a]);
-            }
-        }
+        new_center[a] += (m_old_centers[0][a] + m_old_centers[2][a] -
+                          2. * m_old_centers[1][a]);
+
         if (m_params.verbose > AHParams::SOME)
         {
             pout() << "OLD[-2]: (" << m_old_centers[2][0] << ","
@@ -223,16 +215,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::predict_next_origin()
     }
     if (m_converged >= 2) // add 1st derivative
     {
-        FOR(a)
-        {
-            if (!solver.m_interp.get_interpolator()->get_boundary_reflective(
-                    Side::Lo, a) &&
-                !solver.m_interp.get_interpolator()->get_boundary_reflective(
-                    Side::Hi, a))
-            {
-                new_center[a] += (m_old_centers[0][a] - m_old_centers[1][a]);
-            }
-        }
+        new_center[a] += (m_old_centers[0][a] - m_old_centers[1][a]);
 
         if (m_params.verbose > AHParams::SOME)
         {
@@ -267,18 +250,9 @@ template <class SurfaceGeometry, class AHFunction>
 void ApparentHorizon<SurfaceGeometry, AHFunction>::update_old_centers(
     std::array<double, CH_SPACEDIM> new_center)
 {
-    FOR(a)
-    {
-        if (!solver.m_interp.get_interpolator()->get_boundary_reflective(
-                Side::Lo, a) &&
-            !solver.m_interp.get_interpolator()->get_boundary_reflective(
-                Side::Hi, a))
-        {
-            m_old_centers[2][a] = m_old_centers[1][a];
-            m_old_centers[1][a] = m_old_centers[0][a];
-            m_old_centers[0][a] = new_center[a];
-        }
-    }
+    m_old_centers[2][a] = m_old_centers[1][a];
+    m_old_centers[1][a] = m_old_centers[0][a];
+    m_old_centers[0][a] = new_center[a];
 }
 
 template <class SurfaceGeometry, class AHFunction>
