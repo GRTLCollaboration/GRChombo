@@ -78,21 +78,24 @@ int runApparentHorizonTest2D(int argc, char *argv[])
         status = 3;
     else
     {
-        double area = 0;
-        SmallDataIOReader file_reader;
-        file_reader.open("stats_AH1.dat");
-        // get area from file to determine status
-        if (!file_reader.contains_data())
+        double area;
+        if (procID() == 0)
         {
-            status = 2;
-        }
-        else
-        {
+            SmallDataIOReader file_reader;
+            file_reader.open("stats_AH1.dat");
+            file_reader.determine_file_structure();
+            // get area from file to determine status
             auto area_col = file_reader.get_column(2);
-            area = area_col[0];
+            if (area_col.size() == 0)
+                status = 2;
+            else
+                area = area_col[0];
         }
+        broadcast(status, 0);
         if (status == 0)
         {
+            broadcast(area, 0);
+
             // Exact value from Mathematica
             /*
             Solve[y + A * Sin[2 Pi x / L] == Pi, y][[1]]

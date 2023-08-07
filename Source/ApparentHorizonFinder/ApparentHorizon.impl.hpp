@@ -13,6 +13,7 @@
 #include "GRAMR.hpp"
 #include "PETScCommunicator.hpp"
 #include "SmallDataIO.hpp"
+#include "SmallDataIOReader.hpp"
 #include "TensorAlgebra.hpp"
 #include "UserVariables.hpp"
 
@@ -20,6 +21,9 @@
 #include "Lagrange.hpp"
 #include "SimpleArrayBox.hpp"
 #include "SimpleInterpSource.hpp"
+
+// Chombo MPI functions
+#include "SPMD.H"
 
 template <class SurfaceGeometry, class AHFunction>
 ApparentHorizon<SurfaceGeometry, AHFunction>::ApparentHorizon(
@@ -199,7 +203,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::predict_next_origin()
         FOR(a)
         {
             new_center[a] += (m_old_centers[0][a] + m_old_centers[2][a] -
-                              2. * m_old_centers[1][a]);
+                                  2. * m_old_centers[1][a]);
         }
         if (m_params.verbose > AHParams::SOME)
         {
@@ -213,7 +217,10 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::predict_next_origin()
     }
     if (m_converged >= 2) // add 1st derivative
     {
-        FOR(a) { new_center[a] += (m_old_centers[0][a] - m_old_centers[1][a]); }
+        FOR(a)
+        {
+            new_center[a] += (m_old_centers[0][a] - m_old_centers[1][a]);
+        }
 
         if (m_params.verbose > AHParams::SOME)
         {
@@ -657,11 +664,13 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
 
     // get centre from stats file
     std::string file = m_params.stats_path + m_stats + ".dat";
-    auto stats = SmallDataIO::read(file);
+    std::vector<std::vector<double>> stats;
+    SmallDataIOReader stats_reader;
+    stats_reader.open(file);
 
     int idx = 0;
     double old_print_dt = 0.;
-    if (stats.size() == 0)
+    if (!stats_reader.contains_data())
     { // case when it never ran the AH or the file doesn't exist
         if (m_params.verbose > AHParams::NONE && current_step != 0)
         {
@@ -676,6 +685,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
     }
     else
     {
+        stats = stats_reader.get_all_columns();
         // look for stats line with time 'current_time', as there may be
         // further output messed up in the file after the last checkpoint was
         // made
@@ -948,7 +958,9 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
             SmallDataIO::get_new_filename(m_params.coords_path + m_coords,
                                           1. /*fake dt*/, coords_file_number);
 
-        auto coords = SmallDataIO::read(coords_filename);
+        SmallDataIOReader coords_reader;
+        coords_reader.open(coords_filename);
+        auto coords = coords_reader.get_all_columns();
 
         if (m_params.verbose > AHParams::NONE)
         {

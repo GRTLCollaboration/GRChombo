@@ -71,22 +71,28 @@ int runApparentHorizonTest3D(int argc, char *argv[])
     else
     {
         double mass, spin, spin_x;
-        SmallDataIOReader file_reader;
-        file_reader.open("stats_AH1.dat");
-
-        if (!file_reader.contains_data())
+        if (procID() == 0)
         {
-            status = 2;
-        }
-        else
-        {
+            SmallDataIOReader file_reader;
+            file_reader.open("stats_AH1.dat");
+            file_reader.determine_file_structure();
             auto stats = file_reader.get_all_data_columns();
-            mass = stats[2][0];
-            spin = stats[4][0];
-            spin_x = stats[5][0] * mass;
+            if (stats.size() == 0)
+                status = 2;
+            else
+            {
+                mass = stats[2][0];
+                spin = stats[4][0];
+                spin_x = stats[5][0] * mass;
+            }
         }
+        broadcast(status, 0);
         if (status == 0)
         {
+            broadcast(mass, 0);
+            broadcast(spin, 0);
+            broadcast(spin_x, 0);
+
             double error_perc =
                 fabs(1. - mass / sim_params.kerr_params.mass) * 100;
             if (sim_params.kerr_params.spin != 0.)
