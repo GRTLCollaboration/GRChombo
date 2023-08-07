@@ -203,7 +203,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::predict_next_origin()
         FOR(a)
         {
             new_center[a] += (m_old_centers[0][a] + m_old_centers[2][a] -
-                                  2. * m_old_centers[1][a]);
+                              2. * m_old_centers[1][a]);
         }
         if (m_params.verbose > AHParams::SOME)
         {
@@ -217,10 +217,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::predict_next_origin()
     }
     if (m_converged >= 2) // add 1st derivative
     {
-        FOR(a)
-        {
-            new_center[a] += (m_old_centers[0][a] - m_old_centers[1][a]);
-        }
+        FOR(a) { new_center[a] += (m_old_centers[0][a] - m_old_centers[1][a]); }
 
         if (m_params.verbose > AHParams::SOME)
         {
