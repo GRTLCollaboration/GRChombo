@@ -58,9 +58,13 @@ void ScalarFieldLevel::initialData()
 
     // First set everything to zero then initial conditions for scalar field -
 
+    std::vector< std::vector<double> > m_h;
+    //InitialScalarData init_sd(m_p.initial_params, m_dx, m_h);
+    //init_sd.load_gws(m_h);
+
     BoxLoops::loop(
     make_compute_pack(SetValue(0.),
-                        InitialScalarData(m_p.initial_params, m_dx)),
+                        InitialScalarData(m_p.initial_params, m_dx, m_h)),
     m_state_new, m_state_new, INCLUDE_GHOST_CELLS,disable_simd());
     
     fillAllGhosts();

@@ -46,6 +46,7 @@ G_Newton = 1.0
 # Scalar field initial data
 scalar_amplitude = 10.0
 scalar_velocity = -0.00162846
+# scalar_width = 0.0;
 scalar_mass = 0.01
 
 #################################################
@@ -80,10 +81,10 @@ min_box_size = 16
 
 tag_buffer_size = 0 # this example uses a fixed grid
 
-# grid_buffer_size = 8
+# grid_buffer_size = 0 # UCM
 # fill_ratio = 0.7
-# num_ghosts = 3
-# center = 256.0 256.0 256.0 # defaults to center of the grid
+# num_ghosts = 0 # UCM
+center = 0.0 0.0 0.0 # defaults to center of the grid
 
 #################################################
 # Boundary Conditions parameters
