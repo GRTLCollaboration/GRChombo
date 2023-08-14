@@ -19,7 +19,6 @@
 #include "IntVect.H"
 #include "MayDay.H"
 #include <fstream>
-#include <vector>
 
 //! Class which sets the initial scalar field matter config
 class InitialScalarData
@@ -36,12 +35,11 @@ class InitialScalarData
         double width; //!< Width of bump in initial SF bubble
         double mass;
         int N_init;
-        std::vector< std::vector<double>> h;
     };
 
     //! The constructor
-    InitialScalarData(params_t a_params, double a_dx, std::vector< std::vector<double>> a_h)
-        : m_dx(a_dx), m_params(a_params), m_h(a_h)
+    InitialScalarData(params_t a_params, double a_dx)
+        : m_dx(a_dx), m_params(a_params)
     {
     }
 

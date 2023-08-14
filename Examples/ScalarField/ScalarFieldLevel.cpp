@@ -33,6 +33,10 @@
 #include "AMRReductions.hpp"
 #include "MeansVars.hpp"
 #include <cmath>
+#include <string>
+#include <sstream>
+#include <typeinfo>
+#include <vector>
 
 // Things to do at each advance step, after the RK4 is calculated 
 void ScalarFieldLevel::specificAdvance()
@@ -53,18 +57,78 @@ void ScalarFieldLevel::specificAdvance()
 void ScalarFieldLevel::initialData()
 {
     CH_TIME("ScalarFieldLevel::initialData");
-    if (m_verbosity)
-        pout() << "ScalarFieldLevel::initialData " << m_level << endl;
+    if (m_verbosity) { pout() << "ScalarFieldLevel::initialData " << m_level << endl; }
 
-    // First set everything to zero then initial conditions for scalar field -
+    //Load in data from .dat files, for h and hdot initialisation
 
-    std::vector< std::vector<double> > m_h;
-    //InitialScalarData init_sd(m_p.initial_params, m_dx, m_h);
-    //init_sd.load_gws(m_h);
+    ifstream gw_pos;
+    //ifstream gw_vel;
+    gw_pos.open("./gw-re-position.dat", ios::in); //open the file with the waves in it
+    //gw_vel.open("./gw-re-velocity.dat", ios::in);
+
+    if (!gw_pos)
+    {
+        MayDay::Error("GW position or velocity file failed to open.");
+    }
+
+    int m,n = 0;
+    int N = m_p.initial_params.N_init;
+    //std::cout << N << ", " << typeid(N).name() << "\n";
+
+    std::string delim = " ";
+    std::string datline;
+    std::stringstream number;
+    std::vector<std::vector<double> > h(std::pow(N, 3.), std::vector<double>(6));
+
+    for (int i=0; i < std::pow(N, 3.); i++) //
+    {
+        datline = "";
+        std::getline(gw_pos, datline);
+
+        int m=0;
+        for (int j=0; j<datline.length(); j++)
+        {
+            h[n][m] = 0.;
+
+            if(datline[j] != delim[0])
+            {
+                number << datline[j];
+            }
+            else
+            {
+                number >> h[n][m];
+                number.clear();
+                m++;
+
+                if(m > 6)
+                {
+                    cout << m << "\n";
+                    MayDay::Error("Tensor index has exceeded 6 components");
+                }
+            }
+        }
+        
+        n++;
+        if(n > std::pow(N, 3.))
+        {
+            MayDay::Error("File length has exceeded N^3.");
+        }
+    }
+
+    std::cout << std::pow(N, 3.) << std::endl;
+
+    MayDay::Error("Initial h vector is set.");
+
+
+
+
+
+
+
 
     BoxLoops::loop(
     make_compute_pack(SetValue(0.),
-                        InitialScalarData(m_p.initial_params, m_dx, m_h)),
+                        InitialScalarData(m_p.initial_params, m_dx)),
     m_state_new, m_state_new, INCLUDE_GHOST_CELLS,disable_simd());
     
     fillAllGhosts();

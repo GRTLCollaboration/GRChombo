@@ -42,6 +42,12 @@ int runGRChombo(int argc, char *argv[])
 
     setupAMRObject(gr_amr, scalar_field_level_fact);
 
+    // Add a scheduler to call specificPostTimeStep on every AMRLevel at t=0
+    auto task = [](GRAMRLevel *level) {
+        if (level->time() == 0.)
+            level->specificPostTimeStep();
+    };
+
     // Engage! Run the evolution
     gr_amr.run(sim_params.stop_time, sim_params.max_steps);
     gr_amr.conclude();
