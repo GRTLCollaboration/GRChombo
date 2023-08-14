@@ -55,24 +55,6 @@ class SimulationParameters : public SimulationParametersBase
                            0.2 / coarsest_dx / dt_multiplier,
                        "oscillations of scalar field do not appear to be "
                        "resolved on coarsest level");
-        warn_parameter("scalar_width", initial_params.width,
-                       initial_params.width < 0.5 * L,
-                       "is greater than half the domain size");
-        warn_parameter("kerr_mass", kerr_params.mass, kerr_params.mass >= 0.0,
-                       "should be >= 0.0");
-        check_parameter("kerr_spin", kerr_params.spin,
-                        std::abs(kerr_params.spin) <= kerr_params.mass,
-                        "must satisfy |a| <= M = " +
-                            std::to_string(kerr_params.mass));
-        FOR(idir)
-        {
-            std::string name = "kerr_center[" + std::to_string(idir) + "]";
-            warn_parameter(
-                name, kerr_params.center[idir],
-                (kerr_params.center[idir] >= 0) &&
-                    (kerr_params.center[idir] <= (ivN[idir] + 1) * coarsest_dx),
-                "should be within the computational domain");
-        }
     }
 
     // Initial data for matter and potential and BH

@@ -38,6 +38,9 @@
 #include <typeinfo>
 #include <vector>
 
+// Start time
+#include <ctime>
+
 // Things to do at each advance step, after the RK4 is calculated 
 void ScalarFieldLevel::specificAdvance()
 {
@@ -56,48 +59,52 @@ void ScalarFieldLevel::specificAdvance()
 // Initial data for field and metric variables
 void ScalarFieldLevel::initialData()
 {
+    time_t t;
     CH_TIME("ScalarFieldLevel::initialData");
     if (m_verbosity) { pout() << "ScalarFieldLevel::initialData " << m_level << endl; }
 
     //Load in data from .dat files, for h and hdot initialisation
 
     ifstream gw_pos;
-    //ifstream gw_vel;
+    ifstream gw_vel;
     gw_pos.open("./gw-re-position.dat", ios::in); //open the file with the waves in it
-    //gw_vel.open("./gw-re-velocity.dat", ios::in);
+    gw_vel.open("./gw-re-velocity.dat", ios::in);
 
-    if (!gw_pos)
+    if (!gw_pos || !gw_vel)
     {
         MayDay::Error("GW position or velocity file failed to open.");
     }
 
     int m,n = 0;
     int N = m_p.initial_params.N_init;
-    //std::cout << N << ", " << typeid(N).name() << "\n";
 
     std::string delim = " ";
-    std::string datline;
-    std::stringstream number;
+    std::string p_datline;
+    std::string v_datline;
+    std::stringstream p_number;
+    std::stringstream v_number;
+
     std::vector<std::vector<double> > h(std::pow(N, 3.), std::vector<double>(6));
+    std::vector<std::vector<double> > hdot(std::pow(N, 3.), std::vector<double>(6));
 
     for (int i=0; i < std::pow(N, 3.); i++) //
     {
-        datline = "";
-        std::getline(gw_pos, datline);
+        p_datline = "";
+        v_datline = "";
+        std::getline(gw_pos, p_datline);
+        std::getline(gw_vel, v_datline);
 
-        int m=0;
-        for (int j=0; j<datline.length(); j++)
+        m=0;
+        for (int j=0; j<p_datline.length(); j++)
         {
-            h[n][m] = 0.;
-
-            if(datline[j] != delim[0])
+            if(p_datline[j] != delim[0])
             {
-                number << datline[j];
+                p_number << p_datline[j];
             }
             else
             {
-                number >> h[n][m];
-                number.clear();
+                p_number >> h[n][m];
+                p_number.clear();
                 m++;
 
                 if(m > 6)
@@ -108,6 +115,27 @@ void ScalarFieldLevel::initialData()
             }
         }
         
+        m=0;
+        for(int j=0; j<v_datline.length(); j++)
+        {
+            if(v_datline[j] != delim[0])
+            {
+                v_number << v_datline[j];
+            }
+            else
+            {
+                v_number >> hdot[n][m];
+                v_number.clear();
+                m++;
+
+                if(m > 6)
+                {
+                    cout << m << "\n";
+                    MayDay::Error("Tensor index has exceeded 6 components");
+                }
+            }
+        }
+
         n++;
         if(n > std::pow(N, 3.))
         {
@@ -115,21 +143,15 @@ void ScalarFieldLevel::initialData()
         }
     }
 
-    std::cout << std::pow(N, 3.) << std::endl;
-
-    MayDay::Error("Initial h vector is set.");
-
-
-
-
-
-
-
+    gw_pos.close();
+    gw_vel.close();
 
     BoxLoops::loop(
     make_compute_pack(SetValue(0.),
-                        InitialScalarData(m_p.initial_params, m_dx)),
+                        InitialScalarData(m_p.initial_params, m_dx, h, hdot)),
     m_state_new, m_state_new, INCLUDE_GHOST_CELLS,disable_simd());
+
+    std::cout << "Initialisation finished at: " << asctime(localtime(&t)) << "\n";
     
     fillAllGhosts();
     BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,

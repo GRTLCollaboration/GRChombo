@@ -3,11 +3,11 @@
 #! System to be used
 #SBATCH -p knl
 #! Number of nodes to be used
-#SBATCH -N 1
+#SBATCH -N 2
 #! Number of MPI tasks allocated to each node
 #SBATCH --ntasks-per-node=8
 #! Wall clock time required
-#SBATCH --time=01:00:00
+#SBATCH --time=08:00:00
 #! Name of job
 #SBATCH -J gwtest
 
