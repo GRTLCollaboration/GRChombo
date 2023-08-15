@@ -134,7 +134,7 @@ void ScalarFieldLevel::computeTaggingCriterion(
 void ScalarFieldLevel::specificPostTimeStep()
 {
 #ifdef USE_AHFINDER
-    if (m_p.AH_activate && m_level == m_p.AH_params.level_to_run)
+    if (m_p.AH_activated && m_level == m_p.AH_params.level_to_run)
         m_bh_amr.m_ah_finder.solve(m_dt, m_time, m_restart_time);
 #endif
 }

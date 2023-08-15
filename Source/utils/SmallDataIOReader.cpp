@@ -59,10 +59,7 @@ void SmallDataIOReader::open(const std::string &a_filename)
         // check file opening successful
         if (!m_file)
         {
-            std::string error_message =
-                "SmallDataIOReader::open: unable to open file ";
-            error_message += m_filename;
-            MayDay::Error(error_message.c_str(), 1);
+            pout() << "File '" << m_filename << "' not found." << std::endl;
         }
     }
 }
@@ -86,9 +83,10 @@ void SmallDataIOReader::determine_file_structure()
     int structure_defined_int;
     if (procID() == 0)
     {
+        int my_file_exists = m_file.is_open();
         // first check file is open
-        always_assert(m_file.is_open());
-
+        if (my_file_exists)
+        {
         // move file stream position to start of file
         m_file.clear();
         m_file.seekg(0, std::ios::beg);
@@ -214,6 +212,7 @@ void SmallDataIOReader::determine_file_structure()
                           m_file_structure.num_blocks);
     }
     m_structure_defined = true;
+    }
 }
 
 // Set structure if known already (e.g. same as another file already
@@ -284,17 +283,12 @@ bool SmallDataIOReader::contains_data()
         }
     }
 #ifdef CH_MPI
-    // I think MPI_CXX_BOOL was added in MPI 3.0
-#if MPI_VERSION >= 3
-    MPI_Bcast(&contains_data, 1, MPI_CXX_BOOL, 0, Chombo_MPI::comm);
-#else
     int contains_data_int = static_cast<int>(contains_data);
     MPI_Bcast(&contains_data_int, 1, MPI_INT, 0, Chombo_MPI::comm);
     if (procID() != 0)
     {
         contains_data = static_cast<bool>(contains_data_int);
     }
-#endif /* MPI_VERSION */
 #endif /* CH_MPI */
     return contains_data;
 }

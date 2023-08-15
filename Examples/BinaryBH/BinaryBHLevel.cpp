@@ -204,7 +204,7 @@ void BinaryBHLevel::specificPostTimeStep()
     }
 
 #ifdef USE_AHFINDER
-    if (m_p.AH_activate && m_level == m_p.AH_params.level_to_run)
+    if (m_p.AH_activated && m_level == m_p.AH_params.level_to_run)
     {
         if (m_p.AH_set_origins_to_punctures && m_p.track_punctures)
         {

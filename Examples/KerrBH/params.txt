@@ -60,8 +60,8 @@ max_level = 6 # There are (max_level+1) grids, so min is zero
 # Need one for each level except the top one, ie max_level items
 # Generally you do not need to regrid frequently on every level
 # Level Regridding:   0   1   2   3   4   5
-regrid_interval   =   0   0   0   0   0   0
-regrid_threshold = 0.0065
+regrid_interval   =  50  25   5   5   5   5
+regrid_thresholds = 0.1 0.1 0.1 0.1 0.1 0.1
 
 # Max and min box sizes
 max_box_size = 16
@@ -146,7 +146,7 @@ sigma = 0.3
 #################################################
 # Apparent Horizon Finder parameters
 
-AH_activate = 1 
+AH_activated = 1 
 AH_num_ranks = 20
 AH_num_points_u = 49
 AH_num_points_v = 48

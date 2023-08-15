@@ -77,7 +77,7 @@ int runGRChombo(int argc, char *argv[])
         bh_amr.m_puncture_tracker.restart_punctures();
 
 #ifdef USE_AHFINDER
-    if (sim_params.AH_activate)
+    if (sim_params.AH_activated)
     {
         AHSurfaceGeometry sph1(sim_params.bh1_params.center);
         AHSurfaceGeometry sph2(sim_params.bh2_params.center);

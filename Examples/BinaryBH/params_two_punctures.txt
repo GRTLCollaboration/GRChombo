@@ -15,7 +15,7 @@ plot_prefix = BinaryBHPlot_
 # restart_file = BinaryBHChk_000000.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 50
+checkpoint_interval = 100
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
 plot_interval = 10
@@ -70,12 +70,12 @@ max_level = 9 # There are (max_level+1) grids, so min is zero
 # Frequency of regridding at each level and thresholds on the tagging
 # Need one for each level except the top one, ie max_level items
 # Generally you do not need to regrid frequently on every level
-# Level Regridding: 0   1   2   3   4   5   6   7
-regrid_interval =   0   1   0   0   0   0   0   0
+# Level Regridding: 0   1   2   3   4   5   6   7   8
+regrid_interval =   0   0   0   64  64  64  64  64  64
 regrid_threshold = 0.05
 
 # Max and min box sizes
-max_box_size = 32
+max_box_size = 16
 min_box_size = 16
 
 # tag_buffer_size = 3
@@ -165,9 +165,9 @@ puncture_tracking_level = 5
 
 # extraction_center = 256 256 256 # defaults to center
 activate_extraction = 1
-num_extraction_radii = 3
-extraction_radii = 50.0 75.0 100.0
-extraction_levels = 2 1 1
+num_extraction_radii = 2
+extraction_radii = 50.0 100.0
+extraction_levels = 2 1
 num_points_phi = 24
 num_points_theta = 37
 num_modes = 8
@@ -189,7 +189,7 @@ modes = 2 0 # l m for spherical harmonics
 #################################################
 # Apparent Horizon Finder parameters
 
-AH_activate = 1
+AH_activated = 1
 AH_num_ranks = 65
 AH_num_points_u = 65
 AH_num_points_v = 48

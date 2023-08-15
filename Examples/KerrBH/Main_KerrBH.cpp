@@ -51,7 +51,7 @@ int runGRChombo(int argc, char *argv[])
     bh_amr.set_interpolator(&interpolator);
 
 #ifdef USE_AHFINDER
-    if (sim_params.AH_activate)
+    if (sim_params.AH_activated)
     {
         AHSurfaceGeometry sph(sim_params.kerr_params.center);
 

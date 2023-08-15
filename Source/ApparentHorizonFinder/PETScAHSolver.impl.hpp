@@ -358,8 +358,7 @@ bool PETScAHSolver<SurfaceGeometry, AHFunction>::interpolate_ah(
 
         if (m_params.verbose > AHParams::NONE)
         {
-            pout() << "Number of AH points changed. Interpolating old ones."
-                   << std::endl;
+            MayDay::Error("The same number of u or v points in the AH finder has to be used on the restart!");
         }
 
         // start interpolating

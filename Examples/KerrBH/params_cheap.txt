@@ -52,8 +52,6 @@ kerr_spin_direction = 0.1 0.1 0. # doesn't need to be normalized
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
 N_full = 64
-L_full = 16
-
 L_full = 128
 
 # Maximum number of times you can regrid above coarsest level
@@ -85,7 +83,7 @@ isPeriodic = 0 0 0
 # 0 = static, 1 = sommerfeld, 2 = reflective
 # (see BoundaryConditions.hpp for details)
 hi_boundary = 1 1 1
-lo_boundary = 1 1 1
+lo_boundary = 1 1 2
 
 # if reflective boundaries selected, must set
 # parity of all vars (in order given by UserVariables.hpp)
@@ -149,7 +147,7 @@ sigma = 0.3
 #################################################
 # Apparent Horizon Finder parameters
 
-AH_activate = 1
+AH_activated = 1
 AH_num_ranks = 4 #20
 AH_num_points_u = 15 #30
 AH_num_points_v = 18 #50
