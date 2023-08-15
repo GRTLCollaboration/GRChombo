@@ -87,131 +87,135 @@ void SmallDataIOReader::determine_file_structure()
         // first check file is open
         if (my_file_exists)
         {
-        // move file stream position to start of file
-        m_file.clear();
-        m_file.seekg(0, std::ios::beg);
+            // move file stream position to start of file
+            m_file.clear();
+            m_file.seekg(0, std::ios::beg);
 
-        // go through each line and determine structure
-        std::string line;
-        int consecutive_empty_line_count = 2;
-        int block_counter = 0; // assume we always have one block
-        int current_position = m_file.tellg();
-        int block_start_position = current_position;
-        int header_row_counter = 0;
-        int data_row_counter = 0;
-        while (std::getline(m_file, line))
-        {
-            if (!line.empty())
+            // go through each line and determine structure
+            std::string line;
+            int consecutive_empty_line_count = 2;
+            int block_counter = 0; // assume we always have one block
+            int current_position = m_file.tellg();
+            int block_start_position = current_position;
+            int header_row_counter = 0;
+            int data_row_counter = 0;
+            while (std::getline(m_file, line))
             {
-                if (consecutive_empty_line_count == 2)
+                if (!line.empty())
                 {
-                    // start of new block
-                    block_start_position = current_position;
-                }
-                consecutive_empty_line_count = 0;
-
-                // header rows start with '#'
-                if (line.find("#") != std::string::npos)
-                    ++header_row_counter;
-                else
-                {
-                    if (data_row_counter++ == 0)
+                    if (consecutive_empty_line_count == 2)
                     {
-                        // only count a new block if it contains a data row
-                        m_file_structure.block_starts.push_back(
-                            block_start_position);
-                        ++block_counter;
-                        // determine column structure from first data row in
-                        // block get a vector of the widths of the columns
-                        // including preceeding whitespace
-                        std::vector<int> widths;
-                        std::string::size_type start_whitespace = 0;
-                        while (!(start_whitespace == std::string::npos))
-                        {
-                            std::string::size_type start_non_whitespace =
-                                line.find_first_not_of(' ', start_whitespace);
-                            std::string::size_type next_start_whitespace =
-                                line.find_first_of(' ', start_non_whitespace);
-                            int width;
-                            if (next_start_whitespace == std::string::npos)
-                            {
-                                width = line.length() - start_whitespace;
-                            }
-                            else
-                            {
-                                width =
-                                    next_start_whitespace - start_whitespace;
-                            }
-                            widths.push_back(width);
-                            start_whitespace = next_start_whitespace;
-                        }
+                        // start of new block
+                        block_start_position = current_position;
+                    }
+                    consecutive_empty_line_count = 0;
 
-                        if (block_counter == 1)
+                    // header rows start with '#'
+                    if (line.find("#") != std::string::npos)
+                        ++header_row_counter;
+                    else
+                    {
+                        if (data_row_counter++ == 0)
                         {
-                            // first data row in file so get coord and data
-                            // width from this. assume min width is coord width
-                            // and max is data width
-                            auto widths_minmax_it = std::minmax_element(
-                                widths.begin(), widths.end());
-                            m_file_structure.coords_width =
-                                *(widths_minmax_it.first);
-                            m_file_structure.data_width =
-                                *(widths_minmax_it.second);
+                            // only count a new block if it contains a data row
+                            m_file_structure.block_starts.push_back(
+                                block_start_position);
+                            ++block_counter;
+                            // determine column structure from first data row in
+                            // block get a vector of the widths of the columns
+                            // including preceeding whitespace
+                            std::vector<int> widths;
+                            std::string::size_type start_whitespace = 0;
+                            while (!(start_whitespace == std::string::npos))
+                            {
+                                std::string::size_type start_non_whitespace =
+                                    line.find_first_not_of(' ',
+                                                           start_whitespace);
+                                std::string::size_type next_start_whitespace =
+                                    line.find_first_of(' ',
+                                                       start_non_whitespace);
+                                int width;
+                                if (next_start_whitespace == std::string::npos)
+                                {
+                                    width = line.length() - start_whitespace;
+                                }
+                                else
+                                {
+                                    width = next_start_whitespace -
+                                            start_whitespace;
+                                }
+                                widths.push_back(width);
+                                start_whitespace = next_start_whitespace;
+                            }
+
+                            if (block_counter == 1)
+                            {
+                                // first data row in file so get coord and data
+                                // width from this. assume min width is coord
+                                // width and max is data width
+                                auto widths_minmax_it = std::minmax_element(
+                                    widths.begin(), widths.end());
+                                m_file_structure.coords_width =
+                                    *(widths_minmax_it.first);
+                                m_file_structure.data_width =
+                                    *(widths_minmax_it.second);
+                            }
+                            int num_coords_columns =
+                                std::count(widths.begin(), widths.end(),
+                                           m_file_structure.coords_width);
+                            int num_data_columns =
+                                std::count(widths.begin(), widths.end(),
+                                           m_file_structure.data_width);
+                            m_file_structure.num_coords_columns.push_back(
+                                num_coords_columns);
+                            m_file_structure.num_data_columns.push_back(
+                                num_data_columns);
+                            m_file_structure.num_columns.push_back(
+                                widths.size());
                         }
-                        int num_coords_columns =
-                            std::count(widths.begin(), widths.end(),
-                                       m_file_structure.coords_width);
-                        int num_data_columns =
-                            std::count(widths.begin(), widths.end(),
-                                       m_file_structure.data_width);
-                        m_file_structure.num_coords_columns.push_back(
-                            num_coords_columns);
-                        m_file_structure.num_data_columns.push_back(
-                            num_data_columns);
-                        m_file_structure.num_columns.push_back(widths.size());
                     }
                 }
-            }
-            else
-            {
-                if (consecutive_empty_line_count++ == 0 &&
-                    (header_row_counter > 0 || data_row_counter > 0))
+                else
                 {
-                    // end of previous block
-                    m_file_structure.num_header_rows.push_back(
-                        header_row_counter);
-                    m_file_structure.num_data_rows.push_back(data_row_counter);
-                    header_row_counter = 0;
-                    data_row_counter = 0;
+                    if (consecutive_empty_line_count++ == 0 &&
+                        (header_row_counter > 0 || data_row_counter > 0))
+                    {
+                        // end of previous block
+                        m_file_structure.num_header_rows.push_back(
+                            header_row_counter);
+                        m_file_structure.num_data_rows.push_back(
+                            data_row_counter);
+                        header_row_counter = 0;
+                        data_row_counter = 0;
+                    }
                 }
+                current_position = m_file.tellg();
             }
-            current_position = m_file.tellg();
-        }
-        // Just in case the file ends without a line break:
-        if (data_row_counter > 0)
-        {
-            m_file_structure.num_header_rows.push_back(header_row_counter);
-            m_file_structure.num_data_rows.push_back(data_row_counter);
-            header_row_counter = 0;
-            data_row_counter = 0;
-        }
+            // Just in case the file ends without a line break:
+            if (data_row_counter > 0)
+            {
+                m_file_structure.num_header_rows.push_back(header_row_counter);
+                m_file_structure.num_data_rows.push_back(data_row_counter);
+                header_row_counter = 0;
+                data_row_counter = 0;
+            }
 
-        m_file_structure.num_blocks = block_counter;
+            m_file_structure.num_blocks = block_counter;
 
-        always_assert(m_file_structure.num_data_rows.size() ==
-                          m_file_structure.num_blocks &&
-                      m_file_structure.num_header_rows.size() ==
-                          m_file_structure.num_blocks &&
-                      m_file_structure.num_coords_columns.size() ==
-                          m_file_structure.num_blocks &&
-                      m_file_structure.num_data_columns.size() ==
-                          m_file_structure.num_blocks &&
-                      m_file_structure.num_columns.size() ==
-                          m_file_structure.num_blocks &&
-                      m_file_structure.block_starts.size() ==
-                          m_file_structure.num_blocks);
-    }
-    m_structure_defined = true;
+            always_assert(m_file_structure.num_data_rows.size() ==
+                              m_file_structure.num_blocks &&
+                          m_file_structure.num_header_rows.size() ==
+                              m_file_structure.num_blocks &&
+                          m_file_structure.num_coords_columns.size() ==
+                              m_file_structure.num_blocks &&
+                          m_file_structure.num_data_columns.size() ==
+                              m_file_structure.num_blocks &&
+                          m_file_structure.num_columns.size() ==
+                              m_file_structure.num_blocks &&
+                          m_file_structure.block_starts.size() ==
+                              m_file_structure.num_blocks);
+        }
+        m_structure_defined = true;
     }
 }
 

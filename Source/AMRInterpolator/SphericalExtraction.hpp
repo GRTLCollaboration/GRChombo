@@ -99,8 +99,7 @@ class ModeExtraction : public SurfaceExtraction<spherical_geometry>
 
         auto integrand_re = [dirs, center, &geom = this->m_geom, es, el, em,
                              &a_function](std::vector<double> &a_data_here,
-                                          double r, double theta, double phi)
-        {
+                                          double r, double theta, double phi) {
             // note that spin_Y_lm requires the coordinates with the center
             // at the origin
             double x = geom.get_grid_coord(dirs[0], r, theta, phi) - center[0];
@@ -118,8 +117,7 @@ class ModeExtraction : public SurfaceExtraction<spherical_geometry>
 
         auto integrand_im = [dirs, center, &geom = this->m_geom, es, el, em,
                              &a_function](std::vector<double> &a_data_here,
-                                          double r, double theta, double phi)
-        {
+                                          double r, double theta, double phi) {
             // note that spin_Y_lm requires the coordinates with the center
             // at the origin
             double x = geom.get_grid_coord(dirs[0], r, theta, phi) - center[0];

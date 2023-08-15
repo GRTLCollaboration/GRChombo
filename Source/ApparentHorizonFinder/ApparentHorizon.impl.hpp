@@ -1813,8 +1813,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::calculate_average_F() const
     if (PETScCommunicator::is_rank_active())
     {
         std::pair<double, double> sums(0., 0.);
-        auto lambda_sum = [](std::pair<double, double> sums, double r)
-        {
+        auto lambda_sum = [](std::pair<double, double> sums, double r) {
             sums.first += r;      // radius
             sums.second += r * r; // radius^2
             return std::move(sums);

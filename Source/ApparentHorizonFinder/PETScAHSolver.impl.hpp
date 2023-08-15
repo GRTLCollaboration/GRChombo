@@ -358,7 +358,8 @@ bool PETScAHSolver<SurfaceGeometry, AHFunction>::interpolate_ah(
 
         if (m_params.verbose > AHParams::NONE)
         {
-            MayDay::Error("The same number of u or v points in the AH finder has to be used on the restart!");
+            MayDay::Error("The same number of u or v points in the AH finder "
+                          "has to be used on the restart!");
         }
 
         // start interpolating

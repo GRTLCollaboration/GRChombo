@@ -57,13 +57,11 @@ class SixthOrderDerivatives
         const int stride =
             current_cell.get_box_pointers().m_in_stride[direction];
         const int in_index = current_cell.get_in_index();
-        d1.enum_mapping(
-            [&](const int &ivar, Tensor<1, data_t> &var)
-            {
-                var[direction] = diff1<data_t>(
-                    current_cell.get_box_pointers().m_in_ptr[ivar], in_index,
-                    stride);
-            });
+        d1.enum_mapping([&](const int &ivar, Tensor<1, data_t> &var) {
+            var[direction] =
+                diff1<data_t>(current_cell.get_box_pointers().m_in_ptr[ivar],
+                              in_index, stride);
+        });
     }
 
     /// Calculates all first derivatives and returns as variable type specified
@@ -74,16 +72,14 @@ class SixthOrderDerivatives
         const auto in_index = current_cell.get_in_index();
         const auto strides = current_cell.get_box_pointers().m_in_stride;
         vars_t<Tensor<1, data_t>> d1;
-        d1.enum_mapping(
-            [&](const int &ivar, Tensor<1, data_t> &var)
+        d1.enum_mapping([&](const int &ivar, Tensor<1, data_t> &var) {
+            FOR(idir)
             {
-                FOR(idir)
-                {
-                    var[idir] = diff1<data_t>(
-                        current_cell.get_box_pointers().m_in_ptr[ivar],
-                        in_index, strides[idir]);
-                }
-            });
+                var[idir] = diff1<data_t>(
+                    current_cell.get_box_pointers().m_in_ptr[ivar], in_index,
+                    strides[idir]);
+            }
+        });
         return d1;
     }
 
@@ -142,13 +138,11 @@ class SixthOrderDerivatives
         const int stride =
             current_cell.get_box_pointers().m_in_stride[direction];
         const int in_index = current_cell.get_in_index();
-        d2.enum_mapping(
-            [&](const int &ivar, Tensor<2, data_t> &var)
-            {
-                var[direction][direction] = diff2<data_t>(
-                    current_cell.get_box_pointers().m_in_ptr[ivar], in_index,
-                    stride);
-            });
+        d2.enum_mapping([&](const int &ivar, Tensor<2, data_t> &var) {
+            var[direction][direction] =
+                diff2<data_t>(current_cell.get_box_pointers().m_in_ptr[ivar],
+                              in_index, stride);
+        });
     }
 
     template <class data_t>
@@ -233,15 +227,13 @@ class SixthOrderDerivatives
         const int stride2 =
             current_cell.get_box_pointers().m_in_stride[direction2];
         const int in_index = current_cell.get_in_index();
-        d2.enum_mapping(
-            [&](const int &ivar, Tensor<2, data_t> &var)
-            {
-                auto tmp = mixed_diff2<data_t>(
-                    current_cell.get_box_pointers().m_in_ptr[ivar], in_index,
-                    stride1, stride2);
-                var[direction1][direction2] = tmp;
-                var[direction2][direction1] = tmp;
-            });
+        d2.enum_mapping([&](const int &ivar, Tensor<2, data_t> &var) {
+            auto tmp = mixed_diff2<data_t>(
+                current_cell.get_box_pointers().m_in_ptr[ivar], in_index,
+                stride1, stride2);
+            var[direction1][direction2] = tmp;
+            var[direction2][direction1] = tmp;
+        });
     }
 
     template <class data_t>
@@ -274,24 +266,22 @@ class SixthOrderDerivatives
         vars_t<Tensor<2, data_t>> d2;
         const auto in_index = current_cell.get_in_index();
         const auto strides = current_cell.get_box_pointers().m_in_stride;
-        d2.enum_mapping(
-            [&](const int &ivar, Tensor<2, data_t> &var)
+        d2.enum_mapping([&](const int &ivar, Tensor<2, data_t> &var) {
+            FOR(dir1) // First calculate the repeated derivatives
             {
-                FOR(dir1) // First calculate the repeated derivatives
+                var[dir1][dir1] = diff2<data_t>(
+                    current_cell.get_box_pointers().m_in_ptr[ivar], in_index,
+                    strides[dir1]);
+                for (int dir2 = 0; dir2 < dir1; ++dir2)
                 {
-                    var[dir1][dir1] = diff2<data_t>(
+                    auto tmp = mixed_diff2<data_t>(
                         current_cell.get_box_pointers().m_in_ptr[ivar],
-                        in_index, strides[dir1]);
-                    for (int dir2 = 0; dir2 < dir1; ++dir2)
-                    {
-                        auto tmp = mixed_diff2<data_t>(
-                            current_cell.get_box_pointers().m_in_ptr[ivar],
-                            in_index, strides[dir1], strides[dir2]);
-                        var[dir1][dir2] = tmp;
-                        var[dir2][dir1] = tmp;
-                    }
+                        in_index, strides[dir1], strides[dir2]);
+                    var[dir1][dir2] = tmp;
+                    var[dir2][dir1] = tmp;
                 }
-            });
+            }
+        });
         return d2;
     }
 
@@ -345,13 +335,11 @@ class SixthOrderDerivatives
         const int stride = current_cell.get_box_pointers().m_in_stride[dir];
         auto shift_positive = simd_compare_gt(vec_comp, 0.0);
         const int in_index = current_cell.get_in_index();
-        vars.enum_mapping(
-            [&](const int &ivar, data_t &var)
-            {
-                var += advection_term(
-                    current_cell.get_box_pointers().m_in_ptr[ivar], in_index,
-                    vec_comp, stride, shift_positive);
-            });
+        vars.enum_mapping([&](const int &ivar, data_t &var) {
+            var +=
+                advection_term(current_cell.get_box_pointers().m_in_ptr[ivar],
+                               in_index, vec_comp, stride, shift_positive);
+        });
     }
 
     template <class data_t>
@@ -379,19 +367,16 @@ class SixthOrderDerivatives
         const auto in_index = current_cell.get_in_index();
         const auto strides = current_cell.get_box_pointers().m_in_stride;
         vars_t<data_t> advec;
-        advec.enum_mapping(
-            [&](const int &ivar, data_t &var)
+        advec.enum_mapping([&](const int &ivar, data_t &var) {
+            var = 0.;
+            FOR(dir)
             {
-                var = 0.;
-                FOR(dir)
-                {
-                    const auto shift_positive =
-                        simd_compare_gt(vector[dir], 0.0);
-                    var += advection_term(
-                        current_cell.get_box_pointers().m_in_ptr[ivar],
-                        in_index, vector[dir], strides[dir], shift_positive);
-                }
-            });
+                const auto shift_positive = simd_compare_gt(vector[dir], 0.0);
+                var += advection_term(
+                    current_cell.get_box_pointers().m_in_ptr[ivar], in_index,
+                    vector[dir], strides[dir], shift_positive);
+            }
+        });
         return advec;
     }
 
@@ -448,15 +433,13 @@ class SixthOrderDerivatives
         const int stride =
             current_cell.get_box_pointers().m_in_stride[direction];
         const int in_index = current_cell.get_in_index();
-        vars.enum_mapping(
-            [&](const int &ivar, data_t &var)
-            {
-                // change sign for eigth order dissipation
-                var += /*-*/ factor *
-                       dissipation_term<data_t>(
-                           current_cell.get_box_pointers().m_in_ptr[ivar],
-                           in_index, stride);
-            });
+        vars.enum_mapping([&](const int &ivar, data_t &var) {
+            // change sign for eigth order dissipation
+            var += /*-*/ factor *
+                   dissipation_term<data_t>(
+                       current_cell.get_box_pointers().m_in_ptr[ivar], in_index,
+                       stride);
+        });
     }
 
     template <class data_t, template <typename> class vars_t>
@@ -464,20 +447,18 @@ class SixthOrderDerivatives
                          const double factor) const
     {
         const auto in_index = current_cell.get_in_index();
-        vars.enum_mapping(
-            [&](const int &ivar, data_t &var)
+        vars.enum_mapping([&](const int &ivar, data_t &var) {
+            FOR(dir)
             {
-                FOR(dir)
-                {
-                    const auto stride =
-                        current_cell.get_box_pointers().m_in_stride[dir];
-                    // change sign for eighth order dissipation
-                    var += /*-*/ factor *
-                           dissipation_term<data_t>(
-                               current_cell.get_box_pointers().m_in_ptr[ivar],
-                               in_index, stride);
-                }
-            });
+                const auto stride =
+                    current_cell.get_box_pointers().m_in_stride[dir];
+                // change sign for eighth order dissipation
+                var += /*-*/ factor *
+                       dissipation_term<data_t>(
+                           current_cell.get_box_pointers().m_in_ptr[ivar],
+                           in_index, stride);
+            }
+        });
     }
 
     template <class data_t>
