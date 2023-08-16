@@ -77,9 +77,8 @@ void surface_integration(
 
     // real part is the zeroth componenent and imaginary part is first component
     SphericalExtractionUniform::complex_function_t extracted_harmonic =
-        [](std::vector<double> &data, double, double, double) {
-            return std::make_pair(data[0], data[1]);
-        };
+        [](std::vector<double> &data, double, double, double)
+    { return std::make_pair(data[0], data[1]); };
 
     // add the spherical harmonic mode integrands for each resolution
     // Always use trapezium rule in phi as this is periodic
