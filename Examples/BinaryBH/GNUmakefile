@@ -22,10 +22,10 @@ endif
 endif
 
 GRCHOMBO_SOURCE = ../../Source
-AH_FINDER_SOURCE = $(GRCHOMBO_SOURCE)/ApparentHorizonFinder
 
 ifdef AH_FINDER_SOURCE
 ifneq (,$(wildcard $(AH_FINDER_SOURCE)/AHFinder.hpp))
+     $(info ================== Using ApparentHorizonFinder ==================)
      USE_AH_FINDER := TRUE
 else
   $(error AH_FINDER_SOURCE not set correctly)
