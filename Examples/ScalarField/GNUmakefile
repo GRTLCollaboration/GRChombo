@@ -8,15 +8,6 @@
 
 GRCHOMBO_SOURCE = ../../Source
 
-ifdef AH_FINDER_SOURCE
-ifneq (,$(wildcard $(AH_FINDER_SOURCE)/AHFinder.hpp))
-     $(info ================== Using ApparentHorizonFinder ==================)
-     USE_AH_FINDER := TRUE
-else
-  $(error AH_FINDER_SOURCE not set correctly)
-endif
-endif
-
 ebase := Main_ScalarField
 
 LibNames := AMRTimeDependent AMRTools BoxTools
@@ -28,12 +19,9 @@ src_dirs := $(GRCHOMBO_SOURCE)/utils \
             $(GRCHOMBO_SOURCE)/BoxUtils  \
             $(GRCHOMBO_SOURCE)/GRChomboCore  \
             $(GRCHOMBO_SOURCE)/TaggingCriteria  \
+            $(GRCHOMBO_SOURCE)/AMRInterpolator  \
+            $(GRCHOMBO_SOURCE)/ApparentHorizonFinder  \
             $(GRCHOMBO_SOURCE)/InitialConditions/BlackHoles \
-            $(GRCHOMBO_SOURCE)/BlackHoles \
-            $(GRCHOMBO_SOURCE)/AMRInterpolator
-
-ifeq ($(USE_AH_FINDER),TRUE)
-  src_dirs += $(AH_FINDER_SOURCE)
-endif
+            $(GRCHOMBO_SOURCE)/BlackHoles
 
 include $(CHOMBO_HOME)/mk/Make.test
