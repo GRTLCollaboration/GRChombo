@@ -476,9 +476,9 @@ class ChomboParameters
     }
 
     template <typename T>
-    void check_parameter(const std::string &a_name, T a_value,
-                         const bool a_valid,
-                         const std::string &a_invalid_explanation)
+    static void check_parameter(const std::string &a_name, T a_value,
+                                const bool a_valid,
+                                const std::string &a_invalid_explanation)
     {
         if (a_valid)
             return;
@@ -489,6 +489,47 @@ class ChomboParameters
                              << " is invalid: " << a_invalid_explanation;
             error(error_message_ss.str());
         }
+    }
+
+    template <typename T>
+    static void warn_parameter(const std::string &a_name, T a_value,
+                               const bool a_nowarn,
+                               const std::string &a_warning_explanation)
+    {
+        if (a_nowarn)
+            return;
+        else
+        {
+            // only print the warning from rank 0
+            if (procID() == 0)
+            {
+                std::ostringstream warning_message_ss;
+                warning_message_ss << "Parameter: " << a_name << " = "
+                                   << a_value
+                                   << " warning: " << a_warning_explanation;
+                MayDay::Warning(warning_message_ss.str().c_str());
+            }
+        }
+    }
+
+    template <typename T, size_t N>
+    static void check_array_parameter(const std::string &a_name,
+                                      const std::array<T, N> &a_value,
+                                      const bool a_valid,
+                                      const std::string &a_invalid_explanation)
+    {
+        std::string value_str = ArrayTools::to_string(a_value);
+        check_parameter(a_name, value_str, a_valid, a_invalid_explanation);
+    }
+
+    template <typename T, size_t N>
+    static void warn_array_parameter(const std::string &a_name,
+                                     const std::array<T, N> &a_value,
+                                     const bool a_nowarn,
+                                     const std::string &a_warning_explanation)
+    {
+        std::string value_str = ArrayTools::to_string(a_value);
+        check_parameter(a_name, value_str, a_nowarn, a_warning_explanation);
     }
 
     // General parameters
@@ -554,53 +595,12 @@ class ChomboParameters
 
     // use this error function instead of MayDay::error as this will only
     // print from rank 0
-    void error(const std::string &a_error_message)
+    static void error(const std::string &a_error_message)
     {
         if (procID() == 0)
         {
             MayDay::Error(a_error_message.c_str());
         }
-    }
-
-    template <typename T>
-    void warn_parameter(const std::string &a_name, T a_value,
-                        const bool a_nowarn,
-                        const std::string &a_warning_explanation)
-    {
-        if (a_nowarn)
-            return;
-        else
-        {
-            // only print the warning from rank 0
-            if (procID() == 0)
-            {
-                std::ostringstream warning_message_ss;
-                warning_message_ss << "Parameter: " << a_name << " = "
-                                   << a_value
-                                   << " warning: " << a_warning_explanation;
-                MayDay::Warning(warning_message_ss.str().c_str());
-            }
-        }
-    }
-
-    template <typename T, size_t N>
-    void check_array_parameter(const std::string &a_name,
-                               const std::array<T, N> &a_value,
-                               const bool a_valid,
-                               const std::string &a_invalid_explanation)
-    {
-        std::string value_str = ArrayTools::to_string(a_value);
-        check_parameter(a_name, value_str, a_valid, a_invalid_explanation);
-    }
-
-    template <typename T, size_t N>
-    void warn_array_parameter(const std::string &a_name,
-                              const std::array<T, N> &a_value,
-                              const bool a_nowarn,
-                              const std::string &a_warning_explanation)
-    {
-        std::string value_str = ArrayTools::to_string(a_value);
-        check_parameter(a_name, value_str, a_nowarn, a_warning_explanation);
     }
 };
 
