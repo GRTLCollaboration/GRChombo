@@ -10,6 +10,7 @@
 #ifndef _APPARENTHORIZON_IMPL_HPP_
 #define _APPARENTHORIZON_IMPL_HPP_
 
+#include "FilesystemTools.hpp"
 #include "GRAMR.hpp"
 #include "PETScCommunicator.hpp"
 #include "SmallDataIO.hpp"
@@ -662,17 +663,19 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
     // get centre from stats file
     std::string file = m_params.stats_path + m_stats + ".dat";
     std::vector<std::vector<double>> stats;
-    SmallDataIOReader stats_reader;
-    stats_reader.open(file);
-
     int idx = 0;
     double old_print_dt = 0.;
-    if (!stats_reader.contains_data())
-    { // case when it never ran the AH or the file doesn't exist
+
+    // first check the file exists
+    bool stats_file_exists = FilesystemTools::file_exists(file);
+
+    if (!stats_file_exists)
+    { // case when the file doesn't exist
         if (m_params.verbose > AHParams::NONE && current_step != 0)
         {
-            pout() << "Empty stats file '" << file
-                   << "'. Assuming AHFinder was not run yet for this AH."
+            pout() << "Stats file '" << file
+                   << "' does not exist. Assuming AHFinder was not run yet for "
+                      "this AH."
                    << std::endl;
         }
         m_printed_once = false;
@@ -682,98 +685,117 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
     }
     else
     {
-        stats = stats_reader.get_all_columns();
-        // look for stats line with time 'current_time', as there may be
-        // further output messed up in the file after the last checkpoint was
-        // made
-        idx = stats[0].size();
-        while ((--idx) >= 0 && stats[0][idx] - current_time > eps)
-            ;
+        SmallDataIOReader stats_reader;
+        stats_reader.open(file);
 
-        // figure out what was the old 'dt' used
-        // this may have changed if 'level_to_run' changed of if 'dt_multiplier'
-        // changed, or 'solve_interval', or 'print_interval'
-        if (idx > 0)
-            old_print_dt = stats[0][idx] - stats[0][idx - 1];
-        else if (idx == 0 && stats[0].size() > 1)
-            old_print_dt = stats[0][idx + 1] -
-                           stats[0][idx]; // there's still time steps forward
-        else // if we can't know, just default to the current one
-            old_print_dt = current_solve_dt * m_params.print_interval;
-
-        if (m_params.verbose > AHParams::SOME)
-        {
-            if (idx >= 0)
-                pout() << "stats[0][idx] = " << stats[0][idx] << std::endl;
-            pout() << "stats[0].size() = " << stats[0].size() << std::endl;
-            pout() << "current_time = " << current_time << std::endl;
-            pout() << "old_print_dt = " << old_print_dt << std::endl;
-        }
-
-        m_printed_once = true; // don't delete old
-
-        if (idx < 0)
-        { // case when job was restarted at a point before the AH was first ever
-          // found
-            if (m_params.verbose > AHParams::NONE)
+        if (!stats_reader.contains_data())
+        { // case when it never ran the AH
+            if (m_params.verbose > AHParams::NONE && current_step != 0)
             {
-                pout()
-                    << "First time step is after restart in '" << file
-                    << "'. Assuming AHFinder started after current step, but "
-                       "before "
-                       "PETSc had never converged."
-                    << std::endl;
+                pout() << "Empty stats file '" << file
+                       << "'. Assuming AHFinder was not run yet for this AH."
+                       << std::endl;
             }
+            m_printed_once = false;
             m_has_been_found = false;
             m_converged = 0;
             m_num_failed_convergences = 0;
-        }
-        else if (stats[0][idx] - current_time <
-                 -(old_print_dt == 0. ? eps : old_print_dt - eps))
-        { // case when the PETSc stopped converging and stopped printing
-          // so there is a mismatch with the last time in the file
-            if (m_params.verbose > AHParams::NONE)
-            {
-                pout() << "Last time step not found in '" << file
-                       << "'. Assuming AH stopped converging." << std::endl;
-                pout() << "(number of failed convergences will be set to 1)"
-                       << std::endl;
-            }
-            m_has_been_found = true;
-            m_converged = 0;
-            m_num_failed_convergences = 1;
-        }
-        else if (std::isnan(stats[2][idx]))
-        { // case when the simulation was still going without ever
-          // having converged
-          // OR when job was restarted at a point before the AH was first ever
-          // found
-            if (m_params.verbose > AHParams::NONE)
-            {
-                pout() << "Last time step is NAN in '" << file
-                       << "'. Assuming AH wasn't found and PETSc didn't "
-                          "converged."
-                       << std::endl;
-                pout() << "(number of failed convergences will be set to 1)"
-                       << std::endl;
-            }
-            m_has_been_found = false;
-            m_converged = 0;
-            m_num_failed_convergences = 1;
         }
         else
-        { // case when the AH was found and there is a coordinate file
-            if (m_params.verbose > AHParams::NONE)
+        {
+            stats = stats_reader.get_all_columns();
+            // look for stats line with time 'current_time', as there may be
+            // further output messed up in the file after the last checkpoint
+            // was made
+            idx = stats[0].size();
+            while ((--idx) >= 0 && stats[0][idx] - current_time > eps)
+                ;
+
+            // figure out what was the old 'dt' used
+            // this may have changed if 'level_to_run' changed of if
+            // 'dt_multiplier' changed, or 'solve_interval', or 'print_interval'
+            if (idx > 0)
+                old_print_dt = stats[0][idx] - stats[0][idx - 1];
+            else if (idx == 0 && stats[0].size() > 1)
+                old_print_dt =
+                    stats[0][idx + 1] -
+                    stats[0][idx]; // there's still time steps forward
+            else // if we can't know, just default to the current one
+                old_print_dt = current_solve_dt * m_params.print_interval;
+
+            if (m_params.verbose > AHParams::SOME)
             {
-                pout() << "Last time step found in '" << file
-                       << "'. Reading coordinates file." << std::endl;
+                if (idx >= 0)
+                    pout() << "stats[0][idx] = " << stats[0][idx] << std::endl;
+                pout() << "stats[0].size() = " << stats[0].size() << std::endl;
+                pout() << "current_time = " << current_time << std::endl;
+                pout() << "old_print_dt = " << old_print_dt << std::endl;
             }
-            m_has_been_found = true;
-            m_converged = 1;
-            m_num_failed_convergences = 0;
+
+            m_printed_once = true; // don't delete old
+
+            if (idx < 0)
+            { // case when job was restarted at a point before the AH was first
+              // ever found
+                if (m_params.verbose > AHParams::NONE)
+                {
+                    pout() << "First time step is after restart in '" << file
+                           << "'. Assuming AHFinder started after current "
+                              "step, but "
+                              "before "
+                              "PETSc had never converged."
+                           << std::endl;
+                }
+                m_has_been_found = false;
+                m_converged = 0;
+                m_num_failed_convergences = 0;
+            }
+            else if (stats[0][idx] - current_time <
+                     -(old_print_dt == 0. ? eps : old_print_dt - eps))
+            { // case when the PETSc stopped converging and stopped printing
+              // so there is a mismatch with the last time in the file
+                if (m_params.verbose > AHParams::NONE)
+                {
+                    pout() << "Last time step not found in '" << file
+                           << "'. Assuming AH stopped converging." << std::endl;
+                    pout() << "(number of failed convergences will be set to 1)"
+                           << std::endl;
+                }
+                m_has_been_found = true;
+                m_converged = 0;
+                m_num_failed_convergences = 1;
+            }
+            else if (std::isnan(stats[2][idx]))
+            { // case when the simulation was still going without ever
+              // having converged
+              // OR when job was restarted at a point before the AH was first
+              // ever found
+                if (m_params.verbose > AHParams::NONE)
+                {
+                    pout() << "Last time step is NAN in '" << file
+                           << "'. Assuming AH wasn't found and PETSc didn't "
+                              "converged."
+                           << std::endl;
+                    pout() << "(number of failed convergences will be set to 1)"
+                           << std::endl;
+                }
+                m_has_been_found = false;
+                m_converged = 0;
+                m_num_failed_convergences = 1;
+            }
+            else
+            { // case when the AH was found and there is a coordinate file
+                if (m_params.verbose > AHParams::NONE)
+                {
+                    pout() << "Last time step found in '" << file
+                           << "'. Reading coordinates file." << std::endl;
+                }
+                m_has_been_found = true;
+                m_converged = 1;
+                m_num_failed_convergences = 0;
+            }
         }
     }
-
     // force restart if interpolation was needed (because #points changed)
     // or if time step found is not the current time
     // 'int' in order to use MPI_INT later
