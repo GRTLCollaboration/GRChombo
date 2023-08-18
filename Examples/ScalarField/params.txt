@@ -164,7 +164,7 @@ sigma = 0.3
 #################################################
 # Apparent Horizon Finder parameters
 
-AH_activated = 0
+AH_activate = 0
 AH_num_ranks = 20
 AH_num_points_u = 30
 AH_num_points_v = 50

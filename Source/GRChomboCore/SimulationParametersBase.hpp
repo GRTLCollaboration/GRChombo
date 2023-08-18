@@ -162,8 +162,8 @@ class SimulationParametersBase : public ChomboParameters
 
 #ifdef USE_AHFINDER
         // Apparent horizon parameters
-        pp.load("AH_activated", AH_activated, false);
-        if (AH_activated)
+        pp.load("AH_activate", AH_activate, false);
+        if (AH_activate)
             AH_params.read_params(pp, *this);
 #endif
     }
@@ -326,7 +326,7 @@ class SimulationParametersBase : public ChomboParameters
     spherical_extraction_params_t extraction_params;
 
 #ifdef USE_AHFINDER
-    bool AH_activated;
+    bool AH_activate;
     AHParams_t<AHFunction> AH_params;
 #endif
 };
