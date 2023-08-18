@@ -10,6 +10,11 @@
 #include "ChomboParameters.hpp"
 #include "GRParmParse.hpp"
 
+#include "SPMD.H"
+
+// Chombo namespace
+#include "UsingNamespace.H"
+
 // PETSc Solver related params
 // not very relevant to change, but this allows us to in case we want
 // possible the only relevant one is 'snes_maxit' ('AH_SNES_max_iterations')
@@ -204,59 +209,66 @@ void AHParams_t<AHFunction>::read_params(GRParmParse &pp,
 #if CH_SPACEDIM == 3
     pp.load("AH_num_points_v", num_points_v);
 #endif
+    int actual_num_ranks = (num_ranks != 0) ? num_ranks : numProc();
 
-    // if box division ends up with size less than 3, PETSc will
-    // complain (this only gives an estimate of the box side)
-    int size = 1;
-#if CH_MPI
-    MPI_Comm_size(Chombo_MPI::comm, &size);
-#endif
-    size = std::min(num_ranks, size);
+    // Let's enforce the below as Katy had problems otherwise
+    ChomboParameters::check_parameter("AH_num_ranks", num_ranks,
+                                      num_ranks <= numProc(),
+                                      "must be <= total number of ranks");
 
-    ChomboParameters chombo_params(a_p);
-
-    chombo_params.check_parameter("AH_num_points_u", num_points_u,
-                                  num_points_u > 0, "must be >0");
+    ChomboParameters::check_parameter("AH_num_points_u", num_points_u,
+                                      num_points_u > 0, "must be >0");
 #if CH_SPACEDIM == 3
-    chombo_params.check_parameter("AH_num_points_v", num_points_v,
-                                  num_points_v > 0, "must be >0");
-    chombo_params.check_parameter(
-        "AH_num_points_u", num_points_u, num_points_u / sqrt(size) >= 3,
-        "(num_points_u/sqrt(size)) must be >0"); // make sure for size 'u'
-    chombo_params.check_parameter(
-        "AH_num_points_v", num_points_v, num_points_v / sqrt(size) >= 3,
-        "(num_points_v/sqrt(size)) must be >0"); // make sure for size 'v'
+    ChomboParameters::check_parameter("AH_num_points_v", num_points_v,
+                                      num_points_v > 0, "must be >0");
+    // if box division ends up with side length less than 3, PETSc will
+    // complain - estimate side length using sqrt(num_ranks)
+    ChomboParameters::check_parameter(
+        "AH_num_points_u", num_points_u,
+        num_points_u / sqrt(actual_num_ranks) >= 3,
+        "(num_points_u/sqrt(num_ranks)) must be >3"); // make sure for size 'u'
+    ChomboParameters::check_parameter(
+        "AH_num_points_v", num_points_v,
+        num_points_v / sqrt(actual_num_ranks) >= 3,
+        "(num_points_v/sqrt(num_ranks)) must be >3"); // make sure for size 'v'
+
+    // Not sure if PETSc requires the below but let's just enforce it just
+    // in case
+    ChomboParameters::check_parameter(
+        "AH_num_ranks", num_ranks,
+        (num_points_u * num_points_v) % num_ranks == 0,
+        "must divide AH_num_points_u * AH_num_points_v");
 #elif CH_SPACEDIM == 2
-    chombo_params.check_parameter(
-        "AH_num_points_u", num_points_u, num_points_u / size >= 3,
+    ChomboParameters::check_parameter(
+        "AH_num_points_u", num_points_u, num_points_u / actual_num_ranks >= 3,
         "(num_points_u/size) must be >0"); // make sure for size 'u'
 #endif
 
     pp.load("AH_solve_interval", solve_interval, 1);
     pp.load("AH_print_interval", print_interval, 1);
     // sanity checks
-    chombo_params.check_parameter("AH_solve_interval", solve_interval,
-                                  solve_interval > 0, "must be >0");
-    chombo_params.check_parameter("AH_print_interval", print_interval,
-                                  print_interval > 0, "must be >0");
+    ChomboParameters::check_parameter("AH_solve_interval", solve_interval,
+                                      solve_interval > 0, "must be >0");
+    ChomboParameters::check_parameter("AH_print_interval", print_interval,
+                                      print_interval > 0, "must be >0");
     pp.load("AH_track_center", track_center, true);
     pp.load("AH_predict_origin", predict_origin, track_center);
     // can't predict if center is not being tracked
     if (predict_origin)
     {
-        chombo_params.check_parameter(
+        ChomboParameters::check_parameter(
             "AH_track_center", track_center, track_center == 1,
             "can't predict if center is not being tracked");
     }
     pp.load("AH_level_to_run", level_to_run, 0);
-    chombo_params.check_parameter("AH_level_to_run", level_to_run,
-                                  level_to_run <= a_p.max_level,
-                                  "must be <= max_level");
-    chombo_params.check_parameter("AH_level_to_run", level_to_run,
-                                  level_to_run >= 0, "must be >= 0");
-    chombo_params.check_parameter("AH_level_to_run", level_to_run,
-                                  level_to_run > -(a_p.max_level + 1),
-                                  "must be > -(max_level+1)");
+    ChomboParameters::check_parameter("AH_level_to_run", level_to_run,
+                                      level_to_run <= a_p.max_level,
+                                      "must be <= max_level");
+    ChomboParameters::check_parameter("AH_level_to_run", level_to_run,
+                                      level_to_run >= 0, "must be >= 0");
+    ChomboParameters::check_parameter("AH_level_to_run", level_to_run,
+                                      level_to_run > -(a_p.max_level + 1),
+                                      "must be > -(max_level+1)");
     if (level_to_run < 0) // if negative, count backwards
         level_to_run += a_p.max_level + 1;
 
