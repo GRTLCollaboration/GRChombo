@@ -21,6 +21,6 @@ cxxdbgflags      = -g -Wl,--eh-frame-hdr -std=c++14
 cxxoptflags      = -Ofast -march=native -std=c++14
 fdbgflags        = -g -Wl,--eh-frame-hdr
 foptflags        = -Ofast -march=native
-syslibflags	     = -lgfortran
-cxxcppflags	     = -ftemplate-depth=150 -DDISABLE_AHFINDER -DUSE_PAPI
-XTRALIBFLAGS	   = -L/usr/lib/openblas-base/ -lopenblas
+syslibflags      = -lgfortran
+cxxcppflags      = -ftemplate-depth=150 -DUSE_PAPI
+XTRALIBFLAGS     = -L/usr/lib/openblas-base/ -lopenblas

@@ -1,0 +1,24 @@
+#begin  -- dont change this line
+# This is used for the github action that runs the tests
+
+DIM           ?= 3
+DEBUG          = TRUE
+PRECISION      = DOUBLE
+OPT            = TRUE
+PROFILE        = FALSE
+CXX            = clang++
+FC             = gfortran
+MPI            = FALSE
+OPENMPCC       = TRUE
+USE_64         = TRUE
+USE_HDF        = TRUE
+HDFINCFLAGS    = -I/usr/lib/x86_64-linux-gnu/hdf5/serial/include
+HDFLIBFLAGS    = -L/usr/lib/x86_64-linux-gnu/hdf5/serial/lib -lhdf5 -lz
+# The following line puts all of the Chombo code in a Chombo namespace
+NAMESPACE      = TRUE
+USE_MT         = FALSE
+cxxoptflags    = -march=native -O3
+foptflags      = -march=native -O3
+syslibflags    = -lblas -llapack
+
+#end  -- dont change this line

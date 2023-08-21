@@ -5,7 +5,7 @@
 # libhdf5-openmpi-dev openmpi-bin libblas-dev liblapack-dev \
 # libgetopt-complete-perl ssh
 
-DIM            = 3
+DIM           ?= 3
 DEBUG          = TRUE
 PRECISION      = DOUBLE
 OPT            = TRUE
@@ -26,6 +26,9 @@ NAMESPACE      = TRUE
 USE_MT         = FALSE
 cxxoptflags    = -march=native -O3
 foptflags      = -march=native -O3
-syslibflags    = -lblas -llapack
+# Comment out the following line if not using the AHFinder
+cxxcppflags    = -I`pkg-config --variable=includedir petsc` -DUSE_AHFINDER
+# Comment out the bit in backticks if not using the AHFinder
+syslibflags    = -lblas -llapack `pkg-config --libs petsc`
 
 #end  -- dont change this line

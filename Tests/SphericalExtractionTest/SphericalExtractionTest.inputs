@@ -1,15 +1,12 @@
 verbosity = 0
-N1 = 32
-N2 = 32
-N3 = 32
+N = 32
 L = 16
 
 chk_prefix = TestChk_
 plot_prefix = TestPlt_
 
 max_level = 1
-regrid_interval = 1 1 1 1 0 0 0 0 0
-ref_ratio = 2 2 2 2 2 2 2 2 2
+regrid_interval = 1 1
 isPeriodic = 1 1 1
 
 # Max and min box sizes
@@ -22,7 +19,7 @@ checkpoint_interval = 1
 num_extraction_radii = 2
 extraction_radii = 4. 6.
 num_points_phi_lo = 12
-num_points_theta_lo = 13
+num_points_theta_lo = 13 # choose "multiple of 3 and of 4" + 1, to be compatible with Simpson, Simpson 3/8 and with Boole
 
 # Spherical Harmonic to set and extract
 es = 0

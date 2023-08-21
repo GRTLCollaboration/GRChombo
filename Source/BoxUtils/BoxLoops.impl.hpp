@@ -34,14 +34,14 @@ void BoxLoops::innermost_loop(const ComputePack<compute_ts...> &compute_pack,
     for (int ix = loop_lo_x; ix <= x_simd_max; ix += simd_width)
     {
         compute_pack.call_compute(
-            Cell<simd<double>>(IntVect(ix, iy, iz), box_pointers));
+            Cell<simd<double>>(IntVect(D_DECL(ix, iy, iz)), box_pointers));
     }
 
     // REMAINDER LOOP
     for (int ix = x_simd_max + simd<double>::simd_len; ix <= loop_hi_x; ++ix)
     {
         compute_pack.call_compute(
-            Cell<double>(IntVect(ix, iy, iz), box_pointers));
+            Cell<double>(IntVect(D_DECL(ix, iy, iz)), box_pointers));
     }
 }
 
@@ -54,7 +54,7 @@ void BoxLoops::innermost_loop(const ComputePack<compute_ts...> &compute_pack,
     for (int ix = loop_lo_x; ix <= loop_hi_x; ++ix)
     {
         compute_pack.call_compute(
-            Cell<double>(IntVect(ix, iy, iz), box_pointers));
+            Cell<double>(IntVect(D_DECL(ix, iy, iz)), box_pointers));
     }
 }
 
@@ -71,6 +71,9 @@ void BoxLoops::loop(const ComputePack<compute_ts...> &compute_pack,
     const int *loop_lo = loop_box.loVect();
     const int *loop_hi = loop_box.hiVect();
 
+#if CH_SPACEDIM == 2
+    int iz = 0;
+#endif
 #pragma omp parallel for default(shared) collapse(CH_SPACEDIM - 1)
 #if CH_SPACEDIM >= 3
     for (int iz = loop_lo[2]; iz <= loop_hi[2]; ++iz)

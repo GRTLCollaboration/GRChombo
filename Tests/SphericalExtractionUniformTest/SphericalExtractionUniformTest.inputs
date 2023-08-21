@@ -1,0 +1,29 @@
+verbosity = 0
+N = 64
+L = 16
+
+chk_prefix = TestChk_
+plot_prefix = TestPlt_
+
+max_level = 1
+regrid_interval = 1 1
+isPeriodic = 1 1 1
+
+# Max and min box sizes
+max_grid_size = 32
+block_factor = 4
+tag_buffer_size = 3
+checkpoint_interval = 1
+
+# extraction params
+num_extraction_radii = 2
+extraction_radii = 4. 6.
+num_points_phi_lo = 12
+num_points_theta_lo = 12 # multiple of 3 for Milne's method, 
+						 # must be multiple of 4 for 3rd order 
+						 # and of 5 for the 4th order open method
+
+# Spherical Harmonic to set and extract
+es = 0
+el = 3 # 2 was too easy for the 4th order method and not give convergence
+em = 0

@@ -132,12 +132,12 @@ class ChomboParameters
     {
         // In this function, cannot use default value - it may print a 'default
         // message' to pout and a 'setPoutBaseName' must happen before
+
         restart_from_checkpoint = pp.contains("restart_file");
 #ifdef CH_USE_HDF5
         if (restart_from_checkpoint)
-        {
             pp.load("restart_file", restart_file);
-        }
+
         pp.load("chk_prefix", checkpoint_prefix);
         pp.load("plot_prefix", plot_prefix);
 #endif
@@ -155,6 +155,12 @@ class ChomboParameters
             pp.load("output_path", output_path);
         else
             output_path = default_path;
+
+        // user sets the 'subpath', we prepend 'output_path'
+        if (pp.contains("data_subpath"))
+            pp.load("data_subpath", data_path);
+        else
+            data_path = default_path;
 
 #ifdef CH_MPI
         // user sets the 'subpath', we prepend 'output_path'
@@ -175,6 +181,8 @@ class ChomboParameters
         // add backslash to paths
         if (!output_path.empty() && output_path.back() != '/')
             output_path += "/";
+        if (!data_path.empty() && data_path.back() != '/')
+            data_path += "/";
 #ifdef CH_MPI
         if (!pout_path.empty() && pout_path.back() != '/')
             pout_path += "/";
@@ -186,6 +194,7 @@ class ChomboParameters
 
         if (output_path != "./" && !output_path.empty())
         {
+            data_path = output_path + data_path;
 #ifdef CH_MPI
             pout_path = output_path + pout_path;
 #endif
@@ -466,6 +475,63 @@ class ChomboParameters
         }
     }
 
+    template <typename T>
+    static void check_parameter(const std::string &a_name, T a_value,
+                                const bool a_valid,
+                                const std::string &a_invalid_explanation)
+    {
+        if (a_valid)
+            return;
+        else
+        {
+            std::ostringstream error_message_ss;
+            error_message_ss << "Parameter: " << a_name << " = " << a_value
+                             << " is invalid: " << a_invalid_explanation;
+            error(error_message_ss.str());
+        }
+    }
+
+    template <typename T>
+    static void warn_parameter(const std::string &a_name, T a_value,
+                               const bool a_nowarn,
+                               const std::string &a_warning_explanation)
+    {
+        if (a_nowarn)
+            return;
+        else
+        {
+            // only print the warning from rank 0
+            if (procID() == 0)
+            {
+                std::ostringstream warning_message_ss;
+                warning_message_ss << "Parameter: " << a_name << " = "
+                                   << a_value
+                                   << " warning: " << a_warning_explanation;
+                MayDay::Warning(warning_message_ss.str().c_str());
+            }
+        }
+    }
+
+    template <typename T, size_t N>
+    static void check_array_parameter(const std::string &a_name,
+                                      const std::array<T, N> &a_value,
+                                      const bool a_valid,
+                                      const std::string &a_invalid_explanation)
+    {
+        std::string value_str = ArrayTools::to_string(a_value);
+        check_parameter(a_name, value_str, a_valid, a_invalid_explanation);
+    }
+
+    template <typename T, size_t N>
+    static void warn_array_parameter(const std::string &a_name,
+                                     const std::array<T, N> &a_value,
+                                     const bool a_nowarn,
+                                     const std::string &a_warning_explanation)
+    {
+        std::string value_str = ArrayTools::to_string(a_value);
+        check_parameter(a_name, value_str, a_nowarn, a_warning_explanation);
+    }
+
     // General parameters
     int verbosity;
     double L;                               // Physical sidelength of the grid
@@ -485,25 +551,23 @@ class ChomboParameters
     Vector<int> regrid_interval; // steps between regrid at each level
     int max_steps;
     bool restart_from_checkpoint; // whether or not to restart or start afresh
-#ifdef CH_USE_HDF5
-    std::string restart_file;             // The path to the restart_file
-    bool ignore_checkpoint_name_mismatch; // ignore mismatch of variable names
-                                          // between restart file and program
-#endif
     double dt_multiplier, stop_time;        // The Courant factor and stop time
     int checkpoint_interval, plot_interval; // Steps between outputs
     int max_grid_size, block_factor;        // max and min box sizes
     double fill_ratio; // determines how fussy the regridding is about tags
-#ifdef CH_USE_HDF5
-    std::string checkpoint_prefix, plot_prefix; // naming of files
-#endif
     std::string output_path; // base path to use for all files
+    std::string data_path;   // directory to store data (extraction files,
+                             // puncture data, constraint norms, AHFinder)
 #ifdef CH_MPI
     std::string pout_prefix; // pout file prefix
     std::string pout_path;   // base path for pout files
 #endif
 #ifdef CH_USE_HDF5
-    std::string hdf5_path; // base path for pout files
+    std::string hdf5_path;                // base path for pout files
+    std::string restart_file;             // The path to the restart_file
+    bool ignore_checkpoint_name_mismatch; // ignore mismatch of variable names
+                                          // between restart file and program
+    std::string checkpoint_prefix, plot_prefix; // naming of files
     bool write_plot_ghosts;
     int num_plot_vars;
     std::vector<std::pair<int, VariableType>>
@@ -531,69 +595,12 @@ class ChomboParameters
 
     // use this error function instead of MayDay::error as this will only
     // print from rank 0
-    void error(const std::string &a_error_message)
+    static void error(const std::string &a_error_message)
     {
         if (procID() == 0)
         {
             MayDay::Error(a_error_message.c_str());
         }
-    }
-
-    template <typename T>
-    void check_parameter(const std::string &a_name, T a_value,
-                         const bool a_valid,
-                         const std::string &a_invalid_explanation)
-    {
-        if (a_valid)
-            return;
-        else
-        {
-            std::ostringstream error_message_ss;
-            error_message_ss << "Parameter: " << a_name << " = " << a_value
-                             << " is invalid: " << a_invalid_explanation;
-            error(error_message_ss.str());
-        }
-    }
-
-    template <typename T>
-    void warn_parameter(const std::string &a_name, T a_value,
-                        const bool a_nowarn,
-                        const std::string &a_warning_explanation)
-    {
-        if (a_nowarn)
-            return;
-        else
-        {
-            // only print the warning from rank 0
-            if (procID() == 0)
-            {
-                std::ostringstream warning_message_ss;
-                warning_message_ss << "Parameter: " << a_name << " = "
-                                   << a_value
-                                   << " warning: " << a_warning_explanation;
-                MayDay::Warning(warning_message_ss.str().c_str());
-            }
-        }
-    }
-
-    template <typename T, size_t N>
-    void check_array_parameter(const std::string &a_name,
-                               const std::array<T, N> &a_value,
-                               const bool a_valid,
-                               const std::string &a_invalid_explanation)
-    {
-        std::string value_str = ArrayTools::to_string(a_value);
-        check_parameter(a_name, value_str, a_valid, a_invalid_explanation);
-    }
-
-    template <typename T, size_t N>
-    void warn_array_parameter(const std::string &a_name,
-                              const std::array<T, N> &a_value,
-                              const bool a_nowarn,
-                              const std::string &a_warning_explanation)
-    {
-        std::string value_str = ArrayTools::to_string(a_value);
-        check_parameter(a_name, value_str, a_nowarn, a_warning_explanation);
     }
 };
 

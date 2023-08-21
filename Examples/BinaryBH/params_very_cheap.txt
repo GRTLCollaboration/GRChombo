@@ -1,5 +1,7 @@
 # See the wiki page for an explanation of the params!
 # https://github.com/GRChombo/GRChombo/wiki/Guide-to-parameters
+# and a guide to this specific example at
+# https://github.com/GRChombo/GRChombo/wiki/Running-the-BBH-example
 
 #################################################
 # Filesystem parameters
@@ -8,9 +10,9 @@ verbosity = 0
 
 # location / naming of output files
 # output_path = "" # Main path for all files. Must exist!
-chk_prefix = BinaryBH_
+chk_prefix = BinaryBHChk_
 plot_prefix = BinaryBHPlot_
-# restart_file = BinaryBH_000360.3d.hdf5
+# restart_file = BinaryBHChk_000360.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 1
@@ -65,7 +67,9 @@ L_full = 16
 # Maximum number of times you can regrid above coarsest level
 max_level = 2 # There are (max_level+1) grids, so min is zero
 
-# need max_level entries for regrid interval
+# Frequency of regridding at each level and thresholds on the tagging
+# Need one for each level except the top one, ie max_level items
+# Generally you do not need to regrid frequently on every level
 # Level Regridding: 0   1   2   3   4   5
 regrid_interval =   1   1   1   1   0   0
 regrid_threshold = 0.3
@@ -95,6 +99,7 @@ lo_boundary = 1 1 2
 # parity of all vars (in order given by UserVariables.hpp)
 # 0 = even
 # 1,2,3 = odd x, y, z
+# 4,5,6 = odd xy, yz, xz
 # 7     = odd xyz
 vars_parity            = 0 0 4 6 0 5 0    #chi and hij
                          0 0 4 6 0 5 0    #K and Aij
@@ -174,6 +179,18 @@ modes = 2 0 # l m for spherical harmonics
 # write_extraction = 0
 # extraction_subpath = "data/extraction" # directory for 'write_extraction = 1'
 # extraction_file_prefix = "Weyl4_extraction_"
+
+#################################################
+# Apparent Horizon Finder parameters
+
+AH_activate = 1
+AH_num_ranks = 4
+AH_num_points_u = 11
+AH_num_points_v = 10
+AH_solve_interval = 2
+AH_print_interval = 2
+# AH_merger_search_factor = 1.
+# AH_merger_pre_factor = 1.
 
 #################################################
 

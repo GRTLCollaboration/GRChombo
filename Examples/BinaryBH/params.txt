@@ -187,4 +187,41 @@ modes = 2 0 # l m for spherical harmonics
 # extraction_file_prefix = "Weyl4_extraction_"
 
 #################################################
+# Apparent Horizon Finder parameters
 
+AH_activate = 1
+AH_num_ranks = 65
+AH_num_points_u = 65
+AH_num_points_v = 48
+# AH_solve_interval = 1
+# AH_print_interval = 1
+# AH_track_center = true
+# AH_predict_origin = true
+# AH_level_to_run = 0
+# AH_start_time = 0.
+# AH_give_up_time = -1.
+# AH_merger_search_factor = 1.
+# AH_merger_pre_factor = 1.
+# AH_allow_re_attempt = 0
+# AH_max_fails_after_lost = -1
+# AH_verbose = 1
+# AH_print_geometry_data = 0
+# AH_re_solve_at_restart = 0
+# AH_stop_if_max_fails = 0
+# AH_expansion_radius_power = 1.
+
+# AH_1_initial_guess = 0.3
+# AH_2_initial_guess = 0.3
+
+# AH_expansion_radius_power = 1.
+
+# AH_num_extra_vars = 2
+# AH_extra_vars = chi d1_Ham d2_A11
+
+AH_set_origins_to_punctures = 1
+
+# AH_coords_subpath = "data/coords"
+# AH_stats_prefix = "stats_AH"
+# AH_coords_prefix = "coords_AH"
+
+#################################################

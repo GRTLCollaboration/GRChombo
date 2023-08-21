@@ -45,24 +45,16 @@ void define_symmetric_enum_mapping(
     static_assert(interval.size() ==
                       DEFAULT_TENSOR_DIM * (DEFAULT_TENSOR_DIM + 1) / 2,
                   "Interval has wrong size");
-#if DEFAULT_TENSOR_DIM == 3
-    mapping_function(start_var, tensor[0][0]);
-
-    mapping_function(start_var + 1, tensor[0][1]);
-    mapping_function(start_var + 1, tensor[1][0]);
-
-    mapping_function(start_var + 2, tensor[0][2]);
-    mapping_function(start_var + 2, tensor[2][0]);
-
-    mapping_function(start_var + 3, tensor[1][1]);
-
-    mapping_function(start_var + 4, tensor[1][2]);
-    mapping_function(start_var + 4, tensor[2][1]);
-
-    mapping_function(start_var + 5, tensor[2][2]);
-#else
-#error DEFAULT_TENSOR_DIM not equal to three not implemented yet...
-#endif
+    int idx = 0;
+    FOR(idir1)
+    {
+        for (int idir2 = idir1; idir2 < DEFAULT_TENSOR_DIM; ++idir2, ++idx)
+        {
+            mapping_function(start_var + idx, tensor[idir1][idir2]);
+            if (idir1 != idir2)
+                mapping_function(start_var + idx, tensor[idir2][idir1]);
+        }
+    }
 }
 
 //--> Begin: Helper for the assign function

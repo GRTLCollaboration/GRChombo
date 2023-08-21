@@ -48,7 +48,6 @@ class SmallDataIO
     static constexpr int s_default_filename_steps_width = 6;
 
     std::fstream m_file;
-    int m_rank; // only rank 0 does the write out
 
   public:
     //! Constructor (opens file)
@@ -140,6 +139,9 @@ class SmallDataIO
         const std::string &a_filename_prefix, double a_dt, double a_time,
         const std::string &a_file_extension = s_default_file_extension,
         int a_filename_steps_width = s_default_filename_steps_width);
+    static std::string
+    pad_number(int step,
+               int a_filename_steps_width = s_default_filename_steps_width);
 
     //! returns m_data_epsilon
     double get_data_epsilon() const;

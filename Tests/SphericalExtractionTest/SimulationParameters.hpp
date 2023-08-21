@@ -51,7 +51,7 @@ class SimulationParameters : public ChomboParameters
     }
 
   public:
-    SphericalExtraction::params_t extraction_params_lo;
+    spherical_extraction_params_t extraction_params_lo;
     int es, el, em; // spherical harmonic params
 };
 

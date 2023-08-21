@@ -16,9 +16,9 @@ plot_prefix = KerrBHp_
 checkpoint_interval = 50
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
-plot_interval = 0
-num_plot_vars = 0
-# plot_vars = 
+plot_interval = 20
+num_plot_vars = 2
+plot_vars = chi Ham
 
 # subpaths - specific directories for hdf5, pout, extraction data
 # (these are created at runtime)
@@ -112,7 +112,7 @@ nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 
 # dt will be dx*dt_multiplier on each grid level
 dt_multiplier = 0.25
-stop_time = 20.0
+stop_time = 100.0
 # max_steps = 100
 
 # Spatial derivative order (only affects CCZ4 RHS)
@@ -142,6 +142,39 @@ sigma = 0.3
 
 # min_chi = 1.e-4
 # min_lapse = 1.e-4
+
+#################################################
+# Apparent Horizon Finder parameters
+
+AH_activate = 1 
+AH_num_ranks = 20
+AH_num_points_u = 49
+AH_num_points_v = 48
+AH_solve_interval = 1
+AH_print_interval = 1
+AH_track_center = false
+AH_predict_origin = false
+# AH_level_to_run = 0
+# AH_allow_re_attempt = 0
+AH_stop_if_max_fails = 1
+# AH_start_time = 0.
+# AH_give_up_time = -1. # -1 to never
+# AH_max_fails_after_lost = 0 # -1 to never
+# AH_print_geometry_data = 0
+# AH_re_solve_at_restart = 0
+# AH_verbose = 1
+# AH_expansion_radius_power = 1.
+
+# AH_initial_guess = 0.5
+
+# AH_look_for_chi_contour = 0.2
+
+AH_num_extra_vars = 1
+AH_extra_vars = chi
+
+# AH_coords_subpath = "data/coords"
+# AH_stats_prefix = "stats_AH"
+# AH_coords_prefix = "coords_AH"
 
 #################################################
 

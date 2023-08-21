@@ -1,0 +1,45 @@
+chk_prefix = AHTest3D
+plot_prefix = AHTest3DPlot
+verbosity = 0
+N_full = 32
+L_full = 16
+
+max_level = 0
+regrid_interval = 0
+
+isPeriodic = 0 0 0
+hi_boundary = 1 1 1
+lo_boundary = 2 1 1
+
+vars_parity            = 0 0 4 6 0 5 0    #chi and hij
+                         0 0 4 6 0 5 0    #K and Aij
+                         0 1 2 3          #Theta and Gamma
+                         0 1 2 3 1 2 3    #lapse shift and B
+                         0 1 2 3		  # Ham and Mom
+
+vars_asymptotic_values = 1. 1. 0. 0. 1. 0. 1. #chi and hij
+                         0. 0. 0. 0. 0. 0. 0. #K and Aij
+                         0. 0. 0. 0.          #Theta and Gamma
+                         1. 0. 0. 0. 0. 0. 0. #lapse shift and B
+                         0. 0. 0. 0. 		  # Ham and Mom
+
+#Max and min box sizes
+max_grid_size = 32
+block_factor = 16
+
+kerr_mass = 10.
+kerr_spin = 5.
+kerr_spin_direction = 1. 0. 0.
+#AH_initial_guess = 5
+
+AH_num_ranks = 1
+AH_num_points_u = 21
+AH_num_points_v = 20
+AH_solve_interval = 1
+AH_print_interval = 1
+AH_track_center = false
+AH_predict_origin = false
+AH_level_to_run = 0
+AH_start_time = 0
+AH_give_up_time = -1.
+AH_verbose = 3

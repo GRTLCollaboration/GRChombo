@@ -10,8 +10,8 @@
 #include <iostream>
 
 // Our general includes
+#include "BHAMR.hpp"
 #include "DefaultLevelFactory.hpp"
-#include "GRAMR.hpp"
 #include "GRParmParse.hpp"
 #include "SetupFunctions.hpp"
 #include "SimulationParameters.hpp"
@@ -36,22 +36,52 @@ int runGRChombo(int argc, char *argv[])
     // The line below selects the problem that is simulated
     // (To simulate a different problem, define a new child of AMRLevel
     // and an associated LevelFactory)
-    GRAMR gr_amr;
-    DefaultLevelFactory<KerrBHLevel> kerr_bh_level_fact(gr_amr, sim_params);
-    setupAMRObject(gr_amr, kerr_bh_level_fact);
+    BHAMR bh_amr;
+    DefaultLevelFactory<KerrBHLevel> kerr_bh_level_fact(bh_amr, sim_params);
+    setupAMRObject(bh_amr, kerr_bh_level_fact);
+
+    // Set up interpolator:
+    // call this after amr object setup so grids known
+    // and need it to stay in scope throughout run
+    // Note: 'interpolator' needs to be in scope when bh_amr.run() is called,
+    // otherwise pointer is lost
+    AMRInterpolator<Lagrange<4>> interpolator(
+        bh_amr, sim_params.origin, sim_params.dx, sim_params.boundary_params,
+        sim_params.verbosity);
+    bh_amr.set_interpolator(&interpolator);
+
+#ifdef USE_AHFINDER
+    if (sim_params.AH_activate)
+    {
+        AHSurfaceGeometry sph(sim_params.kerr_params.center);
+
+#ifdef USE_CHI_CONTOURS // uncomment in UserVariables
+        std::string str_chi = std::to_string(
+            sim_params.AH_params.func_params.look_for_chi_contour);
+        sim_params.AH_params.stats_prefix = "stats_chi_" + str_chi + "_";
+        sim_params.AH_params.coords_prefix = "coords_chi_" + str_chi + "_";
+        bh_amr.m_ah_finder.add_ah(sph, sim_params.AH_initial_guess,
+                                  sim_params.AH_params);
+#else
+        bh_amr.m_ah_finder.add_ah(sph, sim_params.AH_initial_guess,
+                                  sim_params.AH_params);
+#endif
+    }
+#endif
 
     using Clock = std::chrono::steady_clock;
     using Minutes = std::chrono::duration<double, std::ratio<60, 1>>;
 
     std::chrono::time_point<Clock> start_time = Clock::now();
 
-    gr_amr.run(sim_params.stop_time, sim_params.max_steps);
+    // Engage! Run the evolution
+    bh_amr.run(sim_params.stop_time, sim_params.max_steps);
 
     auto now = Clock::now();
     auto duration = std::chrono::duration_cast<Minutes>(now - start_time);
     pout() << "Total simulation time (mins): " << duration.count() << ".\n";
 
-    gr_amr.conclude();
+    bh_amr.conclude();
 
     CH_TIMER_REPORT(); // Report results when running with Chombo timers.
 

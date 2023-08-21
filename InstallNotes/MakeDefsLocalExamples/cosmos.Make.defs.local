@@ -20,5 +20,5 @@ cxxdbgflags      = -g -Wl,--eh-frame-hdr
 cxxoptflags      = -O3 -override-limits -xSSE4.2 -axAVX
 fdbgflags        = -g -Wl,--eh-frame-hdr
 foptflags        = -O3 -override-limits -xSSE4.2 -axAVX
-syslibflags		   = -L/nfs/software/apps/papi/5.4.1/lib -lpapi
-cxxcppflags      = -DDISABLE_AHFINDER -DUSE_PAPI -UCH_USE_MEMORY_TRACKING
+syslibflags      = -L/nfs/software/apps/papi/5.4.1/lib -lpapi
+cxxcppflags      = -DUSE_PAPI -UCH_USE_MEMORY_TRACKING

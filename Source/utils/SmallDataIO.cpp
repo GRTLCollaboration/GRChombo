@@ -42,13 +42,13 @@ SmallDataIO::SmallDataIO(std::string a_filename_prefix, double a_dt,
       m_coords_width(m_coords_precision + 5),
       m_coords_epsilon(std::pow(10.0, -a_coords_precision))
 {
-#ifdef CH_MPI
-    MPI_Comm_rank(Chombo_MPI::comm, &m_rank);
-#else
-    m_rank = 0;
-#endif
-    if (m_rank == 0)
+    if (procID() == 0)
     {
+        if (m_coords_precision >= m_data_precision)
+        {
+            MayDay::Error("SmallDataIO: m_coords_precision should be smaller "
+                          "than m_data_precision for SmallDataIOReader");
+        }
         std::ios::openmode file_openmode;
         if (m_mode == APPEND)
         {
@@ -57,7 +57,7 @@ SmallDataIO::SmallDataIO(std::string a_filename_prefix, double a_dt,
                 // overwrite any existing file if this is the first step
                 file_openmode = std::ios::out;
             }
-            else if (m_restart_time > 0. &&
+            else if (m_restart_time >= 0. &&
                      m_time < m_restart_time + m_dt + m_coords_epsilon)
             {
                 // allow reading in the restart case so that duplicate time
@@ -88,7 +88,9 @@ SmallDataIO::SmallDataIO(std::string a_filename_prefix, double a_dt,
         m_file.open(m_filename, file_openmode);
         if (!m_file)
         {
-            MayDay::Error("SmallDataIO::error opening file for writing");
+            MayDay::Error((std::string("SmallDataIO::error opening file '") +
+                           m_filename + "' for writing")
+                              .c_str());
         }
     }
 }
@@ -114,7 +116,7 @@ SmallDataIO::SmallDataIO(std::string a_filename_prefix,
 //! Destructor (closes file)
 SmallDataIO::~SmallDataIO()
 {
-    if (m_rank == 0)
+    if (procID() == 0)
     {
         m_file.close();
     }
@@ -138,7 +140,7 @@ void SmallDataIO::write_header_line(
     const std::vector<std::string> &a_header_strings,
     const std::vector<std::string> &a_pre_header_strings)
 {
-    if (m_rank == 0)
+    if (procID() == 0)
     {
         // all header lines start with a '#'.
         m_file << "#";
@@ -179,7 +181,7 @@ void SmallDataIO::write_time_data_line(const std::vector<double> &a_data)
 void SmallDataIO::write_data_line(const std::vector<double> &a_data,
                                   const std::vector<double> &a_coords)
 {
-    if (m_rank == 0)
+    if (procID() == 0)
     {
         m_file << std::fixed << std::setprecision(m_coords_precision);
         for (double coord : a_coords)
@@ -197,7 +199,7 @@ void SmallDataIO::write_data_line(const std::vector<double> &a_data,
 
 void SmallDataIO::line_break()
 {
-    if (m_rank == 0)
+    if (procID() == 0)
     {
         m_file << "\n\n";
     }
@@ -205,7 +207,7 @@ void SmallDataIO::line_break()
 
 void SmallDataIO::remove_duplicate_time_data(const bool keep_m_time_data)
 {
-    if (m_rank == 0 && m_restart_time > 0. && m_mode == APPEND &&
+    if (procID() == 0 && m_restart_time >= 0. && m_mode == APPEND &&
         m_time < m_restart_time + m_dt + m_coords_epsilon)
     {
         // copy lines with time < m_time into a temporary file
@@ -251,7 +253,7 @@ void SmallDataIO::remove_duplicate_time_data(const bool keep_m_time_data)
 void SmallDataIO::get_specific_data_line(std::vector<double> &a_out_data,
                                          const std::vector<double> a_coords)
 {
-    if (m_rank == 0)
+    if (procID() == 0)
     {
         bool line_found = false;
         // first set the current position to the beginning of the file
@@ -316,6 +318,12 @@ std::string SmallDataIO::get_new_filename(const std::string &a_file_prefix,
     CH_assert(a_dt > 0);
     const int step = std::round(a_time / a_dt);
 
+    // append step number to filename if in NEW mode
+    return a_file_prefix + pad_number(step) + a_file_extension;
+}
+
+std::string SmallDataIO::pad_number(int step, int a_filename_steps_width)
+{
     // append step number to filename (pad to make it
     // a_filename_steps_width digits).
     std::string step_string = std::to_string(step);
@@ -327,8 +335,7 @@ std::string SmallDataIO::get_new_filename(const std::string &a_file_prefix,
     std::string step_string_padded =
         std::string(a_filename_steps_width - step_string.length(), '0') +
         step_string;
-    // append step number to filename if in NEW mode
-    return a_file_prefix + step_string_padded + a_file_extension;
+    return step_string_padded;
 }
 
 // returns m_data_epsilon

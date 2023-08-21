@@ -39,10 +39,10 @@ template <class data_t> struct VarsNoGauge
         define_enum_mapping(mapping_function, c_K, K);
 
         // Symmetric 2-tensors
-        define_symmetric_enum_mapping(mapping_function,
-                                      GRInterval<c_h11, c_h33>(), h);
-        define_symmetric_enum_mapping(mapping_function,
-                                      GRInterval<c_A11, c_A33>(), A);
+        define_symmetric_enum_mapping(
+            mapping_function, GRInterval<c_h11, D_SELECT(, c_h22, c_h33)>(), h);
+        define_symmetric_enum_mapping(
+            mapping_function, GRInterval<c_A11, D_SELECT(, c_A22, c_A33)>(), A);
     }
 };
 
@@ -60,8 +60,9 @@ template <class data_t> struct VarsWithGauge : public VarsNoGauge<data_t>
         using namespace VarsTools; // define_enum_mapping is part of VarsTools
         VarsNoGauge<data_t>::enum_mapping(mapping_function);
         define_enum_mapping(mapping_function, c_lapse, lapse);
-        define_enum_mapping(mapping_function, GRInterval<c_shift1, c_shift3>(),
-                            shift);
+        define_enum_mapping(
+            mapping_function,
+            GRInterval<c_shift1, D_SELECT(, c_shift2, c_shift3)>(), shift);
     }
 };
 
@@ -76,8 +77,8 @@ template <class data_t> struct Diff2VarsNoGauge
     {
         using namespace VarsTools; // define_enum_mapping is part of VarsTools
         define_enum_mapping(mapping_function, c_chi, chi);
-        define_symmetric_enum_mapping(mapping_function,
-                                      GRInterval<c_h11, c_h33>(), h);
+        define_symmetric_enum_mapping(
+            mapping_function, GRInterval<c_h11, D_SELECT(, c_h22, c_h33)>(), h);
     }
 };
 
@@ -96,8 +97,9 @@ struct Diff2VarsWithGauge : public Diff2VarsNoGauge<data_t>
         using namespace VarsTools; // define_enum_mapping is part of VarsTools
         Diff2VarsNoGauge<data_t>::enum_mapping(mapping_function);
         define_enum_mapping(mapping_function, c_lapse, lapse);
-        define_enum_mapping(mapping_function, GRInterval<c_shift1, c_shift3>(),
-                            shift);
+        define_enum_mapping(
+            mapping_function,
+            GRInterval<c_shift1, D_SELECT(, c_shift2, c_shift3)>(), shift);
     }
 };
 } // namespace ADMConformalVars

@@ -7,6 +7,7 @@
 #define NANCHECK_HPP_
 
 #include "Cell.hpp"
+#include "Coordinates.hpp"
 #include "UserVariables.hpp"
 
 /// This compute class checks for nans or very large values and aborts the
@@ -14,17 +15,23 @@
 class NanCheck
 {
   protected:
-    const std::string m_error_info = "NanCheck";
-    const double m_max_abs = 1e20;
+    const double m_dx;
+    const std::array<double, CH_SPACEDIM> &m_center;
+    const std::string m_error_info;
+    const double m_max_abs;
 
   public:
-    NanCheck() {}
+    NanCheck(const std::string a_error_info = "NanCheck",
+             const double a_max_abs = 1e20)
+        : NanCheck(-1, {0.}, a_error_info, a_max_abs)
+    {
+    }
 
-    /// This constructor takes a string which will be displayed when nans happen
-    NanCheck(const std::string a_error_info) : m_error_info(a_error_info) {}
-
-    NanCheck(const std::string a_error_info, const double a_max_abs)
-        : m_error_info(a_error_info), m_max_abs(a_max_abs)
+    NanCheck(const double a_dx, const std::array<double, CH_SPACEDIM> &a_center,
+             const std::string a_error_info = "NanCheck",
+             const double a_max_abs = 1e20)
+        : m_dx(a_dx), m_center(a_center), m_error_info(a_error_info),
+          m_max_abs(a_max_abs)
     {
     }
 
@@ -52,6 +59,11 @@ class NanCheck
                 }
                 pout() << "Integer coordinates: " << current_cell.get_int_vect()
                        << std::endl;
+                if (m_dx > 0)
+                {
+                    Coordinates<double> coords{current_cell, m_dx, m_center};
+                    pout() << coords << std::endl;
+                }
             }
             MayDay::Error("Values have become nan.");
         }

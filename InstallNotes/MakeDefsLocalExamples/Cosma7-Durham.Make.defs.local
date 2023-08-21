@@ -15,5 +15,3 @@ HDFMPILIBFLAGS = -L${HDF5_HOME}/lib -lhdf5 -lz
 cxxdbgflags      = -g
 cxxoptflags      = -O3
 fdbgflags        = -g
-
-

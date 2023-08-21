@@ -23,6 +23,13 @@
 
 namespace FilesystemTools
 {
+static bool file_exists(const std::string &a_path)
+{
+    struct stat stat_struct;
+    // also allow symbolic links
+    return stat(a_path.c_str(), &stat_struct) == 0 &&
+           (S_ISREG(stat_struct.st_mode) || S_ISLNK(stat_struct.st_mode));
+}
 
 static bool directory_exists(const std::string &path)
 {

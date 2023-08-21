@@ -188,6 +188,25 @@ int main()
         failed = true;
     }
 
+    // Test rotation matrix
+    static const Tensor<1, double> init_axes = {0., 0., 1.};
+    const Tensor<1, double> fin_axes = {1., 0., 0.};
+    Tensor<2, double> rotation_mat = rotation_matrix(init_axes, fin_axes);
+    Tensor<2, double> rotation_mat_check;
+
+    FOR(i, j) { rotation_mat_check[i][j] = 0.; }
+    rotation_mat_check[0][0] = 0.;
+    rotation_mat_check[0][1] = 0.;
+    rotation_mat_check[0][2] = 1.;
+    rotation_mat_check[1][0] = 0.;
+    rotation_mat_check[1][1] = 1.;
+    rotation_mat_check[1][2] = 0.;
+    rotation_mat_check[2][0] = -1.;
+    rotation_mat_check[2][1] = 0.;
+    rotation_mat_check[2][2] = 0.;
+
+    failed |= check_tensor(rotation_mat_check, rotation_mat, "rotation_matrix");
+
     if (failed)
     {
         std::cout << "Coordinate transformations test failed..." << std::endl;

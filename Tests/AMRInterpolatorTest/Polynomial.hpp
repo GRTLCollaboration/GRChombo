@@ -14,7 +14,7 @@
 class Polynomial
 {
   public:
-    Polynomial(std::array<double, CH_SPACEDIM> &a_center, double a_dx)
+    Polynomial(const std::array<double, CH_SPACEDIM> &a_center, double a_dx)
         : m_dx(a_dx), m_center(a_center)
     {
     }
@@ -38,7 +38,7 @@ class Polynomial
 
   protected:
     const double m_dx;
-    const std::array<double, CH_SPACEDIM> m_center;
+    const std::array<double, CH_SPACEDIM> &m_center;
 };
 
 #endif /* POLYNOMIAL_HPP_ */

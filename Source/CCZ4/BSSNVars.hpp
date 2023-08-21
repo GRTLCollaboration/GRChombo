@@ -31,8 +31,10 @@ struct VarsNoGauge : public ADMConformalVars::VarsNoGauge<data_t>
     {
         using namespace VarsTools; // define_enum_mapping is part of VarsTools
         ADMConformalVars::VarsNoGauge<data_t>::enum_mapping(mapping_function);
-        define_enum_mapping(mapping_function, GRInterval<c_Gamma1, c_Gamma3>(),
-                            Gamma); //!< The auxilliary variable Gamma^i
+        define_enum_mapping(
+            mapping_function,
+            GRInterval<c_Gamma1, D_SELECT(, c_Gamma2, c_Gamma3)>(),
+            Gamma); //!< The auxilliary variable Gamma^i
     }
 };
 
@@ -52,9 +54,11 @@ template <class data_t> struct VarsWithGauge : public VarsNoGauge<data_t>
         using namespace VarsTools; // define_enum_mapping is part of VarsTools
         VarsNoGauge<data_t>::enum_mapping(mapping_function);
         define_enum_mapping(mapping_function, c_lapse, lapse);
-        define_enum_mapping(mapping_function, GRInterval<c_shift1, c_shift3>(),
-                            shift);
-        define_enum_mapping(mapping_function, GRInterval<c_B1, c_B3>(), B);
+        define_enum_mapping(
+            mapping_function,
+            GRInterval<c_shift1, D_SELECT(, c_shift2, c_shift3)>(), shift);
+        define_enum_mapping(mapping_function,
+                            GRInterval<c_B1, D_SELECT(, c_B2, c_B3)>(), B);
     }
 };
 

@@ -162,3 +162,23 @@ sigma = 0.3
 # min_lapse = 1.e-4
 
 #################################################
+# Apparent Horizon Finder parameters
+
+AH_activate = 0
+AH_num_ranks = 20
+AH_num_points_u = 30
+AH_num_points_v = 50
+AH_solve_interval = 1
+AH_print_interval = 1
+AH_track_center = false
+# AH_predict_origin = true
+# AH_level_to_run = 0
+# AH_allow_re_attempt = 0
+# AH_start_time = 0.0
+# AH_give_up_time = -1. # -1 to never
+# AH_max_fails_after_lost = 0 # -1 to never
+# AH_verbose = 1
+
+# AH_initial_guess = 1.0
+
+#################################################

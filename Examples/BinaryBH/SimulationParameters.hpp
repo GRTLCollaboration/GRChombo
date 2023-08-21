@@ -22,12 +22,12 @@ class SimulationParameters : public SimulationParametersBase
   public:
     SimulationParameters(GRParmParse &pp) : SimulationParametersBase(pp)
     {
-        read_shared_params(pp);
 #ifdef USE_TWOPUNCTURES
         read_tp_params(pp);
 #else
         read_bh_params(pp);
 #endif
+        read_shared_params(pp);
         check_params();
     }
 
@@ -39,6 +39,15 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("puncture_tracking_level", puncture_tracking_level, max_level);
         pp.load("calculate_constraint_norms", calculate_constraint_norms,
                 false);
+
+#ifdef USE_AHFINDER
+        pp.load("AH_1_initial_guess", AH_1_initial_guess,
+                0.5 * bh1_params.mass);
+        pp.load("AH_2_initial_guess", AH_2_initial_guess,
+                0.5 * bh2_params.mass);
+        pp.load("AH_set_origins_to_punctures", AH_set_origins_to_punctures,
+                false);
+#endif
     }
 
 #ifdef USE_TWOPUNCTURES
@@ -271,7 +280,7 @@ class SimulationParameters : public SimulationParametersBase
         warn_array_parameter(
             "momentumB", bh2_params.momentum,
             std::sqrt(ArrayTools::norm2(bh2_params.momentum)) <
-                0.3 * bh1_params.mass,
+                0.3 * bh2_params.mass,
             "approximation used for boosted BH only valid for small boosts");
         FOR(idir)
         {
@@ -307,6 +316,11 @@ class SimulationParameters : public SimulationParametersBase
 #ifdef USE_TWOPUNCTURES
     double tp_offset_plus, tp_offset_minus;
     TP::Parameters tp_params;
+#endif
+#ifdef USE_AHFINDER
+    double AH_1_initial_guess;
+    double AH_2_initial_guess;
+    bool AH_set_origins_to_punctures;
 #endif
 };
 

@@ -16,6 +16,18 @@
 // 2010, arxiv gr-qc/1001.4077
 template <class data_t> void KerrBH::compute(Cell<data_t> current_cell) const
 {
+    using namespace CoordinateTransformations;
+    using namespace TensorAlgebra;
+
+    static const Tensor<1, double> z_dir = {0., 0., 1.};
+    const Tensor<1, double> spin_dir = {m_params.spin_direction[0],
+                                        m_params.spin_direction[1],
+                                        m_params.spin_direction[2]};
+
+    // define the rotation matrix needed to transform standard Cartesian (x,y,z)
+    // coordinates into the coordinates of the spin direction
+    Tensor<2, double> R = rotation_matrix(spin_dir, z_dir);
+
     // set up vars for the metric and extrinsic curvature, shift and lapse in
     // spherical coords
     Tensor<2, data_t> spherical_g;
@@ -27,22 +39,32 @@ template <class data_t> void KerrBH::compute(Cell<data_t> current_cell) const
     Vars<data_t> vars;
     Coordinates<data_t> coords(current_cell, m_dx, m_params.center);
 
+    // rotate point
+    Tensor<1, data_t> xyz = {coords.x, coords.y, coords.z};
+    xyz = transform_vector(xyz, R);
+
     // Compute the components in spherical coords as per 1401.1548
-    compute_kerr(spherical_g, spherical_K, spherical_shift, kerr_lapse, coords);
+    compute_kerr(spherical_g, spherical_K, spherical_shift, kerr_lapse, xyz);
 
     // work out where we are on the grid
-    data_t x = coords.x;
-    double y = coords.y;
-    double z = coords.z;
+    data_t x = xyz[0];
+    data_t y = xyz[1];
+    data_t z = xyz[2];
 
-    using namespace CoordinateTransformations;
     // Convert spherical components to cartesian components using coordinate
-    // transforms
-    vars.h = spherical_to_cartesian_LL(spherical_g, x, y, z);
-    vars.A = spherical_to_cartesian_LL(spherical_K, x, y, z);
-    vars.shift = spherical_to_cartesian_U(spherical_shift, x, y, z);
+    // transform_tensor_UU
+    Tensor<2, data_t> cartesian_h =
+        spherical_to_cartesian_LL(spherical_g, x, y, z);
+    Tensor<2, data_t> cartesian_K =
+        spherical_to_cartesian_LL(spherical_K, x, y, z);
+    Tensor<1, data_t> cartesian_shift =
+        spherical_to_cartesian_U(spherical_shift, x, y, z);
 
-    using namespace TensorAlgebra;
+    // now rotate tensors back to original coordinates
+    vars.h = transform_tensor_LL(cartesian_h, R);
+    vars.A = transform_tensor_LL(cartesian_K, R);
+    vars.shift = transform_vector(cartesian_shift, R);
+
     // Convert to BSSN vars
     data_t deth = compute_determinant(vars.h);
     auto h_UU = compute_inverse_sym(vars.h);
@@ -76,19 +98,22 @@ void KerrBH::compute_kerr(Tensor<2, data_t> &spherical_g,
                           Tensor<2, data_t> &spherical_K,
                           Tensor<1, data_t> &spherical_shift,
                           data_t &kerr_lapse,
-                          const Coordinates<data_t> coords) const
+                          const Tensor<1, data_t> &coords) const
 {
     // Kerr black hole params - mass M and spin a
     double M = m_params.mass;
     double a = m_params.spin;
 
     // work out where we are on the grid
-    data_t x = coords.x;
-    double y = coords.y;
-    double z = coords.z;
+    data_t x = coords[0];
+    data_t y = coords[1];
+    data_t z = coords[2];
 
     // the radius, subject to a floor
-    data_t r = coords.get_radius();
+    data_t r = sqrt(D_TERM(x * x, +y * y, +z * z));
+    static const double minimum_r = 1e-6;
+    r = simd_max(r, minimum_r);
+
     data_t r2 = r * r;
 
     // the radius in xy plane, subject to a floor

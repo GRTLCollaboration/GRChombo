@@ -123,9 +123,9 @@ int main(int argc, char *argv[])
     int status = runInterpolatorTest(argc, argv);
 
     if (status == 0)
-        pout() << "BasicAMRInterpolator test passed." << endl;
+        pout() << "AMRInterpolator test passed." << endl;
     else
-        pout() << "BasicAMRInterpolator test failed with return code " << status
+        pout() << "AMRInterpolator test failed with return code " << status
                << endl;
 
     mainFinalize();

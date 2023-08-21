@@ -32,8 +32,9 @@ void BinaryBHLevel::specificAdvance()
 
     // Check for nan's
     if (m_p.nan_check)
-        BoxLoops::loop(NanCheck("NaNCheck in specific Advance: "), m_state_new,
-                       m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
+        BoxLoops::loop(
+            NanCheck(m_dx, m_p.center, "NaNCheck in specific Advance"),
+            m_state_new, m_state_new, EXCLUDE_GHOST_CELLS, disable_simd());
 }
 
 // This initial data uses an approximation for the metric which
@@ -201,6 +202,18 @@ void BinaryBHLevel::specificPostTimeStep()
         m_bh_amr.m_puncture_tracker.execute_tracking(m_time, m_restart_time,
                                                      m_dt, write_punctures);
     }
+
+#ifdef USE_AHFINDER
+    if (m_p.AH_activate && m_level == m_p.AH_params.level_to_run)
+    {
+        if (m_p.AH_set_origins_to_punctures && m_p.track_punctures)
+        {
+            m_bh_amr.m_ah_finder.set_origins(
+                m_bh_amr.m_puncture_tracker.get_puncture_coords());
+        }
+        m_bh_amr.m_ah_finder.solve(m_dt, m_time, m_restart_time);
+    }
+#endif
 }
 
 #ifdef CH_USE_HDF5

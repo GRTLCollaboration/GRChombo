@@ -30,6 +30,8 @@ class KerrBH
         double mass;                            //!<< The mass of the Kerr BH
         std::array<double, CH_SPACEDIM> center; //!< The center of the Kerr BH
         double spin; //!< The spin param a = J/M, so 0 <= |a| <= M
+        std::array<double, CH_SPACEDIM> spin_direction = {
+            0., 0., 1.}; // default to 'z' axis; doesn't need to be normalized
     };
 
   protected:
@@ -60,7 +62,7 @@ class KerrBH
         Tensor<1, data_t>
             &spherical_shift, //!<< The spherical components of the shift
         data_t &kerr_lapse,   //!<< The lapse for the kerr solution
-        const Coordinates<data_t> coords //!<< Coords of current cell
+        const Tensor<1, data_t> &coords //!<< Coords of current cell
     ) const;
 };
 
