@@ -44,7 +44,11 @@ jobs:
 
     - name: Assign Doxygen PR reviewer
       run: |
-        PR_REVIEWER="KAClough" && [[ $GITHUB_ACTOR == "KAClough" ]] && PR_REVIEWER="SamuelBrady"
+if [[ $GITHUB_ACTOR == "KAClough" ]]; then
+  PR_REVIEWER="SamuelBrady"
+else
+  PR_REVIEWER="KAClough"
+fi
         echo "pr_reviewer=${PR_REVIEWER}" >> $GITHUB_ENV
 
     - name: Make pull request in GRChombo.github.io
