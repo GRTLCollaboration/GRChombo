@@ -104,8 +104,10 @@ void mainSetup(int argc, char *argv[])
         std::cout << " number_procs = " << number_procs << endl;
 #ifdef _OPENMP
         std::cout << " threads = " << omp_get_max_threads() << endl;
+#ifdef CH_MPI
         std::cout << " mpi provided thread support = "
                   << mpi_provided_thread_support_str << endl;
+#endif
 #endif
         std::cout << " simd width (doubles) = " << simd_traits<double>::simd_len
                   << endl;
