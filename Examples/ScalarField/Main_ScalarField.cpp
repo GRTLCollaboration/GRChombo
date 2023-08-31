@@ -27,8 +27,8 @@
 
 int runGRChombo(int argc, char *argv[])
 {
-    time_t t;
-    std::cout << "Program start at: " << asctime(localtime(&t)) << "\n";
+    //time_t t;
+    //std::cout << "Program start at: " << asctime(localtime(&t)) << "\n";
     // Load the parameter file and construct the SimulationParameter class
     // To add more parameters edit the SimulationParameters file.
     char *in_file = argv[1];

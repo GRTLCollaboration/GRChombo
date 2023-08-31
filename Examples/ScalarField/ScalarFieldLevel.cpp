@@ -104,6 +104,7 @@ void ScalarFieldLevel::initialData()
             else
             {
                 p_number >> h[n][m];
+                h[n][m] *= 1e-6; //REMOVE ME
                 p_number.clear();
                 m++;
 
@@ -125,6 +126,7 @@ void ScalarFieldLevel::initialData()
             else
             {
                 v_number >> hdot[n][m];
+                hdot[n][m] *= 1e-9; //REMOVE ME
                 v_number.clear();
                 m++;
 
@@ -151,7 +153,7 @@ void ScalarFieldLevel::initialData()
                         InitialScalarData(m_p.initial_params, m_dx, h, hdot)),
     m_state_new, m_state_new, INCLUDE_GHOST_CELLS,disable_simd());
 
-    std::cout << "Initialisation finished at: " << asctime(localtime(&t)) << "\n";
+    //std::cout << "Initialisation finished at: " << asctime(localtime(&t)) << "\n";
     
     fillAllGhosts();
     BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
