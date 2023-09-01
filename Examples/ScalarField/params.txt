@@ -16,7 +16,7 @@ plot_prefix = ScalarFieldp_
 checkpoint_interval = 500
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
-plot_interval = 1
+plot_interval = 0
 num_plot_vars = 2
 plot_vars = chi phi
 
