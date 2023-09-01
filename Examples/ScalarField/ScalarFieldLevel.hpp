@@ -31,25 +31,25 @@ class ScalarFieldLevel : public GRAMRLevel
     typedef ScalarField<Potential> ScalarFieldWithPotential;
 
     //! Things to do at the end of the advance step, after RK4 calculation
-    virtual void specificAdvance();
+    virtual void specificAdvance() override;
 
     //! Initialize data for the field and metric variables
-    virtual void initialData();
+    virtual void initialData() override;
 
     //virtual void outputMeans();
 
 #ifdef CH_USE_HDF5
     //! routines to do before outputting plot file
-    virtual void prePlotLevel();
+    virtual void prePlotLevel() override;
 #endif
 
     //! RHS routines used at each RK4 step
     virtual void specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
-                                 const double a_time);
+                                 const double a_time) override;
 
     //! Things to do in UpdateODE step, after soln + rhs update
     virtual void specificUpdateODE(GRLevelData &a_soln,
-                                   const GRLevelData &a_rhs, Real a_dt);
+                                   const GRLevelData &a_rhs, Real a_dt) override;
 
     /// Things to do before tagging cells (i.e. filling ghosts)
     virtual void preTagCells() override;

@@ -40,11 +40,6 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("m_pl", initial_params.m_pl, 1.0);
         pp.load("scalar_mass", potential_params.scalar_mass, 0.01);
         pp.load("scalar_mass", initial_params.mass, 0.01);
-
-        // Initial Kerr data
-        /*pp.load("kerr_mass", kerr_params.mass, 1.0);
-        pp.load("kerr_spin", kerr_params.spin, 0.0);
-        pp.load("kerr_center", kerr_params.center, center);*/
     }
 
     void check_params()
@@ -54,33 +49,13 @@ class SimulationParameters : public SimulationParametersBase
                            0.2 / coarsest_dx / dt_multiplier,
                        "oscillations of scalar field do not appear to be "
                        "resolved on coarsest level");
-        /*warn_parameter("scalar_width", initial_params.width,
-                       initial_params.width < 0.5 * L,
-                       "is greater than half the domain size");*/
-        /*warn_parameter("kerr_mass", kerr_params.mass, kerr_params.mass >= 0.0,
-                       "should be >= 0.0");
-        check_parameter("kerr_spin", kerr_params.spin,
-                        std::abs(kerr_params.spin) <= kerr_params.mass,
-                        "must satisfy |a| <= M = " +
-                            std::to_string(kerr_params.mass));
-        FOR(idir)
-        {
-            std::string name = "kerr_center[" + std::to_string(idir) + "]";
-            warn_parameter(
-                name, kerr_params.center[idir],
-                (kerr_params.center[idir] >= 0) &&
-                    (kerr_params.center[idir] <= (ivN[idir] + 1) * coarsest_dx),
-                "should be within the computational domain");
-        }*/
     }
 
     // Initial data for matter and potential and BH
     double G_Newton;
     double m_pl;
-    //CalcMeans::params_t grid_params;
     InitialScalarData::params_t initial_params;
     Potential::params_t potential_params;
-    //KerrBH::params_t kerr_params;
     MeansVars::params_t grid_params;
 };
 

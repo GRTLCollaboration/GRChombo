@@ -218,7 +218,7 @@ class SimulationParametersBase : public ChomboParameters
                            abs(ccz4_params.lapse_advec_coeff - 1.0)) <
                            std::numeric_limits<double>::epsilon(),
                        "usually set to 0.0 or 1.0");
-        warn_parameter("lapse_power", ccz4_params.lapse_power,
+        /*warn_parameter("lapse_power", ccz4_params.lapse_power,
                        abs(ccz4_params.lapse_power - 1.0) <
                            std::numeric_limits<double>::epsilon(),
                        "set to 1.0 for 1+log slicing");
@@ -229,7 +229,7 @@ class SimulationParametersBase : public ChomboParameters
         warn_parameter("shift_Gamma_coeff", ccz4_params.shift_Gamma_coeff,
                        abs(ccz4_params.shift_Gamma_coeff - 0.75) <
                            std::numeric_limits<double>::epsilon(),
-                       "usually set to 0.75");
+                       "usually set to 0.75");*/
         warn_parameter("shift_advec_coeff", ccz4_params.shift_advec_coeff,
                        min(abs(ccz4_params.shift_advec_coeff),
                            abs(ccz4_params.shift_advec_coeff - 1.0)) <
