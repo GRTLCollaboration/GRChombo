@@ -12,6 +12,7 @@ enum
     c_sf,
     c_sfd,
     c_sf2,
+    c_ch2,
 
     c_a,
     c_H,

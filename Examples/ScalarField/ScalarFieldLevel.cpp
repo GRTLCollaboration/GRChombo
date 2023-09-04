@@ -37,6 +37,7 @@
 #include <sstream>
 #include <typeinfo>
 #include <vector>
+#include <fstream>
 
 // Start time
 #include <ctime>
@@ -126,7 +127,7 @@ void ScalarFieldLevel::initialData()
             else
             {
                 v_number >> hdot[n][m];
-                hdot[n][m] *= 1e-9; //REMOVE ME
+                hdot[n][m] *= 0.0; //REMOVE ME
                 v_number.clear();
                 m++;
 
@@ -142,6 +143,11 @@ void ScalarFieldLevel::initialData()
         if(n > std::pow(N, 3.))
         {
             MayDay::Error("File length has exceeded N^3.");
+        }
+
+        if (i==10)
+        {
+            cout << h[m][n] << "," << hdot[m][n] << "\n";
         }
     }
 
@@ -241,13 +247,27 @@ void ScalarFieldLevel::specificPostTimeStep()
     bool first_step = (m_time == 0.);
     fillAllGhosts();
 
+    int slice;
+
+    if(first_step)
+    {
+        slice=0;
+        //SmallDataIO field_file(m_p.data_path+"field_step_0", m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step, ".dat");
+    }
+    else
+    {
+        slice++;
+        //std::string name = SmallDataIO::get_new_filename(m_p.data_path+"field_step", m_dt, m_time, ".dat", 1);
+        //SmallDataIO field_file(name, m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step, ".dat");
+    }
+
     double mass = m_p.potential_params.scalar_mass;//0.01;
 
     AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
     AMRReductions<VariableType::evolution> amr_reductions_evo(m_gr_amr);
     double vol = amr_reductions.get_domain_volume();
 
-    BoxLoops::loop(MeansVars(m_dx, m_p.grid_params), m_state_new, m_state_diagnostics, FILL_GHOST_CELLS);
+    BoxLoops::loop(MeansVars(m_dx, m_p.grid_params, slice, m_p.data_path), m_state_new, m_state_diagnostics, FILL_GHOST_CELLS);
 
     //Calculates means
     double phibar = amr_reductions.sum(c_sf)/vol;
@@ -268,6 +288,7 @@ void ScalarFieldLevel::specificPostTimeStep()
 
     //Calculates variances
     double phivar = amr_reductions.sum(c_sf2)/vol - phibar*phibar;
+    double chivar = amr_reductions.sum(c_ch2)/vol - c_a*c_a;
 
     //Calculates gauge quantities
     double lapse = amr_reductions_evo.sum(c_lapse)/vol;

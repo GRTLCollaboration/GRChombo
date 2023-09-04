@@ -7,7 +7,7 @@
 #! Number of MPI tasks allocated to each node
 #SBATCH --ntasks-per-node=8
 #! Wall clock time required
-#SBATCH --time=08:00:00
+#SBATCH --time=02:00:00
 #! Name of job
 #SBATCH -J gwtest
 
