@@ -22,13 +22,13 @@ jobs:
 
     steps:
     - name: Checkout Chombo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         repository: GRChombo/Chombo
         path: Chombo
 
     - name: Checkout GRChombo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
         path: GRChombo
 
