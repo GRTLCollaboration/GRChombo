@@ -68,10 +68,10 @@ void ScalarFieldLevel::initialData()
 
     ifstream gw_pos;
     ifstream gw_vel;
-    gw_pos.open("./gw-re-position.dat", ios::in); //open the file with the waves in it
-    gw_vel.open("./gw-re-velocity.dat", ios::in);
+    gw_pos.open("./gw-re-pos.dat", ios::in); //open the file with the waves in it
+    gw_vel.open("./gw-re-vel.dat", ios::in);
 
-    if (!gw_pos || !gw_vel)
+    if (!gw_pos)
     {
         MayDay::Error("GW position or velocity file failed to open.");
     }
@@ -117,7 +117,7 @@ void ScalarFieldLevel::initialData()
             }
         }
         
-        m=0;
+        /*m=0;
         for(int j=0; j<v_datline.length(); j++)
         {
             if(v_datline[j] != delim[0])
@@ -127,7 +127,13 @@ void ScalarFieldLevel::initialData()
             else
             {
                 v_number >> hdot[n][m];
-                hdot[n][m] *= 0.0; //REMOVE ME
+
+                if(hdot[n][m] > 1e-12)
+                {
+                    MayDay::Error("Hdot is supposed to be 0.");
+                }
+
+                //hdot[n][m] *= 0.0; //REMOVE ME
                 v_number.clear();
                 m++;
 
@@ -137,7 +143,7 @@ void ScalarFieldLevel::initialData()
                     MayDay::Error("Tensor index has exceeded 6 components");
                 }
             }
-        }
+        }*/
 
         n++;
         if(n > std::pow(N, 3.))
@@ -156,7 +162,7 @@ void ScalarFieldLevel::initialData()
 
     BoxLoops::loop(
     make_compute_pack(SetValue(0.),
-                        InitialScalarData(m_p.initial_params, m_dx, h, hdot)),
+                        InitialScalarData(m_p.initial_params, m_dx, h, 0.0)),
     m_state_new, m_state_new, INCLUDE_GHOST_CELLS,disable_simd());
 
     //std::cout << "Initialisation finished at: " << asctime(localtime(&t)) << "\n";

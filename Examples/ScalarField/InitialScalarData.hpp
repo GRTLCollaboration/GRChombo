@@ -38,7 +38,7 @@ class InitialScalarData
     };
 
     //! The constructor
-    InitialScalarData(params_t a_params, double a_dx, std::vector<std::vector<double> > a_h, std::vector<std::vector<double> > a_hdot)
+    InitialScalarData(params_t a_params, double a_dx, std::vector<std::vector<double> > a_h, double a_hdot)
         : m_params(a_params), m_dx(a_dx), m_h(a_h), m_hdot(a_hdot)
     {
     }
@@ -97,19 +97,19 @@ class InitialScalarData
         current_cell.store_vars(0.5*m_h[current_cell_index][4], c_h23);
         current_cell.store_vars(1. + 0.5*m_h[current_cell_index][5], c_h33);
 
-        current_cell.store_vars(-m_hdot[current_cell_index][0], c_A11);
-        current_cell.store_vars(-m_hdot[current_cell_index][1], c_A12);
-        current_cell.store_vars(-m_hdot[current_cell_index][2], c_A13);
-        current_cell.store_vars(-m_hdot[current_cell_index][3], c_A22);
-        current_cell.store_vars(-m_hdot[current_cell_index][4], c_A23);
-        current_cell.store_vars(-m_hdot[current_cell_index][5], c_A33);
+        current_cell.store_vars(-m_hdot, c_A11);
+        current_cell.store_vars(-m_hdot, c_A12);
+        current_cell.store_vars(-m_hdot, c_A13);
+        current_cell.store_vars(-m_hdot, c_A22);
+        current_cell.store_vars(-m_hdot, c_A23);
+        current_cell.store_vars(-m_hdot, c_A33);
     }
 
   protected:
     double m_dx;
     const params_t m_params; //!< The matter initial condition params
     std::vector< std::vector<double>> m_h;
-    std::vector< std::vector<double>> m_hdot;
+    double m_hdot;
 };
 
 #endif /* INITIALSCALARDATA_HPP_ */
