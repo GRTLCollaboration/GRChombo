@@ -1,14 +1,14 @@
 #!/bin/bash
 
 #! System to be used
-#SBATCH -p knl
+#SBATCH -p skylake
 #! Number of nodes to be used
 #SBATCH -N 4
 #! Number of MPI tasks allocated to each node
 #SBATCH --ntasks-per-node=4
 #! Wall clock time required
-#SBATCH --time=08:00:00
+#SBATCH --time=00:30:00
 #! Name of job
-#SBATCH -J gwbuild
+#SBATCH -J test
 
 srun ./Main_ScalarField3d_ch.Linux.64.mpiicpc.ifort.OPTHIGH.MPI.OPENMPCC.ICPX2022.0.ex params.txt

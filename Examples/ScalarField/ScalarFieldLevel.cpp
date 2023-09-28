@@ -41,6 +41,7 @@
 
 // Start time
 #include <ctime>
+#include <typeinfo>
 
 // Things to do at each advance step, after the RK4 is calculated 
 void ScalarFieldLevel::specificAdvance()
@@ -67,16 +68,16 @@ void ScalarFieldLevel::initialData()
     //Load in data from .dat files, for h and hdot initialisation
 
     ifstream gw_pos;
-    ifstream gw_vel;
-    gw_pos.open("./gw-re-pos.dat", ios::in); //open the file with the waves in it
-    gw_vel.open("./gw-re-vel.dat", ios::in);
+    //ifstream gw_vel;
+    gw_pos.open("./gw-re.dat", ios::in); //open the file with the waves in it
+    //gw_vel.open("./gw-re-vel.dat", ios::in);
 
     if (!gw_pos)
     {
         MayDay::Error("GW position or velocity file failed to open.");
     }
 
-    int m,n = 0;
+    //int m,n = 0;
     int N = m_p.initial_params.N_init;
 
     std::string delim = " ";
@@ -85,18 +86,17 @@ void ScalarFieldLevel::initialData()
     std::stringstream p_number;
     std::stringstream v_number;
 
-    std::vector<std::vector<double> > h(std::pow(N, 3.), std::vector<double>(6));
-    std::vector<std::vector<double> > hdot(std::pow(N, 3.), std::vector<double>(6));
+    std::vector<std::vector<double> > h(std::pow(N, 3.), std::vector<double>(6)); // input array memory allocation
+    //std::vector<std::vector<double> > hdot(std::pow(N, 3.), std::vector<double>(6));
 
+    int n=0; //box position counter
     for (int i=0; i < std::pow(N, 3.); i++) //
     {
         p_datline = "";
-        v_datline = "";
         std::getline(gw_pos, p_datline);
-        std::getline(gw_vel, v_datline);
+        int m=0; //tensor index counter
 
-        m=0;
-        for (int j=0; j<p_datline.length(); j++)
+        for(int j=0; j<p_datline.length(); j++)
         {
             if(p_datline[j] != delim[0])
             {
@@ -105,60 +105,28 @@ void ScalarFieldLevel::initialData()
             else
             {
                 p_number >> h[n][m];
-                h[n][m] *= 1e-6; //REMOVE ME
                 p_number.clear();
                 m++;
-
-                if(m > 6)
-                {
-                    cout << m << "\n";
-                    MayDay::Error("Tensor index has exceeded 6 components");
-                }
             }
         }
-        
-        /*m=0;
-        for(int j=0; j<v_datline.length(); j++)
-        {
-            if(v_datline[j] != delim[0])
-            {
-                v_number << v_datline[j];
-            }
-            else
-            {
-                v_number >> hdot[n][m];
-
-                if(hdot[n][m] > 1e-12)
-                {
-                    MayDay::Error("Hdot is supposed to be 0.");
-                }
-
-                //hdot[n][m] *= 0.0; //REMOVE ME
-                v_number.clear();
-                m++;
-
-                if(m > 6)
-                {
-                    cout << m << "\n";
-                    MayDay::Error("Tensor index has exceeded 6 components");
-                }
-            }
-        }*/
 
         n++;
+
+        p_number.clear();
+
         if(n > std::pow(N, 3.))
         {
             MayDay::Error("File length has exceeded N^3.");
         }
 
-        if (i==10)
+        if(i < 10)
         {
-            cout << h[m][n] << "," << hdot[m][n] << "\n";
+            cout << h[n][m] << "\n";
         }
     }
 
     gw_pos.close();
-    gw_vel.close();
+    //gw_vel.close();
 
     BoxLoops::loop(
     make_compute_pack(SetValue(0.),
