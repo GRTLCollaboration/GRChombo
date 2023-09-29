@@ -3,9 +3,10 @@
 #! System to be used
 #SBATCH -p knl
 #! Number of nodes to be used
-#SBATCH -N 4
+#SBATCH -N 3
 #! Number of MPI tasks (<=32*nodes)
-#SBATCH --ntasks=8
+#SBATCH --ntasks=90
+>>>>>>> 12b652c (Pulling from Fawcett to resolve first slice load error)
 #! Number of MPI tasks allocated to each node
 #! Multiplication of N used above
 #SBATCH --ntasks-per-node=8

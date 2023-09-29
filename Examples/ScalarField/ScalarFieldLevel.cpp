@@ -108,8 +108,9 @@ void ScalarFieldLevel::initialData()
             }
             else
             {
-                p_number >> h[n][m];
-                h[n][m] *= 1e-3;
+                p_number >> h[n][m];=
+                h[n][m] *= 1e-6;
+>>>>>>> 12b652c (Pulling from Fawcett to resolve first slice load error)
                 /*if (i==10)
                 {
                     std::cout << std::showpoint << h[n][m] << ", " << typeid(h[n][m]).name() << "\n";
