@@ -7,7 +7,7 @@
 #! Number of MPI tasks allocated to each node
 #SBATCH --ntasks-per-node=4
 #! Wall clock time required
-#SBATCH --time=00:30:00
+#SBATCH --time=12:00:00
 #! Name of job
 #SBATCH -J test
 
