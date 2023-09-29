@@ -96,7 +96,7 @@ void ScalarFieldLevel::initialData()
         std::getline(gw_pos, p_datline);
         int m=0; //tensor index counter
 
-        if(i<10) {std::cout << "Line " << i << ": " << p_datline << "(char count: " << p_datline.length() << ")" << "\n";}
+        //if(i<10) {std::cout << "Line " << i << ": " << p_datline << "(char count: " << p_datline.length() << ")" << "\n";}
 
         for(int j=0; j<p_datline.length(); j++)
         {
@@ -108,10 +108,10 @@ void ScalarFieldLevel::initialData()
             {
                 p_number >> h[n][m];
                 h[n][m] *= 1e-6;
-                if (i==10)
+                /*if (i==10)
                 {
                     std::cout << std::showpoint << h[n][m] << ", " << typeid(h[n][m]).name() << "\n";
-                }
+                }*/
                 p_number.clear();
                 m++;
             }
@@ -132,10 +132,10 @@ void ScalarFieldLevel::initialData()
         }*/
     }
 
-    for(int t=0; t<6; t++)
+    /*for(int t=0; t<6; t++)
     {
         cout << "Outside file: " << h[t][0] << "\n";
-    }
+    }*/
 
     gw_pos.close();
     //gw_vel.close();

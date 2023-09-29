@@ -43,9 +43,9 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("N_full", initial_params.N_init, 0);
 
         // Initial Kerr data
-        pp.load("kerr_mass", kerr_params.mass, 1.0);
+        /*pp.load("kerr_mass", kerr_params.mass, 1.0);
         pp.load("kerr_spin", kerr_params.spin, 0.0);
-        pp.load("kerr_center", kerr_params.center, center);
+        pp.load("kerr_center", kerr_params.center, center);*/
     }
 
     void check_params()
@@ -63,7 +63,7 @@ class SimulationParameters : public SimulationParametersBase
     //CalcMeans::params_t grid_params;
     InitialScalarData::params_t initial_params;
     Potential::params_t potential_params;
-    KerrBH::params_t kerr_params;
+    //KerrBH::params_t kerr_params;
     MeansVars::params_t grid_params;
 };
 

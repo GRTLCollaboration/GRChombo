@@ -28,13 +28,14 @@ class InitialScalarData
     //! conditions
     struct params_t
     {
-        double amplitude; //!< Amplitude of bump in initial SF bubble
+        double amplitude; //!< Amplitude of k=0 mode of initial SF
         double velocity;
         std::array<double, CH_SPACEDIM>
-            center;   //!< Centre of perturbation in initial SF bubble
+            center;   //!< Centre of the grid
         double width; //!< Width of bump in initial SF bubble
         double mass;
         int N_init;
+        double m_pl = 1.;
     };
 
     //! The constructor
@@ -49,9 +50,6 @@ class InitialScalarData
         // where am i?
         Coordinates<data_t> coords(current_cell, m_dx, m_params.center); // note: coords.x, etc. are in program units
         auto current_cell_index = current_cell.get_in_index(); // pulls the unitless coordinate, or index
-
-        data_t rr = coords.get_radius();
-        data_t rr2 = rr * rr;
 
         // Pull out the grid parametersß
         int N = m_params.N_init;
