@@ -53,3 +53,15 @@ void GRAMR::fill_multilevel_ghosts(const VariableType a_var_type,
         level.fillAllGhosts(a_var_type, a_comps);
     }
 }
+
+void GRAMR::print_grid_info() const
+{
+    if (procID() == 0)
+    {
+        auto gramrlevels = get_gramrlevels();
+        for (int ilevel = 0; ilevel <= m_finest_level; ++ilevel)
+        {
+            gramrlevels[ilevel]->print_grid_info();
+        }
+    }
+}

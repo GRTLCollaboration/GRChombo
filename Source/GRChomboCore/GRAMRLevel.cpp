@@ -362,6 +362,11 @@ void GRAMRLevel::regrid(const Vector<Box> &a_new_grids)
 /// things to do after regridding
 void GRAMRLevel::postRegrid(int a_base_level)
 {
+    if (m_level == a_base_level)
+    {
+        m_gr_amr.print_grid_info();
+    }
+
     // set m_restart_time to same as the coarser level
     if (m_level > a_base_level && m_coarser_level_ptr != nullptr)
     {
@@ -1024,6 +1029,32 @@ void GRAMRLevel::fillAllGhosts(const VariableType var_type,
                        std::min<int>(NUM_DIAGNOSTIC_VARS - 1, a_comps.end()));
         fillAllDiagnosticsGhosts(comps);
     }
+}
+
+void GRAMRLevel::print_grid_info() const
+{
+    unsigned int num_boxes = m_grids.size();
+    long long num_cells = m_grids.numCells();
+    long long domain_num_cells = problemDomain().domainBox().numPts();
+    double level_volume_percentage = 100.0 * static_cast<double>(num_cells) /
+                                     static_cast<double>(domain_num_cells);
+
+    auto boxes = m_grids.boxArray().stdVector();
+    auto minmaxvol_boxes =
+        std::minmax_element(boxes.begin(), boxes.end(),
+                            [](const Box &box_a, const Box &box_b)
+                            { return box_a.numPts() < box_b.numPts(); });
+    auto smallest_box = *minmaxvol_boxes.first;
+    auto smallest_box_size = smallest_box.size();
+    auto largest_box = *minmaxvol_boxes.second;
+    auto largest_box_size = largest_box.size();
+
+    pout() << "  Level " << m_level << "   " << num_boxes << " boxes  "
+           << num_cells << " cells  " << level_volume_percentage
+           << "% of domain" << std::endl;
+    pout() << "            "
+           << "smallest box: " << smallest_box_size
+           << "  largest box: " << largest_box_size << std::endl;
 }
 
 void GRAMRLevel::fillAllEvolutionGhosts(const Interval &a_comps)

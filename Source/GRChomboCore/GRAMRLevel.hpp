@@ -21,6 +21,7 @@
 #include "InterpSource.hpp"
 #include "SimulationParameters.hpp"
 #include "UserVariables.hpp" // need NUM_VARS
+#include <algorithm>
 #include <fstream>
 #include <limits>
 #include <sys/time.h>
@@ -188,6 +189,8 @@ class GRAMRLevel : public AMRLevel, public InterpSource<>
     virtual void fillAllGhosts(
         const VariableType var_type = VariableType::evolution,
         const Interval &a_comps = Interval(0, std::numeric_limits<int>::max()));
+
+    void print_grid_info() const;
 
   protected:
     /// Fill all evolution ghosts cells (i.e. those in m_state_new)

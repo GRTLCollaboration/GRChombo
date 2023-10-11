@@ -74,6 +74,8 @@ class GRAMR : public AMR
         const Interval &a_comps = Interval(0, std::numeric_limits<int>::max()),
         const int a_min_level = 0,
         const int a_max_level = std::numeric_limits<int>::max()) const;
+
+    void print_grid_info() const;
 };
 
 #endif /* GRAMR_HPP_ */
