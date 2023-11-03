@@ -36,7 +36,7 @@ class SimulationParameters : public SimulationParametersBase
                 0.0); // for now the example neglects backreaction
         //pp.load("max_level", grid_params.max_level, 0);
         pp.load("scalar_amplitude", initial_params.amplitude, 10.);
-        pp.load("scalar_velocity", initial_params.velocty, -0.00162846);
+        pp.load("scalar_velocity", initial_params.velocity, -0.00162846);
         pp.load("m_pl", initial_params.m_pl, 1.0);
         pp.load("scalar_mass", potential_params.scalar_mass, 0.01);
         pp.load("scalar_mass", initial_params.mass, 0.01);
