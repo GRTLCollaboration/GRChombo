@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #! System to be used
-#SBATCH -p skylake
+#SBATCH -p knl
 #! Number of nodes to be used
 #SBATCH -N 4
 #! Number of MPI tasks allocated to each node
