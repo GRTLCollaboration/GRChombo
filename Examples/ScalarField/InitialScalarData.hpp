@@ -110,7 +110,7 @@ class InitialScalarData
 
         // calculate and store the scalar field value
         const data_t phi = m_params.amplitude/m_params.m_pl;
-        const data_t phidot = m_params.velocty/m_params.m_pl/m_params.m_pl;
+        const data_t phidot = m_params.velocity/m_params.m_pl/m_params.m_pl;
 
         current_cell.store_vars(phi, c_phi);
         current_cell.store_vars(phidot, c_Pi);
