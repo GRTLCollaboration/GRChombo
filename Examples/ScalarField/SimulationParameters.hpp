@@ -56,10 +56,6 @@ class SimulationParameters : public SimulationParametersBase
     double m_pl;
     InitialScalarData::params_t initial_params;
     Potential::params_t potential_params;
-<<<<<<< HEAD
-    //KerrBH::params_t kerr_params;
-=======
->>>>>>> slurm-check
     MeansVars::params_t grid_params;
 };
 
