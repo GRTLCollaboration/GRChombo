@@ -109,16 +109,16 @@ class InitialScalarData
         }
 
         // calculate and store the scalar field value
+<<<<<<< HEAD
         const data_t phi = m_params.amplitude;
         const data_t phidot = m_params.velocity;
+=======
+        const data_t phi = m_params.amplitude/m_params.m_pl;
+        const data_t phidot = m_params.velocty/m_params.m_pl/m_params.m_pl;
+>>>>>>> slurm-check
 
         current_cell.store_vars(phi, c_phi);
         current_cell.store_vars(phidot, c_Pi);
-
-        //Planck's constant, set to change the units of the scalar field
-        double m_pl = 1.0;//1.220890e19; // (GeV)
-        data_t V;
-        data_t dV;
 
         //calculate and store gauge variables
         data_t lapse = 1.0;
@@ -130,8 +130,8 @@ class InitialScalarData
         current_cell.store_vars(shift[2], c_shift3);
 
         //calculate and store scalar metric variables
-        data_t chi = 1.0;
-        data_t K = -3.0*sqrt((8*M_PI/3/m_pl)*(0.5*phidot*phidot + 0.5*pow(m_params.mass * phi, 2.0))); //This needs grad energy with perturbations...
+        data_t chi = 1.0; // a
+        data_t K = -3.0*sqrt((8*M_PI/3/m_params.m_pl/m_params.m_pl)*(0.5*phidot*phidot + 0.5*pow(m_params.mass/m_params.m_pl * phi, 2.0))); // K (Friedman's equations)
 
         current_cell.store_vars(chi, c_chi);
         current_cell.store_vars(K, c_K);
