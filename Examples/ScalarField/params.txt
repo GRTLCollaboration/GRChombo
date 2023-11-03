@@ -7,7 +7,7 @@
 verbosity = 0
 
 # location / naming of output files
-output_path = "/nfs/st01/hpc-gr-epss/eaf49/" # Main path for all files. Must exist!
+output_path = "/nfs/st01/hpc-gr-epss/eaf49/gw-test/" # Main path for all files. Must exist!
 chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
 # restart_file = ScalarField_000000.3d.hdf5
@@ -84,7 +84,7 @@ tag_buffer_size = 0 # this example uses a fixed grid
 grid_buffer_size = 8
 fill_ratio = 1.0
 num_ghosts = 3
-# center = 256.0 256.0 256.0 # defaults to center of the grid
+center = 0.5 0.5 0.5 # defaults to center of the grid
 
 #################################################
 # Boundary Conditions parameters
@@ -159,3 +159,5 @@ min_chi = 1.e-6
 min_lapse = 1.e-6
 
 #################################################
+
+activate_extraction = 0
