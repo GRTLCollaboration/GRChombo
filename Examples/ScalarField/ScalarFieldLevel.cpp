@@ -107,7 +107,7 @@ void ScalarFieldLevel::initialData()
             else
             {
                 p_number >> h[n][m];
-                h[n][m] *= 1e-6;
+                h[n][m] *= 1e-3;
                 /*if (i==10)
                 {
                     std::cout << std::showpoint << h[n][m] << ", " << typeid(h[n][m]).name() << "\n";
