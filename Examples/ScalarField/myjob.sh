@@ -5,10 +5,11 @@
 #! Number of nodes to be used
 #SBATCH -N 4
 #! Number of MPI tasks allocated to each node
-#SBATCH --ntasks-per-node=4
+#! Multiplication of N used above
+#SBATCH --ntasks-per-node=8
 #! Wall clock time required
-#SBATCH --time=12:00:00
+#SBATCH --time=02:00:00
 #! Name of job
-#SBATCH -J test
+#SBATCH -J check000
 
 srun ./Main_ScalarField3d_ch.Linux.64.mpiicpc.ifort.OPTHIGH.MPI.OPENMPCC.ICPX2022.0.ex params.txt

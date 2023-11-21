@@ -59,7 +59,7 @@ scalar_mass = 0.01
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
 N_full = 128
-L_full = 1
+L_full = 4
 
 # Maximum number of times you can regrid above coarsest level
 max_level = 0 # There are (max_level+1) grids, so min is zero (does changing this turn off AMR?)
@@ -126,7 +126,7 @@ extrapolating_vars = phi Pi
 
 # dt will be dx*dt_multiplier on each grid level
 dt_multiplier = 0.25
-stop_time = 100.0
+stop_time = 0.002
 # max_steps = 4
 
 # Spatial derivative order (only affects CCZ4 RHS)
