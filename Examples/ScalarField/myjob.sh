@@ -7,10 +7,13 @@
 #! Number of MPI tasks (<=32*nodes)
 #SBATCH --ntasks=8
 #! Number of MPI tasks allocated to each node
-#SBATCH --cpus-per-task=4
+#! Multiplication of N used above
+#SBATCH --ntasks-per-node=8
+>>>>>>> 9eada3d (Reset to previous commit because of issue reading in IC files, and fixed memory issue by de-allocating h vector?)
 #! Wall clock time required
-#SBATCH --time=12:00:00
+#SBATCH --time=02:00:00
 #! Name of job
-#SBATCH -J cosmic-time-check
+#SBATCH -J check000
+>>>>>>> 9eada3d (Reset to previous commit because of issue reading in IC files, and fixed memory issue by de-allocating h vector?)
 
 srun ./Main_ScalarField3d_ch.Linux.64.mpiicpc.ifort.OPTHIGH.MPI.OPENMPCC.ICPX2022.0.ex params.txt

@@ -80,6 +80,8 @@ void ScalarFieldLevel::initialData()
     //int m,n = 0;
     int N = m_p.initial_params.N_init;
 
+    pout() << "Grid size: " << N << "\n";
+
     std::string delim = " ";
     std::string p_datline;
     std::string v_datline;
@@ -144,6 +146,9 @@ void ScalarFieldLevel::initialData()
     make_compute_pack(SetValue(0.),
                         InitialScalarData(m_p.initial_params, m_dx, h, 0.0)),
     m_state_new, m_state_new, INCLUDE_GHOST_CELLS,disable_simd());
+
+    h.clear();
+    //hdot.free();
 
     //std::cout << "Initialisation finished at: " << asctime(localtime(&t)) << "\n";
     
