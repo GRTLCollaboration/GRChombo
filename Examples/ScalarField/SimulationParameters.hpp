@@ -46,7 +46,6 @@ class SimulationParameters : public SimulationParametersBase
         /*pp.load("kerr_mass", kerr_params.mass, 1.0);
         pp.load("kerr_spin", kerr_params.spin, 0.0);
         pp.load("kerr_center", kerr_params.center, center);*/
->>>>>>> 12b652c (Pulling from Fawcett to resolve first slice load error)
     }
 
     void check_params()
@@ -64,7 +63,6 @@ class SimulationParameters : public SimulationParametersBase
     InitialScalarData::params_t initial_params;
     Potential::params_t potential_params;=
     //KerrBH::params_t kerr_params;
->>>>>>> 12b652c (Pulling from Fawcett to resolve first slice load error)
     MeansVars::params_t grid_params;
 };
 

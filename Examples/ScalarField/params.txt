@@ -35,7 +35,6 @@ write_plot_ghosts = 0
 
 #################################################
 # Initial Data parameters
-
 # Change the gravitational constant of the Universe!
 # Default is 1.0, for standard geometric units
 # Here we decouple the evolution so the scalar evolved on the
@@ -61,7 +60,6 @@ scalar_mass = 0.01
 # NB - the N values need to be multiples of the block_factor
 N_full = 128
 L_full = 4
->>>>>>> 9eada3d (Reset to previous commit because of issue reading in IC files, and fixed memory issue by de-allocating h vector?)
 
 # Maximum number of times you can regrid above coarsest level
 max_level = 0 # There are (max_level+1) grids, so min is zero (does changing this turn off AMR?)
@@ -130,7 +128,6 @@ extrapolating_vars = phi Pi
 dt_multiplier = 0.25
 stop_time = 0.002
 # max_steps = 4
->>>>>>> 9eada3d (Reset to previous commit because of issue reading in IC files, and fixed memory issue by de-allocating h vector?)
 
 # Spatial derivative order (only affects CCZ4 RHS)
 max_spatial_derivative_order = 4 # can be 4 or 6
