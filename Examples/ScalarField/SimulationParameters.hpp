@@ -61,7 +61,7 @@ class SimulationParameters : public SimulationParametersBase
     double G_Newton;
     double m_pl;
     InitialScalarData::params_t initial_params;
-    Potential::params_t potential_params;=
+    Potential::params_t potential_params;
     //KerrBH::params_t kerr_params;
     MeansVars::params_t grid_params;
 };

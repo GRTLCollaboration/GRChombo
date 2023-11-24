@@ -7,7 +7,7 @@
 verbosity = 0
 
 # location / naming of output files
-output_path = "/nfs/st01/hpc-gr-epss/eaf49/gw-test/" # Main path for all files. Must exist!
+output_path = "/home/eaf49/rds/hpc-work" # Main path for all files. Must exist!
 chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
 # restart_file = ScalarField_000000.3d.hdf5
@@ -16,9 +16,9 @@ plot_prefix = ScalarFieldp_
 checkpoint_interval = 500
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
-plot_interval = 10
-num_plot_vars = 6
-plot_vars = h11 h12 h13 h22 h23 h33
+plot_interval = 20
+num_plot_vars = 7
+plot_vars = chi h11 h12 h13 h22 h23 h33
 
 # subpaths - specific directories for hdf5, pout, extraction data
 # (these are created at runtime)
@@ -59,7 +59,7 @@ scalar_mass = 0.01
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
 N_full = 128
-L_full = 4
+L_full = 0.4
 
 # Maximum number of times you can regrid above coarsest level
 max_level = 0 # There are (max_level+1) grids, so min is zero (does changing this turn off AMR?)
@@ -126,8 +126,8 @@ extrapolating_vars = phi Pi
 
 # dt will be dx*dt_multiplier on each grid level
 dt_multiplier = 0.25
-stop_time = 0.002
-# max_steps = 4
+stop_time = 10
+max_steps = 500
 
 # Spatial derivative order (only affects CCZ4 RHS)
 max_spatial_derivative_order = 4 # can be 4 or 6
