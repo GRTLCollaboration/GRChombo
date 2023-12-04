@@ -126,7 +126,7 @@ extrapolating_vars = phi Pi
 
 # dt will be dx*dt_multiplier on each grid level
 dt_multiplier = 0.25
-stop_time = 0.002
+stop_time = 10000
 # max_steps = 4
 
 # Spatial derivative order (only affects CCZ4 RHS)
