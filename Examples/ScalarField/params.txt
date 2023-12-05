@@ -10,7 +10,7 @@ verbosity = 0
 output_path = "/home/eaf49/rds/hpc-work" # Main path for all files. Must exist!
 chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
-# restart_file = ScalarField_000000.3d.hdf5
+# restart_file = ScalarField_000500.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 500
@@ -70,7 +70,7 @@ max_level = 0 # There are (max_level+1) grids, so min is zero (does changing thi
 # in this example turn off regridding on all levels
 # Level Regridding: 0   1   2   3   4   5
 regrid_interval   = 0   0   0   0   0   0
- regrid_threshold  = 0.5
+# regrid_threshold  = 0.5
 
 regrid_interval = 0 0 0 0 0 0
 
@@ -80,10 +80,10 @@ min_box_size = 16
 
 tag_buffer_size = 0 # this example uses a fixed grid
 
-grid_buffer_size = 8
-fill_ratio = 1.0
-num_ghosts = 3
-center = 0.5 0.5 0.5 # defaults to center of the grid
+#grid_buffer_size = 8
+#fill_ratio = 1.0
+#num_ghosts = 3
+#center = 0.5 0.5 0.5 # defaults to center of the grid
 
 #################################################
 # Boundary Conditions parameters
@@ -127,7 +127,7 @@ extrapolating_vars = phi Pi
 # dt will be dx*dt_multiplier on each grid level
 dt_multiplier = 0.25
 stop_time = 10
-max_steps = 500
+max_steps = 6000
 
 # Spatial derivative order (only affects CCZ4 RHS)
 max_spatial_derivative_order = 4 # can be 4 or 6
@@ -152,7 +152,7 @@ kappa3 = 0.
 covariantZ4 = 1 # 0: keep kappa1; 1 [default]: replace kappa1 -> kappa1/lapse
 
 # coefficient for KO numerical dissipation
-sigma = 0.3
+sigma = 0.0
 
 min_chi = 1.e-22
 min_lapse = 1.e-22
