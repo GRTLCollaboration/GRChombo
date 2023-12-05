@@ -28,17 +28,18 @@ class InitialScalarData
     //! conditions
     struct params_t
     {
-        double amplitude; //!< Amplitude of bump in initial SF bubble
+        double amplitude; //!< Amplitude of k=0 mode of initial SF
         double velocity;
         std::array<double, CH_SPACEDIM>
-            center;   //!< Centre of perturbation in initial SF bubble
+            center;   //!< Centre of the grid
         double width; //!< Width of bump in initial SF bubble
         double mass;
         int N_init;
+        double m_pl = 1.;
     };
 
     //! The constructor
-    InitialScalarData(params_t a_params, double a_dx, std::vector<std::vector<double> > a_h, double a_hdot)
+    InitialScalarData(params_t a_params, double a_dx, std::vector<std::vector<double> > a_h, std::vector<std::vector<double> > a_hdot)
         : m_params(a_params), m_dx(a_dx), m_h(a_h), m_hdot(a_hdot)
     {
     }
@@ -49,9 +50,6 @@ class InitialScalarData
         // where am i?
         Coordinates<data_t> coords(current_cell, m_dx, m_params.center); // note: coords.x, etc. are in program units
         auto current_cell_index = current_cell.get_in_index(); // pulls the unitless coordinate, or index
-
-        data_t rr = coords.get_radius();
-        data_t rr2 = rr * rr;
 
         // Pull out the grid parametersß
         int N = m_params.N_init;
@@ -111,16 +109,11 @@ class InitialScalarData
         }
 
         // calculate and store the scalar field value
-        const data_t phi = m_params.amplitude;
-        const data_t phidot = m_params.velocity;
+        const data_t phi = m_params.amplitude/m_params.m_pl;
+        const data_t phidot = m_params.velocity/m_params.m_pl/m_params.m_pl;
 
         current_cell.store_vars(phi, c_phi);
         current_cell.store_vars(phidot, c_Pi);
-
-        //Planck's constant, set to change the units of the scalar field
-        double m_pl = 1.0;//1.220890e19; // (GeV)
-        data_t V;
-        data_t dV;
 
         //calculate and store gauge variables
         data_t lapse = 1.0;
@@ -132,8 +125,8 @@ class InitialScalarData
         current_cell.store_vars(shift[2], c_shift3);
 
         //calculate and store scalar metric variables
-        data_t chi = 1.0;
-        data_t K = -3.0*sqrt((8*M_PI/3/m_pl)*(0.5*phidot*phidot + 0.5*pow(m_params.mass * phi, 2.0))); //This needs grad energy with perturbations...
+        data_t chi = 1.0; // a
+        data_t K = -3.0*sqrt((8*M_PI/3/m_params.m_pl/m_params.m_pl)*(0.5*phidot*phidot + 0.5*pow(m_params.mass/m_params.m_pl * phi, 2.0))); // K (Friedman's equations)
 
         current_cell.store_vars(chi, c_chi);
         current_cell.store_vars(K, c_K);
@@ -146,19 +139,19 @@ class InitialScalarData
         current_cell.store_vars(0.5*m_h[r][4], c_h23);
         current_cell.store_vars(1. + 0.5*m_h[r][5], c_h33);
 
-        current_cell.store_vars(-m_hdot, c_A11);
-        current_cell.store_vars(-m_hdot, c_A12);
-        current_cell.store_vars(-m_hdot, c_A13);
-        current_cell.store_vars(-m_hdot, c_A22);
-        current_cell.store_vars(-m_hdot, c_A23);
-        current_cell.store_vars(-m_hdot, c_A33);
+        current_cell.store_vars(-m_hdot[r][0], c_A11);
+        current_cell.store_vars(-m_hdot[r][1], c_A12);
+        current_cell.store_vars(-m_hdot[r][2], c_A13);
+        current_cell.store_vars(-m_hdot[r][3], c_A22);
+        current_cell.store_vars(-m_hdot[r][4], c_A23);
+        current_cell.store_vars(-m_hdot[r][5], c_A33);
     }
 
   protected:
     double m_dx;
     const params_t m_params; //!< The matter initial condition params
     std::vector< std::vector<double>> m_h;
-    double m_hdot;
+    std::vector<std::vector<double> > m_hdot;
 };
 
 #endif /* INITIALSCALARDATA_HPP_ */

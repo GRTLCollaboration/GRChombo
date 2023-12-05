@@ -7,7 +7,7 @@
 verbosity = 0
 
 # location / naming of output files
-output_path = "/nfs/st01/hpc-gr-epss/eaf49/dump" # Main path for all files. Must exist!
+output_path = "/home/eaf49/rds/hpc-work" # Main path for all files. Must exist!
 chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
 # restart_file = ScalarField_000500.3d.hdf5
@@ -16,7 +16,7 @@ plot_prefix = ScalarFieldp_
 checkpoint_interval = 500
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
-plot_interval = 10
+plot_interval = 20
 num_plot_vars = 7
 plot_vars = chi h11 h12 h13 h22 h23 h33
 
@@ -152,7 +152,7 @@ kappa3 = 0.
 covariantZ4 = 1 # 0: keep kappa1; 1 [default]: replace kappa1 -> kappa1/lapse
 
 # coefficient for KO numerical dissipation
-sigma = 0.3
+sigma = 0.0
 
 min_chi = 1.e-22
 min_lapse = 1.e-22

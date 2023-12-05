@@ -68,9 +68,9 @@ void ScalarFieldLevel::initialData()
     //Load in data from .dat files, for h and hdot initialisation
 
     ifstream gw_pos;
-    //ifstream gw_vel;
-    gw_pos.open("./gw-re.dat", ios::in); //open the file with the waves in it
-    //gw_vel.open("./gw-re-vel.dat", ios::in);
+    ifstream gw_vel;
+    gw_pos.open("./gw-re-pos.dat", ios::in); //open the file with the waves in it
+    gw_vel.open("./gw-re-vel.dat", ios::in);
 
     if (!gw_pos)
     {
@@ -80,14 +80,18 @@ void ScalarFieldLevel::initialData()
     //int m,n = 0;
     int N = m_p.initial_params.N_init;
 
+    pout() << "Grid size: " << N << "\n";
+
     std::string delim = " ";
+    double A = 1e-6;
+
     std::string p_datline;
     std::string v_datline;
     std::stringstream p_number;
     std::stringstream v_number;
 
     std::vector<std::vector<double> > h(std::pow(N, 3.), std::vector<double>(6)); // input array memory allocation
-    //std::vector<std::vector<double> > hdot(std::pow(N, 3.), std::vector<double>(6));
+    std::vector<std::vector<double> > hdot(std::pow(N, 3.), std::vector<double>(6));
 
     int n=0; //box position counter
     for (int i=0; i < std::pow(N, 3.); i++) //
@@ -107,7 +111,7 @@ void ScalarFieldLevel::initialData()
             else
             {
                 p_number >> h[n][m];
-                h[n][m] *= 1e-6;
+                h[n][m] *= A;
                 /*if (i==10)
                 {
                     std::cout << std::showpoint << h[n][m] << ", " << typeid(h[n][m]).name() << "\n";
@@ -117,9 +121,29 @@ void ScalarFieldLevel::initialData()
             }
         }
 
+        v_datline = "";
+        std::getline(gw_vel, v_datline);
+        m=0;
+
+        for(int j=0; j<v_datline.length(); j++)
+        {
+            if(v_datline[j] != delim[0])
+            {
+                v_number << p_datline[j];
+            }
+            else
+            {
+                v_number >> hdot[n][m];
+                hdot[n][m] *= A;
+                v_number.clear();
+                m++;
+            }
+        }
+
         n++;
 
         p_number.clear();
+        v_number.clear();
 
         if(n > std::pow(N, 3.))
         {
@@ -138,17 +162,15 @@ void ScalarFieldLevel::initialData()
     }*/
 
     gw_pos.close();
-    //gw_vel.close();
+    gw_vel.close();
 
     BoxLoops::loop(
     make_compute_pack(SetValue(0.),
-                        InitialScalarData(m_p.initial_params, m_dx, h, 0.0)),
+                        InitialScalarData(m_p.initial_params, m_dx, h, hdot)),
     m_state_new, m_state_new, INCLUDE_GHOST_CELLS,disable_simd());
 
     h.clear();
-    //hdot.free();
-
-    //std::cout << "Initialisation finished at: " << asctime(localtime(&t)) << "\n";
+    hdot.clear();
     
     fillAllGhosts();
     BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
