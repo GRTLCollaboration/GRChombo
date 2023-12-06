@@ -80,7 +80,7 @@ void ScalarFieldLevel::initialData()
     //int m,n = 0;
     int N = m_p.initial_params.N_init;
 
-    pout() << "Grid size: " << N << "\n";
+    //pout() << "Grid size: " << N << "\n";
 
     std::string delim = " ";
     double A = 1e-6;
