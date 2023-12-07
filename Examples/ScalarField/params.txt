@@ -7,7 +7,7 @@
 verbosity = 0
 
 # location / naming of output files
-output_path = "/nfs/st01/hpc-gr-epss/eaf49/" # Main path for all files. Must exist!
+output_path = "/nfs/st01/hpc-gr-epss/eaf49/gw-test" # Main path for all files. Must exist!
 chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
 # restart_file = ScalarField_000500.3d.hdf5
@@ -17,8 +17,8 @@ checkpoint_interval = 500
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
 plot_interval = 10
-num_plot_vars = 7
-plot_vars = chi h11 h12 h13 h22 h23 h33
+num_plot_vars = 6
+plot_vars = h11 h12 h13 h22 h23 h33
 
 # subpaths - specific directories for hdf5, pout, extraction data
 # (these are created at runtime)

@@ -309,8 +309,8 @@ void ScalarFieldLevel::specificPostTimeStep()
 
     if(first_step) 
     {
-        means_file.write_header_line({"Scalar field mean","Scalar field variance","Pi mean","Scale factor","Hubble factor",
+        means_file.write_header_line({"Scalar field mean","Scalar field variance","Pi mean","Scale factor","Conformal factor variance","Hubble factor",
             "Kinetic ED","Potential ED","First SRP","Second SRP","Avg Ham constr","Avg Mom constr","Avg lapse"});
     }
-    means_file.write_time_data_line({phibar, phivar, pibar, a, H, kinb, potb, epsilon, delta, hambar, mombar, lapse});
+    means_file.write_time_data_line({phibar, phivar, pibar, a, chivar, H, kinb, potb, epsilon, delta, hambar, mombar, lapse});
 }
