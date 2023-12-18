@@ -306,6 +306,7 @@ void ScalarFieldLevel::specificPostTimeStep()
 
     //Prints all that out into the data/ directory
     SmallDataIO means_file(m_p.data_path+"means_file", m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step, ".dat");
+    means_file.remove_duplicate_time_data(); // removes any duplicate data from previous run (for checkpointing)
 
     if(first_step) 
     {
