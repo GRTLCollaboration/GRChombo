@@ -258,20 +258,6 @@ void ScalarFieldLevel::specificPostTimeStep()
     bool first_step = (m_time == 0.);
     fillAllGhosts();
 
-    int slice;
-
-    if(first_step)
-    {
-        slice=0;
-        //SmallDataIO field_file(m_p.data_path+"field_step_0", m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step, ".dat");
-    }
-    else
-    {
-        slice++;
-        //std::string name = SmallDataIO::get_new_filename(m_p.data_path+"field_step", m_dt, m_time, ".dat", 1);
-        //SmallDataIO field_file(name, m_dt, m_time, m_restart_time, SmallDataIO::APPEND, first_step, ".dat");
-    }
-
     double mass = m_p.potential_params.scalar_mass;//0.01;
 
     AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
