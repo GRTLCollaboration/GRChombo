@@ -35,7 +35,7 @@ class MeansVars
             void enum_mapping(mapping_function_t mapping_function);
         };
 
-        MeansVars(double dx, params_t a_params, int a_slice, std::string a_data_path);
+        MeansVars(double dx, params_t a_params, std::string a_data_path);
 
         template <class data_t>
         void compute(Cell<data_t> current_cell) const;
@@ -44,7 +44,6 @@ class MeansVars
         double m_dx;
         const params_t m_params;
         double m_volume;
-        int m_slice;
         std::string m_data_path;
 };
 

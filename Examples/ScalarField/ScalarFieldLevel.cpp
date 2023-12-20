@@ -264,7 +264,7 @@ void ScalarFieldLevel::specificPostTimeStep()
     AMRReductions<VariableType::evolution> amr_reductions_evo(m_gr_amr);
     double vol = amr_reductions.get_domain_volume();
 
-    BoxLoops::loop(MeansVars(m_dx, m_p.grid_params, slice, m_p.data_path), m_state_new, m_state_diagnostics, FILL_GHOST_CELLS);
+    BoxLoops::loop(MeansVars(m_dx, m_p.grid_params, m_p.data_path), m_state_new, m_state_diagnostics, FILL_GHOST_CELLS);
 
     //Calculates means
     double phibar = amr_reductions.sum(c_sf)/vol;

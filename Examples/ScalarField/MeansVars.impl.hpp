@@ -15,16 +15,13 @@
 #include <cmath>
 
 inline
- MeansVars::MeansVars(double dx, params_t a_params, int a_slice, std::string a_data_path) : 
-    m_dx (dx), m_params (a_params), m_slice (a_slice), m_data_path(a_data_path) {}
+ MeansVars::MeansVars(double dx, params_t a_params, std::string a_data_path) : 
+    m_dx (dx), m_params (a_params), m_data_path(a_data_path) {}
 
  template <class data_t>
  void MeansVars::compute(Cell<data_t> current_cell) const
  {
      CH_TIME("MeansVars::compute");
-
-     fstream field_file;
-     field_file.open(m_data_path+"field_step_"+to_string(m_slice)+".dat", std::fstream::app);
 
      Coordinates<data_t> coords(current_cell, m_dx, m_params.center);
 
@@ -42,12 +39,6 @@ inline
      current_cell.store_vars(phisq, c_sf2);
      current_cell.store_vars(chisq, c_ch2);
      current_cell.store_vars(kin, c_kin);
-
-     //current_cell.store_vars(vars.h11, c_h11);
-
-     //field_file << vars.h11 << "\n";
-
-     field_file.close();
  }
 
  template <class data_t>
@@ -59,7 +50,6 @@ inline
      define_enum_mapping(mapping_function, c_Pi, Pi);
      define_enum_mapping(mapping_function, c_chi, chi);
      define_enum_mapping(mapping_function, c_K, K);
-
      define_enum_mapping(mapping_function, c_h11, h11);
  }
 
