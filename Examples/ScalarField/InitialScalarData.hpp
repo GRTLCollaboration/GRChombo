@@ -126,7 +126,7 @@ class InitialScalarData
 
         //calculate and store scalar metric variables
         data_t chi = 1.0; // a
-        data_t K = -3.0*sqrt((8*M_PI/3/m_params.m_pl/m_params.m_pl)*(0.5*phidot*phidot + 0.5*pow(m_params.mass/m_params.m_pl * phi, 2.0))); // K (Friedman's equations)
+        data_t K = -3.0*sqrt((8. * M_PI/3.)*(0.5*phidot*phidot + 0.5*pow(m_params.mass/m_params.m_pl * phi, 2.0))); // K (Friedman's equations)
 
         current_cell.store_vars(chi, c_chi);
         current_cell.store_vars(K, c_K);

@@ -10,13 +10,13 @@ verbosity = 0
 output_path = "/nfs/st01/hpc-gr-epss/eaf49" # Main path for all files. Must exist!
 chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
-# restart_file = ScalarField_000500.3d.hdf5
+# restart_file = ScalarField_001500.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 200
+checkpoint_interval = 500
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
-plot_interval = 100
+plot_interval = 200
 num_plot_vars = 7
 plot_vars = chi h11 h12 h13 h22 h23 h33
 
@@ -37,9 +37,6 @@ write_plot_ghosts = 0
 # Initial Data parameters
 # Change the gravitational constant of the Universe!
 # Default is 1.0, for standard geometric units
-# Here we decouple the evolution so the scalar evolved on the
-# metric background without backreaction (this avoids the need
-# to solve the constaints)
 G_Newton = 1.0
 m_pl = 1.0
 
