@@ -15,14 +15,7 @@ enum
     c_shift = c_shift1,
     c_B = c_B1,
 
-    c_phi = NUM_CCZ4_VARS,
-    c_Pi,
-
-    c_Rho,
-
-    c_chi2,
-
-    c_Weyl4_Re,
+    c_Weyl4_Re = NUM_CCZ4_VARS,
     c_Weyl4_Im,
 
     NUM_VARS
@@ -32,12 +25,6 @@ namespace UserVariables
 {
 static const std::array<std::string, NUM_VARS - NUM_CCZ4_VARS>
     user_variable_names = {
-
-        "phi",      "Pi",
-
-        "rho",
-
-        "chi2",
 
         "Weyl4_Re", "Weyl4_Im"};
 
