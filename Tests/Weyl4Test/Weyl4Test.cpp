@@ -1,7 +1,9 @@
 #define COVARIANTZ4
 
 // Chombo includes
+#include "CH_HDF5.H"
 #include "FArrayBox.H"
+#include "LevelData.H"
 
 // Other includes
 #ifdef _OPENMP
@@ -34,8 +36,11 @@
 
 #define CHF_CONST_FRAn(a, n, c) CHF_FRAn(a, n, c)
 
-int main()
+int main(int argc, char *argv[])
 {
+#ifdef CH_MPI
+    MPI_Init(&argc, &argv);
+#endif
 #ifdef _OPENMP
     std::cout << "#threads = " << omp_get_max_threads() << std::endl;
 #endif
@@ -45,8 +50,16 @@ int main()
     Box ghosted_box(IntVect(-3, -3, -3),
                     IntVect(N_GRID + 2, N_GRID + 2, N_GRID + 2));
     FArrayBox in_fab(ghosted_box, NUM_VARS);
-    FArrayBox out_fab(box, NUM_VARS);
+    Vector<Box> boxes(1, box);
+    Vector<int> box_mapping(1, 0);
+    DisjointBoxLayout grids(boxes, box_mapping);
+    LevelData<FArrayBox> out_level_data(grids, NUM_DIAGNOSTIC_VARS);
+    DataIterator dit = out_level_data.dataIterator();
+    dit.begin();
+    FArrayBox &out_fab = out_level_data[dit];
+#ifdef COMPARE_WITH_CHF
     FArrayBox out_fab_chf(box, NUM_VARS);
+#endif
 
     const double dx = 0.25 / (N_GRID - 1);
 
@@ -105,9 +118,6 @@ int main()
                     in_fab(iv, c_h22) = chi * g[1][1];
                     in_fab(iv, c_h23) = chi * g[1][2];
                     in_fab(iv, c_h33) = chi * g[2][2];
-
-                    in_fab(iv, c_Weyl4_Re) = 0.0;
-                    in_fab(iv, c_Weyl4_Im) = 0.0;
                 }
 
                 {
@@ -209,6 +219,27 @@ int main()
                    begin.tv_sec * 1000 - begin.tv_usec / 1000;
     std::cout << "C++ version took " << cxx_time << "ms" << std::endl;
 
+#ifdef CH_USE_HDF5
+    if (procID() == 0)
+    {
+        HDF5Handle hdf5_handle("Weyl4Out.hdf5", HDF5Handle::CREATE_SERIAL);
+        HDF5HeaderData hdf5_header_data;
+        hdf5_header_data.m_int["max_level"] = 0;
+        hdf5_header_data.m_int["num_levels"] = 1;
+        hdf5_header_data.m_int["iteration"] = 0;
+        hdf5_header_data.m_real["time"] = 0.0;
+        hdf5_header_data.m_int["num_components"] = NUM_DIAGNOSTIC_VARS;
+        for (int icomp = 0; icomp < NUM_DIAGNOSTIC_VARS; ++icomp)
+        {
+            hdf5_header_data.m_string["component_" + std::to_string(icomp)] =
+                DiagnosticVariables::variable_names[icomp];
+        }
+        hdf5_header_data.writeToFile(hdf5_handle);
+        writeLevel(hdf5_handle, 0, out_level_data, dx, 0.25 * dx, 0.0, box, 2);
+        hdf5_handle.close();
+    }
+#endif
+
 #ifdef COMPARE_WITH_CHF
 
     int SIX = 6;
@@ -279,5 +310,9 @@ int main()
 
     return failed;
 
+#endif
+
+#ifdef CH_MPI
+    MPI_Finalize();
 #endif
 }
