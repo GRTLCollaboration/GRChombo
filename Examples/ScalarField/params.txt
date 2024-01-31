@@ -7,13 +7,13 @@
 verbosity = 0
 
 # location / naming of output files
-output_path = "/nfs/st01/hpc-gr-epss/eaf49/higher-cutoff" # Main path for all files. Must exist!
+output_path = "/nfs/st01/hpc-gr-epss/eaf49/kstar-32" # Main path for all files. Must exist!
 chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
-restart_file = ScalarField_003000.3d.hdf5
+restart_file = ScalarField_001000.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 100
+checkpoint_interval = 500
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
 plot_interval = 200

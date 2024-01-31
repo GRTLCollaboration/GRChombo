@@ -69,8 +69,8 @@ void ScalarFieldLevel::initialData()
 
     ifstream gw_pos;
     ifstream gw_vel;
-    gw_pos.open("/nfs/st01/hpc-gr-epss/eaf49/IC-files/16-kstar-old-params/gw-re-pos.dat", ios::in); //open the file with the waves in it
-    gw_vel.open("/nfs/st01/hpc-gr-epss/eaf49/IC-files/16-kstar-old-params/gw-re-vel.dat", ios::in);
+    gw_pos.open("/nfs/st01/hpc-gr-epss/eaf49/IC-files/32-and-64-kstar/gw-re-pos-64.dat", ios::in); //open the file with the waves in it
+    gw_vel.open("/nfs/st01/hpc-gr-epss/eaf49/IC-files/32-and-64-kstar/gw-re-vel-64.dat", ios::in);
 
     if (!gw_pos)
     {
