@@ -10,7 +10,7 @@ verbosity = 0
 output_path = "/nfs/st01/hpc-gr-epss/eaf49/kstar-64" # Main path for all files. Must exist!
 chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
-restart_file = ScalarField_003000.3d.hdf5
+restart_file = ScalarField_004000.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 500
