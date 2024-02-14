@@ -52,7 +52,7 @@ jobs:
         echo "pr_reviewer=${PR_REVIEWER}" >> $GITHUB_ENV
 
     - name: Make pull request in GRChombo.github.io
-      uses: peter-evans/create-pull-request@v5
+      uses: peter-evans/create-pull-request@v6
       with:
         token: ${{ secrets.REPO_GITHUB_TOKEN }}
         path: 'GRChombo.github.io'
