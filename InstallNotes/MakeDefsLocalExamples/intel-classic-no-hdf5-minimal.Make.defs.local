@@ -7,10 +7,9 @@ DEBUG          = TRUE
 PRECISION      = DOUBLE
 OPT            = TRUE
 PROFILE        = FALSE
-CXX            = icpx
-FC             = ifx
+CXX            = icc
+FC             = ifort
 MPI            = TRUE
-XTRACXXFLAGS   = -diag-disable=10441 # disable deprecation notice
 OPENMPCC       = TRUE
 MPICXX         = mpiicpc
 USE_64         = TRUE
