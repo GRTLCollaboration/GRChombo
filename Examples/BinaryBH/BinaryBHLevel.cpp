@@ -141,33 +141,32 @@ void BinaryBHLevel::specificPostTimeStep()
 
     if (m_p.activate_extraction == 1)
     {
-        int min_level = m_p.extraction_params.min_extraction_level();
-        bool calculate_weyl = at_level_timestep_multiple(min_level);
-        if (calculate_weyl)
-        {
-            // Populate the Weyl Scalar values on the grid
-            fillAllGhosts();
-            BoxLoops::loop(
-                Weyl4(m_p.extraction_params.center, m_dx, m_p.formulation),
-                m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 
-            // Do the extraction on the min extraction level
-            if (m_level == min_level)
-            {
-                CH_TIME("WeylExtraction");
-                // Now refresh the interpolator and do the interpolation
-                // fill ghosts manually to minimise communication
-                bool fill_ghosts = false;
-                m_gr_amr.m_interpolator->refresh(fill_ghosts);
-                m_gr_amr.fill_multilevel_ghosts(
-                    VariableType::diagnostic, Interval(c_Weyl4_Re, c_Weyl4_Im),
-                    min_level);
-                WeylExtraction my_extraction(m_p.extraction_params, m_dt,
-                                             m_time, first_step,
-                                             m_restart_time);
-                my_extraction.execute_query(m_gr_amr.m_interpolator);
-            }
-        }
+        // if (calculate_weyl)
+        // {
+        //     // Populate the Weyl Scalar values on the grid
+        //     fillAllGhosts();
+        //     BoxLoops::loop(
+        //         Weyl4(m_p.extraction_params.center, m_dx, m_p.formulation),
+        //         m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+
+        //     // Do the extraction on the min extraction level
+        //     if (m_level == min_level)
+        //     {
+        //         CH_TIME("WeylExtraction");
+        //         // Now refresh the interpolator and do the interpolation
+        //         // fill ghosts manually to minimise communication
+        //         bool fill_ghosts = false;
+        //         m_gr_amr.m_interpolator->refresh(fill_ghosts);
+        //         m_gr_amr.fill_multilevel_ghosts(
+        //             VariableType::diagnostic, Interval(c_Weyl4_Re,
+        //             c_Weyl4_Im), min_level);
+        //         WeylExtraction my_extraction(m_p.extraction_params, m_dt,
+        //                                      m_time, first_step,
+        //                                      m_restart_time);
+        //         my_extraction.execute_query(m_gr_amr.m_interpolator);
+        //     }
+        // }
     }
 
     if (m_p.calculate_constraint_norms)
@@ -220,14 +219,14 @@ void BinaryBHLevel::specificPostTimeStep()
 // Things to do before a plot level - need to calculate the Weyl scalars
 void BinaryBHLevel::prePlotLevel()
 {
-    fillAllGhosts();
-    if (m_p.activate_extraction == 1)
-    {
-        BoxLoops::loop(
-            make_compute_pack(
-                Weyl4(m_p.extraction_params.center, m_dx, m_p.formulation),
-                Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3))),
-            m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-    }
+    // fillAllGhosts();
+    // if (m_p.activate_extraction == 1)
+    // {
+    //     BoxLoops::loop(
+    //         make_compute_pack(
+    //             Weyl4(m_p.extraction_params.center, m_dx, m_p.formulation),
+    //             Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3))),
+    //         m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+    // }
 }
 #endif /* CH_USE_HDF5 */
