@@ -1,0 +1,22 @@
+#begin  -- dont change this line
+# This is used for the github action that builds and runs the tests
+# with the Intel C++ Classic compiler and MPI implementation
+
+DIM           ?= 3
+DEBUG          = TRUE
+PRECISION      = DOUBLE
+OPT            = TRUE
+PROFILE        = FALSE
+CXX            = icx
+FC             = ifx
+MPI            = TRUE
+OPENMPCC       = TRUE
+MPICXX         = mpiicpc
+USE_64         = TRUE
+USE_HDF        = FALSE
+USE_MT         = FALSE
+cxxoptflags    = -xHost -O3
+foptflags      = -xHost -O3
+syslibflags    = -qmkl=sequential
+
+#end  -- dont change this line
