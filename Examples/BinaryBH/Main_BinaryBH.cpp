@@ -91,7 +91,6 @@ int runGRChombo(int argc, char *argv[])
 #endif
 
     using Clock = std::chrono::steady_clock;
-    using Minutes = std::chrono::duration<double, std::ratio<60, 1>>;
 
     std::chrono::time_point<Clock> start_time = Clock::now();
 
@@ -113,8 +112,9 @@ int runGRChombo(int argc, char *argv[])
     bh_amr.run(sim_params.stop_time, sim_params.max_steps);
 
     auto now = Clock::now();
-    auto duration = std::chrono::duration_cast<Minutes>(now - start_time);
-    pout() << "Total simulation time (mins): " << duration.count() << ".\n";
+    auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(
+        now - start_time);
+    pout() << "Total simulation time: " << duration.count() << " secs\n";
 
     bh_amr.conclude();
 
