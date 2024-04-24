@@ -9,6 +9,7 @@
 
 // System includes
 #include <chrono>
+#include <iomanip>
 #include <iostream>
 
 // Our includes
@@ -114,7 +115,8 @@ int runGRChombo(int argc, char *argv[])
     auto now = Clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::duration<double>>(
         now - start_time);
-    pout() << "Total simulation time: " << duration.count() << " secs\n";
+    pout() << std::setprecision(16)
+           << "Total simulation time: " << duration.count() << " secs\n";
 
     bh_amr.conclude();
 
