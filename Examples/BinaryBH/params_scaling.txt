@@ -1,0 +1,156 @@
+# Parameter file for comparison with GRTeclyn params_profile.txt
+
+#################################################
+# Filesystem parameters
+
+verbosity = 0
+
+# output_path =
+chk_prefix = BinaryBHChk_
+plot_prefix = BinaryBHPlt_
+# restart_file = BinaryBHChk_000000.3d.hdf5
+
+checkpoint_interval = -1
+plot_interval = -1
+num_plot_vars = 2
+plot_vars = chi Theta
+
+# subpaths - specific directories for hdf5, pout, extraction data
+# (these are created at runtime)
+hdf5_subpath = "hdf5"
+pout_subpath = "pout"
+data_subpath = "data"
+
+# change the name of output files
+# pout_prefix = "pout"
+print_progress_only_to_rank_0 = 1
+
+# ignore_checkpoint_name_mismatch = 0
+# write_plot_ghosts = 0
+
+#################################################
+# Initial Data parameters
+
+# provide 'offset' or 'center'
+
+massA = 0.48847892320123
+massB = 0.48847892320123
+
+offsetA = 0.0 6.10679 0.0
+offsetB =  0.0 -6.10679 0.0
+# centerA = 512  518.10679 512
+# centerB = 512 -505.89321 512
+
+momentumA = -0.0841746 -0.000510846 0.0
+momentumB = 0.0841746  0.000510846 0.0
+
+#################################################
+# Grid parameters
+
+N_full = 128
+L_full = 1024
+
+max_level = 9 # There are (max_level+1) grids, so min is zero
+
+# -1 disables regridding
+regrid_interval = 0 0 1 0 0 0 0 0 0 0
+regrid_threshold = 0.02
+
+# Max and min box sizes
+max_grid_size = 16
+block_factor = 16
+
+# Tag buffer size
+tag_buffer_size = 4
+# num_ghosts = 3
+# center = 8 8 8 # defaults to center of the grid
+
+#################################################
+# Boundary Conditions parameters
+
+# Periodic directions - 0 = false, 1 = true
+isPeriodic = 0 0 0
+# if not periodic, then specify the boundary type
+# 0 = static, 1 = sommerfeld, 2 = reflective
+# (see BoundaryConditions.hpp for details)
+hi_boundary = 1 1 1
+lo_boundary = 1 1 2
+
+# if reflective boundaries selected, must set
+# parity of all vars (in order given by UserVariables.hpp)
+# 0 = even
+# 1,2,3 = odd x, y, z
+# 7     = odd xyz
+vars_parity            = 0 0 4 6 0 5 0    #chi and hij
+                         0 0 4 6 0 5 0    #K and Aij
+                         0 1 2 3          #Theta and Gamma
+                         0 1 2 3 1 2 3    #lapse shift and B
+vars_parity_diagnostic = 0 1 2 3          #Ham and Mom
+                         0 7              #Weyl
+
+# if sommerfeld boundaries selected, must select
+# non zero asymptotic values
+num_nonzero_asymptotic_vars = 5
+nonzero_asymptotic_vars = chi h11 h22 h33 lapse
+nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
+
+# if you are using extrapolating BC:
+# extrapolation_order = 1
+# num_extrapolating_vars = -1
+# extrapolating_vars =
+
+#################################################
+# Evolution parameters
+
+# dt will be dx*dt_multiplier on each grid level
+dt_multiplier = 0.25
+stop_time = 2200.0
+max_steps = 2
+
+# Spatial derivative order (only affects CCZ4 RHS)
+max_spatial_derivative_order = 4
+
+nan_check = 1
+
+# Lapse evolution
+lapse_advec_coeff = 1.0
+lapse_coeff = 2.0
+lapse_power = 1.0
+
+# Shift evolution
+shift_advec_coeff = 1.0
+shift_Gamma_coeff = 0.75
+eta = 1.0 # eta of gamma driver
+
+# CCZ4 parameters
+formulation = 0 # 1 for BSSN, 0 for CCZ4
+kappa1 = 0.1
+kappa2 = 0.
+kappa3 = 1.
+covariantZ4 = 1 # 0: keep kappa1; 1 [default]: replace kappa1 -> kappa1/lapse
+
+# coefficient for KO numerical dissipation
+sigma = 0.5
+
+track_punctures = 0
+puncture_tracking_level = 5
+
+# calculate_constraint_norms = 0
+
+# min_chi = 1.e-4
+# min_lapse = 1.e-4
+
+#################################################
+# Extraction parameters
+
+# GRTeclyn doesn't have extraction yet but we use this for tagging cells
+# and comment out the actual extraction in the code.
+activate_extraction = 1
+num_extraction_radii = 2
+extraction_radii = 110.0 150.0
+extraction_levels = 3 2
+num_points_phi = 32
+num_points_theta = 48
+write_extraction = 0
+num_modes = 3
+modes = 2 0  2 1  2 2
