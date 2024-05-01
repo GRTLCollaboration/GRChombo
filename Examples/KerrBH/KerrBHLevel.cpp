@@ -47,17 +47,17 @@ void KerrBHLevel::initialData()
         m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
 
     fillAllGhosts();
-    if (m_p.max_spatial_derivative_order == FourthOrderDerivatives)
+    if (m_p.max_spatial_derivative_order == 4)
     {
         GammaCalculator<FourthOrderDerivatives> my_gamma_calculator(m_dx);
         BoxLoops::loop(my_gamma_calculator, m_state_new, m_state_new,
-                    EXCLUDE_GHOST_CELLS);
+                       EXCLUDE_GHOST_CELLS);
     }
-    else if (m_p.max_spatial_derivative_order == SixthOrderDerivatives)
+    else if (m_p.max_spatial_derivative_order == 6)
     {
         GammaCalculator<SixthOrderDerivatives> my_gamma_calculator(m_dx);
         BoxLoops::loop(my_gamma_calculator, m_state_new, m_state_new,
-                    EXCLUDE_GHOST_CELLS);
+                       EXCLUDE_GHOST_CELLS);
     }
 
 #ifdef USE_AHFINDER
