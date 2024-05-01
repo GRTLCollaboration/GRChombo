@@ -16,8 +16,7 @@
 #include "VarsTools.hpp"
 #include "simd.hpp"
 
-template<class deriv_t = FourthOrderDerivatives>
-class GammaCalculator
+template<class deriv_t = FourthOrderDerivatives> class GammaCalculator
 {
     // Only variables needed are metric
     template <class data_t> struct Vars
