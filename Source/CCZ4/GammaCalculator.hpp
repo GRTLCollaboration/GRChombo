@@ -16,6 +16,7 @@
 #include "VarsTools.hpp"
 #include "simd.hpp"
 
+template<class deriv_t = FourthOrderDerivatives>
 class GammaCalculator
 {
     // Only variables needed are metric
@@ -32,7 +33,7 @@ class GammaCalculator
     };
 
   protected:
-    const FourthOrderDerivatives
+    const deriv_t
         m_deriv; //!< An object for calculating derivatives of the variables
 
   public:

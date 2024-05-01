@@ -60,8 +60,18 @@ void ScalarFieldLevel::initialData()
         m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
 
     fillAllGhosts();
-    BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
-                   EXCLUDE_GHOST_CELLS);
+    if (m_p.max_spatial_derivative_order == FourthOrderDerivatives)
+    {
+        GammaCalculator<FourthOrderDerivatives> my_gamma_calculator(m_dx);
+        BoxLoops::loop(my_gamma_calculator, m_state_new, m_state_new,
+                    EXCLUDE_GHOST_CELLS);
+    }
+    else if (m_p.max_spatial_derivative_order == SixthOrderDerivatives)
+    {
+        GammaCalculator<SixthOrderDerivatives> my_gamma_calculator(m_dx);
+        BoxLoops::loop(my_gamma_calculator, m_state_new, m_state_new,
+                    EXCLUDE_GHOST_CELLS);
+    }
 }
 
 #ifdef CH_USE_HDF5
