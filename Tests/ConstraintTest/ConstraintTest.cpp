@@ -10,6 +10,7 @@
 
 // Chombo includes
 #include "BoxIterator.H"
+#include "CH_HDF5.H"
 #include "FArrayBox.H"
 
 // Other includes
@@ -44,7 +45,17 @@ int main()
     Box ghosted_box(IntVect(-3, -3, -3),
                     IntVect(N_GRID + 2, N_GRID + 2, N_GRID + 2));
     FArrayBox in_fab(ghosted_box, NUM_VARS);
-    FArrayBox in_fab_cpp_result(ghosted_box, NUM_VARS);
+
+    Vector<Box> boxes(1, box);
+    Vector<int> box_mapping(1, 0);
+    DisjointBoxLayout grids(boxes, box_mapping);
+    LevelData<FArrayBox> out_level_data(grids, NUM_DIAGNOSTIC_VARS);
+    DataIterator dit = out_level_data.dataIterator();
+    dit.begin();
+    FArrayBox &out_fab = out_level_data[dit];
+#ifdef COMPARE_WITH_CHF
+    FArrayBox out_fab_chf(box, NUM_DIAGNOSTIC_VARS);
+#endif
 
     const double dx = 1.0 / (N_GRID - 1);
 
@@ -202,12 +213,12 @@ int main()
 
     // Make sure instructions are hot in cache
     BoxLoops::loop(Constraints(dx, c_Ham, Interval(c_Mom1, c_Mom3)), in_fab,
-                   in_fab_cpp_result, box);
+                   out_fab, box);
 
     gettimeofday(&begin, NULL);
 
     BoxLoops::loop(Constraints(dx, c_Ham, Interval(c_Mom1, c_Mom3)), in_fab,
-                   in_fab_cpp_result, box);
+                   out_fab, box);
 
     gettimeofday(&end, NULL);
 
@@ -215,13 +226,35 @@ int main()
                    begin.tv_sec * 1000 - begin.tv_usec / 1000;
     std::cout << "C++ version took " << cxx_time << "ms" << std::endl;
 
+#ifdef CH_USE_HDF5
+    if (procID() == 0)
+    {
+        HDF5Handle hdf5_handle("ConstraintsOut.hdf5",
+                               HDF5Handle::CREATE_SERIAL);
+        HDF5HeaderData hdf5_header_data;
+        hdf5_header_data.m_int["max_level"] = 0;
+        hdf5_header_data.m_int["num_levels"] = 1;
+        hdf5_header_data.m_int["iteration"] = 0;
+        hdf5_header_data.m_real["time"] = 0.0;
+        hdf5_header_data.m_int["num_components"] = NUM_DIAGNOSTIC_VARS;
+        for (int icomp = 0; icomp < NUM_DIAGNOSTIC_VARS; ++icomp)
+        {
+            hdf5_header_data.m_string["component_" + std::to_string(icomp)] =
+                DiagnosticVariables::variable_names[icomp];
+        }
+        hdf5_header_data.writeToFile(hdf5_handle);
+        writeLevel(hdf5_handle, 0, out_level_data, dx, 0.25 * dx, 0.0, box, 2);
+        hdf5_handle.close();
+    }
+#endif
+
 #ifdef COMPARE_WITH_CHF
 
     int SIX = 6;
     int THREE = 3;
 
     FORT_GETBSSNCONSTRF(
-        CHF_FRA1(in_fab, c_Ham), CHF_FRAn(in_fab, c_Mom, THREE),
+        CHF_FRA1(out_fab_chf, c_Ham), CHF_FRAn(out_fab_chf, c_Mom1, THREE),
         CHF_CONST_FRA1(in_fab, c_chi), CHF_CONST_FRAn(in_fab, c_h, SIX),
         CHF_CONST_FRA1(in_fab, c_K), CHF_CONST_FRAn(in_fab, c_A, SIX),
         CHF_CONST_FRAn(in_fab, c_Gamma, THREE), CHF_CONST_REAL(dx),
@@ -230,7 +263,7 @@ int main()
     gettimeofday(&begin, NULL);
 
     FORT_GETBSSNCONSTRF(
-        CHF_FRA1(in_fab, c_Ham), CHF_FRAn(in_fab, c_Mom, THREE),
+        CHF_FRA1(out_fab_chf, c_Ham), CHF_FRAn(out_fab_chf, c_Mom1, THREE),
         CHF_CONST_FRA1(in_fab, c_chi), CHF_CONST_FRAn(in_fab, c_h, SIX),
         CHF_CONST_FRA1(in_fab, c_K), CHF_CONST_FRAn(in_fab, c_A, SIX),
         CHF_CONST_FRAn(in_fab, c_Gamma, THREE), CHF_CONST_REAL(dx),
@@ -245,22 +278,22 @@ int main()
     std::cout << "C++ speedup = " << setprecision(2)
               << (double)fort_time / cxx_time << "x" << std::endl;
 
-    in_fab_cpp_result -= in_fab;
+    out_fab -= out_fab_chf;
 
     int error = 0;
 
-    for (int i = c_Ham; i < NUM_VARS; ++i)
+    for (int i = c_Ham; i < NUM_DIAGNOSTIC_VARS; ++i)
     {
         BoxIterator bit(box);
         double max_err = 0;
         IntVect location = IntVect::Zero;
         for (bit.begin(); bit.ok(); ++bit)
         {
-            max_err = max(max_err, abs(in_fab_cpp_result(bit(), i)));
-            if (max_err == in_fab_cpp_result(bit(), i))
+            max_err = max(max_err, abs(out_fab(bit(), i)));
+            if (max_err == out_fab(bit(), i))
                 location = bit();
         }
-        // double max_err = in_fab_cpp_result.norm(0, i, 1);
+        // double max_err = out_fab.norm(0, i, 1);
         if (max_err > 1e-10)
         {
             std::cout << "COMPONENT " << i
