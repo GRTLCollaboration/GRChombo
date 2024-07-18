@@ -26,6 +26,7 @@ jobs:
       with:
         repository: GRChombo/Chombo
         path: Chombo
+        ref: bugfix/update-intel-compilers
 
     - name: Checkout GRChombo
       uses: actions/checkout@v4
