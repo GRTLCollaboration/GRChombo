@@ -194,6 +194,9 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
     // Set up input files
     if (!chombo_params.restart_from_checkpoint)
     {
+        if (!FilesystemTools::directory_exists(chombo_params.data_path))
+            FilesystemTools::mkdir_recursive(chombo_params.data_path);
+        
 #ifdef CH_USE_HDF5
         if (!FilesystemTools::directory_exists(chombo_params.hdf5_path))
             FilesystemTools::mkdir_recursive(chombo_params.hdf5_path);
