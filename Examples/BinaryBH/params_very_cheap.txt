@@ -9,7 +9,7 @@
 verbosity = 0
 
 # location / naming of output files
-output_path = "/nfs/st01/hpc-gr-epss/eaf49/PR-dump/" # Main path for all files. Must exist!
+# output_path = "" # Main path for all files. Must exist!
 chk_prefix = BinaryBHChk_
 plot_prefix = BinaryBHPlot_
 # restart_file = BinaryBHChk_000360.3d.hdf5
@@ -18,7 +18,7 @@ plot_prefix = BinaryBHPlot_
 checkpoint_interval = 1
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
-plot_interval = 10
+plot_interval = 1
 num_plot_vars = 4
 plot_vars = chi Ham Weyl4_Re Weyl4_Im
 
@@ -111,7 +111,7 @@ vars_parity_diagnostic = 0 1 2 3          #Ham and Mom
 # Additionally, if reflective boundaries selected, 
 # choose if symmetry factor will be applied to integrals.
 # 0 = false (default), 1 = true
-symmetry_correction = 0
+symmetry_correction = 1
 
 # if sommerfeld boundaries selected, must select
 # non zero asymptotic values
@@ -130,7 +130,7 @@ nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 # dt will be dx*dt_multiplier on each grid level
 dt_multiplier = 0.25
 stop_time = 10.0
-max_steps = 5
+# max_steps = 100
 
 # Spatial derivative order (only affects CCZ4 RHS)
 max_spatial_derivative_order = 4 # can be 4 or 6
