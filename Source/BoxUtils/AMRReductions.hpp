@@ -33,6 +33,7 @@ template <VariableType var_t> class AMRReductions
     double m_domain_volume;
     Vector<LevelData<FArrayBox> *> m_level_data_ptrs;
     Vector<int> m_ref_ratios;
+    const int m_symmetry_factor;
 
     //! constructs a Vector of LevelData<FArrayBox> pointers and stores them
     void set_level_data_vect(const GRAMR &a_gramr);

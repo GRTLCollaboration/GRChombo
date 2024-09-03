@@ -34,7 +34,22 @@ BoundaryConditions::params_t::params_t()
     vars_parity_diagnostic.fill(BoundaryConditions::EXTRAPOLATING_BC);
     vars_asymptotic_values.fill(0.0);
     extrapolation_order = 1;
+    symmetry_factor = 1;
 }
+
+void BoundaryCondition::calc_symmetry_factor(bool symm_correction)
+{
+    if(symm_correction)
+    {
+        for(int d=0; d<CH_SPACEDIM; d++)
+        {
+            if(lo_boundary[d] == 2) { symmetry_factor *= 2; }
+            else if(hi_boundary[d] == 2) { symmetry_factor *= 2; }
+        }
+    }
+}
+
+int BoundaryCondition::get_symm() { return symmetry_factor; }
 
 void BoundaryConditions::params_t::set_is_periodic(
     const std::array<bool, CH_SPACEDIM> &a_is_periodic)
@@ -141,6 +156,10 @@ void BoundaryConditions::params_t::read_params(GRParmParse &pp)
 
     if (reflective_boundaries_exist)
     {
+        bool symmetry_correction;
+        pp.load("symmetry_correction", symmetry_correction, 0);
+        calc_symmetry_factor(symmetry_correction);
+
         pp.load("vars_parity", vars_parity);
         if (pp.contains("vars_parity_diagnostic"))
             pp.load("vars_parity_diagnostic", vars_parity_diagnostic);

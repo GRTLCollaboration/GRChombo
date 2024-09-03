@@ -54,7 +54,7 @@ class ChomboParameters
 
         // If using reflective boundaries, calculate the symmetry factor 
         // of the domain.
-        symmetry_factor = 1;
+        /*symmetry_factor = 1;
         pp.load("symmetry_correction", symmetry_correction, false);
         if(symmetry_correction)
         {
@@ -63,7 +63,7 @@ class ChomboParameters
                 if(boundary_params.lo_boundary[d] == 2) { symmetry_factor *= 2; }
                 else if(boundary_params.hi_boundary[d] == 2) { symmetry_factor *= 2; }
             }
-        }
+        }*/
 
         // L's, N's and center
         read_grid_params(pp);
@@ -553,8 +553,8 @@ class ChomboParameters
     double coarsest_dx,
         coarsest_dt; // The coarsest resolution in space and time
     int max_level;   // the max number of regriddings to do
-    bool symmetry_correction;
-    int symmetry_factor; // needed to account for reflective boundaries in integrals
+    //bool symmetry_correction;
+    //int symmetry_factor; // needed to account for reflective boundaries in integrals
     int max_spatial_derivative_order; // The maximum order of the spatial
                                       // derivatives - does nothing
                                       // in Chombo but can be used in examples
