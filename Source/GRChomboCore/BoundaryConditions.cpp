@@ -162,8 +162,14 @@ void BoundaryConditions::params_t::read_params(GRParmParse &pp)
         {
             for(int d=0; d<CH_SPACEDIM; d++)
             {
-                if(lo_boundary[d] == 2) { symmetry_factor *= 2; }
-                else if(hi_boundary[d] == 2) { symmetry_factor *= 2; }
+                if(lo_boundary[d] == 2) 
+                { 
+                    symmetry_factor *= 2; 
+                }
+                else if(hi_boundary[d] == 2) 
+                { 
+                    symmetry_factor *= 2; 
+                }
             }
         }
 
