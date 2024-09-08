@@ -37,18 +37,6 @@ BoundaryConditions::params_t::params_t()
     symmetry_factor = 1;
 }
 
-void BoundaryCondition::calc_symmetry_factor(bool symm_correction)
-{
-    if(symm_correction)
-    {
-        for(int d=0; d<CH_SPACEDIM; d++)
-        {
-            if(lo_boundary[d] == 2) { symmetry_factor *= 2; }
-            else if(hi_boundary[d] == 2) { symmetry_factor *= 2; }
-        }
-    }
-}
-
 int BoundaryCondition::get_symm() { return symmetry_factor; }
 
 void BoundaryConditions::params_t::set_is_periodic(
@@ -158,12 +146,18 @@ void BoundaryConditions::params_t::read_params(GRParmParse &pp)
     {
         int symmetry_correction = 0;
         pp.load("symmetry_correction", symmetry_correction);
-        if(symmetry_correction != 0)
+        if (symmetry_correction != 0)
         {
-            for(int d=0; d<CH_SPACEDIM; d++)
+            for (int d=0; d<CH_SPACEDIM; d++)
             {
-                if(lo_boundary[d] == 2) { symmetry_factor *= 2; }
-                else if(hi_boundary[d] == 2) { symmetry_factor *= 2; }
+                if (lo_boundary[d] == 2) 
+                { 
+                    symmetry_factor *= 2; 
+                }
+                else if (hi_boundary[d] == 2) 
+                { 
+                    symmetry_factor *= 2; 
+                }
             }
         }
 
