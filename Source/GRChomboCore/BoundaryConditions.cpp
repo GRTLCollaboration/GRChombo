@@ -156,9 +156,16 @@ void BoundaryConditions::params_t::read_params(GRParmParse &pp)
 
     if (reflective_boundaries_exist)
     {
-        bool symmetry_correction;
-        pp.load("symmetry_correction", symmetry_correction, 0);
-        calc_symmetry_factor(symmetry_correction);
+        int symmetry_correction = 0;
+        pp.load("symmetry_correction", symmetry_correction);
+        if(symmetry_correction != 0)
+        {
+            for(int d=0; d<CH_SPACEDIM; d++)
+            {
+                if(lo_boundary[d] == 2) { symmetry_factor *= 2; }
+                else if(hi_boundary[d] == 2) { symmetry_factor *= 2; }
+            }
+        }
 
         pp.load("vars_parity", vars_parity);
         if (pp.contains("vars_parity_diagnostic"))
@@ -234,6 +241,7 @@ void BoundaryConditions::define(double a_dx,
 {
     m_dx = a_dx;
     m_params = a_params;
+    m_symmetry_factor = a_params.symmetry_factor;
     m_domain = a_domain;
     m_domain_box = a_domain.domainBox();
     m_num_ghosts = a_num_ghosts;
