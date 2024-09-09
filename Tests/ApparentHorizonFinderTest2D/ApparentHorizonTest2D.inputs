@@ -18,6 +18,8 @@ lo_boundary = 1 2
 vars_parity            = 2  # V
 vars_asymptotic_values = 0. # V
 
+symmetry_correction = 0
+
 #Max and min box sizes
 max_grid_size = 32
 block_factor = 4

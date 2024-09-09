@@ -9,7 +9,7 @@
 verbosity = 0
 
 # location / naming of output files
-# output_path = "" # Main path for all files. Must exist!
+output_path = "/nfs/st01/hpc-gr-epss/eaf49/PR-dump" # Main path for all files. Must exist!
 chk_prefix = BinaryBHChk_
 plot_prefix = BinaryBHPlot_
 # restart_file = BinaryBHChk_000360.3d.hdf5
@@ -108,6 +108,11 @@ vars_parity            = 0 0 4 6 0 5 0    #chi and hij
 vars_parity_diagnostic = 0 1 2 3          #Ham and Mom
                          0 7              #Weyl
 
+# Additionally, if reflective boundaries selected, 
+# choose if symmetry factor will be applied to integrals.
+# 0 = false (default), 1 = true
+symmetry_correction = 1
+
 # if sommerfeld boundaries selected, must select
 # non zero asymptotic values
 num_nonzero_asymptotic_vars = 5
@@ -155,7 +160,7 @@ sigma = 0.3
 track_punctures = 1
 puncture_tracking_level = 1
 
-# calculate_constraint_norms = 0
+calculate_constraint_norms = 1
 
 # min_chi = 1.e-4
 # min_lapse = 1.e-4
@@ -183,14 +188,15 @@ modes = 2 0 # l m for spherical harmonics
 #################################################
 # Apparent Horizon Finder parameters
 
-AH_activate = 1
-AH_num_ranks = 4
-AH_num_points_u = 11
-AH_num_points_v = 10
+AH_activate = 0
+AH_num_ranks = 65
+AH_num_points_u = 65
+AH_num_points_v = 48
 AH_solve_interval = 2
 AH_print_interval = 2
 # AH_merger_search_factor = 1.
 # AH_merger_pre_factor = 1.
+AH_set_origins_to_punctures = 1
 
 #################################################
 
