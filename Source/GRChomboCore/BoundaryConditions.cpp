@@ -37,8 +37,6 @@ BoundaryConditions::params_t::params_t()
     symmetry_factor = 1;
 }
 
-int BoundaryCondition::get_symm() { return symmetry_factor; }
-
 void BoundaryConditions::params_t::set_is_periodic(
     const std::array<bool, CH_SPACEDIM> &a_is_periodic)
 {
