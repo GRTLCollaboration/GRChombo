@@ -126,7 +126,7 @@ Real AMRReductions<var_t>::sum(const Interval &a_vars) const
     CH_assert(a_vars.begin() >= 0 && a_vars.end() < m_num_vars);
     CH_TIME("AMRReductions::sum");
     return computeSum(m_level_data_ptrs, m_ref_ratios, m_coarsest_dx, a_vars,
-                      m_base_level) * 
+                      m_base_level) *
            static_cast<double>(m_symmetry_factor);
 }
 

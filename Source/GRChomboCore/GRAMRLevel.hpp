@@ -177,9 +177,9 @@ class GRAMRLevel : public AMRLevel, public InterpSource<>
 
     // direction irrelevant, but relevant for InterpSource
     ALWAYS_INLINE double get_dx(int dir = 0) const { return m_dx; };
-    ALWAYS_INLINE int get_symm(int dir = 0) const 
-    { 
-        return m_boundaries.get_symm(); 
+    ALWAYS_INLINE int get_symm(int dir = 0) const
+    {
+        return m_boundaries.get_symm();
     }
 
     /// Returns true if m_time is the same as the time at the end of the current
