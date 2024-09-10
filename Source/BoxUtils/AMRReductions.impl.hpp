@@ -97,7 +97,6 @@ Real AMRReductions<var_t>::max(const int a_var) const
 
 template <VariableType var_t>
 Real AMRReductions<var_t>::norm(const Interval &a_vars,
-                                const int a_symmetry_factor,
                                 const int a_norm_exponent,
                                 const bool a_normalize_by_volume) const
 {
@@ -122,7 +121,7 @@ Real AMRReductions<var_t>::norm(const int a_var, const int a_norm_exponent,
 }
 
 template <VariableType var_t>
-Real AMRReductions<var_t>::sum(const Interval &a_vars, const int a_symmetry_factor) const
+Real AMRReductions<var_t>::sum(const Interval &a_vars) const
 {
     CH_assert(a_vars.begin() >= 0 && a_vars.end() < m_num_vars);
     CH_TIME("AMRReductions::sum");
@@ -132,10 +131,9 @@ Real AMRReductions<var_t>::sum(const Interval &a_vars, const int a_symmetry_fact
 }
 
 template <VariableType var_t>
-Real AMRReductions<var_t>::sum(const int a_var,
-                               const int a_symmetry_factor) const
+Real AMRReductions<var_t>::sum(const int a_var) const
 {
-    return sum(Interval(a_var, a_var), m_symmetry_factor);
+    return sum(Interval(a_var, a_var));
 }
 
 template <VariableType var_t>
