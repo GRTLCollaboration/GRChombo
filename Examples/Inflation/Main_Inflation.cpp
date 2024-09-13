@@ -10,13 +10,13 @@
 #include <iostream>
 
 // Our general includes
-//#include "BHAMR.hpp"
+// #include "BHAMR.hpp"
 #include "CosmoAMR.hpp"
 #include "DefaultLevelFactory.hpp"
 #include "GRParmParse.hpp"
+#include "MultiLevelTask.hpp"
 #include "SetupFunctions.hpp"
 #include "SimulationParameters.hpp"
-#include "MultiLevelTask.hpp"
 
 // Problem specific includes:
 #include "InflationLevel.hpp"
@@ -40,7 +40,7 @@ int runGRChombo(int argc, char *argv[])
     // and an associated LevelFactory)
     CosmoAMR cosmo_amr;
     DefaultLevelFactory<InflationLevel> scalar_field_level_fact(cosmo_amr,
-                                                                  sim_params);
+                                                                sim_params);
     setupAMRObject(cosmo_amr, scalar_field_level_fact);
 
     // call this after amr object setup so grids known
@@ -55,7 +55,7 @@ int runGRChombo(int argc, char *argv[])
     {
         AHSurfaceGeometry sph(sim_params.center);
         cosmo_amr.m_ah_finder.add_ah(sph, sim_params.AH_initial_guess,
-                                  sim_params.AH_params);
+                                     sim_params.AH_params);
     }
 #endif
 
@@ -65,11 +65,11 @@ int runGRChombo(int argc, char *argv[])
     std::chrono::time_point<Clock> start_time = Clock::now();
 
     // Add a scheduler to call specificPostTimeStep on every AMRLevel at t=0
-    auto task = [](GRAMRLevel *level) 
+    auto task = [](GRAMRLevel *level)
     {
-     if (level->time() == 0.)
-              level->specificPostTimeStep();
-                                    };
+        if (level->time() == 0.)
+            level->specificPostTimeStep();
+    };
     MultiLevelTaskPtr<> call_task(task);
     call_task.execute(cosmo_amr);
     // Engage! Run the evolution

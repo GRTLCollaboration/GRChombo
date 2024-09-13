@@ -30,8 +30,7 @@ class SimulationParameters : public SimulationParametersBase
         // Initial scalar field data
         initial_params.center =
             center; // already read in SimulationParametersBase
-        pp.load("G_Newton", G_Newton,
-                1.0);
+        pp.load("G_Newton", G_Newton, 1.0);
         pp.load("scalar_amplitude", initial_params.amplitude, 0.1);
         pp.load("scalar_width", initial_params.width, 1.0);
         pp.load("scalar_mass", potential_params.scalar_mass, 0.1);
@@ -56,7 +55,6 @@ class SimulationParameters : public SimulationParametersBase
         warn_parameter("scalar_width", initial_params.width,
                        initial_params.width < 0.5 * L,
                        "is greater than half the domain size");
-
     }
 
     // Initial data for matter and potential and BH

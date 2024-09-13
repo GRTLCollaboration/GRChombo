@@ -6,7 +6,7 @@
 #ifndef INFLATIONLEVEL_HPP_
 #define INFLATIONLEVEL_HPP_
 
-//#include "BHAMR.hpp"
+// #include "BHAMR.hpp"
 #include "CosmoAMR.hpp"
 #include "DefaultLevelFactory.hpp"
 #include "GRAMRLevel.hpp"

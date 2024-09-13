@@ -14,13 +14,14 @@
 #include "SphericalHarmonics.hpp"
 #include "UserVariables.hpp"
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <sstream>
-#include <iomanip>
 #include <string>
 
 // Function to convert double to string with precision
-std::string to_string_with_precision(double value, int precision) {
+std::string to_string_with_precision(double value, int precision)
+{
     std::ostringstream out;
     out << std::fixed << std::setprecision(precision) << value;
     return out.str();
@@ -38,7 +39,8 @@ class CustomExtraction
     const int m_comp;
     const int m_num_points;
     const double m_L;
-    const std::array<double, CH_SPACEDIM> m_origin; // Origin of an extraction line
+    const std::array<double, CH_SPACEDIM>
+        m_origin; // Origin of an extraction line
     const double m_dt;
     const double m_time;
 
@@ -100,18 +102,18 @@ class CustomExtraction
 
         if (first_step)
         {
-            for (int i = 0 ; i < m_num_points ; ++i)
+            for (int i = 0; i < m_num_points; ++i)
             {
-                header_line[i] = "p" + std::to_string(i+1) + 
-                    "(" + to_string_with_precision(interp_x[i],2) + "," 
-                    + to_string_with_precision(m_origin[1],2) 
-                    + "," + to_string_with_precision(m_origin[2],2) + ")";
+                header_line[i] =
+                    "p" + std::to_string(i + 1) + "(" +
+                    to_string_with_precision(interp_x[i], 2) + "," +
+                    to_string_with_precision(m_origin[1], 2) + "," +
+                    to_string_with_precision(m_origin[2], 2) + ")";
             }
             output_file.write_header_line(header_line);
         }
         output_file.write_time_data_line(interp_var_data);
     }
-    
 };
 
 #endif /* CUSTOMEXTRACTION_HPP_ */
