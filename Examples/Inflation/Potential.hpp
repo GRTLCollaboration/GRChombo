@@ -20,10 +20,13 @@ class Potential
     params_t m_params;
     double m_mode;
     double m_L;
-  
+
   public:
     //! The constructor
-    Potential(params_t a_params, double a_L, double a_mode) : m_params(a_params), m_L(a_L), m_mode(a_mode) {}
+    Potential(params_t a_params, double a_L, double a_mode)
+        : m_params(a_params), m_L(a_L), m_mode(a_mode)
+    {
+    }
 
     //! Set the potential function for the scalar field here
     template <class data_t, template <typename> class vars_t>
@@ -32,8 +35,9 @@ class Potential
     {
         // The potential value at phi
         // From rho = 1/2 (dphi/dx)^2 + V(phi) with V(phi) = 1/2 m^2 phi^2
-        // ,we choose phi = A sin(2 n pi x/L) and m = 2 n pi/L such that initial rho = constant
-        double mass = 2 * m_mode * M_PI /m_L;
+        // ,we choose phi = A sin(2 n pi x/L) and m = 2 n pi/L such that initial
+        // rho = constant
+        double mass = 2 * m_mode * M_PI / m_L;
         V_of_phi = 0.5 * pow(mass * vars.phi, 2.0);
 
         // The potential gradient at phi

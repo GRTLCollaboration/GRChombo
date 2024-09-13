@@ -20,6 +20,7 @@ class CosmoAMR : public GRAMR
     double m_K_mean;
     double m_rho_mean;
     double m_S_mean;
+
   public:
     PunctureTracker m_puncture_tracker;
 
@@ -31,32 +32,14 @@ class CosmoAMR : public GRAMR
         m_puncture_tracker.set_interpolator(a_interpolator);
     }
 
-    void set_K_mean(double a_K_mean)
-    {
-      m_K_mean = a_K_mean;
-    }
-    double get_K_mean() 
-    {
-      return m_K_mean;
-    }
+    void set_K_mean(double a_K_mean) { m_K_mean = a_K_mean; }
+    double get_K_mean() { return m_K_mean; }
 
-    void set_rho_mean(double a_rho_mean)
-    {
-      m_rho_mean = a_rho_mean;
-    }
-    double get_rho_mean() 
-    {
-      return m_rho_mean;
-    }
+    void set_rho_mean(double a_rho_mean) { m_rho_mean = a_rho_mean; }
+    double get_rho_mean() { return m_rho_mean; }
 
-    void set_S_mean(double a_S_mean)
-    {
-      m_S_mean = a_S_mean;
-    }
-    double get_S_mean() 
-    {
-      return m_S_mean;
-    }
+    void set_S_mean(double a_S_mean) { m_S_mean = a_S_mean; }
+    double get_S_mean() { return m_S_mean; }
 };
 
 #endif /* CosmoAMR_HPP_ */

@@ -7,23 +7,22 @@
 #define INFLATIONDIAGNOSTICS_HPP_
 
 #include "CCZ4Geometry.hpp"
+#include "CCZ4Vars.hpp"
 #include "Cell.hpp"
 #include "Coordinates.hpp"
 #include "DiagnosticVariables.hpp"
+#include "FourthOrderDerivatives.hpp"
 #include "GRInterval.hpp"
+#include "NewMatterConstraints.hpp"
 #include "Tensor.hpp"
 #include "simd.hpp"
 #include <array>
-#include "CCZ4Vars.hpp"
-#include "NewMatterConstraints.hpp"
-#include "FourthOrderDerivatives.hpp"
-
 
 //! Calculates all relevant variables, which
 //! are stored as diagnostics
 
-template <class matter_t> 
-class InflationDiagnostics //public MatterConstraints<matter_t>
+template <class matter_t>
+class InflationDiagnostics // public MatterConstraints<matter_t>
 {
   public:
     // Inherit the variable definitions from CCZ4 + matter_t
@@ -47,11 +46,10 @@ class InflationDiagnostics //public MatterConstraints<matter_t>
     };
 
     //! Constructor of class InflationDiagnostics
-    InflationDiagnostics(const matter_t a_matter
-                      , double dx, double G_Newton)
-                      : m_matter(a_matter), m_deriv(dx)
-                      {
-                      }
+    InflationDiagnostics(const matter_t a_matter, double dx, double G_Newton)
+        : m_matter(a_matter), m_deriv(dx)
+    {
+    }
 
     //! The compute member which calculates the constraints at each point in the
     //! box
@@ -60,7 +58,6 @@ class InflationDiagnostics //public MatterConstraints<matter_t>
   protected:
     matter_t m_matter; //!< The matter object, e.g. a scalar field
     const FourthOrderDerivatives m_deriv;
-
 };
 
 #include "InflationDiagnostics.impl.hpp"

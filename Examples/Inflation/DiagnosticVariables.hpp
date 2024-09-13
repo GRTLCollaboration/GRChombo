@@ -28,8 +28,9 @@ static const std::array<std::string, NUM_DIAGNOSTIC_VARS> variable_names = {
     "Ham",
 
     "Mom",
-    
-    "Ham_abs", "Mom_abs", "rho", "sqrt_gamma", "rho_scaled", "S_scaled", "K_scaled"};
+
+    "Ham_abs",    "Mom_abs",  "rho",     "sqrt_gamma",
+    "rho_scaled", "S_scaled", "K_scaled"};
 }
 
 #endif /* DIAGNOSTICVARIABLES_HPP */

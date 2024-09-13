@@ -7,8 +7,8 @@
 #define COSMOMOVINGPUNCTUREGAUGE_HPP_
 
 #include "DimensionDefinitions.hpp"
-#include "Tensor.hpp"
 #include "MovingPunctureGauge.hpp"
+#include "Tensor.hpp"
 
 /// This is an example of a gauge class that can be used in the CCZ4RHS compute
 /// class
@@ -56,10 +56,10 @@ class CosmoMovingPunctureGauge
                           const diff2_vars_t<Tensor<2, data_t>> &d2,
                           const vars_t<data_t> &advec) const
     {
-        rhs.lapse = m_params.lapse_advec_coeff * advec.lapse -
-                    m_params.lapse_coeff *
-                        pow(vars.lapse, m_params.lapse_power) *
-                        (vars.K - m_K_mean - 2 * vars.Theta); // added "- m_K_mean"
+        rhs.lapse =
+            m_params.lapse_advec_coeff * advec.lapse -
+            m_params.lapse_coeff * pow(vars.lapse, m_params.lapse_power) *
+                (vars.K - m_K_mean - 2 * vars.Theta); // added "- m_K_mean"
 
         FOR(i)
         {
@@ -71,11 +71,7 @@ class CosmoMovingPunctureGauge
         }
     }
 
-    void set_K_mean(double a_K_mean)
-    {
-      m_K_mean = a_K_mean;
-    }
-
+    void set_K_mean(double a_K_mean) { m_K_mean = a_K_mean; }
 };
 
 #endif /* COSMOMOVINGPUNCTUREGAUGE_HPP_ */

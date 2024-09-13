@@ -43,13 +43,12 @@ void InflationDiagnostics<matter_t>::compute(Cell<data_t> current_cell) const
     rho_scaled = emtensor.rho / pow(vars.chi, 3. / 2.);
     S_scaled = emtensor.S / pow(vars.chi, 3. / 2.);
 
-    //Write the constraints into the output FArrayBox
+    // Write the constraints into the output FArrayBox
     current_cell.store_vars(sqrt_gamma, c_sqrt_gamma);
     current_cell.store_vars(rho, c_rho);
     current_cell.store_vars(rho_scaled, c_rho_scaled);
     current_cell.store_vars(S_scaled, c_S_scaled);
     current_cell.store_vars(K_scaled, c_K_scaled);
-
 
     // store_vars(out, current_cell);
 }
