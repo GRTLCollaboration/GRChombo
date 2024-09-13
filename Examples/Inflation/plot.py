@@ -12,8 +12,8 @@ plt.rc('font', family='serif')
 plt.rcParams.update({'figure.figsize'    :  '6, 4.2'})
 plt.rcParams.update({'figure.autolayout': True})
 
-data = np.loadtxt('data/data_out.dat')
-rho_dat = np.loadtxt('data/lineout.dat')
+data = np.loadtxt('ex_data/data_out.dat')
+rho_dat = np.loadtxt('ex_data/lineout.dat')
 t_data = data[:,0]
 chi_mean = data[:,3]
 rho_mean = data[:,4]
@@ -47,7 +47,7 @@ dx = L/N
 dt_multiplier = 0.5
 dt = dx*dt_multiplier # dt = dx * dt_multiplier = 0.5 * 0.25
 t = 1/dt
-num_t_step = 5 # lineout every time = num_t_step
+num_t_step = 25 # lineout every time = num_t_step
 t_plot = np.arange(0,len(rho_interp),t*num_t_step)
 
 for it_plot, t_plot in enumerate(t_plot):
