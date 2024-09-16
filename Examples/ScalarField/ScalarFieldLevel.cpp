@@ -127,9 +127,8 @@ void ScalarFieldLevel::computeTaggingCriterion(
     FArrayBox &tagging_criterion, const FArrayBox &current_state,
     const FArrayBox &current_state_diagnostics)
 {
-    BoxLoops::loop(
-        FixedGridsTaggingCriterion(m_dx, m_level, m_p.L, m_p.center),
-        current_state, tagging_criterion);
+    BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L, m_p.center),
+                   current_state, tagging_criterion);
 }
 void ScalarFieldLevel::specificPostTimeStep()
 {
