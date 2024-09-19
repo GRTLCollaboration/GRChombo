@@ -19,7 +19,7 @@
 #include "SimulationParameters.hpp"
 
 // Problem specific includes:
-#include "InflationLevel.hpp"
+#include "CosmoLevel.hpp"
 
 // Chombo namespace
 #include "UsingNamespace.H"
@@ -39,8 +39,8 @@ int runGRChombo(int argc, char *argv[])
     // (To simulate a different problem, define a new child of AMRLevel
     // and an associated LevelFactory)
     CosmoAMR cosmo_amr;
-    DefaultLevelFactory<InflationLevel> scalar_field_level_fact(cosmo_amr,
-                                                                sim_params);
+    DefaultLevelFactory<CosmoLevel> scalar_field_level_fact(cosmo_amr,
+                                                            sim_params);
     setupAMRObject(cosmo_amr, scalar_field_level_fact);
 
     // call this after amr object setup so grids known

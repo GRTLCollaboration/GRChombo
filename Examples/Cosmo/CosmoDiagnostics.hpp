@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef INFLATIONDIAGNOSTICS_HPP_
-#define INFLATIONDIAGNOSTICS_HPP_
+#ifndef COSMODIAGNOSTICS_HPP_
+#define COSMODIAGNOSTICS_HPP_
 
 #include "CCZ4Geometry.hpp"
 #include "CCZ4Vars.hpp"
@@ -22,7 +22,7 @@
 //! are stored as diagnostics
 
 template <class matter_t>
-class InflationDiagnostics // public MatterConstraints<matter_t>
+class CosmoDiagnostics // public MatterConstraints<matter_t>
 {
   public:
     // Inherit the variable definitions from CCZ4 + matter_t
@@ -45,8 +45,8 @@ class InflationDiagnostics // public MatterConstraints<matter_t>
         }
     };
 
-    //! Constructor of class InflationDiagnostics
-    InflationDiagnostics(const matter_t a_matter, double dx, double G_Newton)
+    //! Constructor of class CosmoDiagnostics
+    CosmoDiagnostics(const matter_t a_matter, double dx, double G_Newton)
         : m_matter(a_matter), m_deriv(dx)
     {
     }
@@ -60,6 +60,6 @@ class InflationDiagnostics // public MatterConstraints<matter_t>
     const FourthOrderDerivatives m_deriv;
 };
 
-#include "InflationDiagnostics.impl.hpp"
+#include "CosmoDiagnostics.impl.hpp"
 
-#endif /* INFLATIONDIAGNOSTICS_HPP_ */
+#endif /* COSMODIAGNOSTICS_HPP_ */

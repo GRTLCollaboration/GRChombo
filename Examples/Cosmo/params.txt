@@ -8,17 +8,17 @@ verbosity = 0
 
 # location / naming of output files
 # output_path = "" # Main path for all files. Must exist!
-chk_prefix = Inflation_
-plot_prefix = Inflationp_
-# restart_file = Inflation_000000.3d.hdf5
+chk_prefix = Cosmo_
+plot_prefix = Cosmop_
+# restart_file = Cosmo_000000.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 500
+checkpoint_interval = 1000
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
-plot_interval = 100
-num_plot_vars = 5
-plot_vars = chi phi rho_scaled S_scaled K_scaled
+plot_interval = 500
+num_plot_vars = 7
+plot_vars = chi phi rho_scaled S_scaled K_scaled Ham Mom
 
 # subpaths - specific directories for hdf5, pout, extraction data
 # (these are created at runtime)
@@ -50,7 +50,7 @@ scalar_mass = 1.0
 scalar_field_mode = 1.0
 
 # lineout params
-lineout_num_points = 20
+lineout_num_points = 10
 
 #################################################
 # Grid parameters
@@ -130,7 +130,7 @@ extrapolating_vars = phi Pi
 
 # dt will be dx*dt_multiplier on each grid level
 dt_multiplier = 0.5
-stop_time = 100.0
+stop_time = 100.
 # max_steps = 4
 
 # Spatial derivative order (only affects CCZ4 RHS)
