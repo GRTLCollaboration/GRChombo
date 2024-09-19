@@ -8,7 +8,7 @@
 
 GRCHOMBO_SOURCE = ../../Source
 
-ebase := Main_Inflation
+ebase := Main_Cosmo
 
 LibNames := AMRTimeDependent AMRTools BoxTools
 

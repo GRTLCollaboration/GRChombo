@@ -23,9 +23,9 @@
    time symmetry assuming conformal flatness). \sa MatterCCZ4(),
    ConstraintsMatter(), ScalarField(), RelaxationChi()
 */
-class InflationLevel : public GRAMRLevel
+class CosmoLevel : public GRAMRLevel
 {
-    friend class DefaultLevelFactory<InflationLevel>;
+    friend class DefaultLevelFactory<CosmoLevel>;
     // Inherit the contructors from GRAMRLevel
     using GRAMRLevel::GRAMRLevel;
 
@@ -66,4 +66,4 @@ class InflationLevel : public GRAMRLevel
     virtual void specificPostTimeStep() override;
 };
 
-#endif /* INFLATIONLEVEL_HPP_ */
+#endif /* COSMOLEVEL_HPP_ */

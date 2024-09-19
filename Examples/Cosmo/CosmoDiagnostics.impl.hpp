@@ -3,17 +3,17 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#if !defined(INFLATIONDIAGNOSTICS_HPP_)
-#error "This file should only be included through InflationDiagnostics.hpp"
+#if !defined(COSMODIAGNOSTICS_HPP_)
+#error "This file should only be included through CosmoDiagnostics.hpp"
 #endif
 
-#ifndef INFLATIONDIAGNOSTICS_IMPL_HPP_
-#define INFLATIONDIAGNOSTICS_IMPL_HPP_
+#ifndef COSMODIAGNOSTICS_IMPL_HPP_
+#define COSMODIAGNOSTICS_IMPL_HPP_
 #include "DimensionDefinitions.hpp"
 
 template <class matter_t>
 template <class data_t>
-void InflationDiagnostics<matter_t>::compute(Cell<data_t> current_cell) const
+void CosmoDiagnostics<matter_t>::compute(Cell<data_t> current_cell) const
 {
     // Load local vars and calculate derivs
     const auto vars = current_cell.template load_vars<Vars>();
@@ -53,4 +53,4 @@ void InflationDiagnostics<matter_t>::compute(Cell<data_t> current_cell) const
     // store_vars(out, current_cell);
 }
 
-#endif /* INFLATIONDIAGNOSTICS_IMPL_HPP_ */
+#endif /* COSMODIAGNOSTICS_IMPL_HPP_ */

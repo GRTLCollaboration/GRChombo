@@ -4,7 +4,7 @@
  */
 
 // General includes common to most GR problems
-#include "InflationLevel.hpp"
+#include "CosmoLevel.hpp"
 #include "BoxLoops.hpp"
 #include "NanCheck.hpp"
 #include "PositiveChiAndAlpha.hpp"
@@ -23,9 +23,9 @@
 // Problem specific includes
 #include "AMRReductions.hpp"
 #include "ComputePack.hpp"
+#include "CosmoDiagnostics.hpp"
 #include "CosmoMovingPunctureGauge.hpp"
 #include "GammaCalculator.hpp"
-#include "InflationDiagnostics.hpp"
 #include "InitialK.hpp"
 #include "InitialScalarData.hpp"
 #include "Potential.hpp"
@@ -36,7 +36,7 @@
 #include "CustomExtraction.hpp"
 
 // Things to do at each advance step, after the RK4 is calculated
-void InflationLevel::specificAdvance()
+void CosmoLevel::specificAdvance()
 {
     // Enforce trace free A_ij and positive chi and alpha
     BoxLoops::loop(
@@ -52,11 +52,11 @@ void InflationLevel::specificAdvance()
 }
 
 // Initial data for field and metric variables
-void InflationLevel::initialData()
+void CosmoLevel::initialData()
 {
-    CH_TIME("InflationLevel::initialData");
+    CH_TIME("CosmoLevel::initialData");
     if (m_verbosity)
-        pout() << "InflationLevel::initialData " << m_level << endl;
+        pout() << "CosmoLevel::initialData " << m_level << endl;
 
     // First set everything to zero then initial conditions for scalar field -
     // Set initial condition of inflaton, see details in Potential.hpp and
@@ -82,7 +82,7 @@ void InflationLevel::initialData()
 
 #ifdef CH_USE_HDF5
 // Things to do before outputting a checkpoint file
-void InflationLevel::prePlotLevel()
+void CosmoLevel::prePlotLevel()
 {
     fillAllGhosts();
     Potential potential(m_p.potential_params, m_p.L, m_p.scalar_field_mode);
@@ -91,16 +91,16 @@ void InflationLevel::prePlotLevel()
         MatterConstraints<ScalarFieldWithPotential>(
             scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom, c_Mom)),
         m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-    InflationDiagnostics<ScalarFieldWithPotential> inflation_diagnostics(
+    CosmoDiagnostics<ScalarFieldWithPotential> cosmo_diagnostics(
         scalar_field, m_dx, m_p.G_Newton);
-    BoxLoops::loop(inflation_diagnostics, m_state_new, m_state_diagnostics,
+    BoxLoops::loop(cosmo_diagnostics, m_state_new, m_state_diagnostics,
                    EXCLUDE_GHOST_CELLS);
 }
 #endif
 
 // Things to do in RHS update, at each RK4 step
-void InflationLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
-                                     const double a_time)
+void CosmoLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
+                                 const double a_time)
 {
     // Enforce trace free A_ij and positive chi and alpha
     BoxLoops::loop(
@@ -132,20 +132,20 @@ void InflationLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
 }
 
 // Things to do at ODE update, after soln + rhs
-void InflationLevel::specificUpdateODE(GRLevelData &a_soln,
-                                       const GRLevelData &a_rhs, Real a_dt)
+void CosmoLevel::specificUpdateODE(GRLevelData &a_soln,
+                                   const GRLevelData &a_rhs, Real a_dt)
 {
     // Enforce trace free A_ij
     BoxLoops::loop(TraceARemoval(), a_soln, a_soln, INCLUDE_GHOST_CELLS);
 }
 
-void InflationLevel::preTagCells()
+void CosmoLevel::preTagCells()
 {
     // we don't need any ghosts filled for the fixed grids tagging criterion
     // used here so don't fill any
 }
 
-void InflationLevel::computeTaggingCriterion(
+void CosmoLevel::computeTaggingCriterion(
     FArrayBox &tagging_criterion, const FArrayBox &current_state,
     const FArrayBox &current_state_diagnostics)
 {
@@ -153,7 +153,7 @@ void InflationLevel::computeTaggingCriterion(
         FixedGridsTaggingCriterion(m_dx, m_level, 2.0 * m_p.L, m_p.center),
         current_state, tagging_criterion);
 }
-void InflationLevel::specificPostTimeStep()
+void CosmoLevel::specificPostTimeStep()
 {
     int min_level = 0;
     bool calculate_diagnostics = at_level_timestep_multiple(min_level);
@@ -173,9 +173,9 @@ void InflationLevel::specificPostTimeStep()
                            Interval(c_Mom, c_Mom), c_Ham_abs_sum,
                            Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
                        m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-        InflationDiagnostics<ScalarFieldWithPotential> inflation_diagnostics(
+        CosmoDiagnostics<ScalarFieldWithPotential> cosmo_diagnostics(
             scalar_field, m_dx, m_p.G_Newton);
-        BoxLoops::loop(inflation_diagnostics, m_state_new, m_state_diagnostics,
+        BoxLoops::loop(cosmo_diagnostics, m_state_new, m_state_diagnostics,
                        EXCLUDE_GHOST_CELLS);
 
         if (m_level == min_level)
@@ -227,7 +227,8 @@ void InflationLevel::specificPostTimeStep()
 
             // set up the query and execute it
             std::array<double, CH_SPACEDIM> extr_point = {
-                0., 0., 0.}; // specified point
+                0., m_p.L / 2, m_p.L / 2}; // specified point {x \in [0,L],y \in
+                                           // [0,L], z \in [0,L]}
             CustomExtraction extraction(c_rho, m_p.lineout_num_points, m_p.L,
                                         extr_point, m_dt, m_time);
             extraction.execute_query(&interpolator, m_p.data_path + "lineout");
