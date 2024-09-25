@@ -37,11 +37,6 @@ void ScalarFieldLevel::specificAdvance()
         make_compute_pack(TraceARemoval(),
                           PositiveChiAndAlpha(m_p.min_chi, m_p.min_lapse)),
         m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
-
-    // Check for nan's
-    if (m_p.nan_check)
-        BoxLoops::loop(NanCheck(), m_state_new, m_state_new,
-                       EXCLUDE_GHOST_CELLS, disable_simd());
 }
 
 // Initial data for field and metric variables
@@ -56,11 +51,18 @@ void ScalarFieldLevel::initialData()
     BoxLoops::loop(
         make_compute_pack(SetValue(0.), KerrBH(m_p.kerr_params, m_dx),
                           InitialScalarData(m_p.initial_params, m_dx)),
-        m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
+        m_state_new, m_state_new, INCLUDE_GHOST_CELLS, disable_simd());
 
     fillAllGhosts();
     BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
                    EXCLUDE_GHOST_CELLS);
+
+    // Check for nan's
+    /*if (m_p.nan_check)
+        BoxLoops::loop(NanCheck(), m_state_new, m_state_new,
+                       EXCLUDE_GHOST_CELLS, disable_simd());*/
+    
+    MayDay::Error("Nan check didn't work.");
 }
 
 #ifdef CH_USE_HDF5
@@ -129,4 +131,14 @@ void ScalarFieldLevel::computeTaggingCriterion(
     BoxLoops::loop(
         FixedGridsTaggingCriterion(m_dx, m_level, 2.0 * m_p.L, m_p.center),
         current_state, tagging_criterion);
+}
+
+void ScalarFieldLevel::specificPostTimeStep()
+{
+    CH_TIME("ScalarFieldLevel::specificPostTimeStep");
+
+    // Check for nan's
+    if (m_p.nan_check)
+        BoxLoops::loop(NanCheck(), m_state_new, m_state_new,
+                       EXCLUDE_GHOST_CELLS, disable_simd());
 }

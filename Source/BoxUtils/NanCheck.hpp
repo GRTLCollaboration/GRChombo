@@ -46,6 +46,7 @@ class NanCheck
     {
         // stop is shared between all threads
         bool stop;
+        int thrd = 0;
 // guard assignment to prevent a race
 #pragma omp atomic write
         stop = false;
@@ -55,17 +56,19 @@ class NanCheck
         {
             double val;
             current_cell.load_vars(val, ivar);
-            if (std::isnan(val) || abs(val) > m_max_abs)
+            if (std::isnan(val) || abs(val) > m_max_abs) 
 // we want to exit if any of the threads find a nan
 #pragma omp atomic write
                 stop = true;
+                thrd = omp_get_thread_num();
         }
-// This needs to be the master thread, otherwise some schedulers have trouble
-// exiting
-#pragma omp master
+
         if (stop)
         {
             {
+// This needs to be the master thread, otherwise some schedulers have trouble
+// exiting
+#pragma omp master
                 pout() << m_error_info
                        << "::Values have become nan. The current state is: \n";
                 for (int ivar = 0; ivar < num_vars; ++ivar)
@@ -73,6 +76,8 @@ class NanCheck
                     pout() << UserVariables::variable_names[ivar] << ": "
                            << current_cell.load_vars(ivar) << std::endl;
                 }
+                pout() << "Nan was caught on thread: " << thrd << "\n";
+                pout() << "Error message printed on thread: " << omp_get_thread_num() << "\n";
                 IntVect iv = current_cell.get_int_vect();
                 pout() << "Integer coordinates: " << iv << std::endl;
                 if (m_dx != 0.0)

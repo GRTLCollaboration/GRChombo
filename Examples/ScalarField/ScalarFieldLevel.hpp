@@ -56,6 +56,8 @@ class ScalarFieldLevel : public GRAMRLevel
     virtual void computeTaggingCriterion(
         FArrayBox &tagging_criterion, const FArrayBox &current_state,
         const FArrayBox &current_state_diagnostics) override;
+
+    virtual void specificPostTimeStep();
 };
 
 #endif /* SCALARFIELDLEVEL_HPP_ */
