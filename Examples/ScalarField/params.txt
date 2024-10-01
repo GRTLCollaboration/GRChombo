@@ -114,6 +114,11 @@ vars_parity            = 0 0 4 6 0 5 0    #chi and hij
                          0 0              #phi and Pi
 vars_parity_diagnostic = 0 1 2 3          #Ham and Mom
 
+# Additionally, if reflective boundaries selected, 
+# choose if symmetry factor will be applied to integrals.
+# 0 = false (default), 1 = true
+symmetry_correction = 1
+
 # if sommerfeld boundaries selected, must select
 # non zero asymptotic values
 num_nonzero_asymptotic_vars = 5

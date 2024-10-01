@@ -73,6 +73,7 @@ class BoundaryConditions
         bool sommerfeld_boundaries_exist;
         bool extrapolating_boundaries_exist;
         bool mixed_boundaries_exist;
+        int symmetry_factor;
 
         std::array<int, NUM_VARS> vars_parity;
         std::array<int, NUM_DIAGNOSTIC_VARS>
@@ -97,10 +98,13 @@ class BoundaryConditions
     ProblemDomain m_domain; // the problem domain (excludes boundary cells)
     Box m_domain_box;       // The box representing the domain
     bool is_defined; // whether the BoundaryConditions class members are defined
+    int m_symmetry_factor;
 
   public:
     /// Default constructor - need to call define afterwards
     BoundaryConditions() { is_defined = false; }
+
+    int get_symm() const { return m_symmetry_factor; }
 
     /// define function sets members and is_defined set to true
     void define(double a_dx, std::array<double, CH_SPACEDIM> a_center,
