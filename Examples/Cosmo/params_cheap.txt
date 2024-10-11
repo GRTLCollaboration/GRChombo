@@ -52,6 +52,10 @@ scalar_field_mode = 1.0
 # lineout params
 lineout_num_points = 10
 
+# Tagging
+# center_tag = 0 0 0
+# rad = 7
+
 #################################################
 # Grid parameters
 
@@ -66,15 +70,15 @@ N_full = 16
 L_full = 1
 
 # Maximum number of times you can regrid above coarsest level
-max_level = 0 # There are (max_level+1) grids, so min is zero
+max_level = 1 # There are (max_level+1) grids, so min is zero
 
 # Frequency of regridding at each level and thresholds on the tagging
 # Need one for each level except the top one, ie max_level items
 # Generally you do not need to regrid frequently on every level
 # in this example turn off regridding on all levels
 # Level Regridding: 0   1   2   3   4   5
-regrid_interval   = 0   0   0   0   0   0
-# regrid_threshold  = 0.5
+regrid_interval   = 10   0   0   0   0   0
+regrid_threshold  = 500
 
 regrid_interval = 0 0 0 0 0 0
 

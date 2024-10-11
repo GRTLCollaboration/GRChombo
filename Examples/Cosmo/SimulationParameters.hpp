@@ -36,7 +36,12 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("scalar_mass", potential_params.scalar_mass, 0.1);
         pp.load("scalar_field_mode", scalar_field_mode, 1.0);
 
+        // Lineout params
         pp.load("lineout_num_points", lineout_num_points, 10);
+
+        // Tagging params
+        pp.load("center_tag", center_tag, center);
+        pp.load("rad", rad, L);
 
 #ifdef USE_AHFINDER
         double AH_guess =
@@ -59,8 +64,9 @@ class SimulationParameters : public SimulationParametersBase
 
     // Initial data for matter and potential and BH
     double G_Newton;
-    double scalar_field_mode;
+    double scalar_field_mode, rad;
     int lineout_num_points;
+    std::array<double, CH_SPACEDIM> center_tag;
     InitialScalarData::params_t initial_params;
     Potential::params_t potential_params;
     KerrBH::params_t kerr_params;
