@@ -12,8 +12,15 @@ plt.rc('font', family='serif')
 plt.rcParams.update({'figure.figsize'    :  '6, 4.2'})
 plt.rcParams.update({'figure.autolayout': True})
 
-data = np.loadtxt('cheap_ex_data/data_out.dat')
-rho_dat = np.loadtxt('cheap_ex_data/lineout.dat')
+# Read header
+with open('cheap_data/lineout.dat', 'r') as file:
+    header = file.readline().strip()
+coord_interp = header.split()
+coord_interp = coord_interp[2:]
+
+# Read data
+data = np.loadtxt('cheap_data/data_out.dat')
+rho_dat = np.loadtxt('cheap_data/lineout.dat')
 t_data = data[:,0]
 chi_mean = data[:,3]
 rho_mean = data[:,4]
@@ -47,11 +54,13 @@ dx = L/N
 dt_multiplier = 0.25
 dt = dx*dt_multiplier # dt = dx * dt_multiplier = 0.5 * 0.25
 t = 1/dt
-num_t_step = 25 # lineout every time = num_t_step
+num_t_step = 50 # lineout every time = num_t_step
 t_plot = np.arange(0,len(rho_interp),t*num_t_step)
 
+x_tick = np.arange(len(coord_interp))
+
 for it_plot, t_plot in enumerate(t_plot):
-    plt.plot(rho_interp[int(t_plot)],color=cm.Reds(8./(1+it_plot*10.),1.),
+    plt.plot(x_tick, rho_interp[int(t_plot)],color=cm.Reds(8./(1+it_plot*10.),1.),
          label='t = '+ str(t_plot*dt), marker = "o")
 
 plt.title('lineout of ' + r'$\rho$' + ' along x-axis')
@@ -62,5 +71,6 @@ plt.legend()
 plt.ylabel(r'$\rho$', fontsize=14)
 #plt.yscale('log')
 #plt.ylim(0.,1.3e-3)
+plt.xticks(ticks=x_tick ,labels=coord_interp, rotation='vertical', fontsize=10)
 plt.savefig('plot_lineout.pdf',dpi=256, bbox_inches='tight',pad_inches = 0.1)
 plt.close()

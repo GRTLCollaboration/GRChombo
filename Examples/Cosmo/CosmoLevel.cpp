@@ -18,7 +18,7 @@
 #include "NewMatterConstraints.hpp"
 
 // For tag cells
-#include "FixedGridsTaggingCriterion.hpp"
+#include "CosmoHamTaggingCriterion.hpp"
 
 // Problem specific includes
 #include "AMRReductions.hpp"
@@ -78,6 +78,25 @@ void CosmoLevel::initialData()
     InitialK<ScalarFieldWithPotential> my_initial_K(scalar_field, m_dx,
                                                     m_p.G_Newton);
     BoxLoops::loop(my_initial_K, m_state_new, m_state_new, EXCLUDE_GHOST_CELLS);
+    // Calculate constraints and some diagnostics as we need it in tagging
+    // criterion
+    BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
+                       scalar_field, m_dx, m_p.G_Newton, c_Ham,
+                       Interval(c_Mom, c_Mom), c_Ham_abs_sum,
+                       Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
+                   m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+    CosmoDiagnostics<ScalarFieldWithPotential> cosmo_diagnostics(
+        scalar_field, m_dx, m_p.G_Newton);
+    BoxLoops::loop(cosmo_diagnostics, m_state_new, m_state_diagnostics,
+                   EXCLUDE_GHOST_CELLS);
+    // Assign initial rho_mean here
+    // from rho = 1/2 m^2 phi^2;
+    // phi0 = A sin(2 pi n x /L);
+    // mean of phi0^2 = A^2 sin^2 = 0.5*A^2;
+    // m = m_mode
+    m_cosmo_amr.set_rho_mean(
+        0.5 * m_p.scalar_field_mode * m_p.scalar_field_mode *
+        (0.5 * m_p.initial_params.amplitude * m_p.initial_params.amplitude));
 }
 
 #ifdef CH_USE_HDF5
@@ -141,17 +160,28 @@ void CosmoLevel::specificUpdateODE(GRLevelData &a_soln,
 
 void CosmoLevel::preTagCells()
 {
-    // we don't need any ghosts filled for the fixed grids tagging criterion
-    // used here so don't fill any
+    // Pre tagging - fill ghost cells and calculate Ham terms
+    fillAllGhosts();
+    Potential potential(m_p.potential_params, m_p.L, m_p.scalar_field_mode);
+    ScalarFieldWithPotential scalar_field(potential);
+    BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
+                       scalar_field, m_dx, m_p.G_Newton, c_Ham,
+                       Interval(c_Mom, c_Mom), c_Ham_abs_sum,
+                       Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
+                   m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+    CosmoDiagnostics<ScalarFieldWithPotential> cosmo_diagnostics(
+        scalar_field, m_dx, m_p.G_Newton);
+    BoxLoops::loop(cosmo_diagnostics, m_state_new, m_state_diagnostics,
+                   EXCLUDE_GHOST_CELLS);
 }
 
 void CosmoLevel::computeTaggingCriterion(
     FArrayBox &tagging_criterion, const FArrayBox &current_state,
     const FArrayBox &current_state_diagnostics)
 {
-    BoxLoops::loop(
-        FixedGridsTaggingCriterion(m_dx, m_level, 2.0 * m_p.L, m_p.center),
-        current_state, tagging_criterion);
+    BoxLoops::loop(CosmoHamTaggingCriterion(m_dx, m_p.center_tag, m_p.rad,
+                                            m_cosmo_amr.get_rho_mean()),
+                   current_state_diagnostics, tagging_criterion);
 }
 void CosmoLevel::specificPostTimeStep()
 {
