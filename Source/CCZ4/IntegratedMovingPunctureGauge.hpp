@@ -91,6 +91,16 @@ class IntegratedMovingPunctureGauge
             rhs.B[i] = 0.; // static, stays the same to save initial condition
         }
     }
+
+
+    // Add the matter terms to the rhs of the gauge equations
+    // For the IMP gauge, this function should do nothing
+    template <class data_t, template <typename> class vars_t>
+    inline void rhs_gauge_add_matter_terms(vars_t<data_t> &matter_rhs, 
+        const vars_t<data_t> &matter_vars, emtensor_t<data_t> emtensor, Tensor<2, data_t, 3> h_UU)
+    {          
+      // WHY -B^i in rhs.shift, in the function above?
+    }
 };
 
 #endif /* INTEGRATEDMOVINGPUNCTUREGAUGE_HPP_ */
