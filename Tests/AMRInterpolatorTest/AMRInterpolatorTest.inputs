@@ -26,3 +26,5 @@ lo_boundary = 2 0 2
 # 1,2,3 = odd x, y, z
 # 4,5,6 = odd xy, yz, xz
 vars_parity = 0 1 			# A and B
+
+symmetry_correction = 0

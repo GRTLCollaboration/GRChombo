@@ -155,7 +155,7 @@ sigma = 0.3
 track_punctures = 1
 puncture_tracking_level = 1
 
-# calculate_constraint_norms = 0
+calculate_constraint_norms = 1
 
 # min_chi = 1.e-4
 # min_lapse = 1.e-4
@@ -183,14 +183,15 @@ modes = 2 0 # l m for spherical harmonics
 #################################################
 # Apparent Horizon Finder parameters
 
-AH_activate = 1
-AH_num_ranks = 4
-AH_num_points_u = 11
-AH_num_points_v = 10
-AH_solve_interval = 2
-AH_print_interval = 2
+AH_activate = 0
+AH_num_ranks = 65
+AH_num_points_u = 65
+AH_num_points_v = 48
+# AH_solve_interval = 2
+# AH_print_interval = 2
 # AH_merger_search_factor = 1.
 # AH_merger_pre_factor = 1.
+AH_set_origins_to_punctures = 1
 
 #################################################
 
