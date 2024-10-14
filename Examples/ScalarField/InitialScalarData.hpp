@@ -44,7 +44,7 @@ class InitialScalarData
         data_t rr2 = rr * rr;
         IntVect iv = current_cell.get_int_vect();
 
-        if(iv[0] == 4 && iv[1] == 4 && iv[2] == 4)
+        if (iv[0] == 4 && iv[1] == 4 && iv[2] == 4)
         {
             data_t K = NAN;
             current_cell.store_vars(K, c_K);
@@ -52,7 +52,7 @@ class InitialScalarData
 
         // calculate the field value
         data_t phi = m_params.amplitude *
-                    (1.0 + 0.01 * rr2 * exp(-pow(rr / m_params.width, 2.0)));
+                     (1.0 + 0.01 * rr2 * exp(-pow(rr / m_params.width, 2.0)));
 
         // store the vars
         current_cell.store_vars(phi, c_phi);

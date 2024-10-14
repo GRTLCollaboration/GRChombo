@@ -56,11 +56,11 @@ class NanCheck
         {
             double val;
             current_cell.load_vars(val, ivar);
-            if (std::isnan(val) || abs(val) > m_max_abs) 
+            if (std::isnan(val) || abs(val) > m_max_abs)
 // we want to exit if any of the threads find a nan
 #pragma omp atomic write
                 stop = true;
-                thrd = omp_get_thread_num();
+            thrd = omp_get_thread_num();
         }
 
         if (stop)
@@ -77,7 +77,8 @@ class NanCheck
                            << current_cell.load_vars(ivar) << std::endl;
                 }
                 pout() << "Nan was caught on thread: " << thrd << "\n";
-                pout() << "Error message printed on thread: " << omp_get_thread_num() << "\n";
+                pout() << "Error message printed on thread: "
+                       << omp_get_thread_num() << "\n";
                 IntVect iv = current_cell.get_int_vect();
                 pout() << "Integer coordinates: " << iv << std::endl;
                 if (m_dx != 0.0)
