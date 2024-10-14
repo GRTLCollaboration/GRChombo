@@ -104,7 +104,7 @@ class BoundaryConditions
     /// Default constructor - need to call define afterwards
     BoundaryConditions() { is_defined = false; }
 
-    int get_symm() const { return m_symmetry_factor; }
+    int get_symmetry_factor() const { return m_symmetry_factor; }
 
     /// define function sets members and is_defined set to true
     void define(double a_dx, std::array<double, CH_SPACEDIM> a_center,

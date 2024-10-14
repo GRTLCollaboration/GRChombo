@@ -15,7 +15,7 @@ AMRReductions<var_t>::AMRReductions(const GRAMR &a_gramr,
                                     const int a_base_level)
     : m_base_level(a_base_level),
       m_coarsest_dx(a_gramr.get_gramrlevels()[0]->get_dx()),
-      m_symmetry_factor(a_gramr.get_gramrlevels()[0]->get_symm())
+      m_symmetry_factor(a_gramr.get_gramrlevels()[0]->get_symmetry_factor())
 {
     set_level_data_vect(a_gramr);
     set_ref_ratios_vect(a_gramr);
@@ -108,9 +108,10 @@ Real AMRReductions<var_t>::norm(const Interval &a_vars,
     {
         norm /=
             pow(m_domain_volume, 1.0 / static_cast<double>(a_norm_exponent));
+        norm *= static_cast<double>(m_symmetry_factor);
     }
 
-    return norm * static_cast<double>(m_symmetry_factor);
+    return norm;
 }
 
 template <VariableType var_t>
