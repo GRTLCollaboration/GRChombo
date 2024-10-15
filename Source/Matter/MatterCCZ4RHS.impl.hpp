@@ -104,7 +104,7 @@ void MatterCCZ4RHS<matter_t, gauge_t, deriv_t>::add_emtensor_rhs(
     }
 
     // Add matter contribution to RHS of gauge evolution
-    m_gauge.rhs_gauge_add_matter_terms(matter_rhs, matter_vars, emtensor, h_UU);
+    this->m_gauge.rhs_gauge_add_matter_terms(matter_rhs, matter_vars, h_UU, emtensor, m_G_Newton);
 }
 
 #endif /* MATTERCCZ4RHS_IMPL_HPP_ */
