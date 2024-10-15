@@ -8,7 +8,6 @@
 
 #include "DimensionDefinitions.hpp"
 #include "Tensor.hpp"
-#include "EMTensor.hpp"
 
 /// This is an example of a gauge class that can be used in the CCZ4RHS compute
 /// class
