@@ -8,7 +8,6 @@
 
 #include "DimensionDefinitions.hpp"
 #include "Tensor.hpp"
-#include "EMTensor.hpp"
 
 /// This is an example of a gauge class that can be used in the CCZ4RHS compute
 /// class
@@ -69,20 +68,24 @@ class MovingPunctureGauge
     // Add the matter terms to the rhs of the gauge equations
     // For the MP gauge, this only changes the rhs of B through the rhs of Gamma
     template <class data_t, template <typename> class vars_t>
-    inline void rhs_gauge_add_matter_terms(vars_t<data_t> &matter_rhs, 
-        const vars_t<data_t> &matter_vars, emtensor_t<data_t> emtensor, Tensor<2, data_t, 3> h_UU)
-    {          
-      FOR(i)
-      {
-        data_t matter_term_Gamma = 0.0;
-        FOR(j)
+    inline void rhs_gauge_add_matter_terms(vars_t<data_t> &matter_rhs,
+                                           const vars_t<data_t> &matter_vars,
+                                           Tensor<2, data_t, 3> h_UU,
+                                           const emtensor_t<data_t> emtensor,
+                                           const double G_Newton) const
+    {
+        FOR(i)
         {
-            matter_term_Gamma += -16.0 * M_PI * m_G_Newton * matter_vars.lapse *
-                                 h_UU[i][j] * emtensor.Si[j];
-        }
+            data_t matter_term_Gamma = 0.0;
+            FOR(j)
+            {
+                matter_term_Gamma += -16.0 * M_PI * G_Newton *
+                                     matter_vars.lapse * h_UU[i][j] *
+                                     emtensor.Si[j];
+            }
 
-        matter_rhs.B[i] += matter_term_Gamma;
-      }
+            matter_rhs.B[i] += matter_term_Gamma;
+        }
     }
 };
 
