@@ -55,10 +55,10 @@ class [[deprecated(
 
     template <class data_t, template <typename> class vars_t,
               template <typename> class diff2_vars_t>
-    Vars<data_t>
-    constraint_equations(const vars_t<data_t> &vars,
-                         const vars_t<Tensor<1, data_t>> &d1,
-                         const diff2_vars_t<Tensor<2, data_t>> &d2) const;
+    Vars<data_t> constraint_equations(const vars_t<data_t> &vars,
+                                      const vars_t<Tensor<1, data_t>> &d1,
+                                      const diff2_vars_t<Tensor<2, data_t>> &d2)
+        const;
 };
 
 #include "Constraints.impl.hpp"
