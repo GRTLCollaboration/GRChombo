@@ -51,7 +51,7 @@ class CosmoDiagnostics // public MatterConstraints<matter_t>
     {
     }
 
-    //! The compute member which calculates the constraints at each point in the
+    //! The compute member which calculates the diagnostics at each point in the
     //! box
     template <class data_t> void compute(Cell<data_t> current_cell) const;
 

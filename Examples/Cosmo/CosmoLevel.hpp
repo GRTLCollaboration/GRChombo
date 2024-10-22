@@ -3,10 +3,9 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef INFLATIONLEVEL_HPP_
-#define INFLATIONLEVEL_HPP_
+#ifndef COSMOLEVEL_HPP_
+#define COSMOLEVEL_HPP_
 
-// #include "BHAMR.hpp"
 #include "CosmoAMR.hpp"
 #include "DefaultLevelFactory.hpp"
 #include "GRAMRLevel.hpp"
@@ -14,14 +13,14 @@
 #include "Potential.hpp"
 #include "ScalarField.hpp"
 
-//!  A class for the evolution of a scalar field, minimally coupled to gravity
+//!  A class for the evolution of a scalar field in cosmological spacetime
 /*!
-     The class takes some initial data for a scalar field (variables phi and Pi)
-     and evolves it using the CCZ4 equations. It is possible to specify an
-   initial period of relaxation for the conformal factor chi, for non analytic
-   initial conditions (for example, a general field configuration at a moment of
-   time symmetry assuming conformal flatness). \sa MatterCCZ4(),
-   ConstraintsMatter(), ScalarField(), RelaxationChi()
+     The class takes initial data for a scalar field (variables phi and Pi)
+     and evolves it using the CCZ4 equations. An example of specifying initial
+   scalar field data is provided as an example. The given initial data example
+   is obtained by analytically solving the constraint using a sinusoidal scalar
+   field profile with a quadratic potential. See initial scalar field details in
+   InitialData(), InitialScalarData.hpp and Potential.hpp
 */
 class CosmoLevel : public GRAMRLevel
 {

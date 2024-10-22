@@ -32,16 +32,15 @@ class SimulationParameters : public SimulationParametersBase
             center; // already read in SimulationParametersBase
         pp.load("G_Newton", G_Newton, 1.0);
         pp.load("scalar_amplitude", initial_params.amplitude, 0.1);
-        pp.load("scalar_width", initial_params.width, 1.0);
         pp.load("scalar_mass", potential_params.scalar_mass, 0.1);
-        pp.load("scalar_field_mode", scalar_field_mode, 1.0);
+        pp.load("scalar_field_mode", scalar_field_mode, 1);
 
         // Lineout params
         pp.load("lineout_num_points", lineout_num_points, 10);
 
         // Tagging params
-        pp.load("center_tag", center_tag, center);
-        pp.load("rad", rad, L);
+        pp.load("tagging_center", tagging_center, center);
+        pp.load("tagging_radius", tagging_radius, L);
 
 #ifdef USE_AHFINDER
         double AH_guess =
@@ -57,16 +56,12 @@ class SimulationParameters : public SimulationParametersBase
                            0.2 / coarsest_dx / dt_multiplier,
                        "oscillations of scalar field do not appear to be "
                        "resolved on coarsest level");
-        warn_parameter("scalar_width", initial_params.width,
-                       initial_params.width < 0.5 * L,
-                       "is greater than half the domain size");
     }
 
     // Initial data for matter and potential and BH
-    double G_Newton;
-    double scalar_field_mode, rad;
-    int lineout_num_points;
-    std::array<double, CH_SPACEDIM> center_tag;
+    double G_Newton, tagging_radius;
+    int lineout_num_points, scalar_field_mode;
+    std::array<double, CH_SPACEDIM> tagging_center;
     InitialScalarData::params_t initial_params;
     Potential::params_t potential_params;
     KerrBH::params_t kerr_params;

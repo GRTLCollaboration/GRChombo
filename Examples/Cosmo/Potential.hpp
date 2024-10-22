@@ -18,12 +18,12 @@ class Potential
 
   private:
     params_t m_params;
-    double m_mode;
+    int m_mode;
     double m_L;
 
   public:
     //! The constructor
-    Potential(params_t a_params, double a_L, double a_mode)
+    Potential(params_t a_params, double a_L, int a_mode)
         : m_params(a_params), m_L(a_L), m_mode(a_mode)
     {
     }

@@ -12,7 +12,8 @@
 /// A child of Chombo's AMR class to interface with tools which require
 /// access to the whole AMR hierarchy, and those of GRAMR
 /**
- * This object inherits from GRAMR and adds tools required for BH spacetimes
+ * This object inherits from GRAMR and adds tools required for cosmological
+ * spacetimes
  */
 class CosmoAMR : public GRAMR
 {
@@ -32,6 +33,8 @@ class CosmoAMR : public GRAMR
         m_puncture_tracker.set_interpolator(a_interpolator);
     }
 
+    // Setters and getters of porper-volume-averaged of each variable to
+    // CosmoAMR object
     void set_K_mean(double a_K_mean) { m_K_mean = a_K_mean; }
     double get_K_mean() { return m_K_mean; }
 

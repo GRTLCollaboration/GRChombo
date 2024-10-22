@@ -69,6 +69,8 @@ void CosmoLevel::initialData()
         m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
 
     fillAllGhosts();
+    // Note that the GammaCaluculator is not necessary since the data is
+    // conformally flat. It is left here for generality.
     BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
                    EXCLUDE_GHOST_CELLS);
 
@@ -78,6 +80,7 @@ void CosmoLevel::initialData()
     InitialK<ScalarFieldWithPotential> my_initial_K(scalar_field, m_dx,
                                                     m_p.G_Newton);
     BoxLoops::loop(my_initial_K, m_state_new, m_state_new, EXCLUDE_GHOST_CELLS);
+
     // Calculate constraints and some diagnostics as we need it in tagging
     // criterion
     BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
@@ -89,14 +92,11 @@ void CosmoLevel::initialData()
         scalar_field, m_dx, m_p.G_Newton);
     BoxLoops::loop(cosmo_diagnostics, m_state_new, m_state_diagnostics,
                    EXCLUDE_GHOST_CELLS);
+
     // Assign initial rho_mean here
-    // from rho = 1/2 m^2 phi^2;
-    // phi0 = A sin(2 pi n x /L);
-    // mean of phi0^2 = A^2 sin^2 = 0.5*A^2;
-    // m = m_mode
-    m_cosmo_amr.set_rho_mean(
-        0.5 * m_p.scalar_field_mode * m_p.scalar_field_mode *
-        (0.5 * m_p.initial_params.amplitude * m_p.initial_params.amplitude));
+    InitialScalarData initial_scalar_data(m_p.initial_params, m_dx, m_p.L,
+                                          m_p.scalar_field_mode);
+    m_cosmo_amr.set_rho_mean(initial_scalar_data.compute_initial_rho_mean());
 }
 
 #ifdef CH_USE_HDF5
@@ -132,22 +132,11 @@ void CosmoLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     ScalarFieldWithPotential scalar_field(potential);
     CosmoMovingPunctureGauge cosmo_moving_puncture_gauge(m_p.ccz4_params);
     cosmo_moving_puncture_gauge.set_K_mean(m_cosmo_amr.get_K_mean());
-    if (m_p.max_spatial_derivative_order == 4)
-    {
-        MatterCCZ4RHS<ScalarFieldWithPotential, CosmoMovingPunctureGauge,
-                      FourthOrderDerivatives>
-            my_ccz4_matter(scalar_field, m_p.ccz4_params, m_dx, m_p.sigma,
-                           m_p.formulation, m_p.G_Newton);
-        BoxLoops::loop(my_ccz4_matter, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
-    }
-    else if (m_p.max_spatial_derivative_order == 6)
-    {
-        MatterCCZ4RHS<ScalarFieldWithPotential, CosmoMovingPunctureGauge,
-                      SixthOrderDerivatives>
-            my_ccz4_matter(scalar_field, m_p.ccz4_params, m_dx, m_p.sigma,
-                           m_p.formulation, m_p.G_Newton);
-        BoxLoops::loop(my_ccz4_matter, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
-    }
+    MatterCCZ4RHS<ScalarFieldWithPotential, CosmoMovingPunctureGauge,
+                  FourthOrderDerivatives>
+        my_ccz4_matter(scalar_field, m_p.ccz4_params, m_dx, m_p.sigma,
+                       m_p.formulation, m_p.G_Newton);
+    BoxLoops::loop(my_ccz4_matter, a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
 }
 
 // Things to do at ODE update, after soln + rhs
@@ -179,8 +168,9 @@ void CosmoLevel::computeTaggingCriterion(
     FArrayBox &tagging_criterion, const FArrayBox &current_state,
     const FArrayBox &current_state_diagnostics)
 {
-    BoxLoops::loop(CosmoHamTaggingCriterion(m_dx, m_p.center_tag, m_p.rad,
-                                            m_cosmo_amr.get_rho_mean()),
+    double rho_mean = m_cosmo_amr.get_rho_mean();
+    BoxLoops::loop(CosmoHamTaggingCriterion(m_dx, m_p.tagging_center,
+                                            m_p.tagging_radius, rho_mean),
                    current_state_diagnostics, tagging_criterion);
 }
 void CosmoLevel::specificPostTimeStep()
@@ -211,23 +201,23 @@ void CosmoLevel::specificPostTimeStep()
         if (m_level == min_level)
         {
             // AMRReductions for diagnostic variables
-            AMRReductions<VariableType::diagnostic> amr_reductions_diag(
+            AMRReductions<VariableType::diagnostic> amr_reductions_diagnostic(
                 m_cosmo_amr);
-            double phys_vol = amr_reductions_diag.sum(c_sqrt_gamma);
-            double L2_Ham = amr_reductions_diag.norm(c_Ham);
-            double L2_Mom = amr_reductions_diag.norm(c_Mom);
-            double K_total = amr_reductions_diag.sum(c_K_scaled);
-            m_cosmo_amr.set_rho_mean(amr_reductions_diag.sum(c_rho_scaled) /
-                                     phys_vol);
-            m_cosmo_amr.set_S_mean(amr_reductions_diag.sum(c_S_scaled) /
+            double phys_vol = amr_reductions_diagnostic.sum(c_sqrt_gamma);
+            double L2_Ham = amr_reductions_diagnostic.norm(c_Ham);
+            double L2_Mom = amr_reductions_diagnostic.norm(c_Mom);
+            double K_total = amr_reductions_diagnostic.sum(c_K_scaled);
+            m_cosmo_amr.set_rho_mean(
+                amr_reductions_diagnostic.sum(c_rho_scaled) / phys_vol);
+            m_cosmo_amr.set_S_mean(amr_reductions_diagnostic.sum(c_S_scaled) /
                                    phys_vol);
             m_cosmo_amr.set_K_mean(K_total / phys_vol);
 
             // AMRReductions for evolution variables
-            AMRReductions<VariableType::evolution> amr_reductions_evo(
+            AMRReductions<VariableType::evolution> amr_reductions_evolution(
                 m_cosmo_amr);
 
-            double chi_mean = amr_reductions_evo.sum(c_chi) / phys_vol;
+            double chi_mean = amr_reductions_evolution.sum(c_chi) / phys_vol;
 
             // Write output file
             SmallDataIO constraints_file(m_p.data_path + "data_out", m_dt,
@@ -256,11 +246,11 @@ void CosmoLevel::specificPostTimeStep()
             interpolator.refresh();
 
             // set up the query and execute it
-            std::array<double, CH_SPACEDIM> extr_point = {
+            std::array<double, CH_SPACEDIM> extraction_points = {
                 0., m_p.L / 2, m_p.L / 2}; // specified point {x \in [0,L],y \in
                                            // [0,L], z \in [0,L]}
             CustomExtraction extraction(c_rho, m_p.lineout_num_points, m_p.L,
-                                        extr_point, m_dt, m_time);
+                                        extraction_points, m_dt, m_time);
             extraction.execute_query(&interpolator, m_p.data_path + "lineout");
         }
     }

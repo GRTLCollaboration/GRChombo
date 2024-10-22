@@ -13,14 +13,14 @@ plt.rcParams.update({'figure.figsize'    :  '6, 4.2'})
 plt.rcParams.update({'figure.autolayout': True})
 
 # Read header
-with open('cheap_data/lineout.dat', 'r') as file:
+with open('data/lineout.dat', 'r') as file:
     header = file.readline().strip()
 coord_interp = header.split()
 coord_interp = coord_interp[2:]
 
 # Read data
-data = np.loadtxt('cheap_data/data_out.dat')
-rho_dat = np.loadtxt('cheap_data/lineout.dat')
+data = np.loadtxt('data/data_out.dat')
+rho_dat = np.loadtxt('data/lineout.dat')
 t_data = data[:,0]
 chi_mean = data[:,3]
 rho_mean = data[:,4]
