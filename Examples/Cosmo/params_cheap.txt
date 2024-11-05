@@ -44,7 +44,7 @@ print_progress_only_to_rank_0 = 1
 G_Newton = 1.
 
 # Scalar field initial data
-# This given scalar field params makes Hubble length 10 times wavelength of scalar field 
+# These scalar field params make the Hubble length 10 times wavelength of the scalar field 
 scalar_amplitude = 0.00777635
 scalar_mass = 1.0
 scalar_field_mode = 1 # must be an integer
