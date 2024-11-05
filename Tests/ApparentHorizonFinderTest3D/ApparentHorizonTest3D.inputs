@@ -23,8 +23,6 @@ vars_asymptotic_values = 1. 1. 0. 0. 1. 0. 1. #chi and hij
                          1. 0. 0. 0. 0. 0. 0. #lapse shift and B
                          0. 0. 0. 0. 		  # Ham and Mom
 
-symmetry_correction = 0
-
 #Max and min box sizes
 max_grid_size = 32
 block_factor = 16
