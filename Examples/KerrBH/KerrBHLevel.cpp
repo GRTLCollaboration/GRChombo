@@ -8,6 +8,7 @@
 #include "CCZ4RHS.hpp"
 #include "ChiTaggingCriterion.hpp"
 #include "ComputePack.hpp"
+#include "IntegratedMovingPunctureGauge.hpp"
 #include "KerrBHLevel.hpp"
 #include "NanCheck.hpp"
 #include "NewConstraints.hpp"
@@ -50,6 +51,10 @@ void KerrBHLevel::initialData()
     BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
                    EXCLUDE_GHOST_CELLS);
 
+    fillAllGhosts();
+    BoxLoops::loop(IntegratedMovingPunctureGauge(m_p.ccz4_params), m_state_new,
+                   m_state_new, EXCLUDE_GHOST_CELLS);
+
 #ifdef USE_AHFINDER
     // Diagnostics needed for AHFinder
     BoxLoops::loop(Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3)),
@@ -82,15 +87,17 @@ void KerrBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     // Calculate CCZ4 right hand side
     if (m_p.max_spatial_derivative_order == 4)
     {
-        BoxLoops::loop(CCZ4RHS<MovingPunctureGauge, FourthOrderDerivatives>(
-                           m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
-                       a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+        BoxLoops::loop(
+            CCZ4RHS<IntegratedMovingPunctureGauge, FourthOrderDerivatives>(
+                m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
+            a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
     }
     else if (m_p.max_spatial_derivative_order == 6)
     {
-        BoxLoops::loop(CCZ4RHS<MovingPunctureGauge, SixthOrderDerivatives>(
-                           m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
-                       a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
+        BoxLoops::loop(
+            CCZ4RHS<IntegratedMovingPunctureGauge, SixthOrderDerivatives>(
+                m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation),
+            a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
     }
 }
 
