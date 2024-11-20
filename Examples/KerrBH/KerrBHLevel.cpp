@@ -48,8 +48,18 @@ void KerrBHLevel::initialData()
         m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
 
     fillAllGhosts();
-    BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
-                   EXCLUDE_GHOST_CELLS);
+    if (m_p.max_spatial_derivative_order == 4)
+    {
+        GammaCalculator<FourthOrderDerivatives> my_gamma_calculator(m_dx);
+        BoxLoops::loop(my_gamma_calculator, m_state_new, m_state_new,
+                       EXCLUDE_GHOST_CELLS);
+    }
+    else if (m_p.max_spatial_derivative_order == 6)
+    {
+        GammaCalculator<SixthOrderDerivatives> my_gamma_calculator(m_dx);
+        BoxLoops::loop(my_gamma_calculator, m_state_new, m_state_new,
+                       EXCLUDE_GHOST_CELLS);
+    }
 
     fillAllGhosts();
     BoxLoops::loop(IntegratedMovingPunctureGauge(m_p.ccz4_params), m_state_new,
