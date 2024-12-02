@@ -24,7 +24,6 @@
 #include "ComputePack.hpp"
 #include "GammaCalculator.hpp"
 #include "InitialScalarData.hpp"
-#include "KerrBH.hpp"
 #include "Potential.hpp"
 #include "ScalarField.hpp"
 #include "SetValue.hpp"
@@ -52,16 +51,32 @@ void ScalarFieldLevel::initialData()
     if (m_verbosity)
         pout() << "ScalarFieldLevel::initialData " << m_level << endl;
 
-    // First set everything to zero then initial conditions for scalar field -
-    // here a Kerr BH and a scalar field profile
-    BoxLoops::loop(
-        make_compute_pack(SetValue(0.), KerrBH(m_p.kerr_params, m_dx),
-                          InitialScalarData(m_p.initial_params, m_dx)),
-        m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
+    // First set everything to zero then initial conditions for constant scalar
+    // field and a simple BH in isotropic coords, that satisfies constraints
+    // analytically
+    Potential potential(m_p.potential_params);
+    InitialScalarData initial_data(m_p.initial_params, potential, m_dx,
+                                   m_p.G_Newton);
+    BoxLoops::loop(make_compute_pack(SetValue(0.), initial_data), m_state_new,
+                   m_state_new, INCLUDE_GHOST_CELLS);
 
+    // Not required as conformally flat, but fill Gamma^i to be sure
     fillAllGhosts();
     BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
                    EXCLUDE_GHOST_CELLS);
+}
+
+// Things to do when restarting from a checkpoint, including
+// restart from the initial condition solver output
+void ScalarFieldLevel::postRestart()
+{
+    fillAllGhosts();
+    Potential potential(m_p.potential_params);
+    ScalarFieldWithPotential scalar_field(potential);
+    BoxLoops::loop(
+        MatterConstraints<ScalarFieldWithPotential>(
+            scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom, c_Mom)),
+        m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 }
 
 #ifdef CH_USE_HDF5

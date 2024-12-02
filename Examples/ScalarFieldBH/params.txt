@@ -34,23 +34,16 @@ print_progress_only_to_rank_0 = 1
 # write_plot_ghosts = 0
 
 #################################################
-# Initial Data parameters
+# Initial Data and Scalar parameters
 
-# Change the gravitational constant of the Universe!
+# Q: Change the gravitational constant of the Universe!
 # Default is 1.0, for standard geometric units
-# Here we decouple the evolution so the scalar evolved on the
-# metric background without backreaction (this avoids the need
-# to solve the constaints)
-G_Newton = 0.0
+# G_Newton = 1.0
 
-# Scalar field initial data
+# Scalar field and BH initial data
 scalar_amplitude = 0.1
-scalar_width = 5.0
+bh_mass = 1.0
 scalar_mass = 0.2
-
-# Kerr BH data
-kerr_mass = 1.0
-kerr_spin = 0.0
 
 #################################################
 # Grid parameters
@@ -121,7 +114,7 @@ nonzero_asymptotic_vars = chi h11 h22 h33 lapse
 nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 
 # if you are using extrapolating BC:
-extrapolation_order = 1
+extrapolation_order = 0
 num_extrapolating_vars = 2
 extrapolating_vars = phi Pi
 

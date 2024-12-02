@@ -33,7 +33,7 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("G_Newton", G_Newton,
                 0.0); // for now the example neglects backreaction
         pp.load("scalar_amplitude", initial_params.amplitude, 0.1);
-        pp.load("scalar_width", initial_params.width, 1.0);
+        pp.load("bh_mass", initial_params.bh_mass, 1.0);
         pp.load("scalar_mass", potential_params.scalar_mass, 0.1);
 
         // Initial Kerr data
@@ -55,9 +55,9 @@ class SimulationParameters : public SimulationParametersBase
                            0.2 / coarsest_dx / dt_multiplier,
                        "oscillations of scalar field do not appear to be "
                        "resolved on coarsest level");
-        warn_parameter("scalar_width", initial_params.width,
-                       initial_params.width < 0.5 * L,
-                       "is greater than half the domain size");
+        warn_parameter("bh_mass", initial_params.bh_mass,
+                       initial_params.bh_mass < 0.1 * L,
+                       "gives a BH size greater than 0.1 times the domain L");
         warn_parameter("kerr_mass", kerr_params.mass, kerr_params.mass >= 0.0,
                        "should be >= 0.0");
         check_parameter("kerr_spin", kerr_params.spin,
