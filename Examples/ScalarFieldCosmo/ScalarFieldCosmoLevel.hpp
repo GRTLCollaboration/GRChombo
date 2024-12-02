@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef COSMOLEVEL_HPP_
-#define COSMOLEVEL_HPP_
+#ifndef SCALARFIELDCOSMOLEVEL_HPP_
+#define SCALARFIELDCOSMOLEVEL_HPP_
 
 #include "CosmoAMR.hpp"
 #include "DefaultLevelFactory.hpp"
@@ -68,4 +68,4 @@ class CosmoLevel : public GRAMRLevel
     virtual void specificPostTimeStep() override;
 };
 
-#endif /* COSMOLEVEL_HPP_ */
+#endif /* SCALARFIELDCOSMOLEVEL_HPP_ */

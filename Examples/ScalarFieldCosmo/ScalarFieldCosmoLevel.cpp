@@ -4,7 +4,7 @@
  */
 
 // General includes common to most GR problems
-#include "CosmoLevel.hpp"
+#include "ScalarFieldCosmoLevel.hpp"
 #include "BoxLoops.hpp"
 #include "NanCheck.hpp"
 #include "PositiveChiAndAlpha.hpp"
@@ -32,7 +32,7 @@
 #include "ScalarField.hpp"
 #include "SetValue.hpp"
 
-// For linout
+// For lineout
 #include "CustomExtraction.hpp"
 
 // Things to do at each advance step, after the RK4 is calculated
@@ -111,6 +111,7 @@ void CosmoLevel::postRestart()
         BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
                        EXCLUDE_GHOST_CELLS);
 
+        // Set initial K = -sqrt(24 pi <rho>)
         Potential potential(m_p.potential_params, m_p.L, m_p.scalar_field_mode);
         ScalarFieldWithPotential scalar_field(potential);
         // InitialK<ScalarFieldWithPotential> my_initial_K(scalar_field, m_dx,
@@ -305,9 +306,24 @@ void CosmoLevel::specificPostTimeStep()
             std::array<double, CH_SPACEDIM> extraction_points = {
                 0., m_p.L / 2, m_p.L / 2}; // specified point {x \in [0,L],y \in
                                            // [0,L], z \in [0,L]}
-            CustomExtraction extraction(c_rho, m_p.lineout_num_points, m_p.L,
-                                        extraction_points, m_dt, m_time);
-            extraction.execute_query(&interpolator, m_p.data_path + "lineout");
+            // rho lineout
+            CustomExtraction rho_extraction(c_rho, m_p.lineout_num_points,
+                                            m_p.L, extraction_points, m_dt,
+                                            m_time);
+            rho_extraction.execute_query(&interpolator,
+                                         m_p.data_path + "rho_" + "lineout");
+            // Ham lineout
+            CustomExtraction Ham_extraction(c_Ham, m_p.lineout_num_points,
+                                            m_p.L, extraction_points, m_dt,
+                                            m_time);
+            Ham_extraction.execute_query(&interpolator,
+                                         m_p.data_path + "Ham_" + "lineout");
+            // Mom lineout
+            CustomExtraction Mom_extraction(c_Mom, m_p.lineout_num_points,
+                                            m_p.L, extraction_points, m_dt,
+                                            m_time);
+            Mom_extraction.execute_query(&interpolator,
+                                         m_p.data_path + "Mom_" + "lineout");
         }
     }
 }

@@ -10,7 +10,6 @@
 #include <iostream>
 
 // Our general includes
-// #include "BHAMR.hpp"
 #include "CosmoAMR.hpp"
 #include "DefaultLevelFactory.hpp"
 #include "GRParmParse.hpp"
@@ -19,7 +18,7 @@
 #include "SimulationParameters.hpp"
 
 // Problem specific includes:
-#include "CosmoLevel.hpp"
+#include "ScalarFieldCosmoLevel.hpp"
 
 // Chombo namespace
 #include "UsingNamespace.H"
