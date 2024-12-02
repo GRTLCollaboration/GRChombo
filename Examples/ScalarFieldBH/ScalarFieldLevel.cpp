@@ -72,8 +72,7 @@ void ScalarFieldLevel::initialData()
 // restart from the initial condition solver output
 void ScalarFieldLevel::postRestart()
 {
-
-    // One restart calculate the constraints on every level
+    // On restart calculate the constraints on every level
     fillAllGhosts();
     Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
@@ -81,6 +80,15 @@ void ScalarFieldLevel::postRestart()
         MatterConstraints<ScalarFieldWithPotential>(
             scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom, c_Mom)),
         m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+
+    // Use AMR Interpolator and do lineout data extraction
+    // pass the boundary params so that we can use symmetries
+    AMRInterpolator<Lagrange<4>> interpolator(
+        m_gr_amr, m_p.origin, m_p.dx, m_p.boundary_params, m_p.verbosity);
+
+    // this should fill all ghosts including the boundary ones according
+    // to the conditions set in params.txt
+    interpolator.refresh();
 
     // restart works from level 0 to highest level, so want this to happen last
     // on finest level
@@ -97,20 +105,9 @@ void ScalarFieldLevel::postRestart()
         if (procID() == 0)
         {
             pout() << "The initial norm of the constraint vars on restart is "
-                   << L2_Ham << " for the Hamiltonian constraint" << L2_Mom
+                   << L2_Ham << " for the Hamiltonian constraint and " << L2_Mom
                    << " for the momentum constraints" << endl;
         }
-
-        // Use AMR Interpolator and do lineout data extraction
-        // set up an interpolator
-        // pass the boundary params so that we can use symmetries if
-        // applicable
-        AMRInterpolator<Lagrange<4>> interpolator(
-            m_gr_amr, m_p.origin, m_p.dx, m_p.boundary_params, m_p.verbosity);
-
-        // this should fill all ghosts including the boundary ones according
-        // to the conditions set in params.txt
-        interpolator.refresh();
 
         // set up the query and execute it
         int num_points = 32;
@@ -189,7 +186,7 @@ void ScalarFieldLevel::computeTaggingCriterion(
     const FArrayBox &current_state_diagnostics)
 {
     // If using symmetry of the box, adjust physical length
-    int symmetry = 2;
+    int symmetry = 1;
     BoxLoops::loop(
         FixedGridsTaggingCriterion(m_dx, m_level, m_p.L / symmetry, m_p.center),
         current_state, tagging_criterion);

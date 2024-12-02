@@ -76,11 +76,11 @@ class CustomExtraction
         for (int idx = 0; idx < m_num_points; ++idx)
         {
             interp_x[idx] =
-                m_origin[0] + 0.7 * (double(idx) / double(m_num_points) * m_L);
+                m_origin[0] + 0.45 * (double(idx) / double(m_num_points) * m_L);
             interp_y[idx] =
-                m_origin[1] + 0.7 * (double(idx) / double(m_num_points) * m_L);
+                m_origin[1] + 0.45 * (double(idx) / double(m_num_points) * m_L);
             interp_z[idx] =
-                m_origin[2] + 0.7 * (double(idx) / double(m_num_points) * m_L);
+                m_origin[2] + 0.45 * (double(idx) / double(m_num_points) * m_L);
         }
 
         // set up the query

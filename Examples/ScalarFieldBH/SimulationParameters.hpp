@@ -29,8 +29,7 @@ class SimulationParameters : public SimulationParametersBase
         // Initial scalar field data
         initial_params.center =
             center; // already read in SimulationParametersBase
-        pp.load("G_Newton", G_Newton,
-                0.0); // for now the example neglects backreaction
+        pp.load("G_Newton", G_Newton, 1.0);
         pp.load("scalar_amplitude", initial_params.amplitude, 0.1);
         pp.load("bh_mass", initial_params.bh_mass, 1.0);
         pp.load("scalar_mass", potential_params.scalar_mass, 0.1);

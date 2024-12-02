@@ -12,18 +12,12 @@ plt.rc('font', family='serif')
 plt.rcParams.update({'figure.figsize'    :  '6, 4.2'})
 plt.rcParams.update({'figure.autolayout': True})
 
-# Read header
-with open('data/Ham_Lineout.dat', 'r') as file:
-    header = file.readline().strip()
-coord_interp = header.split()
-coord_interp = coord_interp[2:]
-
 # Read data
 ham_data = np.loadtxt('data/Ham_Lineout.dat')
 mom_dat = np.loadtxt('data/Mom_Lineout.dat')
 
 # Make the plot 
-plt.plot(coord_interp, ham_data)
+plt.plot(ham_data[1:])
 plt.title('lineout of Ham')
 plt.xlabel('distance from centre', fontsize=14)
 plt.ylabel('Ham', fontsize=14)

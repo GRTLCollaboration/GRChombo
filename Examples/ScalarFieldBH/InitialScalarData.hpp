@@ -59,7 +59,6 @@ class InitialScalarData
         m_potential.compute_potential(V_of_phi, dVdphi, scalar_vars);
         data_t K_squared = 24.0 * M_PI * m_G_Newton * V_of_phi;
         data_t K = sqrt(K_squared);
-        pout() << K_squared << endl;
 
         // store the vars
         current_cell.store_vars(scalar_vars);

@@ -13,15 +13,16 @@ plot_prefix = ScalarFieldp_
 
 # If restarting from the IC Solver, uncomment this and put the 
 # file into the hdf5 folder (need to create this if not there)
-# restart_file = InitialConditionsFinal.3d.hdf5
+# restart_file = hdf5/InitialConditionsFinal.3d.hdf5
+restart_file = hdf5/ScalarField_000000.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 500
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
 plot_interval = 1
-num_plot_vars = 2
-plot_vars = chi phi
+num_plot_vars = 4
+plot_vars = chi phi Ham Mom
 
 # subpaths - specific directories for hdf5, pout, extraction data
 # (these are created at runtime)
@@ -58,11 +59,11 @@ scalar_mass = 0.2
 # NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full',
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
-N_full = 16
-L_full = 256
+N_full = 64
+L_full = 128
 
 # Maximum number of times you can regrid above coarsest level
-max_level = 1 # There are (max_level+1) grids, so min is zero
+max_level = 3 # There are (max_level+1) grids, so min is zero
 
 # Frequency of regridding at each level and thresholds on the tagging
 # Need one for each level except the top one, ie max_level items
@@ -97,7 +98,7 @@ isPeriodic = 0 0 0
 # 3 = extrapolating, 4 = mixed
 # (see BoundaryConditions.hpp for details)
 hi_boundary = 4 4 4
-lo_boundary = 2 2 2
+lo_boundary = 0 0 0
 
 # if reflective boundaries selected, must set
 # parity of all vars (in order given by UserVariables.hpp)
