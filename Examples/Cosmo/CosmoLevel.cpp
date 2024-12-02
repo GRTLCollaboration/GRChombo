@@ -99,6 +99,62 @@ void CosmoLevel::initialData()
     m_cosmo_amr.set_rho_mean(initial_scalar_data.compute_initial_rho_mean());
 }
 
+// Things to do when restarting from a checkpoint file
+void CosmoLevel::postRestart()
+{
+    // only want to do this on the first restart and also every restart
+    if (m_time == 0.0)
+    {
+        fillAllGhosts();
+        // Note that the GammaCaluculator is not necessary since the data is
+        // conformally flat. It is left here for generality.
+        BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
+                       EXCLUDE_GHOST_CELLS);
+
+        Potential potential(m_p.potential_params, m_p.L, m_p.scalar_field_mode);
+        ScalarFieldWithPotential scalar_field(potential);
+        // InitialK<ScalarFieldWithPotential> my_initial_K(scalar_field, m_dx,
+        //                                                 m_p.G_Newton);
+        // BoxLoops::loop(my_initial_K, m_state_new, m_state_new,
+        // EXCLUDE_GHOST_CELLS);
+
+        // Calculate constraints and some diagnostics as we need it in tagging
+        // criterion
+        BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
+                           scalar_field, m_dx, m_p.G_Newton, c_Ham,
+                           Interval(c_Mom, c_Mom), c_Ham_abs_sum,
+                           Interval(c_Mom_abs_sum, c_Mom_abs_sum)),
+                       m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+        CosmoDiagnostics<ScalarFieldWithPotential> cosmo_diagnostics(
+            scalar_field, m_dx, m_p.G_Newton);
+        BoxLoops::loop(cosmo_diagnostics, m_state_new, m_state_diagnostics,
+                       EXCLUDE_GHOST_CELLS);
+
+        pout() << "Setting K mean on restart at t = " << m_time << " on level "
+               << m_level << endl;
+
+        // AMRReductions for diagnostic variables
+        AMRReductions<VariableType::diagnostic> amr_reductions_diagnostic(
+            m_cosmo_amr);
+        double phys_vol = amr_reductions_diagnostic.sum(c_sqrt_gamma);
+        double K_total = amr_reductions_diagnostic.sum(c_K_scaled);
+
+        // Set rho_mean
+        m_cosmo_amr.set_rho_mean(amr_reductions_diagnostic.sum(c_rho_scaled) /
+                                 phys_vol);
+        pout() << "Set rho_mean = " << m_cosmo_amr.get_rho_mean()
+               << " at t = " << m_time << " on initial data at level "
+               << m_level << endl;
+        m_cosmo_amr.set_S_mean(amr_reductions_diagnostic.sum(c_S_scaled) /
+                               phys_vol);
+        // Set K_mean
+        m_cosmo_amr.set_K_mean(K_total / phys_vol);
+        pout() << "Calculated K mean as " << m_cosmo_amr.get_K_mean()
+               << " at t = " << m_time << " on restart at level " << m_level
+               << endl;
+    }
+}
+
 #ifdef CH_USE_HDF5
 // Things to do before outputting a checkpoint file
 void CosmoLevel::prePlotLevel()
