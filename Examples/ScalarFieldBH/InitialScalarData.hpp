@@ -51,7 +51,7 @@ class InitialScalarData
         scalar_vars.Pi = 0.0;
 
         // Set the background for a Schwazschild BH in isotropic coords
-        data_t psi = 1.0 - 0.5 * m_params.bh_mass / r;
+        data_t psi = 1.0 + 0.5 * m_params.bh_mass / r;
         data_t chi = pow(psi, -4.0);
 
         // calculate the appropriate value of K to solve the constraints
@@ -59,6 +59,7 @@ class InitialScalarData
         m_potential.compute_potential(V_of_phi, dVdphi, scalar_vars);
         data_t K_squared = 24.0 * M_PI * m_G_Newton * V_of_phi;
         data_t K = sqrt(K_squared);
+        pout() << K_squared << endl;
 
         // store the vars
         current_cell.store_vars(scalar_vars);

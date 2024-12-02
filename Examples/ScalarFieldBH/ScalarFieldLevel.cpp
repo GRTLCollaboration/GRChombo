@@ -5,7 +5,9 @@
 
 // General includes common to most GR problems
 #include "ScalarFieldLevel.hpp"
+#include "AMRReductions.hpp"
 #include "BoxLoops.hpp"
+#include "CustomExtraction.hpp"
 #include "NanCheck.hpp"
 #include "PositiveChiAndAlpha.hpp"
 #include "SixthOrderDerivatives.hpp"
@@ -70,6 +72,8 @@ void ScalarFieldLevel::initialData()
 // restart from the initial condition solver output
 void ScalarFieldLevel::postRestart()
 {
+
+    // One restart calculate the constraints on every level
     fillAllGhosts();
     Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
@@ -77,6 +81,48 @@ void ScalarFieldLevel::postRestart()
         MatterConstraints<ScalarFieldWithPotential>(
             scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom, c_Mom)),
         m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+
+    // restart works from level 0 to highest level, so want this to happen last
+    // on finest level
+    int write_out_level = m_p.max_level;
+    if (m_level == write_out_level)
+    {
+        // AMRReductions for diagnostic variables
+        AMRReductions<VariableType::diagnostic> amr_reductions_diagnostic(
+            m_gr_amr);
+        double L2_Ham = amr_reductions_diagnostic.norm(c_Ham);
+        double L2_Mom = amr_reductions_diagnostic.norm(c_Mom);
+
+        // only on rank zero write out the result
+        if (procID() == 0)
+        {
+            pout() << "The initial norm of the constraint vars on restart is "
+                   << L2_Ham << " for the Hamiltonian constraint" << L2_Mom
+                   << " for the momentum constraints" << endl;
+        }
+
+        // Use AMR Interpolator and do lineout data extraction
+        // set up an interpolator
+        // pass the boundary params so that we can use symmetries if
+        // applicable
+        AMRInterpolator<Lagrange<4>> interpolator(
+            m_gr_amr, m_p.origin, m_p.dx, m_p.boundary_params, m_p.verbosity);
+
+        // this should fill all ghosts including the boundary ones according
+        // to the conditions set in params.txt
+        interpolator.refresh();
+
+        // set up the query and execute it
+        int num_points = 32;
+        CustomExtraction ham_extraction(c_Ham, num_points, m_p.L, m_p.center,
+                                        m_dt, m_time);
+        ham_extraction.execute_query(&interpolator,
+                                     m_p.data_path + "Ham_Lineout");
+        CustomExtraction mom_extraction(c_Ham, num_points, m_p.L, m_p.center,
+                                        m_dt, m_time);
+        mom_extraction.execute_query(&interpolator,
+                                     m_p.data_path + "Mom_Lineout");
+    }
 }
 
 #ifdef CH_USE_HDF5
@@ -142,9 +188,13 @@ void ScalarFieldLevel::computeTaggingCriterion(
     FArrayBox &tagging_criterion, const FArrayBox &current_state,
     const FArrayBox &current_state_diagnostics)
 {
-    BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L, m_p.center),
-                   current_state, tagging_criterion);
+    // If using symmetry of the box, adjust physical length
+    int symmetry = 2;
+    BoxLoops::loop(
+        FixedGridsTaggingCriterion(m_dx, m_level, m_p.L / symmetry, m_p.center),
+        current_state, tagging_criterion);
 }
+
 void ScalarFieldLevel::specificPostTimeStep()
 {
 #ifdef USE_AHFINDER
