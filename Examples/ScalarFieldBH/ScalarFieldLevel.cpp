@@ -83,7 +83,7 @@ void ScalarFieldLevel::postRestart()
 
     // Use AMR Interpolator and do lineout data extraction
     // pass the boundary params so that we can use symmetries
-    AMRInterpolator<Lagrange<4>> interpolator(
+    AMRInterpolator<Lagrange<2>> interpolator(
         m_gr_amr, m_p.origin, m_p.dx, m_p.boundary_params, m_p.verbosity);
 
     // this should fill all ghosts including the boundary ones according
@@ -115,7 +115,7 @@ void ScalarFieldLevel::postRestart()
                                         m_dt, m_time);
         ham_extraction.execute_query(&interpolator,
                                      m_p.data_path + "Ham_Lineout");
-        CustomExtraction mom_extraction(c_Ham, num_points, m_p.L, m_p.center,
+        CustomExtraction mom_extraction(c_Mom, num_points, m_p.L, m_p.center,
                                         m_dt, m_time);
         mom_extraction.execute_query(&interpolator,
                                      m_p.data_path + "Mom_Lineout");

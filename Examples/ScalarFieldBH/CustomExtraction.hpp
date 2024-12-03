@@ -58,7 +58,7 @@ class CustomExtraction
     ~CustomExtraction() {}
 
     //! Execute the query
-    void execute_query(AMRInterpolator<Lagrange<4>> *a_interpolator,
+    void execute_query(AMRInterpolator<Lagrange<2>> *a_interpolator,
                        std::string a_file_prefix) const
     {
         CH_TIME("CustomExtraction::execute_query");
