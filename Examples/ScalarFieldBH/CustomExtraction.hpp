@@ -106,17 +106,21 @@ class CustomExtraction
         SmallDataIO output_file(a_file_prefix, m_dt, m_time, restart_time,
                                 SmallDataIO::APPEND, first_step);
 
-        // std::vector<std::string> header_line(3);
-        // if (first_step)
-        // {
-        //     header_line[0] = "x";
-        //     header_line[1] = "Ham";
-        //     header_line[2] = "Mom";
-        //     output_file.write_header_line(header_line);
-        // }
-        output_file.write_time_data_line(interp_x);
-        output_file.write_time_data_line(interp_ham_data);
-        output_file.write_time_data_line(interp_mom_data);
+        std::vector<std::string> header_line(3);
+        if (first_step)
+        {
+            header_line[0] = "Ham";
+            header_line[1] = "Mom";
+            output_file.write_header_line(header_line, "x");
+        }
+
+        for (int idx = 0; idx < m_num_points; ++idx)
+        {
+            std::vector<double> data(2);
+            data[0] = interp_ham_data[idx];
+            data[1] = interp_mom_data[idx];
+            output_file.write_data_line(data, interp_x[idx]);
+        }
     }
 };
 

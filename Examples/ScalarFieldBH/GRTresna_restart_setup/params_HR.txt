@@ -13,8 +13,7 @@ plot_prefix = ScalarFieldp_
 
 # If restarting from the IC Solver, uncomment this and put the 
 # file into the hdf5 folder (need to create this if not there)
-# restart_file = hdf5/InitialConditionsFinal.3d.hdf5
-restart_file = hdf5_LR/InitialDataFinal.3d.hdf5
+restart_file = hdf5_HR/InitialDataFinal.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 500
@@ -26,9 +25,9 @@ plot_vars = chi phi Ham Mom
 
 # subpaths - specific directories for hdf5, pout, extraction data
 # (these are created at runtime)
-hdf5_subpath = "hdf5_LR"
-pout_subpath = "pout_LR"
-data_subpath = "data_LR"
+hdf5_subpath = "hdf5_HR"
+pout_subpath = "pout_HR"
+data_subpath = "data_HR"
 
 # change the name of output files
 # pout_prefix = "pout"
@@ -59,7 +58,7 @@ scalar_mass = 0.1
 # NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full',
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
-N_full = 64
+N_full = 128
 L_full = 128
 
 # Maximum number of times you can regrid above coarsest level

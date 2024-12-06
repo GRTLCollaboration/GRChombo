@@ -14,7 +14,6 @@ plot_prefix = ScalarFieldp_
 # If restarting from the IC Solver, uncomment this and put the 
 # file into the hdf5 folder (need to create this if not there)
 # restart_file = hdf5/InitialConditionsFinal.3d.hdf5
-restart_file = hdf5/ScalarField_000000.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 500
