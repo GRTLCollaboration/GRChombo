@@ -36,7 +36,8 @@ class CustomExtraction
 {
   private:
     //! Params for extraction
-    const int m_comp;
+    const int m_comp1;
+    const int m_comp2;
     const int m_num_points;
     const double m_L;
     const std::array<double, CH_SPACEDIM>
@@ -46,11 +47,11 @@ class CustomExtraction
 
   public:
     //! The constructor
-    CustomExtraction(int a_comp, int a_num_points, double a_L,
+    CustomExtraction(int a_comp1, int a_comp2, int a_num_points, double a_L,
                      std::array<double, CH_SPACEDIM> a_origin, double a_dt,
                      double a_time)
-        : m_comp(a_comp), m_num_points(a_num_points), m_origin(a_origin),
-          m_L(a_L), m_dt(a_dt), m_time(a_time)
+        : m_comp1(a_comp1), m_comp2(a_comp2), m_num_points(a_num_points),
+          m_origin(a_origin), m_L(a_L), m_dt(a_dt), m_time(a_time)
     {
     }
 
@@ -66,33 +67,38 @@ class CustomExtraction
         {
             MayDay::Error("Interpolator has not been initialised.");
         }
-        std::vector<double> interp_var_data(m_num_points);
+        std::vector<double> interp_ham_data(m_num_points);
+        std::vector<double> interp_mom_data(m_num_points);
         std::vector<double> interp_x(m_num_points);
         std::vector<double> interp_y(m_num_points);
         std::vector<double> interp_z(m_num_points);
 
         // Work out the coordinates
-        // go out diagonally from m_origin to corner at L / sqrt(2)
+        // go out along x-axis from 0 to L
         for (int idx = 0; idx < m_num_points; ++idx)
         {
-            interp_x[idx] =
-                m_origin[0] + 0.45 * (double(idx) / double(m_num_points) * m_L);
-            interp_y[idx] =
-                m_origin[1] + 0.45 * (double(idx) / double(m_num_points) * m_L);
-            interp_z[idx] =
-                m_origin[2] + 0.45 * (double(idx) / double(m_num_points) * m_L);
+            interp_x[idx] = (double(idx) / double(m_num_points) * m_L);
+            interp_y[idx] = m_origin[1];
+            interp_z[idx] = m_origin[2];
         }
 
         // set up the query
-        InterpolationQuery query(m_num_points);
-        query.setCoords(0, interp_x.data())
+        InterpolationQuery query_ham(m_num_points);
+        query_ham.setCoords(0, interp_x.data())
             .setCoords(1, interp_y.data())
             .setCoords(2, interp_z.data())
-            .addComp(m_comp, interp_var_data.data(), Derivative::LOCAL,
+            .addComp(m_comp1, interp_ham_data.data(), Derivative::LOCAL,
+                     VariableType::diagnostic); // evolution or diagnostic
+        InterpolationQuery query_mom(m_num_points);
+        query_mom.setCoords(0, interp_x.data())
+            .setCoords(1, interp_y.data())
+            .setCoords(2, interp_z.data())
+            .addComp(m_comp2, interp_mom_data.data(), Derivative::LOCAL,
                      VariableType::diagnostic); // evolution or diagnostic
 
         // submit the query
-        a_interpolator->interp(query);
+        a_interpolator->interp(query_ham);
+        a_interpolator->interp(query_mom);
 
         // now write out
         bool first_step = (m_time == 0.0);
@@ -100,21 +106,17 @@ class CustomExtraction
         SmallDataIO output_file(a_file_prefix, m_dt, m_time, restart_time,
                                 SmallDataIO::APPEND, first_step);
 
-        std::vector<std::string> header_line(m_num_points);
-
-        if (first_step)
-        {
-            for (int i = 0; i < m_num_points; ++i)
-            {
-                header_line[i] =
-                    "p" + std::to_string(i + 1) + "(" +
-                    to_string_with_precision(interp_x[i], 2) + "," +
-                    to_string_with_precision(m_origin[1], 2) + "," +
-                    to_string_with_precision(m_origin[2], 2) + ")";
-            }
-            output_file.write_header_line(header_line);
-        }
-        output_file.write_time_data_line(interp_var_data);
+        // std::vector<std::string> header_line(3);
+        // if (first_step)
+        // {
+        //     header_line[0] = "x";
+        //     header_line[1] = "Ham";
+        //     header_line[2] = "Mom";
+        //     output_file.write_header_line(header_line);
+        // }
+        output_file.write_time_data_line(interp_x);
+        output_file.write_time_data_line(interp_ham_data);
+        output_file.write_time_data_line(interp_mom_data);
     }
 };
 

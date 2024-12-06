@@ -110,15 +110,11 @@ void ScalarFieldLevel::postRestart()
         }
 
         // set up the query and execute it
-        int num_points = 32;
-        CustomExtraction ham_extraction(c_Ham, num_points, m_p.L, m_p.center,
-                                        m_dt, m_time);
-        ham_extraction.execute_query(&interpolator,
-                                     m_p.data_path + "Ham_Lineout");
-        CustomExtraction mom_extraction(c_Mom, num_points, m_p.L, m_p.center,
-                                        m_dt, m_time);
-        mom_extraction.execute_query(&interpolator,
-                                     m_p.data_path + "Mom_Lineout");
+        int num_points = 3 * m_p.ivN[0];
+        CustomExtraction constraint_extraction(c_Ham, c_Mom, num_points, m_p.L,
+                                        m_p.center, m_dt, m_time);
+        constraint_extraction.execute_query(&interpolator,
+                                        m_p.data_path + "constraint_lineout");
     }
 }
 
