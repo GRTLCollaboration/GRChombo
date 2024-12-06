@@ -5,7 +5,9 @@
 
 // General includes common to most GR problems
 #include "ScalarFieldLevel.hpp"
+#include "AMRReductions.hpp"
 #include "BoxLoops.hpp"
+#include "CustomExtraction.hpp"
 #include "NanCheck.hpp"
 #include "PositiveChiAndAlpha.hpp"
 #include "SixthOrderDerivatives.hpp"
@@ -24,7 +26,6 @@
 #include "ComputePack.hpp"
 #include "GammaCalculator.hpp"
 #include "InitialScalarData.hpp"
-#include "KerrBH.hpp"
 #include "Potential.hpp"
 #include "ScalarField.hpp"
 #include "SetValue.hpp"
@@ -52,16 +53,69 @@ void ScalarFieldLevel::initialData()
     if (m_verbosity)
         pout() << "ScalarFieldLevel::initialData " << m_level << endl;
 
-    // First set everything to zero then initial conditions for scalar field -
-    // here a Kerr BH and a scalar field profile
-    BoxLoops::loop(
-        make_compute_pack(SetValue(0.), KerrBH(m_p.kerr_params, m_dx),
-                          InitialScalarData(m_p.initial_params, m_dx)),
-        m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
+    // First set everything to zero then initial conditions for constant scalar
+    // field and a simple BH in isotropic coords, that satisfies constraints
+    // analytically
+    Potential potential(m_p.potential_params);
+    InitialScalarData initial_data(m_p.initial_params, potential, m_dx,
+                                   m_p.G_Newton);
+    BoxLoops::loop(make_compute_pack(SetValue(0.), initial_data), m_state_new,
+                   m_state_new, INCLUDE_GHOST_CELLS);
 
+    // Not required as conformally flat, but fill Gamma^i to be sure
     fillAllGhosts();
     BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
                    EXCLUDE_GHOST_CELLS);
+}
+
+// Things to do when restarting from a checkpoint, including
+// restart from the initial condition solver output
+void ScalarFieldLevel::postRestart()
+{
+    // On restart calculate the constraints on every level
+    fillAllGhosts();
+    Potential potential(m_p.potential_params);
+    ScalarFieldWithPotential scalar_field(potential);
+    BoxLoops::loop(
+        MatterConstraints<ScalarFieldWithPotential>(
+            scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom, c_Mom)),
+        m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+
+    // Use AMR Interpolator and do lineout data extraction
+    // pass the boundary params so that we can use symmetries
+    AMRInterpolator<Lagrange<2>> interpolator(
+        m_gr_amr, m_p.origin, m_p.dx, m_p.boundary_params, m_p.verbosity);
+
+    // this should fill all ghosts including the boundary ones according
+    // to the conditions set in params.txt
+    interpolator.refresh();
+
+    // restart works from level 0 to highest level, so want this to happen last
+    // on finest level
+    int write_out_level = m_p.max_level;
+    if (m_level == write_out_level)
+    {
+        // AMRReductions for diagnostic variables
+        AMRReductions<VariableType::diagnostic> amr_reductions_diagnostic(
+            m_gr_amr);
+        double L2_Ham = amr_reductions_diagnostic.norm(c_Ham);
+        double L2_Mom = amr_reductions_diagnostic.norm(c_Mom);
+
+        // only on rank zero write out the result
+        if (procID() == 0)
+        {
+            pout() << "The initial norm of the constraint vars on restart is "
+                   << L2_Ham << " for the Hamiltonian constraint and " << L2_Mom
+                   << " for the momentum constraints" << endl;
+        }
+
+        // set up the query and execute it
+        int num_points = 3 * m_p.ivN[0];
+        CustomExtraction constraint_extraction(c_Ham, c_Mom, num_points, m_p.L,
+                                               m_p.center, m_dt, m_time);
+        constraint_extraction.execute_query(
+            &interpolator, m_p.data_path + "constraint_lineout");
+    }
 }
 
 #ifdef CH_USE_HDF5
@@ -127,9 +181,13 @@ void ScalarFieldLevel::computeTaggingCriterion(
     FArrayBox &tagging_criterion, const FArrayBox &current_state,
     const FArrayBox &current_state_diagnostics)
 {
-    BoxLoops::loop(FixedGridsTaggingCriterion(m_dx, m_level, m_p.L, m_p.center),
-                   current_state, tagging_criterion);
+    // If using symmetry of the box, adjust physical length
+    int symmetry = 1;
+    BoxLoops::loop(
+        FixedGridsTaggingCriterion(m_dx, m_level, m_p.L / symmetry, m_p.center),
+        current_state, tagging_criterion);
 }
+
 void ScalarFieldLevel::specificPostTimeStep()
 {
 #ifdef USE_AHFINDER
