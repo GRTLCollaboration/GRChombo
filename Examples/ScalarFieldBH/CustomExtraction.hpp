@@ -106,7 +106,7 @@ class CustomExtraction
         SmallDataIO output_file(a_file_prefix, m_dt, m_time, restart_time,
                                 SmallDataIO::APPEND, first_step);
 
-        std::vector<std::string> header_line(3);
+        std::vector<std::string> header_line(2);
         if (first_step)
         {
             header_line[0] = "Ham";
