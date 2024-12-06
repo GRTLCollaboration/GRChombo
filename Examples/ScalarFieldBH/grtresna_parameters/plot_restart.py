@@ -34,14 +34,6 @@ label1 = r"$N^3=128^3$"
 label2 = r"$N^3=64^3$"
 
 # Make the plot 
-# ax1.plot(x_HR, np.log10(abs(Ham_HR)),c="lime", label=label1)
-# ax1.plot(x_LR, np.log10(abs(Ham_LR)),c="r", label=label2)
-# ax1.plot(x_LR, np.log10(abs(Ham_LR/factor)),c="k",ls="--", label="2nd order")
-
-# ax2.plot(x_HR, np.log10((Mom_HR)),c="lime")
-# ax2.plot(x_LR, np.log10((Mom_LR)),c="r")
-# ax2.plot(x_LR, np.log10((Mom_LR/factor)),c="k",ls="--")
-
 ax1.plot(x_HR, abs(Ham_HR),c="lime", label=label1)
 ax1.plot(x_LR, abs(Ham_LR),c="r", label=label2)
 ax1.plot(x_LR, abs(Ham_LR/factor),c="k",ls="--", label="2nd order")
@@ -63,5 +55,5 @@ ax2.set_xlim([x_HR[0],x_HR[-1]])
 
 ax1.legend(loc="best")
 
-plt.savefig('HamMom_lineout.png',dpi=256, bbox_inches='tight')
+plt.savefig('constraint_lineout.png',dpi=256, bbox_inches='tight')
 plt.close()
