@@ -62,11 +62,11 @@ void CosmoLevel::initialData()
     // First set everything to zero then initial conditions for scalar field -
     // Set initial condition of inflaton, see details in Potential.hpp and
     // InitialScalarData.hpp
-
-    BoxLoops::loop(
-        make_compute_pack(SetValue(0.),
-                          InitialScalarData(m_p.initial_params, m_dx)),
-        m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
+    double my_scalar_mass = m_p.potential_params.scalar_mass;
+    BoxLoops::loop(make_compute_pack(SetValue(0.),
+                                     InitialScalarData(m_p.initial_params, m_dx,
+                                                       my_scalar_mass)),
+                   m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
 
     fillAllGhosts();
     // Note that the GammaCaluculator is not necessary since the data is
@@ -93,7 +93,8 @@ void CosmoLevel::initialData()
     BoxLoops::loop(cosmo_diagnostics, m_state_new, m_state_diagnostics,
                    EXCLUDE_GHOST_CELLS);
     // Assign initial rho_mean here
-    InitialScalarData initial_scalar_data(m_p.initial_params, m_dx);
+    InitialScalarData initial_scalar_data(m_p.initial_params, m_dx,
+                                          my_scalar_mass);
     m_cosmo_amr.set_rho_mean(initial_scalar_data.compute_initial_rho_mean());
 }
 

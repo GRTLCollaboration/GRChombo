@@ -32,7 +32,6 @@ class SimulationParameters : public SimulationParametersBase
             center; // already read in SimulationParametersBase
         pp.load("G_Newton", G_Newton, 1.0);
         pp.load("scalar_amplitude", initial_params.amplitude, 0.1);
-        pp.load("scalar_mass", initial_params.scalar_mass, 0.1);
         pp.load("scalar_mass", potential_params.scalar_mass, 0.1);
 
         // Lineout params

@@ -134,7 +134,7 @@ extrapolating_vars = phi Pi
 # Evolution parameters
 
 # dt will be dx*dt_multiplier on each grid level
-dt_multiplier = 0.5
+dt_multiplier = 0.25
 stop_time = 100.
 # max_steps = 4
 
