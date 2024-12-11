@@ -10,6 +10,9 @@ verbosity = 0
 # output_path = "" # Main path for all files. Must exist!
 chk_prefix = Cosmo_
 plot_prefix = Cosmop_
+
+# If restarting from the IC Solver or checkpoint, uncomment this and put the 
+# file into the hdf5 folder (need to create this if not there)
 # restart_file = Cosmo_000000.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
@@ -46,8 +49,8 @@ G_Newton = 1.
 # Scalar field initial data
 # These scalar field params make the Hubble length 10 times wavelength of the scalar field 
 scalar_amplitude = 0.00777635
-scalar_mass = 1.0
-scalar_field_mode = 1 # must be an integer
+scalar_mass = 6.28318530718 # 2*n*Pi/L in this example. This makes constaints satisfied initially without initial data solver
+# scalar_field_mode = 1 # must be an integer
 
 # Lineout params
 lineout_num_points = 10

@@ -104,11 +104,13 @@ class CustomExtraction
         {
             for (int i = 0; i < m_num_points; ++i)
             {
+                // header_line[i] =
+                //     "p" + std::to_string(i + 1) + "(" +
+                //     to_string_with_precision(interp_x[i], 2) + "," +
+                //     to_string_with_precision(m_origin[1], 2) + "," +
+                //     to_string_with_precision(m_origin[2], 2) + ")";
                 header_line[i] =
-                    "p" + std::to_string(i + 1) + "(" +
-                    to_string_with_precision(interp_x[i], 2) + "," +
-                    to_string_with_precision(m_origin[1], 2) + "," +
-                    to_string_with_precision(m_origin[2], 2) + ")";
+                    "x = " + to_string_with_precision(interp_x[i], 2);
             }
             output_file.write_header_line(header_line);
         }

@@ -26,12 +26,13 @@ class InitialScalarData
     {
         double amplitude; //!< Amplitude of bump in initial SF bubble
         std::array<double, CH_SPACEDIM>
-            center; //!< Centre of perturbation in initial SF bubble
+            center;         //!< Centre of perturbation in initial SF bubble
+        double scalar_mass; //!< Mass of inittial SF
     };
 
     //! The constructor
-    InitialScalarData(params_t a_params, double a_dx, double a_L, int a_mode)
-        : m_dx(a_dx), m_L(a_L), m_mode(a_mode), m_params(a_params)
+    InitialScalarData(params_t a_params, double a_dx)
+        : m_dx(a_dx), m_params(a_params)
     {
     }
 
@@ -45,8 +46,7 @@ class InitialScalarData
         // ,we choose phi = A sin(2 n pi x/L) and m = 2 n pi/L such that initial
         // rho = constant
         // Calculate the field value
-        data_t phi =
-            m_params.amplitude * sin(2 * m_mode * M_PI * coords.x / m_L);
+        data_t phi = m_params.amplitude * sin(m_params.scalar_mass * coords.x);
 
         // store the vars
         current_cell.store_vars(phi, c_phi);
@@ -66,7 +66,7 @@ class InitialScalarData
         // from rho = 1/2 m^2 phi^2
         // phi0 = A sin(2 pi n x /L)
         // mean of phi0^2 = A^2 sin^2 = 0.5*A^2
-        double rho_mean = 0.5 * m_mode * m_mode *
+        double rho_mean = 0.5 * m_params.scalar_mass * m_params.scalar_mass *
                           (0.5 * m_params.amplitude * m_params.amplitude);
         return rho_mean;
     }
@@ -74,8 +74,6 @@ class InitialScalarData
   protected:
     double m_dx;
     const params_t m_params; //!< The matter initial condition params
-    double m_L;              // box length
-    int m_mode;              // SF mode
 };
 
 #endif /* INITIALSCALARDATA_HPP_ */

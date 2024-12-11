@@ -33,6 +33,7 @@
 #include "SetValue.hpp"
 
 // For lineout
+#include "ConstraintsExtraction.hpp"
 #include "CustomExtraction.hpp"
 
 // Things to do at each advance step, after the RK4 is calculated
@@ -64,8 +65,7 @@ void CosmoLevel::initialData()
 
     BoxLoops::loop(
         make_compute_pack(SetValue(0.),
-                          InitialScalarData(m_p.initial_params, m_dx, m_p.L,
-                                            m_p.scalar_field_mode)),
+                          InitialScalarData(m_p.initial_params, m_dx)),
         m_state_new, m_state_new, INCLUDE_GHOST_CELLS);
 
     fillAllGhosts();
@@ -75,7 +75,7 @@ void CosmoLevel::initialData()
                    EXCLUDE_GHOST_CELLS);
 
     // Set initial K = -sqrt(24 pi <rho>)
-    Potential potential(m_p.potential_params, m_p.L, m_p.scalar_field_mode);
+    Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
     InitialK<ScalarFieldWithPotential> my_initial_K(scalar_field, m_dx,
                                                     m_p.G_Newton);
@@ -92,10 +92,8 @@ void CosmoLevel::initialData()
         scalar_field, m_dx, m_p.G_Newton);
     BoxLoops::loop(cosmo_diagnostics, m_state_new, m_state_diagnostics,
                    EXCLUDE_GHOST_CELLS);
-
     // Assign initial rho_mean here
-    InitialScalarData initial_scalar_data(m_p.initial_params, m_dx, m_p.L,
-                                          m_p.scalar_field_mode);
+    InitialScalarData initial_scalar_data(m_p.initial_params, m_dx);
     m_cosmo_amr.set_rho_mean(initial_scalar_data.compute_initial_rho_mean());
 }
 
@@ -106,18 +104,8 @@ void CosmoLevel::postRestart()
     if (m_time == 0.0)
     {
         fillAllGhosts();
-        // Note that the GammaCaluculator is not necessary since the data is
-        // conformally flat. It is left here for generality.
-        BoxLoops::loop(GammaCalculator(m_dx), m_state_new, m_state_new,
-                       EXCLUDE_GHOST_CELLS);
-
-        // Set initial K = -sqrt(24 pi <rho>)
-        Potential potential(m_p.potential_params, m_p.L, m_p.scalar_field_mode);
+        Potential potential(m_p.potential_params);
         ScalarFieldWithPotential scalar_field(potential);
-        // InitialK<ScalarFieldWithPotential> my_initial_K(scalar_field, m_dx,
-        //                                                 m_p.G_Newton);
-        // BoxLoops::loop(my_initial_K, m_state_new, m_state_new,
-        // EXCLUDE_GHOST_CELLS);
 
         // Calculate constraints and some diagnostics as we need it in tagging
         // criterion
@@ -153,6 +141,44 @@ void CosmoLevel::postRestart()
         pout() << "Calculated K mean as " << m_cosmo_amr.get_K_mean()
                << " at t = " << m_time << " on restart at level " << m_level
                << endl;
+
+        // Use AMR Interpolator and do lineout data extraction
+        // pass the boundary params so that we can use symmetries
+        AMRInterpolator<Lagrange<2>> interpolator(m_cosmo_amr, m_p.origin,
+                                                  m_p.dx, m_p.boundary_params,
+                                                  m_p.verbosity);
+
+        // this should fill all ghosts including the boundary ones according
+        // to the conditions set in params.txt
+        interpolator.refresh();
+
+        // restart works from level 0 to highest level, so want this to happen
+        // last on finest level
+        int write_out_level = m_p.max_level;
+        if (m_level == write_out_level)
+        {
+            // AMRReductions for diagnostic variables
+            AMRReductions<VariableType::diagnostic> amr_reductions_diagnostic(
+                m_gr_amr);
+            double L2_Ham = amr_reductions_diagnostic.norm(c_Ham);
+            double L2_Mom = amr_reductions_diagnostic.norm(c_Mom);
+
+            // only on rank zero write out the result
+            if (procID() == 0)
+            {
+                pout()
+                    << "The initial norm of the constraint vars on restart is "
+                    << L2_Ham << " for the Hamiltonian constraint and "
+                    << L2_Mom << " for the momentum constraints" << endl;
+            }
+
+            // set up the query and execute it
+            int num_points = 3 * m_p.ivN[0];
+            ConstraintsExtraction constraints_extraction(
+                c_Ham, c_Mom, num_points, m_p.L, m_p.center, m_dt, m_time);
+            constraints_extraction.execute_query(
+                &interpolator, m_p.data_path + "constraints_lineout");
+        }
     }
 }
 
@@ -161,7 +187,7 @@ void CosmoLevel::postRestart()
 void CosmoLevel::prePlotLevel()
 {
     fillAllGhosts();
-    Potential potential(m_p.potential_params, m_p.L, m_p.scalar_field_mode);
+    Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
     BoxLoops::loop(
         MatterConstraints<ScalarFieldWithPotential>(
@@ -185,7 +211,7 @@ void CosmoLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
         a_soln, a_soln, INCLUDE_GHOST_CELLS);
 
     // Calculate MatterCCZ4 right hand side with matter_t = ScalarField
-    Potential potential(m_p.potential_params, m_p.L, m_p.scalar_field_mode);
+    Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
     CosmoMovingPunctureGauge cosmo_moving_puncture_gauge(m_p.ccz4_params);
     cosmo_moving_puncture_gauge.set_K_mean(m_cosmo_amr.get_K_mean());
@@ -208,7 +234,7 @@ void CosmoLevel::preTagCells()
 {
     // Pre tagging - fill ghost cells and calculate Ham terms
     fillAllGhosts();
-    Potential potential(m_p.potential_params, m_p.L, m_p.scalar_field_mode);
+    Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
     BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
                        scalar_field, m_dx, m_p.G_Newton, c_Ham,
@@ -243,7 +269,7 @@ void CosmoLevel::specificPostTimeStep()
     if (calculate_diagnostics)
     {
         fillAllGhosts();
-        Potential potential(m_p.potential_params, m_p.L, m_p.scalar_field_mode);
+        Potential potential(m_p.potential_params);
         ScalarFieldWithPotential scalar_field(potential);
         BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
                            scalar_field, m_dx, m_p.G_Newton, c_Ham,
@@ -277,18 +303,18 @@ void CosmoLevel::specificPostTimeStep()
             double chi_mean = amr_reductions_evolution.sum(c_chi) / phys_vol;
 
             // Write output file
-            SmallDataIO constraints_file(m_p.data_path + "data_out", m_dt,
-                                         m_time, m_restart_time,
-                                         SmallDataIO::APPEND, first_step);
-            constraints_file.remove_duplicate_time_data();
+            SmallDataIO data_out_file(m_p.data_path + "data_out", m_dt, m_time,
+                                      m_restart_time, SmallDataIO::APPEND,
+                                      first_step);
+            data_out_file.remove_duplicate_time_data();
             if (first_step)
             {
-                constraints_file.write_header_line(
+                data_out_file.write_header_line(
                     {"L^2_Ham", "L^2_Mom", "<chi>", "<rho>", "<K>"});
             }
-            constraints_file.write_time_data_line({L2_Ham, L2_Mom, chi_mean,
-                                                   m_cosmo_amr.get_rho_mean(),
-                                                   m_cosmo_amr.get_K_mean()});
+            data_out_file.write_time_data_line({L2_Ham, L2_Mom, chi_mean,
+                                                m_cosmo_amr.get_rho_mean(),
+                                                m_cosmo_amr.get_K_mean()});
 
             // Use AMR Interpolator and do lineout data extraction
             // set up an interpolator
@@ -303,27 +329,15 @@ void CosmoLevel::specificPostTimeStep()
             interpolator.refresh();
 
             // set up the query and execute it
-            std::array<double, CH_SPACEDIM> extraction_points = {
+            std::array<double, CH_SPACEDIM> extraction_origin = {
                 0., m_p.L / 2, m_p.L / 2}; // specified point {x \in [0,L],y \in
                                            // [0,L], z \in [0,L]}
             // rho lineout
             CustomExtraction rho_extraction(c_rho, m_p.lineout_num_points,
-                                            m_p.L, extraction_points, m_dt,
+                                            m_p.L, extraction_origin, m_dt,
                                             m_time);
             rho_extraction.execute_query(&interpolator,
-                                         m_p.data_path + "rho_" + "lineout");
-            // Ham lineout
-            CustomExtraction Ham_extraction(c_Ham, m_p.lineout_num_points,
-                                            m_p.L, extraction_points, m_dt,
-                                            m_time);
-            Ham_extraction.execute_query(&interpolator,
-                                         m_p.data_path + "Ham_" + "lineout");
-            // Mom lineout
-            CustomExtraction Mom_extraction(c_Mom, m_p.lineout_num_points,
-                                            m_p.L, extraction_points, m_dt,
-                                            m_time);
-            Mom_extraction.execute_query(&interpolator,
-                                         m_p.data_path + "Mom_" + "lineout");
+                                         m_p.data_path + "rho_lineout");
         }
     }
 }
