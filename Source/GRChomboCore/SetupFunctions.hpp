@@ -191,11 +191,13 @@ void setupAMRObject(GRAMR &gr_amr, AMRLevelFactory &a_factory)
         eps /= chombo_params.ref_ratios[ilevel];
     gr_amr.timeEps(std::min(1.e-6, eps / 2.));
 
-    // Set up input files
+    // Always set up data folder if it doesn't already exist
+    if (!FilesystemTools::directory_exists(chombo_params.data_path))
+        FilesystemTools::mkdir_recursive(chombo_params.data_path);
+
+    // Set up hdf5 files for input or output
     if (!chombo_params.restart_from_checkpoint)
     {
-        if (!FilesystemTools::directory_exists(chombo_params.data_path))
-            FilesystemTools::mkdir_recursive(chombo_params.data_path);
 
 #ifdef CH_USE_HDF5
         if (!FilesystemTools::directory_exists(chombo_params.hdf5_path))

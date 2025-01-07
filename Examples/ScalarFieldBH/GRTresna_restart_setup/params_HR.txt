@@ -10,21 +10,24 @@ verbosity = 0
 # output_path = "" # Main path for all files. Must exist!
 chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
-# restart_file = ScalarField_000000.3d.hdf5
+
+# If restarting from the IC Solver, uncomment this and put the 
+# file into the hdf5 folder (need to create this if not there)
+restart_file = hdf5_HR/InitialDataFinal.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
 checkpoint_interval = 500
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
 plot_interval = 1
-num_plot_vars = 2
-plot_vars = chi phi
+num_plot_vars = 4
+plot_vars = chi phi Ham Mom
 
 # subpaths - specific directories for hdf5, pout, extraction data
 # (these are created at runtime)
-hdf5_subpath = "hdf5"
-pout_subpath = "pout"
-data_subpath = "data"
+hdf5_subpath = "hdf5_HR"
+pout_subpath = "pout_HR"
+data_subpath = "data_HR"
 
 # change the name of output files
 # pout_prefix = "pout"
@@ -34,23 +37,16 @@ print_progress_only_to_rank_0 = 1
 # write_plot_ghosts = 0
 
 #################################################
-# Initial Data parameters
+# Initial Data and Scalar parameters
 
-# Change the gravitational constant of the Universe!
+# Q: Change the gravitational constant of the Universe!
 # Default is 1.0, for standard geometric units
-# Here we decouple the evolution so the scalar evolved on the
-# metric background without backreaction (this avoids the need
-# to solve the constaints)
-G_Newton = 0.0
+# G_Newton = 1.0
 
-# Scalar field initial data
-scalar_amplitude = 0.1
-scalar_width = 5.0
-scalar_mass = 0.2
-
-# Kerr BH data
-kerr_mass = 1.0
-kerr_spin = 0.0
+# Scalar field and BH initial data
+scalar_amplitude = 1e-5
+bh_mass = 1.0
+scalar_mass = 0.1
 
 #################################################
 # Grid parameters
@@ -63,10 +59,10 @@ kerr_spin = 0.0
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
 N_full = 128
-L_full = 256
+L_full = 128
 
 # Maximum number of times you can regrid above coarsest level
-max_level = 6 # There are (max_level+1) grids, so min is zero
+max_level = 3 # There are (max_level+1) grids, so min is zero
 
 # Frequency of regridding at each level and thresholds on the tagging
 # Need one for each level except the top one, ie max_level items
@@ -79,10 +75,12 @@ regrid_interval   = 0   0   0   0   0   0
 regrid_interval = 0 0 0 0 0 0
 
 # Max and min box sizes
-max_box_size = 16
-min_box_size = 16
+max_box_size = 8
+min_box_size = 8
 
-tag_buffer_size = 0 # this example uses a fixed grid
+# this example uses a fixed grid
+# so tag precisely
+tag_buffer_size = 0 
 
 # grid_buffer_size = 8
 # fill_ratio = 0.7
@@ -99,7 +97,7 @@ isPeriodic = 0 0 0
 # 3 = extrapolating, 4 = mixed
 # (see BoundaryConditions.hpp for details)
 hi_boundary = 4 4 4
-lo_boundary = 2 2 2
+lo_boundary = 4 4 2
 
 # if reflective boundaries selected, must set
 # parity of all vars (in order given by UserVariables.hpp)
@@ -121,7 +119,7 @@ nonzero_asymptotic_vars = chi h11 h22 h33 lapse
 nonzero_asymptotic_values = 1.0 1.0 1.0 1.0 1.0
 
 # if you are using extrapolating BC:
-extrapolation_order = 1
+extrapolation_order = 0
 num_extrapolating_vars = 2
 extrapolating_vars = phi Pi
 
@@ -135,7 +133,6 @@ stop_time = 100.0
 
 # Spatial derivative order (only affects CCZ4 RHS)
 max_spatial_derivative_order = 4 # can be 4 or 6
-
 nan_check = 1
 
 # Lapse evolution
@@ -156,7 +153,7 @@ kappa3 = 0.
 covariantZ4 = 1 # 0: keep kappa1; 1 [default]: replace kappa1 -> kappa1/lapse
 
 # coefficient for KO numerical dissipation
-sigma = 0.3
+sigma = 0.5
 
 # min_chi = 1.e-4
 # min_lapse = 1.e-4
