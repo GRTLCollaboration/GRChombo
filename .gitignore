@@ -10,6 +10,7 @@ ipo_out.optrpt
 # Scheduler files
 jobscript*
 *.pbs
+*.sh
 
 # Example output
 Weyl_integral*
@@ -37,3 +38,4 @@ log*
 *.dSYM
 *.patch
 *.log
+*.err
