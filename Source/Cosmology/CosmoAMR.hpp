@@ -45,7 +45,7 @@ class CosmoAMR : public GRAMR
 #endif
     }
 
-    // Setters and getters of porper-volume-averaged of each variable to
+    // Setters and getters of proper-volume-averaged of each variable to
     // CosmoAMR object
     void set_K_mean(double a_K_mean) { m_K_mean = a_K_mean; }
     double get_K_mean() { return m_K_mean; }
