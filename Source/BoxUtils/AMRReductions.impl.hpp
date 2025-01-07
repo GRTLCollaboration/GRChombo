@@ -108,6 +108,9 @@ Real AMRReductions<var_t>::norm(const Interval &a_vars,
     {
         norm /=
             pow(m_domain_volume, 1.0 / static_cast<double>(a_norm_exponent));
+    }
+    else
+    {
         norm *= static_cast<double>(m_symmetry_factor);
     }
 
