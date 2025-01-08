@@ -97,7 +97,7 @@ class CosmoMovingPunctureGauge
             matter_rhs.B[i] += matter_term_Gamma;
         }
     }
-    
+
     void set_K_mean(double a_K_mean) { m_K_mean = a_K_mean; }
 };
 
