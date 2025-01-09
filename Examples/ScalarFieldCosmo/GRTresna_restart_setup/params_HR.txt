@@ -50,7 +50,6 @@ G_Newton = 1.
 # These scalar field params make the Hubble length 10 times wavelength of the scalar field 
 scalar_amplitude = 1e-1 # same as dphi in solver
 scalar_mass = 1e-1 # same as used in solver
-# scalar_field_mode = 1 # must be an integer
 
 # Lineout params
 lineout_num_points = 10
