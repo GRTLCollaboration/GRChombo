@@ -55,5 +55,5 @@ ax2.set_xlim([x_HR[0],x_HR[-1]])
 
 ax1.legend(loc="best")
 
-plt.savefig('constraint_lineout.png',dpi=256, bbox_inches='tight')
+plt.savefig('constraints_lineout.png',dpi=256, bbox_inches='tight')
 plt.close()
