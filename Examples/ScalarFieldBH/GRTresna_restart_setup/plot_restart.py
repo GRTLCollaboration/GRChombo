@@ -13,13 +13,13 @@ plt.rcParams.update({'figure.figsize'    :  '6, 4.2'})
 plt.rcParams.update({'figure.autolayout': True})
 
 # Read data
-x_LR = np.loadtxt('data_LR/constraint_lineout.dat')[:,0]
-Ham_LR = np.loadtxt('data_LR/constraint_lineout.dat')[:,1]
-Mom_LR = np.loadtxt('data_LR/constraint_lineout.dat')[:,2]
+x_LR = np.loadtxt('../data_LR/constraint_lineout.dat')[:,0]
+Ham_LR = np.loadtxt('../data_LR/constraint_lineout.dat')[:,1]
+Mom_LR = np.loadtxt('../data_LR/constraint_lineout.dat')[:,2]
 
-x_HR = np.loadtxt('data_HR/constraint_lineout.dat')[:,0]
-Ham_HR = np.loadtxt('data_HR/constraint_lineout.dat')[:,1]
-Mom_HR = np.loadtxt('data_HR/constraint_lineout.dat')[:,2]
+x_HR = np.loadtxt('../data_HR/constraint_lineout.dat')[:,0]
+Ham_HR = np.loadtxt('../data_HR/constraint_lineout.dat')[:,1]
+Mom_HR = np.loadtxt('../data_HR/constraint_lineout.dat')[:,2]
 
 fig = plt.figure(figsize=(8,6))
 ax1 = plt.subplot(211)
@@ -55,5 +55,5 @@ ax2.set_xlim([x_HR[0],x_HR[-1]])
 
 ax1.legend(loc="best")
 
-plt.savefig('constraint_lineout.png',dpi=256, bbox_inches='tight')
+plt.savefig('constraints_lineout.png',dpi=256, bbox_inches='tight')
 plt.close()

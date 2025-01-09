@@ -25,9 +25,9 @@ plot_vars = chi phi rho_scaled S_scaled K_scaled Ham Mom
 
 # subpaths - specific directories for hdf5, pout, extraction data
 # (these are created at runtime)
-hdf5_subpath = "hdf5"
-pout_subpath = "pout"
-data_subpath = "data"
+hdf5_subpath = "hdf5_HR"
+pout_subpath = "pout_HR"
+data_subpath = "data_HR"
 
 # change the name of output files
 # pout_prefix = "pout"
@@ -50,7 +50,6 @@ G_Newton = 1.
 # These scalar field params make the Hubble length 10 times wavelength of the scalar field 
 scalar_amplitude = 1e-1 # same as dphi in solver
 scalar_mass = 1e-1 # same as used in solver
-# scalar_field_mode = 1 # must be an integer
 
 # Lineout params
 lineout_num_points = 10

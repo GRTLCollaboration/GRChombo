@@ -13,13 +13,13 @@ plt.rcParams.update({'figure.figsize'    :  '6, 4.2'})
 plt.rcParams.update({'figure.autolayout': True})
 
 # Read data
-x_LR = np.loadtxt('data_LR/constraints_lineout.dat')[:,0]
-Ham_LR = np.loadtxt('data_LR/constraints_lineout.dat')[:,1]
-Mom_LR = np.loadtxt('data_LR/constraints_lineout.dat')[:,2]
+x_LR = np.loadtxt('../data_LR/constraints_lineout.dat')[:,0]
+Ham_LR = np.loadtxt('../data_LR/constraints_lineout.dat')[:,1]
+Mom_LR = np.loadtxt('../data_LR/constraints_lineout.dat')[:,2]
 
-x_HR = np.loadtxt('data_HR/constraints_lineout.dat')[:,0]
-Ham_HR = np.loadtxt('data_HR/constraints_lineout.dat')[:,1]
-Mom_HR = np.loadtxt('data_HR/constraints_lineout.dat')[:,2]
+x_HR = np.loadtxt('../data_HR/constraints_lineout.dat')[:,0]
+Ham_HR = np.loadtxt('../data_HR/constraints_lineout.dat')[:,1]
+Mom_HR = np.loadtxt('../data_HR/constraints_lineout.dat')[:,2]
 
 fig = plt.figure(figsize=(8,6))
 ax1 = plt.subplot(211)

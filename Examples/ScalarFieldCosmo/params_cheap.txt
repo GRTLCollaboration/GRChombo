@@ -49,8 +49,7 @@ G_Newton = 1.
 # Scalar field initial data
 # These scalar field params make the Hubble length 10 times wavelength of the scalar field 
 scalar_amplitude = 0.00777635
-scalar_mass = 6.28318530718 # 2*n*Pi/L in this example. This makes constaints satisfied initially without initial data solver
-# scalar_field_mode = 1 # must be an integer
+scalar_mass = 6.28318530718 # 2*n*Pi/L in this example. This makes constraints satisfied initially without initial data solver
 
 # Lineout params
 lineout_num_points = 10
