@@ -15,13 +15,11 @@
 #include "VarsTools.hpp"
 
 inline Constraints::Constraints(
-    double dx, int a_c_Ham, const Interval &a_c_Moms,
-    const double a_c_chi_min,
+    double dx, int a_c_Ham, const Interval &a_c_Moms, const double a_c_chi_min,
     int a_c_Ham_abs_terms /*defaulted*/,
     const Interval &a_c_Moms_abs_terms /*defaulted*/,
     double cosmological_constant /*defaulted*/)
-    : m_deriv(dx), m_c_Ham(a_c_Ham), m_c_Moms(a_c_Moms),
-      m_min_chi(a_c_chi_min),
+    : m_deriv(dx), m_c_Ham(a_c_Ham), m_c_Moms(a_c_Moms), m_min_chi(a_c_chi_min),
       m_c_Ham_abs_terms(a_c_Ham_abs_terms),
       m_c_Moms_abs_terms(a_c_Moms_abs_terms),
       m_cosmological_constant(cosmological_constant)
