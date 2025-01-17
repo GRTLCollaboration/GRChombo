@@ -16,10 +16,12 @@
 
 inline Constraints::Constraints(
     double dx, int a_c_Ham, const Interval &a_c_Moms,
+    const double a_c_chi_min,
     int a_c_Ham_abs_terms /*defaulted*/,
     const Interval &a_c_Moms_abs_terms /*defaulted*/,
     double cosmological_constant /*defaulted*/)
     : m_deriv(dx), m_c_Ham(a_c_Ham), m_c_Moms(a_c_Moms),
+      m_min_chi(a_c_chi_min),
       m_c_Ham_abs_terms(a_c_Ham_abs_terms),
       m_c_Moms_abs_terms(a_c_Moms_abs_terms),
       m_cosmological_constant(cosmological_constant)
@@ -86,7 +88,7 @@ Constraints::Vars<data_t> Constraints::constraint_equations(
         }
         Tensor<1, data_t> covd_A_term = 0.0;
         Tensor<1, data_t> d1_chi_term = 0.0;
-        const data_t chi_regularised = simd_max(1e-6, vars.chi);
+        const data_t chi_regularised = simd_max(m_min_chi, vars.chi);
         FOR(i, j, k)
         {
             covd_A_term[i] += h_UU[j][k] * covd_A[k][j][i];

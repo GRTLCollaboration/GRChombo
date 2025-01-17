@@ -78,7 +78,7 @@ void ScalarFieldLevel::postRestart()
     ScalarFieldWithPotential scalar_field(potential);
     BoxLoops::loop(
         MatterConstraints<ScalarFieldWithPotential>(
-            scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom, c_Mom)),
+            scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom, c_Mom), m_p.min_chi),
         m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 
     // Use AMR Interpolator and do lineout data extraction
@@ -127,7 +127,7 @@ void ScalarFieldLevel::prePlotLevel()
     ScalarFieldWithPotential scalar_field(potential);
     BoxLoops::loop(
         MatterConstraints<ScalarFieldWithPotential>(
-            scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom, c_Mom)),
+            scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom, c_Mom), m_p.min_chi),
         m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 }
 #endif

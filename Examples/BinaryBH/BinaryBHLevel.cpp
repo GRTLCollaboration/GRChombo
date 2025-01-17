@@ -173,7 +173,7 @@ void BinaryBHLevel::specificPostTimeStep()
     if (m_p.calculate_constraint_norms)
     {
         fillAllGhosts();
-        BoxLoops::loop(Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3)),
+        BoxLoops::loop(Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3), m_p.min_chi),
                        m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
         if (m_level == 0)
         {
@@ -226,7 +226,7 @@ void BinaryBHLevel::prePlotLevel()
         BoxLoops::loop(
             make_compute_pack(
                 Weyl4(m_p.extraction_params.center, m_dx, m_p.formulation),
-                Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3))),
+                Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3), m_p.min_chi)),
             m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
     }
 }
