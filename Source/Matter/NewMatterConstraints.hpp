@@ -52,7 +52,7 @@ template <class matter_t> class MatterConstraints : public Constraints
     */
     MatterConstraints(const matter_t a_matter, double dx, double G_Newton,
                       int a_c_Ham, const Interval &a_c_Moms,
-                      const double a_c_chi_min, int a_c_Ham_abs_terms = -1,
+                      int a_c_Ham_abs_terms = -1,
                       const Interval &a_c_Moms_abs_terms = Interval());
 
     //! The compute member which calculates the constraints at each point in the

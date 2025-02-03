@@ -76,10 +76,10 @@ void ScalarFieldLevel::postRestart()
     fillAllGhosts();
     Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
-    BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
-                       scalar_field, m_dx, m_p.G_Newton, c_Ham,
-                       Interval(c_Mom, c_Mom), m_p.min_chi),
-                   m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+    BoxLoops::loop(
+        MatterConstraints<ScalarFieldWithPotential>(
+            scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom, c_Mom)),
+        m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 
     // Use AMR Interpolator and do lineout data extraction
     // pass the boundary params so that we can use symmetries
@@ -125,10 +125,10 @@ void ScalarFieldLevel::prePlotLevel()
     fillAllGhosts();
     Potential potential(m_p.potential_params);
     ScalarFieldWithPotential scalar_field(potential);
-    BoxLoops::loop(MatterConstraints<ScalarFieldWithPotential>(
-                       scalar_field, m_dx, m_p.G_Newton, c_Ham,
-                       Interval(c_Mom, c_Mom), m_p.min_chi),
-                   m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+    BoxLoops::loop(
+        MatterConstraints<ScalarFieldWithPotential>(
+            scalar_field, m_dx, m_p.G_Newton, c_Ham, Interval(c_Mom, c_Mom)),
+        m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
 }
 #endif
 

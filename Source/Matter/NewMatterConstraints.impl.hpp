@@ -14,11 +14,10 @@
 template <class matter_t>
 MatterConstraints<matter_t>::MatterConstraints(
     const matter_t a_matter, double dx, double G_Newton, int a_c_Ham,
-    const Interval &a_c_Moms, const double a_c_chi_min,
-    int a_c_Ham_abs_terms /* defaulted*/,
+    const Interval &a_c_Moms, int a_c_Ham_abs_terms /* defaulted*/,
     const Interval &a_c_Moms_abs_terms /*defaulted*/)
-    : Constraints(dx, a_c_Ham, a_c_Moms, a_c_chi_min, a_c_Ham_abs_terms,
-                  a_c_Moms_abs_terms, 0.0 /*No cosmological constant*/),
+    : Constraints(dx, a_c_Ham, a_c_Moms, a_c_Ham_abs_terms, a_c_Moms_abs_terms,
+                  0.0 /*No cosmological constant*/),
       my_matter(a_matter), m_G_Newton(G_Newton)
 {
 }

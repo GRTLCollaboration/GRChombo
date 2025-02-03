@@ -46,7 +46,7 @@ class Constraints
     // the constraint violations
     // Any zero-length Interval or negative var is not calculated
     Constraints(double dx, int a_c_Ham, const Interval &a_c_Moms,
-                const double a_c_chi_min, int a_c_Ham_abs_terms = -1,
+                int a_c_Ham_abs_terms = -1,
                 const Interval &a_c_Moms_abs_terms = Interval(),
                 double cosmological_constant = 0.0);
 
@@ -56,7 +56,6 @@ class Constraints
     const FourthOrderDerivatives m_deriv;
     const int m_c_Ham;
     const Interval m_c_Moms;
-    const double m_min_chi;
     const int m_c_Ham_abs_terms = -1;
     const Interval m_c_Moms_abs_terms;
     double m_cosmological_constant;
