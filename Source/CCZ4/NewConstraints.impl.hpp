@@ -86,12 +86,11 @@ Constraints::Vars<data_t> Constraints::constraint_equations(
         }
         Tensor<1, data_t> covd_A_term = 0.0;
         Tensor<1, data_t> d1_chi_term = 0.0;
-        const data_t chi_regularised = simd_max(1e-6, vars.chi);
         FOR(i, j, k)
         {
             covd_A_term[i] += h_UU[j][k] * covd_A[k][j][i];
             d1_chi_term[i] += -GR_SPACEDIM * h_UU[j][k] * vars.A[i][j] *
-                              d1.chi[k] / (2 * chi_regularised);
+                              d1.chi[k] / (2 * vars.chi);
         }
         FOR(i)
         {
