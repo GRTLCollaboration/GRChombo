@@ -73,13 +73,15 @@ void BinaryBHLevel::specificEvalRHS(GRLevelData &a_soln, GRLevelData &a_rhs,
     if (m_p.max_spatial_derivative_order == 4)
     {
         BoxLoops::loop(CCZ4RHS<MovingPunctureGauge, FourthOrderDerivatives>(
-                           m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation, m_p.rescale_sigma),
+                           m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
+                           m_p.rescale_sigma),
                        a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
     }
     else if (m_p.max_spatial_derivative_order == 6)
     {
         BoxLoops::loop(CCZ4RHS<MovingPunctureGauge, SixthOrderDerivatives>(
-                           m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation, m_p.rescale_sigma),
+                           m_p.ccz4_params, m_dx, m_p.sigma, m_p.formulation,
+                           m_p.rescale_sigma),
                        a_soln, a_rhs, EXCLUDE_GHOST_CELLS);
     }
 }

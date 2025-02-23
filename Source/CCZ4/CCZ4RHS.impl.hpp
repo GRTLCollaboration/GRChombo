@@ -17,7 +17,8 @@
 template <class gauge_t, class deriv_t>
 inline CCZ4RHS<gauge_t, deriv_t>::CCZ4RHS(
     CCZ4_params_t<typename gauge_t::params_t> a_params, double a_dx,
-    double a_sigma, int a_formulation, int a_rescale_sigma, double a_cosmological_constant)
+    double a_sigma, int a_formulation, int a_rescale_sigma,
+    double a_cosmological_constant)
     : m_params(a_params), m_gauge(a_params), m_sigma(a_sigma),
       m_formulation(a_formulation), m_rescale_sigma(a_rescale_sigma),
       m_cosmological_constant(a_cosmological_constant), m_deriv(a_dx)
