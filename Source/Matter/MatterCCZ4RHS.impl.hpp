@@ -43,8 +43,11 @@ void MatterCCZ4RHS<matter_t, gauge_t, deriv_t>::compute(
     // add evolution of matter fields themselves
     my_matter.add_matter_rhs(matter_rhs, matter_vars, d1, d2, advec);
 
+    // rescale sigma with lapse so that it is zero near black holes
+    auto sigma_c = this->m_sigma * pow(matter_vars.lapse, 6.0);
+
     // Add dissipation to all terms
-    this->m_deriv.add_dissipation(matter_rhs, current_cell, this->m_sigma);
+    this->m_deriv.add_dissipation(matter_rhs, current_cell, sigma_c);
 
     // Write the rhs into the output FArrayBox
     current_cell.store_vars(matter_rhs);

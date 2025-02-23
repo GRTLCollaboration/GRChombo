@@ -49,7 +49,10 @@ void CCZ4RHS<gauge_t, deriv_t>::compute(Cell<data_t> current_cell) const
     Vars<data_t> rhs;
     rhs_equation(rhs, vars, d1, d2, advec);
 
-    m_deriv.add_dissipation(rhs, current_cell, m_sigma);
+    // rescale sigma with lapse so that it is zero near puncture
+    auto sigma_c = this->m_sigma * pow(vars.lapse, 6.0);
+
+    m_deriv.add_dissipation(rhs, current_cell, sigma_c);
 
     current_cell.store_vars(rhs); // Write the rhs into the output FArrayBox
 }
