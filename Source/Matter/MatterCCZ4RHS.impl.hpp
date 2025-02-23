@@ -14,10 +14,13 @@
 template <class matter_t, class gauge_t, class deriv_t>
 MatterCCZ4RHS<matter_t, gauge_t, deriv_t>::MatterCCZ4RHS(
     matter_t a_matter, CCZ4_params_t<typename gauge_t::params_t> a_params,
-    double a_dx, double a_sigma, int a_formulation, double a_G_Newton, int a_rescale_sigma)
-    : CCZ4RHS<gauge_t, deriv_t>(a_params, a_dx, a_sigma, a_formulation, a_rescale_sigma,
+    double a_dx, double a_sigma, int a_formulation, double a_G_Newton,
+    int a_rescale_sigma)
+    : CCZ4RHS<gauge_t, deriv_t>(a_params, a_dx, a_sigma, a_formulation,
+                                a_rescale_sigma,
                                 0.0 /*No cosmological constant*/),
-      my_matter(a_matter), m_G_Newton(a_G_Newton), m_rescale_sigma(a_rescale_sigma)
+      my_matter(a_matter), m_G_Newton(a_G_Newton),
+      m_rescale_sigma(a_rescale_sigma)
 {
 }
 

@@ -85,7 +85,7 @@ class CCZ4RHS
         double a_dx,                  //!< The grid spacing
         double a_sigma,               //!< Kreiss-Oliger dissipation coefficient
         int a_formulation = USE_CCZ4, //!< Switches between CCZ4, BSSN,...
-        int a_rescale_sigma = 0,      //!< Allows a space dependent KO coefficient
+        int a_rescale_sigma = 0, //!< Allows a space dependent KO coefficient
         double a_cosmological_constant = 0 //!< Value of the cosmological const.
     );
 
