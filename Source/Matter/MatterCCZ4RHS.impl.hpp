@@ -14,10 +14,10 @@
 template <class matter_t, class gauge_t, class deriv_t>
 MatterCCZ4RHS<matter_t, gauge_t, deriv_t>::MatterCCZ4RHS(
     matter_t a_matter, CCZ4_params_t<typename gauge_t::params_t> a_params,
-    double a_dx, double a_sigma, int a_formulation, double a_G_Newton)
-    : CCZ4RHS<gauge_t, deriv_t>(a_params, a_dx, a_sigma, a_formulation,
+    double a_dx, double a_sigma, int a_formulation, double a_G_Newton, int a_rescale_sigma)
+    : CCZ4RHS<gauge_t, deriv_t>(a_params, a_dx, a_sigma, a_formulation, a_rescale_sigma,
                                 0.0 /*No cosmological constant*/),
-      my_matter(a_matter), m_G_Newton(a_G_Newton)
+      my_matter(a_matter), m_G_Newton(a_G_Newton), m_rescale_sigma(a_rescale_sigma)
 {
 }
 
@@ -43,11 +43,20 @@ void MatterCCZ4RHS<matter_t, gauge_t, deriv_t>::compute(
     // add evolution of matter fields themselves
     my_matter.add_matter_rhs(matter_rhs, matter_vars, d1, d2, advec);
 
-    // rescale sigma with lapse so that it is zero near black holes
-    auto sigma_c = this->m_sigma * pow(matter_vars.lapse, 6.0);
+    data_t sigma; // KO coefficient
+    if (m_rescale_sigma == 1)
+    {
+        // rescale KO coefficient with lapse so that it is zero near puncture
+        sigma = this->m_sigma * pow(matter_vars.lapse, 6.0);
+    }
+    else
+    {
+        // constant KO coefficient
+        sigma = this->m_sigma;
+    }
 
     // Add dissipation to all terms
-    this->m_deriv.add_dissipation(matter_rhs, current_cell, sigma_c);
+    this->m_deriv.add_dissipation(matter_rhs, current_cell, sigma);
 
     // Write the rhs into the output FArrayBox
     current_cell.store_vars(matter_rhs);

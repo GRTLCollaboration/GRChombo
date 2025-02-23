@@ -17,9 +17,9 @@
 template <class gauge_t, class deriv_t>
 inline CCZ4RHS<gauge_t, deriv_t>::CCZ4RHS(
     CCZ4_params_t<typename gauge_t::params_t> a_params, double a_dx,
-    double a_sigma, int a_formulation, double a_cosmological_constant)
+    double a_sigma, int a_formulation, int a_rescale_sigma, double a_cosmological_constant)
     : m_params(a_params), m_gauge(a_params), m_sigma(a_sigma),
-      m_formulation(a_formulation),
+      m_formulation(a_formulation), m_rescale_sigma(a_rescale_sigma),
       m_cosmological_constant(a_cosmological_constant), m_deriv(a_dx)
 {
     // A user who wants to use BSSN should also have damping paramters = 0
@@ -49,10 +49,19 @@ void CCZ4RHS<gauge_t, deriv_t>::compute(Cell<data_t> current_cell) const
     Vars<data_t> rhs;
     rhs_equation(rhs, vars, d1, d2, advec);
 
-    // rescale sigma with lapse so that it is zero near puncture
-    auto sigma_c = this->m_sigma * pow(vars.lapse, 6.0);
+    data_t sigma; // KO coefficient
+    if (m_rescale_sigma == 1)
+    {
+        // rescale KO coefficient with lapse so that it is zero near puncture
+        sigma = this->m_sigma * pow(vars.lapse, 6.0);
+    }
+    else
+    {
+        // constant KO coefficient
+        sigma = this->m_sigma;
+    }
 
-    m_deriv.add_dissipation(rhs, current_cell, sigma_c);
+    m_deriv.add_dissipation(rhs, current_cell, sigma);
 
     current_cell.store_vars(rhs); // Write the rhs into the output FArrayBox
 }

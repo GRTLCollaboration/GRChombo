@@ -89,7 +89,8 @@ class MatterCCZ4RHS : public CCZ4RHS<gauge_t, deriv_t>
     */
     MatterCCZ4RHS(matter_t a_matter, params_t a_params, double a_dx,
                   double a_sigma, int a_formulation = CCZ4RHS<>::USE_CCZ4,
-                  double a_G_Newton = 1.0);
+                  double a_G_Newton = 1.0,
+                  int a_rescale_sigma = 0);
 
     //!  The compute member which calculates the RHS at each point in the box
     //!  \sa matter_rhs_equation()
@@ -110,6 +111,7 @@ class MatterCCZ4RHS : public CCZ4RHS<gauge_t, deriv_t>
     // Class members
     matter_t my_matter;      //!< The matter object, e.g. a scalar field.
     const double m_G_Newton; //!< Newton's constant, set to one by default.
+    int m_rescale_sigma;     //!< Allows a space dependent KO coefficient.
 };
 
 #include "MatterCCZ4RHS.impl.hpp"
