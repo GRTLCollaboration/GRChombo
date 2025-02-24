@@ -119,7 +119,7 @@ void BinaryBHLevel::computeTaggingCriterion(
 #endif /* USE_TWOPUNCTURES */
         auto puncture_coords =
             m_bh_amr.m_puncture_tracker.get_puncture_coords();
-        BoxLoops::loop(TwoPunctureExtractionTaggingCriterion(
+        BoxLoops::loop(TwoPuncturesBoxExtractionTaggingCriterion(
                            m_dx, m_level, m_p.max_level, m_p.extraction_params,
                            puncture_coords, m_p.activate_extraction,
                            puncture_masses),
