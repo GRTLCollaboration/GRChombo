@@ -9,7 +9,6 @@
 #include "BoxLoops.hpp"
 #include "CCZ4RHS.hpp"
 #include "ChiExtractionTaggingCriterion.hpp"
-#include "ChiPunctureExtractionTaggingCriterion.hpp"
 #include "ComputePack.hpp"
 #include "NanCheck.hpp"
 #include "NewConstraints.hpp"
@@ -19,6 +18,7 @@
 #include "SixthOrderDerivatives.hpp"
 #include "SmallDataIO.hpp"
 #include "TraceARemoval.hpp"
+#include "TwoPuncturesBoxExtractionTaggingCriterion.hpp"
 #include "TwoPuncturesInitialData.hpp"
 #include "Weyl4.hpp"
 #include "WeylExtraction.hpp"
@@ -96,8 +96,10 @@ void BinaryBHLevel::specificUpdateODE(GRLevelData &a_soln,
 
 void BinaryBHLevel::preTagCells()
 {
-    // We only use chi in the tagging criterion so only fill the ghosts for chi
-    fillAllGhosts(VariableType::evolution, Interval(c_chi, c_chi));
+    // We only use chi in the tagging criterion when punctures are not
+    // tracked, so only fill the ghosts for chi in this case
+    if (!(m_p.track_punctures))
+        fillAllGhosts(VariableType::evolution, Interval(c_chi, c_chi));
 }
 
 // specify the cells to tag
@@ -117,10 +119,10 @@ void BinaryBHLevel::computeTaggingCriterion(
 #endif /* USE_TWOPUNCTURES */
         auto puncture_coords =
             m_bh_amr.m_puncture_tracker.get_puncture_coords();
-        BoxLoops::loop(ChiPunctureExtractionTaggingCriterion(
+        BoxLoops::loop(TwoPunctureExtractionTaggingCriterion(
                            m_dx, m_level, m_p.max_level, m_p.extraction_params,
                            puncture_coords, m_p.activate_extraction,
-                           m_p.track_punctures, puncture_masses),
+                           puncture_masses),
                        current_state, tagging_criterion);
     }
     else
