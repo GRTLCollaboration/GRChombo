@@ -24,15 +24,12 @@ class TwoPuncturesBoxExtractionTaggingCriterion
     const std::vector<std::array<double, CH_SPACEDIM>> &m_puncture_coords;
 
   public:
-    TwoPuncturesBoxExtractionTaggingCriterion(
-        const double dx, const int a_level, const int a_max_level,
-        const spherical_extraction_params_t a_params,
-        const std::vector<std::array<double, CH_SPACEDIM>> &a_puncture_coords,
-        const bool activate_extraction = false,
-        const std::vector<double> a_puncture_masses = {0.5, 0.5})
-        : m_dx(dx), m_level(a_level), m_max_level(a_max_level),
-          m_params(a_params), m_activate_extraction(activate_extraction),
-          m_puncture_masses(a_puncture_masses),
+    TwoPuncturesBoxExtractionTaggingCriterion(const double dx, const int a_level,
+                               const int a_max_level, const spherical_extraction_params_t a_params,
+                               const std::vector<std::array<double, CH_SPACEDIM>> &a_puncture_coords,
+        const bool activate_extraction = false, const std::vector<double> a_puncture_masses = {0.5, 0.5})
+        : m_dx(dx), m_level(a_level), m_max_level(a_max_level), m_params(a_params),
+          m_activate_extraction(activate_extraction), m_puncture_masses(a_puncture_masses),
           m_puncture_coords(a_puncture_coords){};
 
     template <class data_t> void compute(Cell<data_t> current_cell) const
@@ -40,59 +37,59 @@ class TwoPuncturesBoxExtractionTaggingCriterion
         data_t criterion = 0.0;
 
         double puncture_separation_squared = 0.0;
-        FOR(i)
-        {
-            double displacement =
-                m_puncture_coords[0][i] - m_puncture_coords[1][i];
-            puncture_separation_squared += displacement * displacement;
+        FOR(i) {
+           double displacement = m_puncture_coords[0][i] - m_puncture_coords[1][i];
+           puncture_separation_squared += displacement * displacement;
         }
         // make sure the inner part is regridded around the horizon
         // take L as the length of full grid, so tag inner 1/2
         // of it, which means inner \pm L/4
         // we want each level to be double the innermost one in size
         const double factor = pow(2.0, m_max_level - m_level - 1);
+        // const int m_horizon_max_levels = 9;
+        // const double factor =
+        //     pow(2.0, min(m_horizon_max_levels -
+        //                         m_level - 1,
+        //                     2));
         double sum_masses = m_puncture_masses[0] + m_puncture_masses[1];
 
-        if (puncture_separation_squared > 2.25 * sum_masses * sum_masses)
+        if (puncture_separation_squared > sum_masses * sum_masses)
         {
             // loop over puncture masses
             for (int ipuncture = 0; ipuncture < m_puncture_masses.size();
                  ++ipuncture)
             {
-                // where am i?
-                const Coordinates<data_t> coords(current_cell, m_dx,
+               // where am i?
+               const Coordinates<data_t> coords(current_cell, m_dx,
                                                  m_puncture_coords[ipuncture]);
-                const data_t max_abs_xy =
-                    simd_max(abs(coords.x), abs(coords.y));
-                const data_t max_abs_xyz = simd_max(max_abs_xy, abs(coords.z));
-                auto regrid = simd_compare_lt(
-                    max_abs_xyz, 2.5 * factor * m_puncture_masses[ipuncture]);
-                criterion = simd_conditional(regrid, 100.0, criterion);
+               const data_t max_abs_xy = simd_max(abs(coords.x), abs(coords.y));
+               const data_t max_abs_xyz = simd_max(max_abs_xy, abs(coords.z));
+               auto regrid = simd_compare_lt(max_abs_xyz, 2.5 * factor * m_puncture_masses[ipuncture]);
+               criterion = simd_conditional(regrid, 100.0, criterion);
+            // if (m_level < m_max_level){
+            //     const Coordinates<data_t> coords_c(current_cell, m_dx,
+            //                                         m_params.center);
+            //     const data_t rho = sqrt(coords_c.x * coords_c.x + coords_c.y * coords_c.y);
+            //     auto regrid = simd_compare_lt(
+            //                 rho, 0.7 * factor * sqrt(puncture_separation_squared)) &&
+            //         simd_compare_lt(abs(coords_c.z), 2.5 * m_puncture_masses[ipuncture]);
+            //     // pout() << sqrt(puncture_separation_squared) << endl;
+            //     criterion = simd_conditional(regrid, 100.0, criterion);
+            //     }
             }
         }
-        else if (puncture_separation_squared < 2.25 * sum_masses * sum_masses &&
-                 m_level == m_max_level - 1)
-        {
-            criterion = 0;
-        }
-        else if (puncture_separation_squared < 2.25 * sum_masses * sum_masses &&
-                 m_level == m_max_level - 2)
-        {
+        else {
             // where am i?
             std::array<double, CH_SPACEDIM> puncture_centre;
-            FOR(i)
-            puncture_centre[i] =
-                0.5 * (m_puncture_coords[0][i] + m_puncture_coords[1][i]);
-            const Coordinates<data_t> coords(current_cell, m_dx,
-                                             puncture_centre);
+            FOR(i) puncture_centre[i] = 0.5 * (m_puncture_coords[0][i] + m_puncture_coords[1][i]);
+            const Coordinates<data_t> coords(current_cell, m_dx, puncture_centre);
             const data_t max_abs_xy = simd_max(abs(coords.x), abs(coords.y));
             const data_t max_abs_xyz = simd_max(max_abs_xy, abs(coords.z));
-            auto regrid =
-                simd_compare_lt(max_abs_xyz, 2.5 * factor * sum_masses);
+            auto regrid = simd_compare_lt(max_abs_xyz, 1.5 * factor * sum_masses);
             criterion = simd_conditional(regrid, 100.0, criterion);
         }
 
-        // if extracting weyl data at a given radius, enforce a given resolution
+         // if extracting weyl data at a given radius, enforce a given resolution
         // there
         if (m_activate_extraction)
         {
