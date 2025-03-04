@@ -586,8 +586,8 @@ void BoundaryConditions::fill_boundary_cells_dir(
                 MayDay::Error(
                     "BoundaryCondition::Supplied boundary not supported.");
             } // end switch
-        }     // end iterate over box
-    }         // end iterate over boxes
+        } // end iterate over box
+    } // end iterate over boxes
 }
 
 void BoundaryConditions::fill_sommerfeld_cell(
@@ -833,10 +833,10 @@ void BoundaryConditions::copy_boundary_cells(const Side::LoHiSide a_side,
                             m_dest_box(iv, icomp) = a_src[dind](iv, icomp);
                         }
                     } // end iterate over box
-                }     // end iterate over boxes
-            }         // end if(not periodic)
-        }             // end iterate over spacedims
-    }                 // end test for same box layout
+                } // end iterate over boxes
+            } // end if(not periodic)
+        } // end iterate over spacedims
+    } // end test for same box layout
 }
 
 /// Fill the fine boundary values in a_state
@@ -971,9 +971,9 @@ void BoundaryConditions::interp_boundaries(GRLevelData &a_fine_state,
                         local_stencil.fillFine(m_fine_box, m_coarse_box, iv);
                     }
                 } // end loop box
-            }     // end loop boxes
-        }         // end if is_periodic
-    }             // end loop idir
+            } // end loop boxes
+        } // end if is_periodic
+    } // end loop idir
 }
 
 /// Get the boundary condition for a_dir and a_side
@@ -1028,7 +1028,7 @@ Box BoundaryConditions::get_boundary_box(
         {
             if (offset_lo[idir] > 0) // this direction is a low end boundary
             {
-                if ((idir < a_dir) || (m_params.is_periodic[idir]))
+                if ((idir != a_dir) || (m_params.is_periodic[idir]))
                 {
                     // grow it to fill the corners
                     boundary_box.growLo(idir, m_num_ghosts - shrink_for_coarse);
@@ -1045,7 +1045,7 @@ Box BoundaryConditions::get_boundary_box(
             if (offset_hi[idir] > 0) // this direction is a high end
                                      // boundary
             {
-                if ((idir < a_dir) || (m_params.is_periodic[idir]))
+                if ((idir != a_dir) || (m_params.is_periodic[idir]))
                 {
                     // grow it to fill the corners
                     boundary_box.growHi(idir, m_num_ghosts - shrink_for_coarse);
