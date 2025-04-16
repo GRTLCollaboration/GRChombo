@@ -7,7 +7,7 @@
 verbosity = 0
 
 # location / naming of output files
-# output_path = "" # Main path for all files. Must exist!
+output_path = "/rds/project/rds-YVo7YUJF2mk/dc-kwan1/GRChombo/ScalarFieldCompare/" # Main path for all files. Must exist!
 chk_prefix = ScalarField_
 plot_prefix = ScalarFieldp_
 
@@ -16,10 +16,11 @@ plot_prefix = ScalarFieldp_
 # restart_file = hdf5/InitialConditionsFinal.3d.hdf5
 
 # HDF5files are written every dt = L/N*dt_multiplier*checkpoint_interval
-checkpoint_interval = 500
+checkpoint_interval = -1
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
-plot_interval = 1
+plot_interval = 0
+checkpoint_interval=-1
 num_plot_vars = 4
 plot_vars = chi phi Ham Mom
 
@@ -41,11 +42,11 @@ print_progress_only_to_rank_0 = 1
 
 # Q: Change the gravitational constant of the Universe!
 # Default is 1.0, for standard geometric units
-# G_Newton = 1.0
+G_Newton = 0.0
 
 # Scalar field and BH initial data
-scalar_amplitude = 1e-5
-bh_mass = 1.0
+scalar_amplitude = 0.1
+bh_mass = 0.0
 scalar_mass = 0.2
 
 #################################################
@@ -58,11 +59,11 @@ scalar_mass = 0.2
 # NB - if you have a non-cubic grid, you can specify 'N1' or 'N1_full',
 # 'N2' or 'N2_full' and 'N3' or 'N3_full' ( then dx_coarsest = L/N(max) )
 # NB - the N values need to be multiples of the block_factor
-N_full = 64
-L_full = 128
+N_full = 32
+L_full = 32
 
 # Maximum number of times you can regrid above coarsest level
-max_level = 3 # There are (max_level+1) grids, so min is zero
+max_level = 0 # There are (max_level+1) grids, so min is zero
 
 # Frequency of regridding at each level and thresholds on the tagging
 # Need one for each level except the top one, ie max_level items
@@ -91,7 +92,7 @@ tag_buffer_size = 0
 # Boundary Conditions parameters
 
 #Periodic directions - 0 = false, 1 = true
-isPeriodic = 0 0 0
+isPeriodic = 1 1 1
 # if not periodic, then specify the boundary type
 # 0 = static, 1 = sommerfeld, 2 = reflective
 # 3 = extrapolating, 4 = mixed
@@ -129,7 +130,7 @@ extrapolating_vars = phi Pi
 # dt will be dx*dt_multiplier on each grid level
 dt_multiplier = 0.25
 stop_time = 100.0
-# max_steps = 4
+max_steps = 8
 
 # Spatial derivative order (only affects CCZ4 RHS)
 max_spatial_derivative_order = 4 # can be 4 or 6
@@ -153,7 +154,7 @@ kappa3 = 0.
 covariantZ4 = 1 # 0: keep kappa1; 1 [default]: replace kappa1 -> kappa1/lapse
 
 # coefficient for KO numerical dissipation
-sigma = 0.5
+sigma = 0.3
 
 # min_chi = 1.e-4
 # min_lapse = 1.e-4
