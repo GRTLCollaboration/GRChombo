@@ -32,6 +32,7 @@ class SimulationParameters : public SimulationParametersBase
         pp.load("G_Newton", G_Newton, 1.0);
         pp.load("scalar_amplitude", initial_params.amplitude, 0.1);
         pp.load("bh_mass", initial_params.bh_mass, 1.0);
+        pp.load("scalar_width", initial_params.width, 1.0);
         pp.load("scalar_mass", potential_params.scalar_mass, 0.1);
 
 #ifdef USE_AHFINDER

@@ -19,7 +19,7 @@ plot_prefix = ScalarFieldp_
 checkpoint_interval = -1
 # set to 0 to turn off plot files (except at t=0 and t=stop_time)
 # set to -1 to never ever print plotfiles
-plot_interval = 0
+plot_interval = 1
 checkpoint_interval=-1
 num_plot_vars = 4
 plot_vars = chi phi Ham Mom
@@ -46,8 +46,9 @@ G_Newton = 0.0
 
 # Scalar field and BH initial data
 scalar_amplitude = 0.1
-bh_mass = 0.0
 scalar_mass = 0.2
+scalar_width = 5.0
+bh_mass = 0.0
 
 #################################################
 # Grid parameters

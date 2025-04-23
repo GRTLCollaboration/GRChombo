@@ -24,8 +24,9 @@ class InitialScalarData
     //! conditions
     struct params_t
     {
-        double amplitude; //!< Amplitude of initial constant scalar field
+        double amplitude; //!< Amplitude of initial scalar field bubble
         double bh_mass;   //!< Mass on the initial BH
+        double width;     //!< Width of scalar bubble>
         std::array<double, CH_SPACEDIM>
             center; //!< Centre of grid, for working out coords if neeeded
     };
@@ -47,23 +48,27 @@ class InitialScalarData
 
         // set the field values, as constant in space
         ScalarField<Potential>::Vars<data_t> scalar_vars;
-        scalar_vars.phi = m_params.amplitude;
+        VarsTools::assign(scalar_vars, 0.);
+
+        data_t r2 = r * r;
+        scalar_vars.phi =
+            m_params.amplitude *
+            (1.0 + 0.01 * r2 * exp(-pow(r / m_params.width, 2.0)));
         scalar_vars.Pi = 0.0;
 
         // Set the background for a Schwazschild BH in isotropic coords
-        data_t psi = 1.0 + 0.5 * m_params.bh_mass / r;
-        data_t chi = pow(psi, -4.0);
+        //        data_t psi = 1.0 + 0.5 * m_params.bh_mass / r;
+        //        data_t chi = pow(psi, -4.0);
 
         // calculate the appropriate value of K to solve the constraints
-        data_t V_of_phi, dVdphi;
-        m_potential.compute_potential(V_of_phi, dVdphi, scalar_vars);
-        data_t K_squared = 24.0 * M_PI * m_G_Newton * V_of_phi;
-        data_t K = sqrt(K_squared);
+        // data_t V_of_phi, dVdphi;
+        // m_potential.compute_potential(V_of_phi, dVdphi, scalar_vars);
+        // data_t K_squared = 24.0 * M_PI * m_G_Newton * V_of_phi;
+        // data_t K = sqrt(K_squared);
 
         // store the vars
         current_cell.store_vars(scalar_vars);
-        current_cell.store_vars(K, c_K);
-        current_cell.store_vars(chi, c_chi);
+        current_cell.store_vars(1.0, c_chi);
         current_cell.store_vars(1.0, c_h11);
         current_cell.store_vars(1.0, c_h22);
         current_cell.store_vars(1.0, c_h33);
