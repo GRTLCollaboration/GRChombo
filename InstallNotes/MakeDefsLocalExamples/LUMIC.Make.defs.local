@@ -1,0 +1,15 @@
+# Required modules:
+# module load PrgEnv-gnu cray-hdf5-parallel/1.12.2.9
+DIM           = 3
+CXX           = g++
+FC            = gfortran 
+DEBUG         = FALSE
+OPT           = TRUE
+MPI           = TRUE
+OMP           = TRUE
+MPICXX        = mpicxx
+HDFINCFLAGS    = -I${HDF5_DIR}/include
+HDFLIBFLAGS    = -L${HDF5_DIR}/lib -lhdf5 -lz
+HDFMPIINCFLAGS = -I${HDF5_DIR}/include
+HDFMPILIBFLAGS = -L${HDF5_DIR}/lib -lhdf5 -lz
+syslibflags    = -L/opt/cray/pe/libsci/24.03.0/GNU/12.3/x86_64/lib -lsci_gnu
