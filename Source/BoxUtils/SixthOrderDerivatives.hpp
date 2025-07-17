@@ -443,7 +443,7 @@ class SixthOrderDerivatives
 
     template <class data_t, template <typename> class vars_t>
     void add_dissipation(vars_t<data_t> &vars, const Cell<data_t> &current_cell,
-                         const double factor, const int direction) const
+                         const data_t factor, const int direction) const
     {
         const int stride =
             current_cell.get_box_pointers().m_in_stride[direction];
@@ -461,7 +461,7 @@ class SixthOrderDerivatives
 
     template <class data_t, template <typename> class vars_t>
     void add_dissipation(vars_t<data_t> &vars, const Cell<data_t> &current_cell,
-                         const double factor) const
+                         const data_t factor) const
     {
         const auto in_index = current_cell.get_in_index();
         vars.enum_mapping(
@@ -482,7 +482,7 @@ class SixthOrderDerivatives
 
     template <class data_t>
     void add_dissipation(data_t (&out)[NUM_VARS],
-                         const Cell<data_t> &current_cell, const double factor,
+                         const Cell<data_t> &current_cell, const data_t factor,
                          const int direction) const
     {
         const int stride =

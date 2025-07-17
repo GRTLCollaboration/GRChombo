@@ -46,7 +46,8 @@ template <class deriv_t> class DerivativeTestsCompute
 
         Vars<data_t> out_diss;
         VarsTools::assign(out_diss, 0.);
-        m_deriv.add_dissipation(out_diss, current_cell, 1.0);
+        data_t sigma = 1.0;
+        m_deriv.add_dissipation(out_diss, current_cell, sigma);
 
         Tensor<1, data_t> shift_down = {-2., 0., -3.};
         const auto out_advec_down =

@@ -71,7 +71,7 @@ max_level = 9 # There are (max_level+1) grids, so min is zero
 # Need one for each level except the top one, ie max_level items
 # Generally you do not need to regrid frequently on every level
 # Level Regridding: 0   1   2   3   4   5   6   7   8
-regrid_interval =   0   0   0   64  64  64  64  64  64
+regrid_interval =   0   0   1   0   0   0   0   0   0
 regrid_threshold = 0.05
 
 # Max and min box sizes
@@ -128,7 +128,7 @@ stop_time = 2200.0
 # max_steps = 100
 
 # Spatial derivative order (only affects CCZ4 RHS)
-max_spatial_derivative_order = 4 # can be 4 or 6
+max_spatial_derivative_order = 6 # can be 4 or 6
 
 nan_check = 1
 
@@ -151,6 +151,7 @@ covariantZ4 = 1 # 0: keep kappa1; 1 [default]: replace kappa1 -> kappa1/lapse
 
 # coefficient for KO numerical dissipation
 sigma = 1.0
+rescale_sigma = 1
 
 track_punctures = 1
 puncture_tracking_level = 5
@@ -165,19 +166,13 @@ puncture_tracking_level = 5
 
 # extraction_center = 256 256 256 # defaults to center
 activate_extraction = 1
-num_extraction_radii = 2
-extraction_radii = 50.0 100.0
-extraction_levels = 2 1
+num_extraction_radii = 4
+extraction_radii = 60.0 80.0 100.0 120.0
+extraction_levels = 2 2 1 1
 num_points_phi = 24
 num_points_theta = 37
-num_modes = 8
-modes = 2 0 # l m for spherical harmonics
-        2 1
-        2 2
-        4 0
-        4 1
-        4 2
-        4 3
+num_modes = 2
+modes = 2 2 # l m for spherical harmonics
         4 4
 
 # integral_file_prefix = "Weyl4_mode_"
