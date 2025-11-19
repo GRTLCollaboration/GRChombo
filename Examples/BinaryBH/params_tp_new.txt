@@ -245,9 +245,9 @@ TP_spin_plus = 0.0 0.0 0.09509112426035504
 TP_spin_minus = 0.0 0.0 -0.09156449704142013
 
 # Solver params
-TP_npoints_A = 90
-TP_npoints_B = 90
-TP_npoints_phi = 20
+#TP_npoints_A = 30
+#TP_npoints_B = 30
+#TP_npoints_phi = 16
 # TP_Newton_tol = 1e-10
 # TP_Newton_maxit = 5
 TP_epsilon = 1e-6
