@@ -95,6 +95,7 @@ vars_parity            = 0 0 4 6 0 5 0    #chi and hij
                          0 1 2 3          #Theta and Gamma
                          0 1 2 3 1 2 3    #lapse shift and B
 vars_parity_diagnostic = 0 1 2 3          #Ham and Mom
+                         0 0              #Madm and Jadm
 
 # if sommerfeld boundaries selected, must select
 # non zero asymptotic values
@@ -142,6 +143,22 @@ sigma = 0.3
 
 # min_chi = 1.e-4
 # min_lapse = 1.e-4
+
+#################################################
+# Extraction parameters for the ADM quantities
+# Need larger box to extract ADM quantities (at least L=256M)
+
+# extraction_center = 128 128 128 # defaults to center
+activate_extraction = 0
+num_extraction_radii = 3
+extraction_radii = 60. 80. 100.
+extraction_levels = 2 1 0
+num_points_phi = 50
+num_points_theta = 51
+# num_modes = 3
+# modes = 2 0 # l m for spherical harmonics
+#         2 1
+#         2 2
 
 #################################################
 # Apparent Horizon Finder parameters

@@ -6,10 +6,10 @@
 #################################################
 # Filesystem parameters
 
-verbosity = 0
+verbosity = 1
 
 # location / naming of output files
-# output_path = "" # Main path for all files. Must exist!
+output_path = "/cosma8/data/dp034/dc-silv5/GRChombosims/BBHtest" # Main path for all files. Must exist!
 chk_prefix = BinaryBHChk_
 plot_prefix = BinaryBHPlot_
 # restart_file = BinaryBHChk_000000.3d.hdf5
