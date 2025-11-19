@@ -236,6 +236,9 @@ TP_offset_minus = -6.10679
 #TP_swap_xz = false
 TP_momentum_plus = -0.000510846 0.0841746 0.0
 TP_momentum_minus = 0.000510846 -0.0841746 0.0
+# Note that these are the spin values J = chi * M^2 where chi is the 
+# dimensionless spin e.g. for a dimensionless spin of 0.6, 
+# and a target mass of 0.5, the value should be 0.15
 TP_spin_plus = 0.0 0.0 0.0
 TP_spin_minus = 0.0 0.0 0.0
 

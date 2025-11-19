@@ -17,7 +17,7 @@
 template <class gauge_t, class deriv_t>
 inline CCZ4RHS<gauge_t, deriv_t>::CCZ4RHS(
     CCZ4_params_t<typename gauge_t::params_t> a_params, double a_dx,
-    double a_sigma, int a_formulation, int a_rescale_sigma,
+    double a_sigma, int a_formulation, bool a_rescale_sigma,
     double a_cosmological_constant)
     : m_params(a_params), m_gauge(a_params), m_sigma(a_sigma),
       m_formulation(a_formulation), m_rescale_sigma(a_rescale_sigma),
@@ -51,7 +51,7 @@ void CCZ4RHS<gauge_t, deriv_t>::compute(Cell<data_t> current_cell) const
     rhs_equation(rhs, vars, d1, d2, advec);
 
     data_t sigma; // KO coefficient
-    if (m_rescale_sigma == 1)
+    if (m_rescale_sigma)
     {
         // rescale KO coefficient with lapse so that it is zero near puncture
         sigma = this->m_sigma * pow(vars.lapse, 6.0);

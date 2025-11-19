@@ -18,7 +18,7 @@
 #include "SixthOrderDerivatives.hpp"
 #include "SmallDataIO.hpp"
 #include "TraceARemoval.hpp"
-#include "TwoPuncturesBoxExtractionTaggingCriterion.hpp"
+#include "MovingBoxesAndExtractionTaggingCriterion.hpp"
 #include "TwoPuncturesInitialData.hpp"
 #include "Weyl4.hpp"
 #include "WeylExtraction.hpp"
@@ -119,7 +119,7 @@ void BinaryBHLevel::computeTaggingCriterion(
 #endif /* USE_TWOPUNCTURES */
         auto puncture_coords =
             m_bh_amr.m_puncture_tracker.get_puncture_coords();
-        BoxLoops::loop(TwoPuncturesBoxExtractionTaggingCriterion(
+        BoxLoops::loop(MovingBoxesAndExtractionTaggingCriterion(
                            m_dx, m_level, m_p.max_level, m_p.extraction_params,
                            puncture_coords, m_p.activate_extraction,
                            puncture_masses),
@@ -176,23 +176,29 @@ void BinaryBHLevel::specificPostTimeStep()
 
     if (m_p.calculate_constraint_norms)
     {
-        fillAllGhosts();
-        BoxLoops::loop(Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3)),
-                       m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
-        if (m_level == 0)
+        // Only want to calculate on lowest level
+        int constraints_level = 0;
+        bool calculate_constraints = at_level_timestep_multiple(constraints_level);
+        if (calculate_constraints)
         {
-            AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
-            double L2_Ham = amr_reductions.norm(c_Ham);
-            double L2_Mom = amr_reductions.norm(Interval(c_Mom1, c_Mom3));
-            SmallDataIO constraints_file(m_p.data_path + "constraint_norms",
+            fillAllGhosts();
+            BoxLoops::loop(Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3)),
+                       m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+            if (m_level == constraints_level)
+            {
+                AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
+                double L2_Ham = amr_reductions.norm(c_Ham);
+                double L2_Mom = amr_reductions.norm(Interval(c_Mom1, c_Mom3));
+                SmallDataIO constraints_file(m_p.data_path + "constraint_norms",
                                          m_dt, m_time, m_restart_time,
                                          SmallDataIO::APPEND, first_step);
-            constraints_file.remove_duplicate_time_data();
-            if (first_step)
-            {
-                constraints_file.write_header_line({"L^2_Ham", "L^2_Mom"});
+                constraints_file.remove_duplicate_time_data();
+                if (first_step)
+                {
+                    constraints_file.write_header_line({"L^2_Ham", "L^2_Mom"});
+                }
+                constraints_file.write_time_data_line({L2_Ham, L2_Mom});
             }
-            constraints_file.write_time_data_line({L2_Ham, L2_Mom});
         }
     }
 
