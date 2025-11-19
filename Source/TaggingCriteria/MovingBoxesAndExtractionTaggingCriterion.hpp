@@ -3,8 +3,8 @@
  * Please refer to LICENSE in GRChombo's root directory.
  */
 
-#ifndef TWOPUNCTURESBOXEXTRACTIONTAGGINGCRITERION_HPP_
-#define TWOPUNCTURESBOXEXTRACTIONTAGGINGCRITERION_HPP_
+#ifndef MOVINGBOXESANDEXTRACTIONTAGGINGCRITERION_HPP_
+#define MOVINGBOXESANDEXTRACTIONTAGGINGCRITERION_HPP_
 
 #include "Cell.hpp"
 #include "Coordinates.hpp"
@@ -12,7 +12,7 @@
 #include "SphericalExtraction.hpp"
 #include "Tensor.hpp"
 
-class TwoPuncturesBoxExtractionTaggingCriterion
+class MovingBoxesAndExtractionTaggingCriterion
 {
   protected:
     const double m_dx;
@@ -24,7 +24,7 @@ class TwoPuncturesBoxExtractionTaggingCriterion
     const std::vector<std::array<double, CH_SPACEDIM>> &m_puncture_coords;
 
   public:
-    TwoPuncturesBoxExtractionTaggingCriterion(
+    MovingBoxesAndExtractionTaggingCriterion(
         const double dx, const int a_level, const int a_max_level,
         const spherical_extraction_params_t a_params,
         const std::vector<std::array<double, CH_SPACEDIM>> &a_puncture_coords,
@@ -47,15 +47,8 @@ class TwoPuncturesBoxExtractionTaggingCriterion
             puncture_separation_squared += displacement * displacement;
         }
         // make sure the inner part is regridded around the horizon
-        // take L as the length of full grid, so tag inner 1/2
-        // of it, which means inner \pm L/4
         // we want each level to be double the innermost one in size
         const double factor = pow(2.0, m_max_level - m_level - 1);
-        // const int m_horizon_max_levels = 9;
-        // const double factor =
-        //     pow(2.0, min(m_horizon_max_levels -
-        //                         m_level - 1,
-        //                     2));
         double sum_masses = m_puncture_masses[0] + m_puncture_masses[1];
 
         if (puncture_separation_squared > sum_masses * sum_masses)
@@ -73,23 +66,10 @@ class TwoPuncturesBoxExtractionTaggingCriterion
                 auto regrid = simd_compare_lt(
                     max_abs_xyz, 2.5 * factor * m_puncture_masses[ipuncture]);
                 criterion = simd_conditional(regrid, 100.0, criterion);
-                // if (m_level < m_max_level){
-                //     const Coordinates<data_t> coords_c(current_cell, m_dx,
-                //                                         m_params.center);
-                //     const data_t rho = sqrt(coords_c.x * coords_c.x +
-                //     coords_c.y * coords_c.y); auto regrid = simd_compare_lt(
-                //                 rho, 0.7 * factor *
-                //                 sqrt(puncture_separation_squared)) &&
-                //         simd_compare_lt(abs(coords_c.z), 2.5 *
-                //         m_puncture_masses[ipuncture]);
-                //     // pout() << sqrt(puncture_separation_squared) << endl;
-                //     criterion = simd_conditional(regrid, 100.0, criterion);
-                //     }
             }
         }
-        else
+        else // merge boxes when close to merger
         {
-            // where am i?
             std::array<double, CH_SPACEDIM> puncture_centre;
             FOR(i)
             puncture_centre[i] =
@@ -130,4 +110,4 @@ class TwoPuncturesBoxExtractionTaggingCriterion
     }
 };
 
-#endif /* TWOPUNCTURESBOXEXTRACTIONTAGGINGCRITERION_HPP_ */
+#endif /* MOVINGBOXESANDEXTRACTIONTAGGINGCRITERION_HPP_ */

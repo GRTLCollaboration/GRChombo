@@ -56,7 +56,7 @@ class SimulationParametersBase : public ChomboParameters
 
         // Dissipation
         pp.load("sigma", sigma, 0.1);
-        pp.load("rescale_sigma", rescale_sigma, 0);
+        pp.load("rescale_sigma", rescale_sigma, true);
 
         // Nan Check and min chi and lapse values
         pp.load("nan_check", nan_check, true);
@@ -311,7 +311,7 @@ class SimulationParametersBase : public ChomboParameters
   public:
     double sigma; // Kreiss-Oliger dissipation parameter
 
-    int rescale_sigma;
+    bool rescale_sigma; // should we rescale with the lapse?
 
     bool nan_check;
 
