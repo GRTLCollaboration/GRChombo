@@ -55,6 +55,10 @@ void CCZ4RHS<gauge_t, deriv_t>::compute(Cell<data_t> current_cell) const
     {
         // rescale KO coefficient with lapse so that it is zero near puncture
         sigma = this->m_sigma * pow(vars.lapse, 6.0);
+
+        // this factor should turn off KO at the boundary
+        data_t factor_for_large_box = 0.5 * (1.0 - tanh(100.0*(vars.lapse - 0.98)));
+        sigma *= factor_for_large_box;
     }
     else
     {
