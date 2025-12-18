@@ -21,7 +21,8 @@ inline CCZ4RHS<gauge_t, deriv_t>::CCZ4RHS(
     double a_cosmological_constant)
     : m_params(a_params), m_gauge(a_params), m_sigma(a_sigma),
       m_formulation(a_formulation), m_rescale_sigma(a_rescale_sigma),
-      m_cosmological_constant(a_cosmological_constant), m_deriv(a_dx)
+      m_cosmological_constant(a_cosmological_constant), m_deriv(a_dx),
+      m_dx(a_dx)
 {
     // A user who wants to use BSSN should also have damping paramters = 0
     if (m_formulation == USE_BSSN)
@@ -48,17 +49,17 @@ void CCZ4RHS<gauge_t, deriv_t>::compute(Cell<data_t> current_cell) const
         m_deriv.template advection<Vars>(current_cell, vars.shift);
 
     Vars<data_t> rhs;
-    rhs_equation(rhs, vars, d1, d2, advec);
+
+    Coordinates<data_t> coords(current_cell, m_dx, m_params.center);
+    data_t r = coords.get_radius();
+
+    rhs_equation(rhs, vars, d1, d2, advec, r);
 
     data_t sigma; // KO coefficient
     if (m_rescale_sigma)
     {
         // rescale KO coefficient with lapse so that it is zero near puncture
         sigma = this->m_sigma * pow(vars.lapse, 6.0);
-
-        // this factor should turn off KO at the boundary
-        data_t factor_for_large_box = 0.5 * (1.0 - tanh(1000.0*(vars.lapse - 0.996)));
-        sigma *= factor_for_large_box;
     }
     else
     {
@@ -77,8 +78,8 @@ template <class data_t, template <typename> class vars_t,
 void CCZ4RHS<gauge_t, deriv_t>::rhs_equation(
     vars_t<data_t> &rhs, const vars_t<data_t> &vars,
     const vars_t<Tensor<1, data_t>> &d1,
-    const diff2_vars_t<Tensor<2, data_t>> &d2,
-    const vars_t<data_t> &advec) const
+    const diff2_vars_t<Tensor<2, data_t>> &d2, const vars_t<data_t> &advec,
+    const data_t a_r) const
 {
     using namespace TensorAlgebra;
 
@@ -240,7 +241,7 @@ void CCZ4RHS<gauge_t, deriv_t>::rhs_equation(
 
     FOR(i) { rhs.Gamma[i] = advec.Gamma[i] + Gammadot[i]; }
 
-    m_gauge.rhs_gauge(rhs, vars, d1, d2, advec);
+    m_gauge.rhs_gauge(rhs, vars, d1, d2, advec, a_r);
 }
 
 #endif /* CCZ4RHS_IMPL_HPP_ */

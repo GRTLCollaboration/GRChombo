@@ -43,14 +43,14 @@ class ChiExtractionTaggingCriterion
                                   const spherical_extraction_params_t a_params,
                                   const bool activate_extraction = false)
         : m_dx(dx), m_deriv(dx), m_params(a_params), m_level(a_level),
-          m_activate_extraction(activate_extraction){};
+          m_activate_extraction(activate_extraction) {};
     // below is a constructor for backward compatibility
     ChiExtractionTaggingCriterion(const double dx, const int a_level,
                                   const int a_max_level,
                                   const spherical_extraction_params_t a_params,
                                   const bool activate_extraction = false)
         : ChiExtractionTaggingCriterion(dx, a_level, a_params,
-                                        activate_extraction){};
+                                        activate_extraction) {};
 
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {

@@ -22,7 +22,7 @@ class PhiAndKTaggingCriterion
   public:
     PhiAndKTaggingCriterion(double dx, double threshold_phi, double threshold_K)
         : m_dx(dx), m_deriv(dx), m_threshold_phi(threshold_phi),
-          m_threshold_K(threshold_K){};
+          m_threshold_K(threshold_K) {};
 
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {

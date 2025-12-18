@@ -33,7 +33,7 @@ class MovingBoxesAndExtractionTaggingCriterion
         : m_dx(dx), m_level(a_level), m_max_level(a_max_level),
           m_params(a_params), m_activate_extraction(activate_extraction),
           m_puncture_masses(a_puncture_masses),
-          m_puncture_coords(a_puncture_coords){};
+          m_puncture_coords(a_puncture_coords) {};
 
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {

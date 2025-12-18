@@ -32,7 +32,7 @@ class SphericalExtractionTestLevel : public GRAMRLevel
     }
 
     virtual void computeTaggingCriterion(FArrayBox &tagging_criterion,
-                                         const FArrayBox &current_state){};
+                                         const FArrayBox &current_state) {};
 };
 
 #endif /* SURFACEEXTRACTIONTESTLEVEL_HPP_ */

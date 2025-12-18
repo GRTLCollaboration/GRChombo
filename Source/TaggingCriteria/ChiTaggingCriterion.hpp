@@ -18,7 +18,7 @@ class ChiTaggingCriterion
     const FourthOrderDerivatives m_deriv;
 
   public:
-    ChiTaggingCriterion(double dx) : m_dx(dx), m_deriv(dx){};
+    ChiTaggingCriterion(double dx) : m_dx(dx), m_deriv(dx) {};
 
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {

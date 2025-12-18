@@ -42,6 +42,7 @@ class SimulationParametersBase : public ChomboParameters
         pp.load("shift_advec_coeff", ccz4_params.shift_advec_coeff, 0.0);
         pp.load("shift_Gamma_coeff", ccz4_params.shift_Gamma_coeff, 0.75);
         pp.load("eta", ccz4_params.eta, 1.0);
+        pp.load("moving_puncture_center", ccz4_params.center, center);
 
         // CCZ4 parameters
         pp.load("formulation", formulation, 0);

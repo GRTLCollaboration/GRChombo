@@ -25,7 +25,7 @@ class CosmoHamTaggingCriterion
                              std::array<double, CH_SPACEDIM> tagging_center,
                              double tagging_radius, double rho_mean)
         : m_dx(dx), m_tagging_center(tagging_center),
-          m_tagging_radius(tagging_radius), m_rho_mean(rho_mean){};
+          m_tagging_radius(tagging_radius), m_rho_mean(rho_mean) {};
 
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {

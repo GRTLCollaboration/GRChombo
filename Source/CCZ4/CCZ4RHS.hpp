@@ -77,6 +77,7 @@ class CCZ4RHS
     bool m_rescale_sigma;
     double m_cosmological_constant;
     const deriv_t m_deriv;
+    const double m_dx;
 
   public:
     /// Constructor
@@ -85,7 +86,8 @@ class CCZ4RHS
         double a_dx,                  //!< The grid spacing
         double a_sigma,               //!< Kreiss-Oliger dissipation coefficient
         int a_formulation = USE_CCZ4, //!< Switches between CCZ4, BSSN,...
-        bool a_rescale_sigma = true, //!< Allows a space dependent KO coefficient
+        bool a_rescale_sigma =
+            true, //!< Allows a space dependent KO coefficient
         double a_cosmological_constant = 0 //!< Value of the cosmological const.
     );
 
@@ -114,8 +116,8 @@ class CCZ4RHS
         const diff2_vars_t<Tensor<2, data_t>>
             &d2, //!< The second derivative the variables
         const vars_t<data_t>
-            &advec //!< The advection derivatives of the variables
-    ) const;
+            &advec, //!< The advection derivatives of the variables
+        const data_t a_r = 0.0) const;
 };
 
 #include "CCZ4RHS.impl.hpp"

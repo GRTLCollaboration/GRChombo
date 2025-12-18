@@ -49,15 +49,15 @@ ApparentHorizon<SurfaceGeometry, AHFunction>::ApparentHorizon(
 
       m_max_F(0.), m_min_F(0.), m_ave_F(0.), m_std_F(0.),
 
-      m_integration_methods({
-          a_interp.get_coord_system().get_recommended_integration_method_u(
-              a_params.num_points_u)
+      m_integration_methods(
+          {a_interp.get_coord_system().get_recommended_integration_method_u(
+               a_params.num_points_u)
 #if CH_SPACEDIM == 3
-              ,
-              a_interp.get_coord_system().get_recommended_integration_method_v(
-                  a_params.num_points_v)
+               ,
+           a_interp.get_coord_system().get_recommended_integration_method_v(
+               a_params.num_points_v)
 #endif
-      }),
+          }),
 
       m_area(NAN),
 #if GR_SPACEDIM == 3
@@ -874,9 +874,8 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
 #if CH_SPACEDIM == 3
                             stats[cols - 3][idx - i],
 #endif
-                                stats[cols - 2][idx - i],
-                                stats[cols - 1][idx - i]
-                        });
+                            stats[cols - 2][idx - i],
+                            stats[cols - 1][idx - i]});
                     }
                 }
             }
@@ -964,8 +963,7 @@ void ApparentHorizon<SurfaceGeometry, AHFunction>::restart(
 #if CH_SPACEDIM == 3
             stats[cols - 3][idx],
 #endif
-                stats[cols - 2][idx], stats[cols - 1][idx]
-        });
+            stats[cols - 2][idx], stats[cols - 1][idx]});
 
         ////////////////////
         // READ COORDINATES

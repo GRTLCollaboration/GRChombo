@@ -42,7 +42,7 @@ class ChiAndPhiTaggingCriterion
     ChiAndPhiTaggingCriterion(const double dx, const double threshold_chi,
                               const double threshold_phi)
         : m_dx(dx), m_deriv(dx), m_threshold_chi(threshold_chi),
-          m_threshold_phi(threshold_phi){};
+          m_threshold_phi(threshold_phi) {};
 
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {

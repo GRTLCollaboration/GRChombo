@@ -23,7 +23,7 @@ class ComputeModGrad
     const FourthOrderDerivatives m_deriv;
 
   public:
-    ComputeModGrad(double dx) : m_deriv(dx){};
+    ComputeModGrad(double dx) : m_deriv(dx) {};
 
     template <class data_t> void compute(Cell<data_t> current_cell) const
     {

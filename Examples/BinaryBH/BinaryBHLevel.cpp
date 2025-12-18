@@ -10,6 +10,7 @@
 #include "CCZ4RHS.hpp"
 #include "ChiExtractionTaggingCriterion.hpp"
 #include "ComputePack.hpp"
+#include "MovingBoxesAndExtractionTaggingCriterion.hpp"
 #include "NanCheck.hpp"
 #include "NewConstraints.hpp"
 #include "PositiveChiAndAlpha.hpp"
@@ -18,7 +19,6 @@
 #include "SixthOrderDerivatives.hpp"
 #include "SmallDataIO.hpp"
 #include "TraceARemoval.hpp"
-#include "MovingBoxesAndExtractionTaggingCriterion.hpp"
 #include "TwoPuncturesInitialData.hpp"
 #include "Weyl4.hpp"
 #include "WeylExtraction.hpp"
@@ -178,20 +178,23 @@ void BinaryBHLevel::specificPostTimeStep()
     {
         // Only want to calculate on lowest level
         int constraints_level = 0;
-        bool calculate_constraints = at_level_timestep_multiple(constraints_level);
+        bool calculate_constraints =
+            at_level_timestep_multiple(constraints_level);
         if (calculate_constraints)
         {
             fillAllGhosts();
             BoxLoops::loop(Constraints(m_dx, c_Ham, Interval(c_Mom1, c_Mom3)),
-                       m_state_new, m_state_diagnostics, EXCLUDE_GHOST_CELLS);
+                           m_state_new, m_state_diagnostics,
+                           EXCLUDE_GHOST_CELLS);
             if (m_level == constraints_level)
             {
-                AMRReductions<VariableType::diagnostic> amr_reductions(m_gr_amr);
+                AMRReductions<VariableType::diagnostic> amr_reductions(
+                    m_gr_amr);
                 double L2_Ham = amr_reductions.norm(c_Ham);
                 double L2_Mom = amr_reductions.norm(Interval(c_Mom1, c_Mom3));
                 SmallDataIO constraints_file(m_p.data_path + "constraint_norms",
-                                         m_dt, m_time, m_restart_time,
-                                         SmallDataIO::APPEND, first_step);
+                                             m_dt, m_time, m_restart_time,
+                                             SmallDataIO::APPEND, first_step);
                 constraints_file.remove_duplicate_time_data();
                 if (first_step)
                 {

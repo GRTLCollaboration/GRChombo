@@ -87,7 +87,8 @@ template <template <typename> class vars_t>
 void Cell<data_t>::store_vars(vars_t<data_t> &vars) const
 {
     vars.enum_mapping(
-        [&](const int &ivar, data_t &var) {
+        [&](const int &ivar, data_t &var)
+        {
             SIMDIFY<data_t>(m_box_pointers.m_out_ptr[ivar])[m_out_index] = var;
         });
 }

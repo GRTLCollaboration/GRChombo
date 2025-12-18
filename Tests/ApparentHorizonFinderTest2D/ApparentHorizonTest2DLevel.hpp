@@ -62,7 +62,7 @@ class ApparentHorizonTest2DLevel : public GRAMRLevel
     }
 
     virtual void computeTaggingCriterion(FArrayBox &tagging_criterion,
-                                         const FArrayBox &current_state){};
+                                         const FArrayBox &current_state) {};
 };
 
 #endif /* APPARENT_HORIZON_TEST2DLEVEL_HPP_ */

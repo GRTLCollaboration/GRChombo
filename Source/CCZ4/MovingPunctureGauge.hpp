@@ -36,6 +36,7 @@ class MovingPunctureGauge
                                          //! shift condition on/off
         double eta = 1.; //!< The eta in \f$\partial_t B^i = \partial_t \tilde
                          //!\Gamma - \eta B^i\f$
+        std::array<double, CH_SPACEDIM> center;
     };
 
   protected:
@@ -49,8 +50,14 @@ class MovingPunctureGauge
     inline void rhs_gauge(vars_t<data_t> &rhs, const vars_t<data_t> &vars,
                           const vars_t<Tensor<1, data_t>> &d1,
                           const diff2_vars_t<Tensor<2, data_t>> &d2,
-                          const vars_t<data_t> &advec) const
+                          const vars_t<data_t> &advec,
+                          const data_t r_at_cell = 0.0) const
     {
+        // make eta position dependent, hard code the transition for now
+        const double R = 500.0;
+        data_t eta_of_r =
+            m_params.eta * (R * R / (r_at_cell * r_at_cell + R * R));
+
         rhs.lapse = m_params.lapse_advec_coeff * advec.lapse -
                     m_params.lapse_coeff *
                         pow(vars.lapse, m_params.lapse_power) *
@@ -61,7 +68,7 @@ class MovingPunctureGauge
                            m_params.shift_Gamma_coeff * vars.B[i];
             rhs.B[i] = m_params.shift_advec_coeff * advec.B[i] -
                        m_params.shift_advec_coeff * advec.Gamma[i] +
-                       rhs.Gamma[i] - m_params.eta * vars.B[i];
+                       rhs.Gamma[i] - eta_of_r * vars.B[i];
         }
     }
 

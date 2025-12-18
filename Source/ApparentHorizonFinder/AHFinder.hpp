@@ -92,7 +92,7 @@ class AHFinder
     using AHParams = AHParams_t<AHFunction>;
 
   public:
-    AHFinder(){};
+    AHFinder() {};
     ~AHFinder();
 
     ALWAYS_INLINE ApparentHorizon<SurfaceGeometry, AHFunction> *

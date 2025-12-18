@@ -92,14 +92,11 @@ template <class SurfaceGeometry, class AHFunction>
 std::vector<std::string>
 AHInterpolation_t<SurfaceGeometry, AHFunction>::get_labels() const
 {
-    return
-    {
-        m_coord_system.u_name(),
+    return {m_coord_system.u_name(),
 #if CH_SPACEDIM == 3
             m_coord_system.v_name(),
 #endif
-            m_coord_system.param_name()
-    };
+            m_coord_system.param_name()};
 }
 
 template <class SurfaceGeometry, class AHFunction>
@@ -393,14 +390,11 @@ template <class SurfaceGeometry, class AHFunction>
 const Tensor<1, double>
 AHInterpolation_t<SurfaceGeometry, AHFunction>::get_coords(int idx) const
 {
-    return
-    {
-        m_u[idx],
+    return {m_u[idx],
 #if CH_SPACEDIM == 3
             m_v[idx],
 #endif
-            m_f[idx]
-    };
+            m_f[idx]};
 }
 
 template <class SurfaceGeometry, class AHFunction>
