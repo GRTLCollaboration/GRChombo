@@ -64,6 +64,7 @@ jobs:
       run: |
         sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-${{ matrix.gcc-version }} 200
         sudo update-alternatives --install /usr/bin/gfortran gfortran /usr/bin/gfortran-${{ matrix.gcc-version }} 200
+        sudo rm /etc/alternatives/cpp # Work around circular symlink issue with cpp alternatives
         sudo update-alternatives --install /usr/bin/cpp cpp /usr/bin/cpp-${{ matrix.gcc-version }} 200
 
     - name: Build Chombo
