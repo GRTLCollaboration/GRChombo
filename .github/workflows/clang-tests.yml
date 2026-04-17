@@ -4,11 +4,11 @@ on: [push]
 
 jobs:
   tests:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
-        # see available versions here: https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#preinstalled-software
-        clang-version: [13, 14, 15]
+        # see available versions here: https://github.com/actions/runner-images/blob/main/images/ubuntu/Ubuntu2404-Readme.md
+        clang-version: [16, 17, 18]
         dim: [2, 3]
         mpi: ['FALSE', 'TRUE']
         opt: ['FALSE', 'TRUE']
